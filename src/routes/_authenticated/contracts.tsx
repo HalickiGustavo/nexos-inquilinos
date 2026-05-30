@@ -21,6 +21,7 @@ export const Route = createFileRoute("/_authenticated/contracts")({
 
 function ContractsPage() {
   const { data: contracts = [], isLoading } = useContracts();
+  const invalidate = useInvalidate();
   const [open, setOpen] = useState(false);
 
   return (
@@ -71,10 +72,11 @@ function ContractsPage() {
               </div>
               <div className="mt-4 flex justify-end">
                 <Button variant="outline" size="sm" onClick={async () => {
-                  if (!confirm("Excluir este contrato? Todas as parcelas vinculadas serão removidas.")) return;
+                  if (!confirm("Tem certeza que deseja excluir este contrato? Todas as parcelas vinculadas serão perdidas.")) return;
                   const { error } = await supabase.from("contracts").delete().eq("id", c.id);
                   if (error) return toast.error(error.message);
                   toast.success("Contrato excluído");
+                  invalidate(["contracts", "installments", "properties"]);
                 }}>
                   <Trash2 className="size-3.5 text-destructive mr-1.5" />Excluir
                 </Button>

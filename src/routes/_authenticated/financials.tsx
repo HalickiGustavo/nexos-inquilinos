@@ -49,12 +49,11 @@ function FinancialsPage() {
     return { pending, paid, overdue };
   }, [installments, today]);
 
-  // Group by contract
   const groups = useMemo(() => {
-    const map = new Map<string, { contract: any; items: any[] }>();
+    const map = new Map<string, { id: string; contract: any; items: any[] }>();
     for (const i of installments as any[]) {
-      const key = i.contract_id;
-      if (!map.has(key)) map.set(key, { contract: i.contract, items: [] });
+      const key = i.contract_id ?? `sem-contrato-${i.id}`;
+      if (!map.has(key)) map.set(key, { id: key, contract: i.contract, items: [] });
       map.get(key)!.items.push(i);
     }
     return Array.from(map.values()).map((g) => {
@@ -101,7 +100,7 @@ function FinancialsPage() {
         <Card className="p-2">
           <Accordion type="multiple" className="w-full">
             {groups.map((g) => (
-              <AccordionItem key={g.contract?.id ?? Math.random()} value={g.contract?.id ?? "x"}>
+              <AccordionItem key={g.id} value={g.id}>
                 <AccordionTrigger className="px-4 hover:no-underline">
                   <div className="flex items-center justify-between w-full gap-4 pr-2">
                     <div className="flex items-center gap-3 min-w-0">

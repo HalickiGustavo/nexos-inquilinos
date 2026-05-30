@@ -21,6 +21,7 @@ export const Route = createFileRoute("/_authenticated/contracts")({
 
 function ContractsPage() {
   const { data: contracts = [], isLoading } = useContracts();
+  const invalidate = useInvalidate();
   const [open, setOpen] = useState(false);
 
   return (

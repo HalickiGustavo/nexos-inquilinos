@@ -110,6 +110,7 @@ function FinancialsPage() {
                         }).eq("id", i.id);
                         if (error) return toast.error(error.message);
                         toast.success("Parcela marcada como paga");
+                        invalidate(["installments"]);
                       }}>
                         <CheckCircle2 className="size-3.5 mr-1" />Pago
                       </Button>

@@ -12,7 +12,7 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export const Route = createFileRoute("/login")({
-  head: () => ({ meta: [{ title: "Entrar — Gestão de Imóveis" }] }),
+  head: () => ({ meta: [{ title: "Entrar — Nexo" }] }),
   component: LoginPage,
 });
 
@@ -31,7 +31,7 @@ function LoginPage() {
           <div className="size-9 rounded-lg bg-primary grid place-items-center">
             <Building2 className="size-5 text-primary-foreground" />
           </div>
-          ImovelPro
+          Nexo
         </div>
         <div>
           <h1 className="text-4xl font-bold leading-tight">
@@ -42,7 +42,7 @@ function LoginPage() {
             Gerencie inquilinos, contratos, parcelas e manutenções em uma única plataforma moderna e segura.
           </p>
         </div>
-        <p className="text-xs text-sidebar-foreground/50">© {new Date().getFullYear()} ImovelPro</p>
+        <p className="text-xs text-sidebar-foreground/50">© {new Date().getFullYear()} Nexo</p>
       </div>
 
       <div className="flex items-center justify-center p-6 lg:p-12">
@@ -51,7 +51,7 @@ function LoginPage() {
             <div className="size-9 rounded-lg bg-primary grid place-items-center">
               <Building2 className="size-5 text-primary-foreground" />
             </div>
-            <span className="text-xl font-semibold">ImovelPro</span>
+            <span className="text-xl font-semibold">Nexo</span>
           </div>
           <Tabs defaultValue="signin">
             <TabsList className="grid grid-cols-2 w-full">

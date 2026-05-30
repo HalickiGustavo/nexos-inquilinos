@@ -17,7 +17,7 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Gestão de Imóveis — Controle de Aluguéis" },
+      { title: "Nexo — Controle de Aluguéis" },
       { name: "description", content: "Sistema completo para controle de imóveis, inquilinos, contratos e finanças." },
     ],
     links: [{ rel: "stylesheet", href: appCss }],

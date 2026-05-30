@@ -21,12 +21,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // onAuthStateChange fires INITIAL_SESSION on subscribe, so a separate
+    // getSession() call would just duplicate the initial fetch.
     const { data: sub } = supabase.auth.onAuthStateChange((_evt, s) => {
       setSession(s);
-      setLoading(false);
-    });
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
       setLoading(false);
     });
     return () => sub.subscription.unsubscribe();

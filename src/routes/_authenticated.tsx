@@ -54,7 +54,7 @@ function AuthLayout() {
             <Building2 className="size-5 text-primary-foreground" />
           </div>
           <div>
-            <div className="font-semibold leading-tight">ImovelPro</div>
+            <div className="font-semibold leading-tight">Nexo</div>
             <div className="text-xs text-sidebar-foreground/60">Gestão de Aluguéis</div>
           </div>
         </div>
@@ -103,7 +103,7 @@ function AuthLayout() {
             <div className="size-8 rounded-lg bg-primary grid place-items-center">
               <Building2 className="size-4 text-primary-foreground" />
             </div>
-            <span className="font-semibold">ImovelPro</span>
+            <span className="font-semibold">Nexo</span>
           </div>
           <Button variant="ghost" size="sm" onClick={async () => { await signOut(); navigate({ to: "/login" }); }}>
             <LogOut className="size-4" />

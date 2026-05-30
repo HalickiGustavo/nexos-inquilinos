@@ -23,6 +23,7 @@ type Filter = "todos" | "pendente" | "pago" | "atrasado";
 
 function FinancialsPage() {
   const { data: installments = [], isLoading } = useInstallments();
+  const invalidate = useInvalidate();
   const [filter, setFilter] = useState<Filter>("todos");
   const [extraDlg, setExtraDlg] = useState<Installment | null>(null);
 

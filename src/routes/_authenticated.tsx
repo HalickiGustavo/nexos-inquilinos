@@ -14,7 +14,8 @@ import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
-import nexoLogo from "@/assets/nexo-logo.png";
+import nexoLogoAsset from "@/assets/nexo-logo.png.asset.json";
+const nexoLogo = nexoLogoAsset.url;
 
 export const Route = createFileRoute("/_authenticated")({
   component: AuthLayout,

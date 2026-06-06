@@ -46,12 +46,10 @@ function LoginPage() {
 
       <div className="flex items-center justify-center p-6 lg:p-12">
         <Card className="w-full max-w-md p-8 shadow-lg">
-          <div className="lg:hidden flex items-center gap-2 mb-6">
-            <div className="size-9 rounded-lg bg-primary grid place-items-center">
-              <Building2 className="size-5 text-primary-foreground" />
-            </div>
-            <span className="text-xl font-semibold">Nexo</span>
+        <div className="lg:hidden flex justify-center mb-6">
+            <img src={nexoLogo} alt="Nexo" className="h-10 w-auto" />
           </div>
+
           <div className="text-center mb-6">
             <h2 className="text-2xl font-semibold">Bem-vindo de volta</h2>
             <p className="text-sm text-muted-foreground mt-1">Entre com sua conta para continuar</p>

@@ -95,12 +95,8 @@ function AuthLayout() {
       {/* Mobile top bar */}
       <div className="flex-1 flex flex-col min-w-0">
         <header className="md:hidden flex items-center justify-between p-4 border-b bg-card">
-          <div className="flex items-center gap-2">
-            <div className="size-8 rounded-lg bg-primary grid place-items-center">
-              <Building2 className="size-4 text-primary-foreground" />
-            </div>
-            <span className="font-semibold">Nexo</span>
-          </div>
+          <img src={nexoLogo} alt="Nexo" className="h-7 w-auto" />
+
           <Button variant="ghost" size="sm" onClick={async () => { await signOut(); navigate({ to: "/login" }); }}>
             <LogOut className="size-4" />
           </Button>

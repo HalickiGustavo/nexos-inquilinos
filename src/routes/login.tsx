@@ -30,7 +30,7 @@ function LoginPage() {
       <div className="hidden lg:flex flex-col justify-between p-12 bg-sidebar text-sidebar-foreground">
         <div className="flex flex-col items-center gap-6 flex-1 justify-center">
           <div className="bg-white/95 rounded-xl py-4 mx-auto flex-col flex items-center justify-center px-[24px]">
-            <img src={nexoLogo} alt="Nexo" className="h-28 w-auto" />
+            <img src={nexoLogo} alt="Nexo" className="h-28 w-80 object-contain" />
           </div>
 
           <div className="text-center">

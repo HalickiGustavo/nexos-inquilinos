@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Building2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export const Route = createFileRoute("/login")({
   head: () => ({ meta: [{ title: "Entrar — Nexo" }] }),
@@ -53,18 +52,11 @@ function LoginPage() {
             </div>
             <span className="text-xl font-semibold">Nexo</span>
           </div>
-          <Tabs defaultValue="signin">
-            <TabsList className="grid grid-cols-2 w-full">
-              <TabsTrigger value="signin">Entrar</TabsTrigger>
-              <TabsTrigger value="signup">Criar conta</TabsTrigger>
-            </TabsList>
-            <TabsContent value="signin" className="mt-6">
-              <SignInForm />
-            </TabsContent>
-            <TabsContent value="signup" className="mt-6">
-              <SignUpForm />
-            </TabsContent>
-          </Tabs>
+          <div className="text-center mb-6">
+            <h2 className="text-2xl font-semibold">Bem-vindo de volta</h2>
+            <p className="text-sm text-muted-foreground mt-1">Entre com sua conta para continuar</p>
+          </div>
+          <SignInForm />
         </Card>
       </div>
     </div>
@@ -102,57 +94,6 @@ function SignInForm() {
         {busy && <Loader2 className="size-4 animate-spin mr-2" />}
         Entrar
       </Button>
-    </form>
-  );
-}
-
-function SignUpForm() {
-  const [fullName, setFullName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [busy, setBusy] = useState(false);
-  const navigate = useNavigate();
-
-  return (
-    <form
-      className="space-y-4"
-      onSubmit={async (e) => {
-        e.preventDefault();
-        setBusy(true);
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            data: { full_name: fullName },
-            emailRedirectTo: typeof window !== "undefined" ? window.location.origin : undefined,
-          },
-        });
-        setBusy(false);
-        if (error) return toast.error(error.message);
-        toast.success("Conta criada! Verifique seu email para confirmar.");
-        navigate({ to: "/dashboard", replace: true });
-      }}
-    >
-      <div className="space-y-2">
-        <Label htmlFor="fullName">Nome completo</Label>
-        <Input id="fullName" required value={fullName} onChange={(e) => setFullName(e.target.value)} />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="email-up">Email</Label>
-        <Input id="email-up" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="password-up">Senha</Label>
-        <Input id="password-up" type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} />
-      </div>
-      <Button type="submit" className="w-full" disabled={busy}>
-        {busy && <Loader2 className="size-4 animate-spin mr-2" />}
-        Criar conta
-      </Button>
-      <p className="text-xs text-muted-foreground text-center">
-        Já tem conta?{" "}
-        <Link to="/login" className="underline">Entrar</Link>
-      </p>
     </form>
   );
 }

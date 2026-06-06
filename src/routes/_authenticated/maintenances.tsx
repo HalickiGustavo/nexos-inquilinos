@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { Plus, Wrench, Trash2 } from "lucide-react";
+import { Plus, Wrench, Trash2, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,11 +8,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useMaintenances, useProperties, useInvalidate, type Maintenance } from "@/lib/queries";
+import { MaintenanceChat } from "@/components/MaintenanceChat";
 import { formatBRL, formatDate, parseNumber } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/maintenances")({
@@ -107,6 +109,23 @@ function MaintenanceCard({ item }: { item: any }) {
             <SelectItem value="concluido">Concluído</SelectItem>
           </SelectContent>
         </Select>
+        {item.tenant_id && (
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="outline" size="sm" title="Conversar com o inquilino">
+                <MessageCircle className="size-3.5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent className="w-full sm:max-w-md flex flex-col">
+              <SheetHeader>
+                <SheetTitle>Chat — {item.title}</SheetTitle>
+              </SheetHeader>
+              <div className="flex-1 min-h-0 mt-3">
+                <MaintenanceChat maintenanceId={item.id} />
+              </div>
+            </SheetContent>
+          </Sheet>
+        )}
         <Button variant="outline" size="sm" onClick={async () => {
           if (!confirm("Excluir esta manutenção?")) return;
           const { error } = await supabase.from("maintenances").delete().eq("id", item.id);

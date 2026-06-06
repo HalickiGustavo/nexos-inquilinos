@@ -28,20 +28,22 @@ function LoginPage() {
   return (
     <div className="min-h-screen grid lg:grid-cols-2">
       <div className="hidden lg:flex flex-col justify-between p-12 bg-sidebar text-sidebar-foreground">
-        <div className="bg-white/95 rounded-xl py-3 mx-auto flex-col flex items-center justify-center px-[20px] mt-16">
-          <img src={nexoLogo} alt="Nexo" className="h-20 w-auto" />
-        </div>
+        <div className="flex flex-col items-center gap-6 flex-1 justify-center">
+          <div className="bg-white/95 rounded-xl py-4 mx-auto flex-col flex items-center justify-center px-[24px]">
+            <img src={nexoLogo} alt="Nexo" className="h-28 w-auto" />
+          </div>
 
-        <div>
-          <h1 className="text-4xl font-bold leading-tight">
-            Controle total dos seus<br />
-            <span className="text-primary">imóveis e aluguéis.</span>
-          </h1>
-          <p className="mt-4 text-sidebar-foreground/70 max-w-md">
-            Gerencie inquilinos, contratos, parcelas e manutenções em uma única plataforma moderna e segura.
-          </p>
+          <div className="text-center">
+            <h1 className="text-4xl font-bold leading-tight">
+              Controle total dos seus<br />
+              <span className="text-primary">imóveis e aluguéis.</span>
+            </h1>
+            <p className="mt-4 text-sidebar-foreground/70 max-w-md mx-auto">
+              Gerencie inquilinos, contratos, parcelas e manutenções em uma única plataforma moderna e segura.
+            </p>
+          </div>
         </div>
-        <p className="text-xs text-sidebar-foreground/50">© {new Date().getFullYear()} Nexo</p>
+        <p className="text-xs text-sidebar-foreground/50 text-center">© {new Date().getFullYear()} Nexo</p>
       </div>
 
       <div className="flex items-center justify-center p-6 lg:p-12">

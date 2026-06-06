@@ -109,6 +109,23 @@ function MaintenanceCard({ item }: { item: any }) {
             <SelectItem value="concluido">Concluído</SelectItem>
           </SelectContent>
         </Select>
+        {item.tenant_id && (
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="outline" size="sm" title="Conversar com o inquilino">
+                <MessageCircle className="size-3.5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent className="w-full sm:max-w-md flex flex-col">
+              <SheetHeader>
+                <SheetTitle>Chat — {item.title}</SheetTitle>
+              </SheetHeader>
+              <div className="flex-1 min-h-0 mt-3">
+                <MaintenanceChat maintenanceId={item.id} />
+              </div>
+            </SheetContent>
+          </Sheet>
+        )}
         <Button variant="outline" size="sm" onClick={async () => {
           if (!confirm("Excluir esta manutenção?")) return;
           const { error } = await supabase.from("maintenances").delete().eq("id", item.id);

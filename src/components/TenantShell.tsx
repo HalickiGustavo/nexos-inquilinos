@@ -6,12 +6,12 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import nexoLogoAsset from "@/assets/nexo-logo.png.asset.json";
 
-const tenantNav = [
+const tenantNav: ReadonlyArray<{ to: string; label: string; icon: typeof Home; exact?: boolean }> = [
   { to: "/tenant", label: "Início", icon: Home, exact: true },
   { to: "/tenant/financeiro", label: "Financeiro", icon: Wallet },
   { to: "/tenant/contrato", label: "Contrato", icon: FileText },
   { to: "/tenant/manutencoes", label: "Manutenções", icon: Wrench },
-] as const;
+];
 
 export function TenantShell() {
   const nexoLogo = nexoLogoAsset.url;

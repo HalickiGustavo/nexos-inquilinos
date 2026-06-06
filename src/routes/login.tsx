@@ -10,7 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import nexoLogoAsset from "@/assets/nexo-logo.png.asset.json";
-const nexoLogo = nexoLogoAsset.url;
+const nexoLogo: string = nexoLogoAsset.url;
+export { nexoLogo };
 
 
 export const Route = createFileRoute("/login")({

@@ -61,7 +61,7 @@ export function TenantShell() {
             return (
               <Link
                 key={item.to}
-                to={item.to}
+                to={item.to as any}
                 className={cn(
                   "flex flex-col items-center justify-center gap-1 py-2.5 text-[11px] transition-colors",
                   active ? "text-primary" : "text-muted-foreground hover:text-foreground",
@@ -84,7 +84,7 @@ export function TenantShell() {
             return (
               <Link
                 key={item.to}
-                to={item.to}
+                to={item.to as any}
                 className={cn(
                   "flex items-center gap-2 px-4 py-3 text-sm border-b-2 transition-colors",
                   active

@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Building2, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
+import nexoLogo from "@/assets/nexo-logo.png";
+
 
 export const Route = createFileRoute("/login")({
   head: () => ({ meta: [{ title: "Entrar — Nexo" }] }),
@@ -26,12 +28,10 @@ function LoginPage() {
   return (
     <div className="min-h-screen grid lg:grid-cols-2">
       <div className="hidden lg:flex flex-col justify-between p-12 bg-sidebar text-sidebar-foreground">
-        <div className="flex items-center gap-2 text-xl font-semibold">
-          <div className="size-9 rounded-lg bg-primary grid place-items-center">
-            <Building2 className="size-5 text-primary-foreground" />
-          </div>
-          Nexo
+        <div className="bg-white/95 rounded-xl px-5 py-3 inline-flex w-fit">
+          <img src={nexoLogo} alt="Nexo" className="h-10 w-auto" />
         </div>
+
         <div>
           <h1 className="text-4xl font-bold leading-tight">
             Controle total dos seus<br />
@@ -46,12 +46,10 @@ function LoginPage() {
 
       <div className="flex items-center justify-center p-6 lg:p-12">
         <Card className="w-full max-w-md p-8 shadow-lg">
-          <div className="lg:hidden flex items-center gap-2 mb-6">
-            <div className="size-9 rounded-lg bg-primary grid place-items-center">
-              <Building2 className="size-5 text-primary-foreground" />
-            </div>
-            <span className="text-xl font-semibold">Nexo</span>
+        <div className="lg:hidden flex justify-center mb-6">
+            <img src={nexoLogo} alt="Nexo" className="h-10 w-auto" />
           </div>
+
           <div className="text-center mb-6">
             <h2 className="text-2xl font-semibold">Bem-vindo de volta</h2>
             <p className="text-sm text-muted-foreground mt-1">Entre com sua conta para continuar</p>

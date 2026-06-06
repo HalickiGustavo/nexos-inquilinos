@@ -14,6 +14,7 @@ import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import nexoLogo from "@/assets/nexo-logo.png";
 
 export const Route = createFileRoute("/_authenticated")({
   component: AuthLayout,
@@ -49,15 +50,10 @@ function AuthLayout() {
     <div className="min-h-screen flex bg-background">
       {/* Sidebar */}
       <aside className="hidden md:flex w-64 flex-col bg-sidebar text-sidebar-foreground border-r border-sidebar-border">
-        <div className="p-5 flex items-center gap-2 border-b border-sidebar-border">
-          <div className="size-9 rounded-lg bg-primary grid place-items-center">
-            <Building2 className="size-5 text-primary-foreground" />
-          </div>
-          <div>
-            <div className="font-semibold leading-tight">Nexo</div>
-            <div className="text-xs text-sidebar-foreground/60">Gestão de Aluguéis</div>
-          </div>
+        <div className="p-5 flex items-center gap-3 border-b border-sidebar-border bg-white/95">
+          <img src={nexoLogo} alt="Nexo" className="h-10 w-auto" />
         </div>
+
         <nav className="flex-1 p-3 space-y-1">
           {navItems.map((item) => {
             const active = pathname.startsWith(item.to);
@@ -99,12 +95,8 @@ function AuthLayout() {
       {/* Mobile top bar */}
       <div className="flex-1 flex flex-col min-w-0">
         <header className="md:hidden flex items-center justify-between p-4 border-b bg-card">
-          <div className="flex items-center gap-2">
-            <div className="size-8 rounded-lg bg-primary grid place-items-center">
-              <Building2 className="size-4 text-primary-foreground" />
-            </div>
-            <span className="font-semibold">Nexo</span>
-          </div>
+          <img src={nexoLogo} alt="Nexo" className="h-7 w-auto" />
+
           <Button variant="ghost" size="sm" onClick={async () => { await signOut(); navigate({ to: "/login" }); }}>
             <LogOut className="size-4" />
           </Button>

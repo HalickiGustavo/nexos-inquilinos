@@ -13,11 +13,16 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedTenantsRouteImport } from './routes/_authenticated/tenants'
+import { Route as AuthenticatedTenantRouteImport } from './routes/_authenticated/tenant'
 import { Route as AuthenticatedPropertiesRouteImport } from './routes/_authenticated/properties'
 import { Route as AuthenticatedMaintenancesRouteImport } from './routes/_authenticated/maintenances'
 import { Route as AuthenticatedFinancialsRouteImport } from './routes/_authenticated/financials'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedContractsRouteImport } from './routes/_authenticated/contracts'
+import { Route as AuthenticatedTenantIndexRouteImport } from './routes/_authenticated/tenant.index'
+import { Route as AuthenticatedTenantManutencoesRouteImport } from './routes/_authenticated/tenant.manutencoes'
+import { Route as AuthenticatedTenantFinanceiroRouteImport } from './routes/_authenticated/tenant.financeiro'
+import { Route as AuthenticatedTenantContratoRouteImport } from './routes/_authenticated/tenant.contrato'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -36,6 +41,11 @@ const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
 const AuthenticatedTenantsRoute = AuthenticatedTenantsRouteImport.update({
   id: '/tenants',
   path: '/tenants',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedTenantRoute = AuthenticatedTenantRouteImport.update({
+  id: '/tenant',
+  path: '/tenant',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedPropertiesRoute = AuthenticatedPropertiesRouteImport.update({
@@ -64,6 +74,30 @@ const AuthenticatedContractsRoute = AuthenticatedContractsRouteImport.update({
   path: '/contracts',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedTenantIndexRoute =
+  AuthenticatedTenantIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedTenantRoute,
+  } as any)
+const AuthenticatedTenantManutencoesRoute =
+  AuthenticatedTenantManutencoesRouteImport.update({
+    id: '/manutencoes',
+    path: '/manutencoes',
+    getParentRoute: () => AuthenticatedTenantRoute,
+  } as any)
+const AuthenticatedTenantFinanceiroRoute =
+  AuthenticatedTenantFinanceiroRouteImport.update({
+    id: '/financeiro',
+    path: '/financeiro',
+    getParentRoute: () => AuthenticatedTenantRoute,
+  } as any)
+const AuthenticatedTenantContratoRoute =
+  AuthenticatedTenantContratoRouteImport.update({
+    id: '/contrato',
+    path: '/contrato',
+    getParentRoute: () => AuthenticatedTenantRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
@@ -73,7 +107,12 @@ export interface FileRoutesByFullPath {
   '/financials': typeof AuthenticatedFinancialsRoute
   '/maintenances': typeof AuthenticatedMaintenancesRoute
   '/properties': typeof AuthenticatedPropertiesRoute
+  '/tenant': typeof AuthenticatedTenantRouteWithChildren
   '/tenants': typeof AuthenticatedTenantsRoute
+  '/tenant/contrato': typeof AuthenticatedTenantContratoRoute
+  '/tenant/financeiro': typeof AuthenticatedTenantFinanceiroRoute
+  '/tenant/manutencoes': typeof AuthenticatedTenantManutencoesRoute
+  '/tenant/': typeof AuthenticatedTenantIndexRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
@@ -84,6 +123,10 @@ export interface FileRoutesByTo {
   '/properties': typeof AuthenticatedPropertiesRoute
   '/tenants': typeof AuthenticatedTenantsRoute
   '/': typeof AuthenticatedIndexRoute
+  '/tenant/contrato': typeof AuthenticatedTenantContratoRoute
+  '/tenant/financeiro': typeof AuthenticatedTenantFinanceiroRoute
+  '/tenant/manutencoes': typeof AuthenticatedTenantManutencoesRoute
+  '/tenant': typeof AuthenticatedTenantIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -94,8 +137,13 @@ export interface FileRoutesById {
   '/_authenticated/financials': typeof AuthenticatedFinancialsRoute
   '/_authenticated/maintenances': typeof AuthenticatedMaintenancesRoute
   '/_authenticated/properties': typeof AuthenticatedPropertiesRoute
+  '/_authenticated/tenant': typeof AuthenticatedTenantRouteWithChildren
   '/_authenticated/tenants': typeof AuthenticatedTenantsRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/_authenticated/tenant/contrato': typeof AuthenticatedTenantContratoRoute
+  '/_authenticated/tenant/financeiro': typeof AuthenticatedTenantFinanceiroRoute
+  '/_authenticated/tenant/manutencoes': typeof AuthenticatedTenantManutencoesRoute
+  '/_authenticated/tenant/': typeof AuthenticatedTenantIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -107,7 +155,12 @@ export interface FileRouteTypes {
     | '/financials'
     | '/maintenances'
     | '/properties'
+    | '/tenant'
     | '/tenants'
+    | '/tenant/contrato'
+    | '/tenant/financeiro'
+    | '/tenant/manutencoes'
+    | '/tenant/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
@@ -118,6 +171,10 @@ export interface FileRouteTypes {
     | '/properties'
     | '/tenants'
     | '/'
+    | '/tenant/contrato'
+    | '/tenant/financeiro'
+    | '/tenant/manutencoes'
+    | '/tenant'
   id:
     | '__root__'
     | '/_authenticated'
@@ -127,8 +184,13 @@ export interface FileRouteTypes {
     | '/_authenticated/financials'
     | '/_authenticated/maintenances'
     | '/_authenticated/properties'
+    | '/_authenticated/tenant'
     | '/_authenticated/tenants'
     | '/_authenticated/'
+    | '/_authenticated/tenant/contrato'
+    | '/_authenticated/tenant/financeiro'
+    | '/_authenticated/tenant/manutencoes'
+    | '/_authenticated/tenant/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -166,6 +228,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTenantsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/tenant': {
+      id: '/_authenticated/tenant'
+      path: '/tenant'
+      fullPath: '/tenant'
+      preLoaderRoute: typeof AuthenticatedTenantRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/properties': {
       id: '/_authenticated/properties'
       path: '/properties'
@@ -201,8 +270,53 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedContractsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/tenant/': {
+      id: '/_authenticated/tenant/'
+      path: '/'
+      fullPath: '/tenant/'
+      preLoaderRoute: typeof AuthenticatedTenantIndexRouteImport
+      parentRoute: typeof AuthenticatedTenantRoute
+    }
+    '/_authenticated/tenant/manutencoes': {
+      id: '/_authenticated/tenant/manutencoes'
+      path: '/manutencoes'
+      fullPath: '/tenant/manutencoes'
+      preLoaderRoute: typeof AuthenticatedTenantManutencoesRouteImport
+      parentRoute: typeof AuthenticatedTenantRoute
+    }
+    '/_authenticated/tenant/financeiro': {
+      id: '/_authenticated/tenant/financeiro'
+      path: '/financeiro'
+      fullPath: '/tenant/financeiro'
+      preLoaderRoute: typeof AuthenticatedTenantFinanceiroRouteImport
+      parentRoute: typeof AuthenticatedTenantRoute
+    }
+    '/_authenticated/tenant/contrato': {
+      id: '/_authenticated/tenant/contrato'
+      path: '/contrato'
+      fullPath: '/tenant/contrato'
+      preLoaderRoute: typeof AuthenticatedTenantContratoRouteImport
+      parentRoute: typeof AuthenticatedTenantRoute
+    }
   }
 }
+
+interface AuthenticatedTenantRouteChildren {
+  AuthenticatedTenantContratoRoute: typeof AuthenticatedTenantContratoRoute
+  AuthenticatedTenantFinanceiroRoute: typeof AuthenticatedTenantFinanceiroRoute
+  AuthenticatedTenantManutencoesRoute: typeof AuthenticatedTenantManutencoesRoute
+  AuthenticatedTenantIndexRoute: typeof AuthenticatedTenantIndexRoute
+}
+
+const AuthenticatedTenantRouteChildren: AuthenticatedTenantRouteChildren = {
+  AuthenticatedTenantContratoRoute: AuthenticatedTenantContratoRoute,
+  AuthenticatedTenantFinanceiroRoute: AuthenticatedTenantFinanceiroRoute,
+  AuthenticatedTenantManutencoesRoute: AuthenticatedTenantManutencoesRoute,
+  AuthenticatedTenantIndexRoute: AuthenticatedTenantIndexRoute,
+}
+
+const AuthenticatedTenantRouteWithChildren =
+  AuthenticatedTenantRoute._addFileChildren(AuthenticatedTenantRouteChildren)
 
 interface AuthenticatedRouteChildren {
   AuthenticatedContractsRoute: typeof AuthenticatedContractsRoute
@@ -210,6 +324,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedFinancialsRoute: typeof AuthenticatedFinancialsRoute
   AuthenticatedMaintenancesRoute: typeof AuthenticatedMaintenancesRoute
   AuthenticatedPropertiesRoute: typeof AuthenticatedPropertiesRoute
+  AuthenticatedTenantRoute: typeof AuthenticatedTenantRouteWithChildren
   AuthenticatedTenantsRoute: typeof AuthenticatedTenantsRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
 }
@@ -220,6 +335,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedFinancialsRoute: AuthenticatedFinancialsRoute,
   AuthenticatedMaintenancesRoute: AuthenticatedMaintenancesRoute,
   AuthenticatedPropertiesRoute: AuthenticatedPropertiesRoute,
+  AuthenticatedTenantRoute: AuthenticatedTenantRouteWithChildren,
   AuthenticatedTenantsRoute: AuthenticatedTenantsRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
 }
@@ -235,3 +351,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

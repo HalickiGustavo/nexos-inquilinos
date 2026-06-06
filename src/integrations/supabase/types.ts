@@ -133,6 +133,38 @@ export type Database = {
           },
         ]
       }
+      maintenance_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          maintenance_id: string
+          sender_user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          maintenance_id: string
+          sender_user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          maintenance_id?: string
+          sender_user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "maintenance_messages_maintenance_id_fkey"
+            columns: ["maintenance_id"]
+            isOneToOne: false
+            referencedRelation: "maintenances"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       maintenances: {
         Row: {
           completed_date: string | null
@@ -144,6 +176,7 @@ export type Database = {
           responsible: Database["public"]["Enums"]["maintenance_responsible"]
           scheduled_date: string | null
           status: Database["public"]["Enums"]["maintenance_status"]
+          tenant_id: string | null
           title: string
           updated_at: string
           user_id: string
@@ -158,6 +191,7 @@ export type Database = {
           responsible?: Database["public"]["Enums"]["maintenance_responsible"]
           scheduled_date?: string | null
           status?: Database["public"]["Enums"]["maintenance_status"]
+          tenant_id?: string | null
           title: string
           updated_at?: string
           user_id: string
@@ -172,6 +206,7 @@ export type Database = {
           responsible?: Database["public"]["Enums"]["maintenance_responsible"]
           scheduled_date?: string | null
           status?: Database["public"]["Enums"]["maintenance_status"]
+          tenant_id?: string | null
           title?: string
           updated_at?: string
           user_id?: string
@@ -276,6 +311,7 @@ export type Database = {
           phone: string | null
           updated_at: string
           user_id: string
+          user_id_link: string | null
         }
         Insert: {
           created_at?: string
@@ -288,6 +324,7 @@ export type Database = {
           phone?: string | null
           updated_at?: string
           user_id: string
+          user_id_link?: string | null
         }
         Update: {
           created_at?: string
@@ -300,6 +337,28 @@ export type Database = {
           phone?: string | null
           updated_at?: string
           user_id?: string
+          user_id_link?: string | null
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
         }
         Relationships: []
       }
@@ -308,9 +367,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      current_tenant_id: { Args: never; Returns: string }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
+      app_role: "owner" | "tenant"
       installment_status: "pendente" | "pago" | "atrasado"
       maintenance_responsible: "proprietario" | "inquilino"
       maintenance_status: "pendente" | "em_andamento" | "concluido"
@@ -444,6 +511,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: ["owner", "tenant"],
       installment_status: ["pendente", "pago", "atrasado"],
       maintenance_responsible: ["proprietario", "inquilino"],
       maintenance_status: ["pendente", "em_andamento", "concluido"],

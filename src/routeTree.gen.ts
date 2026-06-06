@@ -13,7 +13,6 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedTenantsRouteImport } from './routes/_authenticated/tenants'
-import { Route as AuthenticatedTenantRouteImport } from './routes/_authenticated/tenant'
 import { Route as AuthenticatedPropertiesRouteImport } from './routes/_authenticated/properties'
 import { Route as AuthenticatedMaintenancesRouteImport } from './routes/_authenticated/maintenances'
 import { Route as AuthenticatedFinancialsRouteImport } from './routes/_authenticated/financials'
@@ -41,11 +40,6 @@ const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
 const AuthenticatedTenantsRoute = AuthenticatedTenantsRouteImport.update({
   id: '/tenants',
   path: '/tenants',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedTenantRoute = AuthenticatedTenantRouteImport.update({
-  id: '/tenant',
-  path: '/tenant',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedPropertiesRoute = AuthenticatedPropertiesRouteImport.update({
@@ -76,27 +70,27 @@ const AuthenticatedContractsRoute = AuthenticatedContractsRouteImport.update({
 } as any)
 const AuthenticatedTenantIndexRoute =
   AuthenticatedTenantIndexRouteImport.update({
-    id: '/',
-    path: '/',
-    getParentRoute: () => AuthenticatedTenantRoute,
+    id: '/tenant/',
+    path: '/tenant/',
+    getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedTenantManutencoesRoute =
   AuthenticatedTenantManutencoesRouteImport.update({
-    id: '/manutencoes',
-    path: '/manutencoes',
-    getParentRoute: () => AuthenticatedTenantRoute,
+    id: '/tenant/manutencoes',
+    path: '/tenant/manutencoes',
+    getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedTenantFinanceiroRoute =
   AuthenticatedTenantFinanceiroRouteImport.update({
-    id: '/financeiro',
-    path: '/financeiro',
-    getParentRoute: () => AuthenticatedTenantRoute,
+    id: '/tenant/financeiro',
+    path: '/tenant/financeiro',
+    getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedTenantContratoRoute =
   AuthenticatedTenantContratoRouteImport.update({
-    id: '/contrato',
-    path: '/contrato',
-    getParentRoute: () => AuthenticatedTenantRoute,
+    id: '/tenant/contrato',
+    path: '/tenant/contrato',
+    getParentRoute: () => AuthenticatedRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -107,7 +101,6 @@ export interface FileRoutesByFullPath {
   '/financials': typeof AuthenticatedFinancialsRoute
   '/maintenances': typeof AuthenticatedMaintenancesRoute
   '/properties': typeof AuthenticatedPropertiesRoute
-  '/tenant': typeof AuthenticatedTenantRouteWithChildren
   '/tenants': typeof AuthenticatedTenantsRoute
   '/tenant/contrato': typeof AuthenticatedTenantContratoRoute
   '/tenant/financeiro': typeof AuthenticatedTenantFinanceiroRoute
@@ -137,7 +130,6 @@ export interface FileRoutesById {
   '/_authenticated/financials': typeof AuthenticatedFinancialsRoute
   '/_authenticated/maintenances': typeof AuthenticatedMaintenancesRoute
   '/_authenticated/properties': typeof AuthenticatedPropertiesRoute
-  '/_authenticated/tenant': typeof AuthenticatedTenantRouteWithChildren
   '/_authenticated/tenants': typeof AuthenticatedTenantsRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/tenant/contrato': typeof AuthenticatedTenantContratoRoute
@@ -155,7 +147,6 @@ export interface FileRouteTypes {
     | '/financials'
     | '/maintenances'
     | '/properties'
-    | '/tenant'
     | '/tenants'
     | '/tenant/contrato'
     | '/tenant/financeiro'
@@ -184,7 +175,6 @@ export interface FileRouteTypes {
     | '/_authenticated/financials'
     | '/_authenticated/maintenances'
     | '/_authenticated/properties'
-    | '/_authenticated/tenant'
     | '/_authenticated/tenants'
     | '/_authenticated/'
     | '/_authenticated/tenant/contrato'
@@ -228,13 +218,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTenantsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/tenant': {
-      id: '/_authenticated/tenant'
-      path: '/tenant'
-      fullPath: '/tenant'
-      preLoaderRoute: typeof AuthenticatedTenantRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_authenticated/properties': {
       id: '/_authenticated/properties'
       path: '/properties'
@@ -272,51 +255,34 @@ declare module '@tanstack/react-router' {
     }
     '/_authenticated/tenant/': {
       id: '/_authenticated/tenant/'
-      path: '/'
+      path: '/tenant'
       fullPath: '/tenant/'
       preLoaderRoute: typeof AuthenticatedTenantIndexRouteImport
-      parentRoute: typeof AuthenticatedTenantRoute
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/tenant/manutencoes': {
       id: '/_authenticated/tenant/manutencoes'
-      path: '/manutencoes'
+      path: '/tenant/manutencoes'
       fullPath: '/tenant/manutencoes'
       preLoaderRoute: typeof AuthenticatedTenantManutencoesRouteImport
-      parentRoute: typeof AuthenticatedTenantRoute
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/tenant/financeiro': {
       id: '/_authenticated/tenant/financeiro'
-      path: '/financeiro'
+      path: '/tenant/financeiro'
       fullPath: '/tenant/financeiro'
       preLoaderRoute: typeof AuthenticatedTenantFinanceiroRouteImport
-      parentRoute: typeof AuthenticatedTenantRoute
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/tenant/contrato': {
       id: '/_authenticated/tenant/contrato'
-      path: '/contrato'
+      path: '/tenant/contrato'
       fullPath: '/tenant/contrato'
       preLoaderRoute: typeof AuthenticatedTenantContratoRouteImport
-      parentRoute: typeof AuthenticatedTenantRoute
+      parentRoute: typeof AuthenticatedRoute
     }
   }
 }
-
-interface AuthenticatedTenantRouteChildren {
-  AuthenticatedTenantContratoRoute: typeof AuthenticatedTenantContratoRoute
-  AuthenticatedTenantFinanceiroRoute: typeof AuthenticatedTenantFinanceiroRoute
-  AuthenticatedTenantManutencoesRoute: typeof AuthenticatedTenantManutencoesRoute
-  AuthenticatedTenantIndexRoute: typeof AuthenticatedTenantIndexRoute
-}
-
-const AuthenticatedTenantRouteChildren: AuthenticatedTenantRouteChildren = {
-  AuthenticatedTenantContratoRoute: AuthenticatedTenantContratoRoute,
-  AuthenticatedTenantFinanceiroRoute: AuthenticatedTenantFinanceiroRoute,
-  AuthenticatedTenantManutencoesRoute: AuthenticatedTenantManutencoesRoute,
-  AuthenticatedTenantIndexRoute: AuthenticatedTenantIndexRoute,
-}
-
-const AuthenticatedTenantRouteWithChildren =
-  AuthenticatedTenantRoute._addFileChildren(AuthenticatedTenantRouteChildren)
 
 interface AuthenticatedRouteChildren {
   AuthenticatedContractsRoute: typeof AuthenticatedContractsRoute
@@ -324,9 +290,12 @@ interface AuthenticatedRouteChildren {
   AuthenticatedFinancialsRoute: typeof AuthenticatedFinancialsRoute
   AuthenticatedMaintenancesRoute: typeof AuthenticatedMaintenancesRoute
   AuthenticatedPropertiesRoute: typeof AuthenticatedPropertiesRoute
-  AuthenticatedTenantRoute: typeof AuthenticatedTenantRouteWithChildren
   AuthenticatedTenantsRoute: typeof AuthenticatedTenantsRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+  AuthenticatedTenantContratoRoute: typeof AuthenticatedTenantContratoRoute
+  AuthenticatedTenantFinanceiroRoute: typeof AuthenticatedTenantFinanceiroRoute
+  AuthenticatedTenantManutencoesRoute: typeof AuthenticatedTenantManutencoesRoute
+  AuthenticatedTenantIndexRoute: typeof AuthenticatedTenantIndexRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
@@ -335,9 +304,12 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedFinancialsRoute: AuthenticatedFinancialsRoute,
   AuthenticatedMaintenancesRoute: AuthenticatedMaintenancesRoute,
   AuthenticatedPropertiesRoute: AuthenticatedPropertiesRoute,
-  AuthenticatedTenantRoute: AuthenticatedTenantRouteWithChildren,
   AuthenticatedTenantsRoute: AuthenticatedTenantsRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+  AuthenticatedTenantContratoRoute: AuthenticatedTenantContratoRoute,
+  AuthenticatedTenantFinanceiroRoute: AuthenticatedTenantFinanceiroRoute,
+  AuthenticatedTenantManutencoesRoute: AuthenticatedTenantManutencoesRoute,
+  AuthenticatedTenantIndexRoute: AuthenticatedTenantIndexRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
@@ -351,3 +323,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

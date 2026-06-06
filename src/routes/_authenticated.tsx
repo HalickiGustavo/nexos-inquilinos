@@ -1,4 +1,4 @@
-import { createFileRoute, Link, Outlet, redirect, useNavigate, useRouterState } from "@tanstack/react-router";
+import { createFileRoute, Outlet, useNavigate, useRouterState, Link } from "@tanstack/react-router";
 import { useEffect } from "react";
 import {
   LayoutDashboard,
@@ -11,9 +11,11 @@ import {
   Loader2,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
+import { useUserRole } from "@/lib/useUserRole";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import { TenantShell } from "@/components/TenantShell";
 import nexoLogoAsset from "@/assets/nexo-logo.png.asset.json";
 
 export const Route = createFileRoute("/_authenticated")({
@@ -32,6 +34,7 @@ const navItems = [
 function AuthLayout() {
   const nexoLogo = nexoLogoAsset.url;
   const { user, loading, signOut } = useAuth();
+  const { role, loading: roleLoading } = useUserRole();
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
@@ -39,12 +42,27 @@ function AuthLayout() {
     if (!loading && !user) navigate({ to: "/login", replace: true });
   }, [user, loading, navigate]);
 
-  if (loading || !user) {
+  // Role-based path enforcement
+  useEffect(() => {
+    if (!role) return;
+    const isTenantPath = pathname === "/tenant" || pathname.startsWith("/tenant/");
+    if (role === "tenant" && !isTenantPath) {
+      navigate({ to: "/tenant", replace: true });
+    } else if (role === "owner" && isTenantPath) {
+      navigate({ to: "/dashboard", replace: true });
+    }
+  }, [role, pathname, navigate]);
+
+  if (loading || !user || roleLoading) {
     return (
       <div className="min-h-screen grid place-items-center">
         <Loader2 className="size-6 animate-spin text-muted-foreground" />
       </div>
     );
+  }
+
+  if (role === "tenant") {
+    return <TenantShell />;
   }
 
   return (

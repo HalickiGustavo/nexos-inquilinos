@@ -28,7 +28,7 @@ function LoginPage() {
   return (
     <div className="min-h-screen grid lg:grid-cols-2">
       <div className="hidden lg:flex flex-col justify-between p-12 bg-sidebar text-sidebar-foreground">
-        <div className="bg-white/95 rounded-xl px-5 py-3 inline-flex w-fit">
+        <div className="bg-white/95 rounded-xl px-5 py-3 flex justify-center items-center mx-auto">
           <img src={nexoLogo} alt="Nexo" className="h-10 w-auto" />
         </div>
 

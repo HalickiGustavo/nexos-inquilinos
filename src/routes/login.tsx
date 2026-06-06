@@ -46,7 +46,7 @@ function LoginPage() {
 
       <div className="flex items-center justify-center p-6 lg:p-12">
         <Card className="w-full max-w-md p-8 shadow-lg">
-        <div className="lg:hidden flex justify-center mb-6">
+        <div className="lg:hidden flex justify-center items-center mb-6">
             <img src={nexoLogo} alt="Nexo" className="h-10 w-auto" />
           </div>
 

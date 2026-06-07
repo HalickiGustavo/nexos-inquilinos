@@ -1,88 +1,99 @@
+
+# Integração Asaas — Boletos com Split para o NEXO
+
 ## Visão geral
 
-Adicionar uma experiência completa para o papel **Inquilino** (NEXO Tenant) na mesma aplicação, mantendo o painel atual para **Proprietário** (Owner). A UI muda 100% conforme o papel detectado no login, com RLS estrita no backend para que cada inquilino veja apenas os próprios dados.
+- **Ambiente:** Sandbox (`https://api-sandbox.asaas.com/v3`). Depois promovemos para produção trocando apenas a chave.
+- **Modelo:** White-label com **Asaas Accounts (subcontas)**. O NEXO é a conta-mãe. Cada imobiliária (owner) vira uma subconta criada via API; o `walletId` dela fica salvo no banco.
+- **Cobrança:** Boleto + Pix gerados pela conta-mãe em nome da subconta da imobiliária.
+- **Split:** Valor fixo do NEXO (ex.: R$ 9,90 por boleto pago) cai automaticamente na nossa carteira; o restante vai para a subconta da imobiliária.
+- **Baixa:** Webhook `/api/public/asaas-webhook` atualiza `installments.status = 'pago'` em tempo real.
 
-## 1. Backend (migração Supabase)
+## Secrets necessários
 
-Mudanças de schema em uma única migração:
+Vou pedir via `add_secret` (entrada segura, você cola os valores):
 
-- **Enum `app_role`**: `'owner' | 'tenant'`.
-- **Tabela `user_roles`** (id, user_id → auth.users, role) + função `has_role(uuid, app_role)` SECURITY DEFINER.
-- **`tenants.user_id_link`** (uuid, FK lógica para auth.users, nullable): liga uma conta de login a um registro de inquilino. Usada para detectar "qual tenant é esse usuário".
-- **`maintenances.tenant_id`** (uuid, nullable): permite vincular um chamado a um inquilino que o abriu.
-- **Nova tabela `maintenance_messages`** para o chat por chamado:
-  - `id`, `maintenance_id`, `sender_user_id`, `content`, `created_at`.
-  - RLS: usuário vê/insere mensagens apenas onde participa (dono do imóvel OU inquilino vinculado).
-  - Adicionada ao `supabase_realtime` publication.
-- **Atualização do trigger `handle_new_user`**: ao criar profile, atribui role `owner` por padrão (proprietários criam a conta sozinhos; inquilinos são convidados pelo dono — fluxo de convite fica como próxima iteração; por ora, é possível promover manualmente um usuário a `tenant` via `user_roles` e ligar via `tenants.user_id_link`).
-- **Políticas RLS adicionais (tenant-side)** em tabelas existentes, usando `EXISTS (SELECT 1 FROM tenants WHERE tenants.id = <table>.tenant_id AND tenants.user_id_link = auth.uid())`:
-  - `contracts`: SELECT para o inquilino do contrato.
-  - `installments`: SELECT para o inquilino do contrato pai.
-  - `maintenances`: SELECT/INSERT/UPDATE limitado ao próprio chamado do inquilino.
-  - `properties`: SELECT do imóvel referenciado em contrato ativo do inquilino.
-- **GRANTs** explícitos em todas as tabelas novas/afetadas.
+1. **`ASAAS_API_KEY`** — chave principal do **sandbox** da sua conta-mãe NEXO. Pegue em https://sandbox.asaas.com → Integrações → Gerar nova chave de API.
+2. **`ASAAS_WEBHOOK_TOKEN`** — token de autenticação do webhook (você inventa uma string forte; depois cola no painel Asaas → Configurações → Notificações → Webhook).
+3. **`ASAAS_NEXO_WALLET_ID`** — `walletId` da SUA conta NEXO (aparece em Minha Conta → Integrações). É para onde o split do NEXO é enviado.
+4. **`ASAAS_NEXO_FEE`** — valor fixo da mensalidade NEXO por boleto pago (ex.: `9.90`). Fica como secret para você ajustar sem deploy.
 
-## 2. Detecção de papel e roteamento
+> Observação: Asaas não é um connector nativo do Lovable, então uso secrets diretos (são chamados via `process.env` em server functions).
 
-- Novo hook `useUserRole()` que consulta `user_roles` para o `auth.uid()` atual.
-- No `_authenticated.tsx`: enquanto carrega o papel → spinner. Depois:
-  - `owner` → layout atual (sidebar com Imóveis, Inquilinos, Contratos, etc.).
-  - `tenant` → novo layout `TenantShell` (mobile-first, bottom-nav).
-- Rotas novas sob `src/routes/_authenticated/tenant/`:
-  - `tenant/index.tsx` — Início
-  - `tenant/financeiro.tsx` — Boletos & Finanças
-  - `tenant/contrato.tsx` — Meu Contrato
-  - `tenant/manutencoes.tsx` — Solicitações + Chat
-- Owner acessando `/tenant/*` é redirecionado para `/dashboard` e vice-versa.
+## Como funciona o Split na Asaas
 
-## 3. Telas do Portal Inquilino
+A API `POST /v3/payments` aceita um campo `split: [{ walletId, fixedValue }]`. Quando o pagamento é confirmado, o Asaas deposita automaticamente o `fixedValue` na carteira do `walletId` informado e o restante fica com o emissor da cobrança (a subconta da imobiliária).
 
-### Início (`/tenant`)
-- Saudação personalizada.
-- Card destaque "Próximo Aluguel": valor, vencimento, status (pago/pendente/atrasado), CTA **Copiar Chave Pix** e **Ver Boleto**.
-- Pedido de permissão de notificação nativa (`Notification.requestPermission()`) ao montar; dispara notificação local quando há fatura nova/atrasada (verificação no client a cada load).
-- Mini-cards: chamados em aberto, próximo vencimento, status do contrato.
+Para um aluguel de R$ 2.000 com `ASAAS_NEXO_FEE = 9.90`:
+- Boleto emitido: **R$ 2.000,00** (inquilino paga o valor cheio do aluguel — sua taxa não infla o boleto, sai do bolo).
+- Imobiliária recebe: R$ 1.990,10
+- NEXO recebe: R$ 9,90
 
-### Boletos & Finanças (`/tenant/financeiro`)
-- Lista todas as `installments` do contrato ativo, ordem decrescente.
-- Badges coloridos: Pago (verde), Pendente (amarelo), Atrasado (vermelho — calculado se `due_date < hoje` e status pendente).
-- Expandir parcela pendente: chave Pix simulada + botão copiar; código de barras mock.
-- Parcela paga: botão "Baixar Recibo (PDF)" que gera PDF client-side simples com jsPDF.
+> Se preferir embutir a mensalidade **somando** ao aluguel (ex.: R$ 2.009,90 no boleto), basta inverter no código — me avise no review do plano. O padrão que vou implementar é "embutido no valor", como você descreveu.
 
-### Meu Contrato (`/tenant/contrato`)
-- Detalhes do contrato ativo: período, valor, índice de reajuste, dia de vencimento, depósito.
-- Barra de progresso (meses decorridos / total).
-- Botão "Baixar Contrato (PDF)" — gera PDF mock com os termos.
+## Mudanças no banco (migração)
 
-### Manutenções + Chat (`/tenant/manutencoes`)
-- Layout split desktop / abas mobile.
-- **Esquerda**: lista de chamados do inquilino, badge de status, botão "Nova Solicitação" abre dialog (Título, Descrição, Categoria).
-- **Direita**: ao selecionar chamado, abre chat com mensagens em `maintenance_messages` via Supabase Realtime. Bolhas: inquilino à direita (primary), proprietário à esquerda (muted), timestamps, input com Enter para enviar.
-- Owner também ganha acesso ao mesmo chat dentro da página existente `maintenances.tsx` (drawer lateral) para responder.
+Tabela nova `asaas_accounts` (subconta por owner/imobiliária):
+- `user_id` (owner), `asaas_account_id`, `api_key` (chave da subconta — opcional, usamos a chave-mãe na maioria dos casos), `wallet_id`, `status` (pending/active), `onboarding_url`.
 
-## 4. Design
+Tabela nova `asaas_customers` (cliente Asaas por inquilino):
+- `tenant_id`, `asaas_customer_id`.
 
-- Tema NEXO mantido (tokens em `src/styles.css`).
-- Shell do inquilino: header compacto com logo + avatar, bottom-nav fixa em mobile (Início, Financeiro, Contrato, Manutenções), sidebar no desktop.
-- Componentes shadcn: Card, Badge, Progress, Dialog, Tabs, ScrollArea.
-- Animações suaves com tailwind (`transition`, `animate-in`).
+Colunas em `installments`:
+- `asaas_payment_id`, `boleto_url`, `pix_qrcode`, `pix_payload`, `barcode`.
 
-## 5. Detalhes técnicos
+RLS: owner vê apenas seus registros; tenant lê `boleto_url/pix_*` apenas das parcelas do contrato dele (já coberto pela policy existente via `current_tenant_id()`).
 
-- Novas queries em `src/lib/queries.ts`: `useTenantContract`, `useTenantInstallments`, `useTenantMaintenances`, `useMaintenanceMessages(id)`, `useSendMaintenanceMessage`.
-- Hook `useRealtimeMessages(maintenanceId)` que assina canal `messages:<id>`.
-- `jspdf` adicionado como dependência para gerar recibos/contrato mock.
-- Toda copy em PT-BR.
+## Server functions (`src/lib/asaas.functions.ts`)
 
-## 6. Ordem de execução
+Todas usam `requireSupabaseAuth` e chamam `https://api-sandbox.asaas.com/v3` com header `access_token: process.env.ASAAS_API_KEY`.
 
-1. Migração SQL (roles, link tenant↔user, tabela de mensagens, RLS, realtime).
-2. Hook `useUserRole` + bifurcação de layout em `_authenticated.tsx`.
-3. Rotas e telas do inquilino (Início, Financeiro, Contrato).
-4. Manutenções + chat realtime (lado inquilino e drawer no lado owner).
-5. Polimento visual mobile-first e notificações nativas.
+1. `createAsaasSubaccount()` — `POST /v3/accounts` para o owner logado (envia nome, CPF/CNPJ, email da imobiliária). Salva `accountId` + `walletId` em `asaas_accounts`.
+2. `ensureAsaasCustomer(tenantId)` — `POST /v3/customers` se ainda não existe.
+3. `generateBoleto(installmentId)` — `POST /v3/payments` com:
+   ```json
+   {
+     "customer": "<asaas_customer_id>",
+     "billingType": "BOLETO",  // ou "PIX" / "UNDEFINED" p/ múltiplos
+     "value": 2000.00,
+     "dueDate": "2026-07-10",
+     "split": [{ "walletId": "<ASAAS_NEXO_WALLET_ID>", "fixedValue": 9.90 }]
+   }
+   ```
+   Persiste `asaas_payment_id`, `boleto_url`, dados do Pix em `installments`.
+4. `getPixQrCode(paymentId)` — `GET /v3/payments/{id}/pixQrCode` (para mostrar QR no app do inquilino).
 
-## Pendências para confirmar
+## Server route (webhook) `src/routes/api/public/asaas-webhook.ts`
 
-- **Como inquilinos viram inquilinos?** Por ora vou deixar a vinculação manual (owner edita o registro de `tenants` e cola o `user_id` do inquilino já cadastrado, role atribuída via SQL). Fluxo de **convite por email** com link mágico é a evolução natural — posso implementar em seguida se quiser.
-- PDFs serão mocks visuais (jsPDF). Geração real a partir de template fica para depois.
+- `POST` recebe payload Asaas.
+- Valida header `asaas-access-token === process.env.ASAAS_WEBHOOK_TOKEN` (responde 401 se diferente).
+- Eventos tratados: `PAYMENT_CONFIRMED`, `PAYMENT_RECEIVED`, `PAYMENT_OVERDUE`, `PAYMENT_REFUNDED`.
+- Usa `supabaseAdmin` para atualizar `installments` por `asaas_payment_id` (status pago + `payment_date` + `paid_amount`).
+
+URL para colar no painel Asaas:
+`https://nexos-inquilinos.lovable.app/api/public/asaas-webhook`
+
+## UI
+
+**Owner (`/_authenticated/`):**
+- Card em `/dashboard` ou nova página `/integracoes`: "Conectar conta Asaas". Mostra status (pending/active) e botão "Criar subconta" → chama `createAsaasSubaccount`.
+- Em `financials.tsx`: botão "Gerar boleto" por parcela pendente. Após gerar, mostra link "Abrir boleto" e copiar linha digitável.
+
+**Tenant (`/_authenticated/tenant/financeiro`):**
+- Substituir o Pix mock pelos dados reais: `pix_payload` no botão "Copiar Pix", QR Code via `<img>` data URL, "Abrir boleto" abre `boleto_url`.
+
+## Ordem de execução (após você aprovar)
+
+1. `add_secret` dos 4 secrets acima.
+2. Migração do banco (tabelas + colunas + RLS + GRANTs).
+3. `src/lib/asaas.server.ts` (cliente HTTP) + `asaas.functions.ts` (server fns).
+4. Webhook em `api/public/asaas-webhook.ts`.
+5. UI owner (onboarding subconta + botão gerar boleto).
+6. UI tenant (boleto/Pix reais no lugar do mock).
+7. Instruções finais para você configurar o webhook no painel Asaas.
+
+## Pendências / pontos para confirmar
+
+- **Split somando vs embutido:** vou implementar **embutido** (boleto = valor do aluguel; nossa taxa sai do bolo da imobiliária). Confirma?
+- **Subconta exige documentos KYC** (CPF/CNPJ, endereço, etc.) que a Asaas valida. Em sandbox passa fácil; em produção a imobiliária precisa completar o onboarding via `onboardingUrl` que a API devolve.
+- **Asaas Accounts no sandbox** às vezes exige habilitação manual da feature na sua conta — se a chamada `POST /v3/accounts` retornar 403, abra um ticket no suporte Asaas pedindo "habilitar Accounts" no seu sandbox.

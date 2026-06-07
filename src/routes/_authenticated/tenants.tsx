@@ -164,3 +164,30 @@ function TenantDialog({ editing, onDone }: { editing: Tenant | null; onDone: () 
     </DialogContent>
   );
 }
+
+function InviteTenantButton({ tenant }: { tenant: Tenant }) {
+  const invite = useServerFn(inviteTenantUser);
+  const [loading, setLoading] = useState(false);
+  return (
+    <Button
+      variant="outline"
+      size="sm"
+      disabled={loading}
+      title="Reenviar convite por e-mail"
+      onClick={async () => {
+        setLoading(true);
+        try {
+          const redirectUrl = `${window.location.origin}/tenant-setup`;
+          await invite({ data: { tenantId: tenant.id, redirectUrl } });
+          toast.success("Convite enviado para " + tenant.email);
+        } catch (e: any) {
+          toast.error(e?.message ?? "Falha ao enviar convite");
+        } finally {
+          setLoading(false);
+        }
+      }}
+    >
+      <Send className="size-3.5" />
+    </Button>
+  );
+}

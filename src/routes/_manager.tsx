@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet, useNavigate, useRouterState, Link } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { LayoutDashboard, Briefcase, Wallet, Users, KanbanSquare, LogOut, Loader2 } from "lucide-react";
+import { LayoutDashboard, Briefcase, Wallet, Users, KanbanSquare, ClipboardCheck, LogOut, Loader2 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useUserRole } from "@/lib/useUserRole";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ const navItems: { to: string; label: string; icon: typeof LayoutDashboard; exact
   { to: "/manager/carteira", label: "Carteira", icon: Briefcase },
   { to: "/manager/financeiro", label: "Financeiro", icon: Wallet },
   { to: "/manager/equipe", label: "Equipe", icon: Users },
+  { to: "/manager/vistorias", label: "Vistorias", icon: ClipboardCheck },
   { to: "/manager/crm", label: "CRM", icon: KanbanSquare },
 ];
 

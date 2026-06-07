@@ -16,6 +16,7 @@ const navItems: { to: string; label: string; icon: typeof LayoutDashboard; exact
   { to: "/manager/carteira", label: "Carteira", icon: Briefcase },
   { to: "/manager/financeiro", label: "Financeiro", icon: Wallet },
   { to: "/manager/equipe", label: "Equipe", icon: Users },
+  { to: "/manager/vistorias", label: "Vistorias", icon: ClipboardCheck },
   { to: "/manager/crm", label: "CRM", icon: KanbanSquare },
 ];
 

@@ -37,7 +37,7 @@ function ManagerLayout() {
   }, [role, roleLoading, navigate]);
 
   if (loading || !user || roleLoading || role !== "manager") {
-    return <div className="min-h-screen grid place-items-center bg-zinc-950"><Loader2 className="size-6 animate-spin text-emerald-500" /></div>;
+    return <div className="min-h-screen grid place-items-center bg-zinc-950"><Loader2 className="size-6 animate-spin text-primary" /></div>;
   }
 
   return (
@@ -45,7 +45,7 @@ function ManagerLayout() {
       <aside className="hidden md:flex w-64 flex-col bg-zinc-900 text-zinc-100 border-r border-zinc-800">
         <div className="p-5 border-b border-zinc-800">
           <div className="flex items-center gap-2">
-            <div className="size-8 rounded-md bg-emerald-500 grid place-items-center text-zinc-900 font-bold">N</div>
+            <div className="size-8 rounded-md bg-primary grid place-items-center text-primary-foreground font-bold">N</div>
             <div>
               <div className="font-semibold text-sm">NEXO Manager</div>
               <div className="text-[10px] text-zinc-400 uppercase tracking-wider">Imobiliária</div>
@@ -60,7 +60,7 @@ function ManagerLayout() {
               <Link key={item.to} to={item.to}
                 className={cn(
                   "flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors",
-                  active ? "bg-emerald-500 text-zinc-900 font-medium shadow-sm" : "text-zinc-300 hover:bg-zinc-800 hover:text-white"
+                  active ? "bg-primary text-primary-foreground font-medium shadow-sm" : "text-zinc-300 hover:bg-zinc-800 hover:text-white"
                 )}>
                 <Icon className="size-4" />
                 {item.label}
@@ -85,7 +85,7 @@ function ManagerLayout() {
             return (
               <Link key={item.to} to={item.to}
                 className={cn("flex items-center gap-2 px-3 py-1.5 rounded-md text-xs whitespace-nowrap",
-                  active ? "bg-emerald-500 text-zinc-900" : "bg-zinc-800 text-zinc-300")}>
+                  active ? "bg-primary text-primary-foreground" : "bg-zinc-800 text-zinc-300")}>
                 <Icon className="size-3.5" />{item.label}
               </Link>
             );

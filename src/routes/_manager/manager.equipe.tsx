@@ -49,7 +49,7 @@ function Equipe() {
     const map: Record<string, string> = {
       corretor: "bg-blue-500/15 text-blue-700 border-blue-500/30",
       admin: "bg-purple-500/15 text-purple-700 border-purple-500/30",
-      financeiro: "bg-emerald-500/15 text-emerald-700 border-emerald-500/30",
+      financeiro: "bg-primary/15 text-primary border-primary/30",
     };
     return <Badge variant="outline" className={map[r] ?? ""}>{r}</Badge>;
   };
@@ -66,7 +66,7 @@ function Equipe() {
           <h1 className="text-2xl font-bold">Equipe</h1>
           <p className="text-sm text-zinc-500">Corretores, administrativo e financeiro</p>
         </div>
-        <Button onClick={() => setOpen(true)} className="bg-emerald-600 hover:bg-emerald-700">
+        <Button onClick={() => setOpen(true)} className="bg-primary hover:bg-primary/90">
           <UserPlus className="size-4 mr-2" /> Convidar Novo Membro
         </Button>
       </header>
@@ -159,7 +159,7 @@ function ConvidarDialog({ open, onOpenChange, onSaved }: { open: boolean; onOpen
               </SelectContent>
             </Select>
           </div>
-          <Button onClick={save} disabled={busy || !form.name || !form.email} className="w-full bg-emerald-600 hover:bg-emerald-700">Enviar Convite</Button>
+          <Button onClick={save} disabled={busy || !form.name || !form.email} className="w-full bg-primary hover:bg-primary/90">Enviar Convite</Button>
         </div>
       </DialogContent>
     </Dialog>

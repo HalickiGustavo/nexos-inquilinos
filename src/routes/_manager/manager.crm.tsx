@@ -22,7 +22,7 @@ const STAGES = [
   { id: "novos", label: "Novos Leads", color: "bg-blue-500" },
   { id: "contato", label: "Contato Feito / Visita", color: "bg-amber-500" },
   { id: "proposta", label: "Proposta em Análise", color: "bg-purple-500" },
-  { id: "fechado", label: "Fechado / Contrato Emitido", color: "bg-emerald-500" },
+  { id: "fechado", label: "Fechado / Contrato Emitido", color: "bg-primary" },
 ];
 
 function CRM() {
@@ -56,7 +56,7 @@ function CRM() {
           <h1 className="text-2xl font-bold">CRM — Funil de Locação</h1>
           <p className="text-sm text-zinc-500">Arraste cards entre as etapas do funil</p>
         </div>
-        <Button onClick={() => setOpenNew(true)} className="bg-emerald-600 hover:bg-emerald-700">
+        <Button onClick={() => setOpenNew(true)} className="bg-primary hover:bg-primary/90">
           <Plus className="size-4 mr-2" /> Novo Lead
         </Button>
       </header>
@@ -79,7 +79,7 @@ function CRM() {
 function Column({ stage, items, onOpen }: { stage: typeof STAGES[number]; items: any[]; onOpen: (l: any) => void }) {
   const { setNodeRef, isOver } = useDroppable({ id: stage.id });
   return (
-    <div ref={setNodeRef} className={`rounded-lg border-2 border-dashed p-3 min-h-[400px] transition-colors ${isOver ? "border-emerald-500 bg-emerald-50/40" : "border-zinc-200 bg-zinc-50/40"}`}>
+    <div ref={setNodeRef} className={`rounded-lg border-2 border-dashed p-3 min-h-[400px] transition-colors ${isOver ? "border-primary bg-primary/5" : "border-zinc-200 bg-zinc-50/40"}`}>
       <div className="flex items-center gap-2 mb-3">
         <div className={`size-2 rounded-full ${stage.color}`} />
         <h3 className="font-semibold text-sm">{stage.label}</h3>
@@ -181,7 +181,7 @@ function LeadDialog({ open, onOpenChange, lead, onSaved }: { open: boolean; onOp
           </div>
           <div className="col-span-2"><Label>Observações</Label><Textarea rows={3} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></div>
         </div>
-        <Button onClick={save} className="bg-emerald-600 hover:bg-emerald-700">Salvar</Button>
+        <Button onClick={save} className="bg-primary hover:bg-primary/90">Salvar</Button>
 
         {isEdit && (
           <div className="border-t pt-4 mt-2 space-y-3">

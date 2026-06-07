@@ -50,7 +50,7 @@ function Carteira() {
 
   const statusBadge = (s: string) => {
     const map: Record<string, string> = {
-      alugado: "bg-emerald-500/15 text-emerald-700 border-emerald-500/30",
+      alugado: "bg-primary/15 text-primary border-primary/30",
       disponivel: "bg-blue-500/15 text-blue-700 border-blue-500/30",
       manutencao: "bg-amber-500/15 text-amber-700 border-amber-500/30",
     };
@@ -64,7 +64,7 @@ function Carteira() {
           <h1 className="text-2xl font-bold">Carteira de Imóveis</h1>
           <p className="text-sm text-zinc-500">Gestão de portfólio e proprietários</p>
         </div>
-        <Button onClick={() => setOpenNew(true)} className="bg-emerald-600 hover:bg-emerald-700">
+        <Button onClick={() => setOpenNew(true)} className="bg-primary hover:bg-primary/90">
           <Plus className="size-4 mr-2" /> Adicionar Novo Imóvel
         </Button>
       </header>
@@ -202,7 +202,7 @@ function NovoImovelDialog({ open, onOpenChange, onSaved }: { open: boolean; onOp
           <Field label="Nome do Proprietário"><Input value={form.owner_name} onChange={(e) => setForm({ ...form, owner_name: e.target.value })} /></Field>
           <Field label="Comissão Proprietário (%)"><Input type="number" step="0.01" value={form.owner_commission_percent} onChange={(e) => setForm({ ...form, owner_commission_percent: e.target.value })} /></Field>
         </div>
-        <Button onClick={save} disabled={busy} className="bg-emerald-600 hover:bg-emerald-700">Salvar Imóvel</Button>
+        <Button onClick={save} disabled={busy} className="bg-primary hover:bg-primary/90">Salvar Imóvel</Button>
       </DialogContent>
     </Dialog>
   );

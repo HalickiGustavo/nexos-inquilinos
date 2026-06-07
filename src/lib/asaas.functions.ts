@@ -160,7 +160,7 @@ export const generateAsaasCharge = createServerFn({ method: "POST" })
     const value = Number(inst.data.amount) + Number(inst.data.extra_fees ?? 0);
 
     const body: Record<string, unknown> = {
-      customer: customerId,
+      customer: customerId as string,
       billingType: data.billingType,
       value,
       dueDate: inst.data.due_date,

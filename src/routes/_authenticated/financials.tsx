@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { CheckCircle2, Wallet, Plus, AlertCircle, Clock, Building2 } from "lucide-react";
+import { CheckCircle2, Wallet, Plus, AlertCircle, Clock, Building2, FileText, Copy, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +15,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { supabase } from "@/integrations/supabase/client";
 import { useInstallments, useInvalidate, type Installment } from "@/lib/queries";
 import { formatBRL, formatDate, parseNumber } from "@/lib/format";
+import { generateAsaasCharge } from "@/lib/asaas.functions";
 
 export const Route = createFileRoute("/_authenticated/financials")({
   head: () => ({ meta: [{ title: "Finanças — ImovelPro" }] }),

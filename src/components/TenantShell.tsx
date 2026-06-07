@@ -59,7 +59,7 @@ export function TenantShell() {
 
       {/* Bottom nav (mobile) + sidebar-like row (desktop) */}
       <nav className="fixed bottom-0 inset-x-0 z-30 md:static md:max-w-3xl md:mx-auto bg-card border-t md:border-0 md:hidden">
-        <div className="grid grid-cols-4">
+        <div className="grid grid-cols-5">
           {tenantNav.map((item) => {
             const active = isActive(item.to, item.exact);
             const Icon = item.icon;

@@ -34,6 +34,7 @@ import { Route as ManagerManagerAlertasRouteImport } from './routes/_manager/man
 import { Route as AuthenticatedTenantManutencoesRouteImport } from './routes/_authenticated/tenant.manutencoes'
 import { Route as AuthenticatedTenantFinanceiroRouteImport } from './routes/_authenticated/tenant.financeiro'
 import { Route as AuthenticatedTenantContratoRouteImport } from './routes/_authenticated/tenant.contrato'
+import { Route as AuthenticatedTenantAlertasRouteImport } from './routes/_authenticated/tenant.alertas'
 
 const TenantSetupRoute = TenantSetupRouteImport.update({
   id: '/tenant-setup',
@@ -165,6 +166,12 @@ const AuthenticatedTenantContratoRoute =
     path: '/tenant/contrato',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedTenantAlertasRoute =
+  AuthenticatedTenantAlertasRouteImport.update({
+    id: '/tenant/alertas',
+    path: '/tenant/alertas',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
@@ -178,6 +185,7 @@ export interface FileRoutesByFullPath {
   '/maintenances': typeof AuthenticatedMaintenancesRoute
   '/properties': typeof AuthenticatedPropertiesRoute
   '/tenants': typeof AuthenticatedTenantsRoute
+  '/tenant/alertas': typeof AuthenticatedTenantAlertasRoute
   '/tenant/contrato': typeof AuthenticatedTenantContratoRoute
   '/tenant/financeiro': typeof AuthenticatedTenantFinanceiroRoute
   '/tenant/manutencoes': typeof AuthenticatedTenantManutencoesRoute
@@ -203,6 +211,7 @@ export interface FileRoutesByTo {
   '/maintenances': typeof AuthenticatedMaintenancesRoute
   '/properties': typeof AuthenticatedPropertiesRoute
   '/tenants': typeof AuthenticatedTenantsRoute
+  '/tenant/alertas': typeof AuthenticatedTenantAlertasRoute
   '/tenant/contrato': typeof AuthenticatedTenantContratoRoute
   '/tenant/financeiro': typeof AuthenticatedTenantFinanceiroRoute
   '/tenant/manutencoes': typeof AuthenticatedTenantManutencoesRoute
@@ -231,6 +240,7 @@ export interface FileRoutesById {
   '/_authenticated/properties': typeof AuthenticatedPropertiesRoute
   '/_authenticated/tenants': typeof AuthenticatedTenantsRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/_authenticated/tenant/alertas': typeof AuthenticatedTenantAlertasRoute
   '/_authenticated/tenant/contrato': typeof AuthenticatedTenantContratoRoute
   '/_authenticated/tenant/financeiro': typeof AuthenticatedTenantFinanceiroRoute
   '/_authenticated/tenant/manutencoes': typeof AuthenticatedTenantManutencoesRoute
@@ -258,6 +268,7 @@ export interface FileRouteTypes {
     | '/maintenances'
     | '/properties'
     | '/tenants'
+    | '/tenant/alertas'
     | '/tenant/contrato'
     | '/tenant/financeiro'
     | '/tenant/manutencoes'
@@ -283,6 +294,7 @@ export interface FileRouteTypes {
     | '/maintenances'
     | '/properties'
     | '/tenants'
+    | '/tenant/alertas'
     | '/tenant/contrato'
     | '/tenant/financeiro'
     | '/tenant/manutencoes'
@@ -310,6 +322,7 @@ export interface FileRouteTypes {
     | '/_authenticated/properties'
     | '/_authenticated/tenants'
     | '/_authenticated/'
+    | '/_authenticated/tenant/alertas'
     | '/_authenticated/tenant/contrato'
     | '/_authenticated/tenant/financeiro'
     | '/_authenticated/tenant/manutencoes'
@@ -510,6 +523,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTenantContratoRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/tenant/alertas': {
+      id: '/_authenticated/tenant/alertas'
+      path: '/tenant/alertas'
+      fullPath: '/tenant/alertas'
+      preLoaderRoute: typeof AuthenticatedTenantAlertasRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
   }
 }
 
@@ -522,6 +542,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedPropertiesRoute: typeof AuthenticatedPropertiesRoute
   AuthenticatedTenantsRoute: typeof AuthenticatedTenantsRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+  AuthenticatedTenantAlertasRoute: typeof AuthenticatedTenantAlertasRoute
   AuthenticatedTenantContratoRoute: typeof AuthenticatedTenantContratoRoute
   AuthenticatedTenantFinanceiroRoute: typeof AuthenticatedTenantFinanceiroRoute
   AuthenticatedTenantManutencoesRoute: typeof AuthenticatedTenantManutencoesRoute
@@ -537,6 +558,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedPropertiesRoute: AuthenticatedPropertiesRoute,
   AuthenticatedTenantsRoute: AuthenticatedTenantsRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+  AuthenticatedTenantAlertasRoute: AuthenticatedTenantAlertasRoute,
   AuthenticatedTenantContratoRoute: AuthenticatedTenantContratoRoute,
   AuthenticatedTenantFinanceiroRoute: AuthenticatedTenantFinanceiroRoute,
   AuthenticatedTenantManutencoesRoute: AuthenticatedTenantManutencoesRoute,
@@ -581,3 +603,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

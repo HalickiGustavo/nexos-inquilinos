@@ -34,15 +34,17 @@ function Equipe() {
   const qContracts = useQuery({
     queryKey: ["mgr-team-contracts"],
     queryFn: async () => {
-      // count contracts per assigned_member_id via properties
-      const { data } = await supabase.from("properties").select("assigned_member_id, contracts(active)");
-      const map: Record<string, number> = {};
+      const { data } = await supabase.from("properties").select("assigned_member_id, contracts(active, rent_amount)");
+      const counts: Record<string, number> = {};
+      const values: Record<string, number> = {};
       (data ?? []).forEach((p: any) => {
         if (!p.assigned_member_id) return;
-        const activeCount = (p.contracts ?? []).filter((c: any) => c.active).length;
-        map[p.assigned_member_id] = (map[p.assigned_member_id] ?? 0) + activeCount;
+        (p.contracts ?? []).filter((c: any) => c.active).forEach((c: any) => {
+          counts[p.assigned_member_id] = (counts[p.assigned_member_id] ?? 0) + 1;
+          values[p.assigned_member_id] = (values[p.assigned_member_id] ?? 0) + Number(c.rent_amount ?? 0);
+        });
       });
-      return map;
+      return { counts, values };
     },
   });
 

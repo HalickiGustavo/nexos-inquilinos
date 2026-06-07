@@ -16,6 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useInstallments, useInvalidate, type Installment } from "@/lib/queries";
 import { formatBRL, formatDate, parseNumber } from "@/lib/format";
 import { generateAsaasCharge, updateAsaasChargeFee } from "@/lib/asaas.functions";
+import { parseExpenses, expensesTotals } from "@/lib/variable-expenses";
 
 export const Route = createFileRoute("/_authenticated/financials")({
   head: () => ({ meta: [{ title: "Finanças — ImovelPro" }] }),
@@ -155,12 +156,28 @@ function FinancialsPage() {
                               <td className="p-2">{formatDate(i.due_date)}</td>
                               <td className="p-2 text-right font-medium">{formatBRL(Number(i.amount))}</td>
                               <td className="p-2 text-right text-muted-foreground">
-                                {Number(i.extra_fees) > 0 ? formatBRL(Number(i.extra_fees)) : "—"}
-                                {previewLate > 0 && (
-                                  <div className="text-xs text-destructive">
-                                    +{formatBRL(previewLate)} juros/multa{daysLate > 0 ? ` (${daysLate}d)` : ""}
-                                  </div>
-                                )}
+                                {(() => {
+                                  const exps = parseExpenses(i.variable_expenses);
+                                  const t = expensesTotals(exps);
+                                  const hasAny = Number(i.extra_fees) > 0 || exps.length > 0 || previewLate > 0;
+                                  if (!hasAny) return "—";
+                                  return (
+                                    <div className="space-y-0.5">
+                                      {Number(i.extra_fees) > 0 && <div>{formatBRL(Number(i.extra_fees))}</div>}
+                                      {t.tenant > 0 && (
+                                        <div className="text-xs text-amber-600">+{formatBRL(t.tenant)} cobrança inq.</div>
+                                      )}
+                                      {t.owner > 0 && (
+                                        <div className="text-xs text-primary">−{formatBRL(t.owner)} desp. prop.</div>
+                                      )}
+                                      {previewLate > 0 && (
+                                        <div className="text-xs text-destructive">
+                                          +{formatBRL(previewLate)} juros/multa{daysLate > 0 ? ` (${daysLate}d)` : ""}
+                                        </div>
+                                      )}
+                                    </div>
+                                  );
+                                })()}
                               </td>
                               <td className="p-2"><StatusBadge status={s} /></td>
                               <td className="p-2 text-right whitespace-nowrap space-x-1">

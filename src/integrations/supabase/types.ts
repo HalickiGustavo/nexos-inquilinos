@@ -14,6 +14,69 @@ export type Database = {
   }
   public: {
     Tables: {
+      asaas_accounts: {
+        Row: {
+          api_key: string | null
+          asaas_account_id: string | null
+          created_at: string
+          id: string
+          onboarding_url: string | null
+          status: string
+          updated_at: string
+          user_id: string
+          wallet_id: string | null
+        }
+        Insert: {
+          api_key?: string | null
+          asaas_account_id?: string | null
+          created_at?: string
+          id?: string
+          onboarding_url?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+          wallet_id?: string | null
+        }
+        Update: {
+          api_key?: string | null
+          asaas_account_id?: string | null
+          created_at?: string
+          id?: string
+          onboarding_url?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+          wallet_id?: string | null
+        }
+        Relationships: []
+      }
+      asaas_customers: {
+        Row: {
+          asaas_customer_id: string
+          created_at: string
+          id: string
+          tenant_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          asaas_customer_id: string
+          created_at?: string
+          id?: string
+          tenant_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          asaas_customer_id?: string
+          created_at?: string
+          id?: string
+          tenant_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       contracts: {
         Row: {
           active: boolean
@@ -83,6 +146,9 @@ export type Database = {
       installments: {
         Row: {
           amount: number
+          asaas_payment_id: string | null
+          barcode: string | null
+          boleto_url: string | null
           contract_id: string
           created_at: string
           due_date: string
@@ -91,12 +157,17 @@ export type Database = {
           notes: string | null
           paid_amount: number
           payment_date: string | null
+          pix_payload: string | null
+          pix_qrcode: string | null
           status: Database["public"]["Enums"]["installment_status"]
           updated_at: string
           user_id: string
         }
         Insert: {
           amount: number
+          asaas_payment_id?: string | null
+          barcode?: string | null
+          boleto_url?: string | null
           contract_id: string
           created_at?: string
           due_date: string
@@ -105,12 +176,17 @@ export type Database = {
           notes?: string | null
           paid_amount?: number
           payment_date?: string | null
+          pix_payload?: string | null
+          pix_qrcode?: string | null
           status?: Database["public"]["Enums"]["installment_status"]
           updated_at?: string
           user_id: string
         }
         Update: {
           amount?: number
+          asaas_payment_id?: string | null
+          barcode?: string | null
+          boleto_url?: string | null
           contract_id?: string
           created_at?: string
           due_date?: string
@@ -119,6 +195,8 @@ export type Database = {
           notes?: string | null
           paid_amount?: number
           payment_date?: string | null
+          pix_payload?: string | null
+          pix_qrcode?: string | null
           status?: Database["public"]["Enums"]["installment_status"]
           updated_at?: string
           user_id?: string

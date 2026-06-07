@@ -15,10 +15,12 @@ import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedTenantsRouteImport } from './routes/_authenticated/tenants'
 import { Route as AuthenticatedPropertiesRouteImport } from './routes/_authenticated/properties'
 import { Route as AuthenticatedMaintenancesRouteImport } from './routes/_authenticated/maintenances'
+import { Route as AuthenticatedIntegrationsRouteImport } from './routes/_authenticated/integrations'
 import { Route as AuthenticatedFinancialsRouteImport } from './routes/_authenticated/financials'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedContractsRouteImport } from './routes/_authenticated/contracts'
 import { Route as AuthenticatedTenantIndexRouteImport } from './routes/_authenticated/tenant.index'
+import { Route as ApiPublicAsaasWebhookRouteImport } from './routes/api/public/asaas-webhook'
 import { Route as AuthenticatedTenantManutencoesRouteImport } from './routes/_authenticated/tenant.manutencoes'
 import { Route as AuthenticatedTenantFinanceiroRouteImport } from './routes/_authenticated/tenant.financeiro'
 import { Route as AuthenticatedTenantContratoRouteImport } from './routes/_authenticated/tenant.contrato'
@@ -53,6 +55,12 @@ const AuthenticatedMaintenancesRoute =
     path: '/maintenances',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedIntegrationsRoute =
+  AuthenticatedIntegrationsRouteImport.update({
+    id: '/integrations',
+    path: '/integrations',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedFinancialsRoute = AuthenticatedFinancialsRouteImport.update({
   id: '/financials',
   path: '/financials',
@@ -74,6 +82,11 @@ const AuthenticatedTenantIndexRoute =
     path: '/tenant/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const ApiPublicAsaasWebhookRoute = ApiPublicAsaasWebhookRouteImport.update({
+  id: '/api/public/asaas-webhook',
+  path: '/api/public/asaas-webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedTenantManutencoesRoute =
   AuthenticatedTenantManutencoesRouteImport.update({
     id: '/tenant/manutencoes',
@@ -99,12 +112,14 @@ export interface FileRoutesByFullPath {
   '/contracts': typeof AuthenticatedContractsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/financials': typeof AuthenticatedFinancialsRoute
+  '/integrations': typeof AuthenticatedIntegrationsRoute
   '/maintenances': typeof AuthenticatedMaintenancesRoute
   '/properties': typeof AuthenticatedPropertiesRoute
   '/tenants': typeof AuthenticatedTenantsRoute
   '/tenant/contrato': typeof AuthenticatedTenantContratoRoute
   '/tenant/financeiro': typeof AuthenticatedTenantFinanceiroRoute
   '/tenant/manutencoes': typeof AuthenticatedTenantManutencoesRoute
+  '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
   '/tenant/': typeof AuthenticatedTenantIndexRoute
 }
 export interface FileRoutesByTo {
@@ -112,6 +127,7 @@ export interface FileRoutesByTo {
   '/contracts': typeof AuthenticatedContractsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/financials': typeof AuthenticatedFinancialsRoute
+  '/integrations': typeof AuthenticatedIntegrationsRoute
   '/maintenances': typeof AuthenticatedMaintenancesRoute
   '/properties': typeof AuthenticatedPropertiesRoute
   '/tenants': typeof AuthenticatedTenantsRoute
@@ -119,6 +135,7 @@ export interface FileRoutesByTo {
   '/tenant/contrato': typeof AuthenticatedTenantContratoRoute
   '/tenant/financeiro': typeof AuthenticatedTenantFinanceiroRoute
   '/tenant/manutencoes': typeof AuthenticatedTenantManutencoesRoute
+  '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
   '/tenant': typeof AuthenticatedTenantIndexRoute
 }
 export interface FileRoutesById {
@@ -128,6 +145,7 @@ export interface FileRoutesById {
   '/_authenticated/contracts': typeof AuthenticatedContractsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/financials': typeof AuthenticatedFinancialsRoute
+  '/_authenticated/integrations': typeof AuthenticatedIntegrationsRoute
   '/_authenticated/maintenances': typeof AuthenticatedMaintenancesRoute
   '/_authenticated/properties': typeof AuthenticatedPropertiesRoute
   '/_authenticated/tenants': typeof AuthenticatedTenantsRoute
@@ -135,6 +153,7 @@ export interface FileRoutesById {
   '/_authenticated/tenant/contrato': typeof AuthenticatedTenantContratoRoute
   '/_authenticated/tenant/financeiro': typeof AuthenticatedTenantFinanceiroRoute
   '/_authenticated/tenant/manutencoes': typeof AuthenticatedTenantManutencoesRoute
+  '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
   '/_authenticated/tenant/': typeof AuthenticatedTenantIndexRoute
 }
 export interface FileRouteTypes {
@@ -145,12 +164,14 @@ export interface FileRouteTypes {
     | '/contracts'
     | '/dashboard'
     | '/financials'
+    | '/integrations'
     | '/maintenances'
     | '/properties'
     | '/tenants'
     | '/tenant/contrato'
     | '/tenant/financeiro'
     | '/tenant/manutencoes'
+    | '/api/public/asaas-webhook'
     | '/tenant/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -158,6 +179,7 @@ export interface FileRouteTypes {
     | '/contracts'
     | '/dashboard'
     | '/financials'
+    | '/integrations'
     | '/maintenances'
     | '/properties'
     | '/tenants'
@@ -165,6 +187,7 @@ export interface FileRouteTypes {
     | '/tenant/contrato'
     | '/tenant/financeiro'
     | '/tenant/manutencoes'
+    | '/api/public/asaas-webhook'
     | '/tenant'
   id:
     | '__root__'
@@ -173,6 +196,7 @@ export interface FileRouteTypes {
     | '/_authenticated/contracts'
     | '/_authenticated/dashboard'
     | '/_authenticated/financials'
+    | '/_authenticated/integrations'
     | '/_authenticated/maintenances'
     | '/_authenticated/properties'
     | '/_authenticated/tenants'
@@ -180,12 +204,14 @@ export interface FileRouteTypes {
     | '/_authenticated/tenant/contrato'
     | '/_authenticated/tenant/financeiro'
     | '/_authenticated/tenant/manutencoes'
+    | '/api/public/asaas-webhook'
     | '/_authenticated/tenant/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   LoginRoute: typeof LoginRoute
+  ApiPublicAsaasWebhookRoute: typeof ApiPublicAsaasWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -232,6 +258,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMaintenancesRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/integrations': {
+      id: '/_authenticated/integrations'
+      path: '/integrations'
+      fullPath: '/integrations'
+      preLoaderRoute: typeof AuthenticatedIntegrationsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/financials': {
       id: '/_authenticated/financials'
       path: '/financials'
@@ -259,6 +292,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/tenant/'
       preLoaderRoute: typeof AuthenticatedTenantIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
+    }
+    '/api/public/asaas-webhook': {
+      id: '/api/public/asaas-webhook'
+      path: '/api/public/asaas-webhook'
+      fullPath: '/api/public/asaas-webhook'
+      preLoaderRoute: typeof ApiPublicAsaasWebhookRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/tenant/manutencoes': {
       id: '/_authenticated/tenant/manutencoes'
@@ -288,6 +328,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedContractsRoute: typeof AuthenticatedContractsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedFinancialsRoute: typeof AuthenticatedFinancialsRoute
+  AuthenticatedIntegrationsRoute: typeof AuthenticatedIntegrationsRoute
   AuthenticatedMaintenancesRoute: typeof AuthenticatedMaintenancesRoute
   AuthenticatedPropertiesRoute: typeof AuthenticatedPropertiesRoute
   AuthenticatedTenantsRoute: typeof AuthenticatedTenantsRoute
@@ -302,6 +343,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedContractsRoute: AuthenticatedContractsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedFinancialsRoute: AuthenticatedFinancialsRoute,
+  AuthenticatedIntegrationsRoute: AuthenticatedIntegrationsRoute,
   AuthenticatedMaintenancesRoute: AuthenticatedMaintenancesRoute,
   AuthenticatedPropertiesRoute: AuthenticatedPropertiesRoute,
   AuthenticatedTenantsRoute: AuthenticatedTenantsRoute,
@@ -319,6 +361,7 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   LoginRoute: LoginRoute,
+  ApiPublicAsaasWebhookRoute: ApiPublicAsaasWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

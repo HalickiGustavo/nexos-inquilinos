@@ -1,0 +1,56 @@
+import { createFileRoute } from "@tanstack/react-router";
+
+export const Route = createFileRoute("/api/public/asaas-webhook")({
+  server: {
+    handlers: {
+      POST: async ({ request }) => {
+        const expected = process.env.ASAAS_WEBHOOK_TOKEN;
+        const token = request.headers.get("asaas-access-token") ?? request.headers.get("Asaas-Access-Token");
+        if (!expected || token !== expected) {
+          return new Response("Unauthorized", { status: 401 });
+        }
+
+        let body: any;
+        try {
+          body = await request.json();
+        } catch {
+          return new Response("Bad Request", { status: 400 });
+        }
+
+        const event: string = body?.event ?? "";
+        const payment = body?.payment;
+        if (!payment?.id) return new Response("ok");
+
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+        const paid = ["PAYMENT_CONFIRMED", "PAYMENT_RECEIVED", "PAYMENT_RECEIVED_IN_CASH"].includes(event);
+        const refunded = ["PAYMENT_REFUNDED", "PAYMENT_REFUND_IN_PROGRESS", "PAYMENT_DELETED"].includes(event);
+        const overdue = event === "PAYMENT_OVERDUE";
+
+        if (paid) {
+          const paidValue = Number(payment.netValue ?? payment.value ?? 0);
+          await supabaseAdmin
+            .from("installments")
+            .update({
+              status: "pago",
+              paid_amount: paidValue,
+              payment_date: payment.paymentDate ?? payment.clientPaymentDate ?? new Date().toISOString(),
+            })
+            .eq("asaas_payment_id", payment.id);
+        } else if (refunded) {
+          await supabaseAdmin
+            .from("installments")
+            .update({ status: "pendente", paid_amount: 0, payment_date: null })
+            .eq("asaas_payment_id", payment.id);
+        } else if (overdue) {
+          // status stays 'pendente'; UI calculates 'atrasado' via due_date
+        }
+
+        return new Response(JSON.stringify({ received: true }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      },
+    },
+  },
+});

@@ -101,27 +101,48 @@ function TenantFinanceiro() {
                     </>
                   ) : (
                     <>
+                      {i.pix_qrcode && (
+                        <div className="flex justify-center">
+                          <img
+                            src={`data:image/png;base64,${i.pix_qrcode}`}
+                            alt="QR Code Pix"
+                            className="w-48 h-48 rounded border bg-white p-2"
+                          />
+                        </div>
+                      )}
                       <div>
-                        <p className="text-xs uppercase text-muted-foreground tracking-wide">Chave Pix</p>
-                        <p className="font-mono text-sm">{PIX_KEY}</p>
+                        <p className="text-xs uppercase text-muted-foreground tracking-wide">Pix Copia e Cola</p>
+                        <p className="font-mono text-xs break-all">{i.pix_payload ?? PIX_KEY}</p>
                       </div>
-                      <div>
-                        <p className="text-xs uppercase text-muted-foreground tracking-wide">Código de barras</p>
-                        <p className="font-mono text-xs break-all text-muted-foreground">
-                          34191.79001 01043.510047 91020.150008 1 9999000{Math.round(Number(i.amount) * 100)
-                            .toString()
-                            .padStart(10, "0")}
+                      {i.barcode && (
+                        <div>
+                          <p className="text-xs uppercase text-muted-foreground tracking-wide">Linha digitável</p>
+                          <p className="font-mono text-xs break-all text-muted-foreground">{i.barcode}</p>
+                        </div>
+                      )}
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          size="sm"
+                          onClick={() => {
+                            navigator.clipboard.writeText(i.pix_payload ?? PIX_KEY);
+                            toast.success("Pix copiado!");
+                          }}
+                        >
+                          <Copy className="size-4 mr-2" /> Copiar Pix
+                        </Button>
+                        {i.boleto_url && (
+                          <Button size="sm" variant="outline" asChild>
+                            <a href={i.boleto_url} target="_blank" rel="noreferrer">
+                              <Download className="size-4 mr-2" /> Abrir boleto
+                            </a>
+                          </Button>
+                        )}
+                      </div>
+                      {!i.boleto_url && (
+                        <p className="text-xs text-muted-foreground">
+                          Aguardando emissão do boleto pelo proprietário.
                         </p>
-                      </div>
-                      <Button
-                        size="sm"
-                        onClick={() => {
-                          navigator.clipboard.writeText(PIX_KEY);
-                          toast.success("Chave Pix copiada!");
-                        }}
-                      >
-                        <Copy className="size-4 mr-2" /> Copiar chave Pix
-                      </Button>
+                      )}
                     </>
                   )}
                 </div>

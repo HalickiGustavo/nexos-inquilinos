@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { CheckCircle2, Wallet, Plus, AlertCircle, Clock, Building2 } from "lucide-react";
+import { CheckCircle2, Wallet, Plus, AlertCircle, Clock, Building2, FileText, Copy, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +15,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { supabase } from "@/integrations/supabase/client";
 import { useInstallments, useInvalidate, type Installment } from "@/lib/queries";
 import { formatBRL, formatDate, parseNumber } from "@/lib/format";
+import { generateAsaasCharge } from "@/lib/asaas.functions";
 
 export const Route = createFileRoute("/_authenticated/financials")({
   head: () => ({ meta: [{ title: "Finanças — ImovelPro" }] }),
@@ -145,7 +147,20 @@ function FinancialsPage() {
                               <td className="p-2 text-right font-medium">{formatBRL(Number(i.amount))}</td>
                               <td className="p-2 text-right text-muted-foreground">{Number(i.extra_fees) > 0 ? formatBRL(Number(i.extra_fees)) : "—"}</td>
                               <td className="p-2"><StatusBadge status={s} /></td>
-                              <td className="p-2 text-right whitespace-nowrap">
+                              <td className="p-2 text-right whitespace-nowrap space-x-1">
+                                {i.status !== "pago" && !i.asaas_payment_id && <GenerateBoletoButton installment={i} />}
+                                {i.boleto_url && (
+                                  <Button size="sm" variant="outline" asChild>
+                                    <a href={i.boleto_url} target="_blank" rel="noreferrer">
+                                      <FileText className="size-3.5 mr-1" /> Boleto
+                                    </a>
+                                  </Button>
+                                )}
+                                {i.barcode && (
+                                  <Button size="sm" variant="ghost" onClick={() => { navigator.clipboard.writeText(i.barcode); toast.success("Linha digitável copiada"); }}>
+                                    <Copy className="size-3.5" />
+                                  </Button>
+                                )}
                                 {i.status !== "pago" && <MarkPaidButton installment={i} />}
                                 <Button size="sm" variant="outline" onClick={() => setExtraDlg(i)}>
                                   <Plus className="size-3.5 mr-1" />Taxa
@@ -168,6 +183,34 @@ function FinancialsPage() {
         {extraDlg && <ExtraFeeDialog installment={extraDlg} onDone={() => setExtraDlg(null)} />}
       </Dialog>
     </div>
+  );
+}
+
+function GenerateBoletoButton({ installment }: { installment: any }) {
+  const generate = useServerFn(generateAsaasCharge);
+  const invalidate = useInvalidate();
+  const [loading, setLoading] = useState(false);
+  return (
+    <Button
+      size="sm"
+      variant="secondary"
+      disabled={loading}
+      onClick={async () => {
+        setLoading(true);
+        try {
+          await generate({ data: { installmentId: installment.id, billingType: "UNDEFINED" } });
+          toast.success("Boleto gerado!");
+          invalidate(["installments"]);
+        } catch (e: any) {
+          toast.error(e?.message ?? "Falha ao gerar boleto");
+        } finally {
+          setLoading(false);
+        }
+      }}
+    >
+      {loading ? <Loader2 className="size-3.5 mr-1 animate-spin" /> : <FileText className="size-3.5 mr-1" />}
+      Gerar boleto
+    </Button>
   );
 }
 

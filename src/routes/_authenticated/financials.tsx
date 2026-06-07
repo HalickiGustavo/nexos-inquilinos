@@ -186,6 +186,34 @@ function FinancialsPage() {
   );
 }
 
+function GenerateBoletoButton({ installment }: { installment: any }) {
+  const generate = useServerFn(generateAsaasCharge);
+  const invalidate = useInvalidate();
+  const [loading, setLoading] = useState(false);
+  return (
+    <Button
+      size="sm"
+      variant="secondary"
+      disabled={loading}
+      onClick={async () => {
+        setLoading(true);
+        try {
+          await generate({ data: { installmentId: installment.id, billingType: "UNDEFINED" } });
+          toast.success("Boleto gerado!");
+          invalidate(["installments"]);
+        } catch (e: any) {
+          toast.error(e?.message ?? "Falha ao gerar boleto");
+        } finally {
+          setLoading(false);
+        }
+      }}
+    >
+      {loading ? <Loader2 className="size-3.5 mr-1 animate-spin" /> : <FileText className="size-3.5 mr-1" />}
+      Gerar boleto
+    </Button>
+  );
+}
+
 function MarkPaidButton({ installment }: { installment: any }) {
   const invalidate = useInvalidate();
   return (

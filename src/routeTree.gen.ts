@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TenantSetupRouteImport } from './routes/tenant-setup'
+import { Route as ManagerSetupRouteImport } from './routes/manager-setup'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
@@ -29,6 +30,11 @@ import { Route as AuthenticatedTenantContratoRouteImport } from './routes/_authe
 const TenantSetupRoute = TenantSetupRouteImport.update({
   id: '/tenant-setup',
   path: '/tenant-setup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ManagerSetupRoute = ManagerSetupRouteImport.update({
+  id: '/manager-setup',
+  path: '/manager-setup',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -115,6 +121,7 @@ const AuthenticatedTenantContratoRoute =
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/login': typeof LoginRoute
+  '/manager-setup': typeof ManagerSetupRoute
   '/tenant-setup': typeof TenantSetupRoute
   '/contracts': typeof AuthenticatedContractsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -131,6 +138,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
+  '/manager-setup': typeof ManagerSetupRoute
   '/tenant-setup': typeof TenantSetupRoute
   '/contracts': typeof AuthenticatedContractsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -150,6 +158,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/login': typeof LoginRoute
+  '/manager-setup': typeof ManagerSetupRoute
   '/tenant-setup': typeof TenantSetupRoute
   '/_authenticated/contracts': typeof AuthenticatedContractsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
@@ -170,6 +179,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/login'
+    | '/manager-setup'
     | '/tenant-setup'
     | '/contracts'
     | '/dashboard'
@@ -186,6 +196,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
+    | '/manager-setup'
     | '/tenant-setup'
     | '/contracts'
     | '/dashboard'
@@ -204,6 +215,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_authenticated'
     | '/login'
+    | '/manager-setup'
     | '/tenant-setup'
     | '/_authenticated/contracts'
     | '/_authenticated/dashboard'
@@ -223,6 +235,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   LoginRoute: typeof LoginRoute
+  ManagerSetupRoute: typeof ManagerSetupRoute
   TenantSetupRoute: typeof TenantSetupRoute
   ApiPublicAsaasWebhookRoute: typeof ApiPublicAsaasWebhookRoute
 }
@@ -234,6 +247,13 @@ declare module '@tanstack/react-router' {
       path: '/tenant-setup'
       fullPath: '/tenant-setup'
       preLoaderRoute: typeof TenantSetupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/manager-setup': {
+      id: '/manager-setup'
+      path: '/manager-setup'
+      fullPath: '/manager-setup'
+      preLoaderRoute: typeof ManagerSetupRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -381,9 +401,20 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   LoginRoute: LoginRoute,
+  ManagerSetupRoute: ManagerSetupRoute,
   TenantSetupRoute: TenantSetupRoute,
   ApiPublicAsaasWebhookRoute: ApiPublicAsaasWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

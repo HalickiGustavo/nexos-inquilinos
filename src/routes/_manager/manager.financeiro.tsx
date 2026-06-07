@@ -180,17 +180,20 @@ function Repasses() {
           <TableHead>Proprietário</TableHead>
           <TableHead className="text-right">Recebido</TableHead>
           <TableHead className="text-right">Taxa Adm.</TableHead>
+          <TableHead className="text-right">Despesas prop.</TableHead>
           <TableHead className="text-right">A Repassar</TableHead>
           <TableHead>Status</TableHead>
           <TableHead></TableHead>
         </TableRow></TableHeader>
         <TableBody>
-          {(q.data ?? []).length === 0 && <TableRow><TableCell colSpan={7} className="text-center py-8 text-zinc-500">Nenhum repasse</TableCell></TableRow>}
+          {(q.data ?? []).length === 0 && <TableRow><TableCell colSpan={8} className="text-center py-8 text-zinc-500">Nenhum repasse</TableCell></TableRow>}
           {(q.data ?? []).map((i: any) => {
             const fee = Number(i.management_fee_percent ?? 10);
             const pago = Number(i.paid_amount ?? 0);
             const taxa = pago * fee / 100;
-            const repasse = pago - taxa;
+            const exps = parseExpenses(i.variable_expenses);
+            const t = expensesTotals(exps);
+            const repasse = pago - taxa - t.owner;
             const status = (i.payout_status ?? "aguardando");
             return (
               <TableRow key={i.id}>
@@ -198,6 +201,7 @@ function Repasses() {
                 <TableCell>{i.contract?.property?.owner_name ?? "—"}</TableCell>
                 <TableCell className="text-right">{formatBRL(pago)}</TableCell>
                 <TableCell className="text-right text-zinc-500">{formatBRL(taxa)} ({fee}%)</TableCell>
+                <TableCell className="text-right text-zinc-500">{t.owner > 0 ? `−${formatBRL(t.owner)}` : "—"}</TableCell>
                 <TableCell className="text-right font-medium text-primary">{formatBRL(repasse)}</TableCell>
                 <TableCell>
                   {status === "repassado"

@@ -9,6 +9,7 @@ import {
   Wrench,
   LogOut,
   Loader2,
+  Plug,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useUserRole } from "@/lib/useUserRole";
@@ -29,6 +30,7 @@ const navItems = [
   { to: "/contracts", label: "Contratos", icon: FileText },
   { to: "/financials", label: "Finanças", icon: Wallet },
   { to: "/maintenances", label: "Manutenções", icon: Wrench },
+  { to: "/integrations", label: "Integrações", icon: Plug },
 ] as const;
 
 function AuthLayout() {

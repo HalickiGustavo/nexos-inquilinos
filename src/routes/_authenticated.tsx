@@ -49,12 +49,15 @@ function AuthLayout() {
   useEffect(() => {
     if (!role) return;
     const isTenantPath = pathname === "/tenant" || pathname.startsWith("/tenant/");
-    if (role === "tenant" && !isTenantPath) {
+    if (role === "manager") {
+      navigate({ to: "/manager", replace: true });
+    } else if (role === "tenant" && !isTenantPath) {
       navigate({ to: "/tenant", replace: true });
     } else if (role === "owner" && isTenantPath) {
       navigate({ to: "/dashboard", replace: true });
     }
   }, [role, pathname, navigate]);
+
 
   if (loading || !user || roleLoading) {
     return (

@@ -149,6 +149,83 @@ export type Database = {
           },
         ]
       }
+      crm_lead_notes: {
+        Row: {
+          author_user_id: string
+          content: string
+          created_at: string
+          id: string
+          lead_id: string
+        }
+        Insert: {
+          author_user_id: string
+          content: string
+          created_at?: string
+          id?: string
+          lead_id: string
+        }
+        Update: {
+          author_user_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          lead_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_lead_notes_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "crm_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_leads: {
+        Row: {
+          budget: number
+          created_at: string
+          email: string | null
+          id: string
+          interested_code: string | null
+          interested_property_id: string | null
+          manager_user_id: string
+          name: string
+          notes: string | null
+          phone: string | null
+          stage: string
+          updated_at: string
+        }
+        Insert: {
+          budget?: number
+          created_at?: string
+          email?: string | null
+          id?: string
+          interested_code?: string | null
+          interested_property_id?: string | null
+          manager_user_id: string
+          name: string
+          notes?: string | null
+          phone?: string | null
+          stage?: string
+          updated_at?: string
+        }
+        Update: {
+          budget?: number
+          created_at?: string
+          email?: string | null
+          id?: string
+          interested_code?: string | null
+          interested_property_id?: string | null
+          manager_user_id?: string
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          stage?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       installments: {
         Row: {
           amount: number
@@ -161,9 +238,12 @@ export type Database = {
           extra_fees: number
           id: string
           late_charges: number
+          management_fee_percent: number
           notes: string | null
           paid_amount: number
           payment_date: string | null
+          payout_date: string | null
+          payout_status: string
           pix_payload: string | null
           pix_qrcode: string | null
           status: Database["public"]["Enums"]["installment_status"]
@@ -181,9 +261,12 @@ export type Database = {
           extra_fees?: number
           id?: string
           late_charges?: number
+          management_fee_percent?: number
           notes?: string | null
           paid_amount?: number
           payment_date?: string | null
+          payout_date?: string | null
+          payout_status?: string
           pix_payload?: string | null
           pix_qrcode?: string | null
           status?: Database["public"]["Enums"]["installment_status"]
@@ -201,9 +284,12 @@ export type Database = {
           extra_fees?: number
           id?: string
           late_charges?: number
+          management_fee_percent?: number
           notes?: string | null
           paid_amount?: number
           payment_date?: string | null
+          payout_date?: string | null
+          payout_status?: string
           pix_payload?: string | null
           pix_qrcode?: string | null
           status?: Database["public"]["Enums"]["installment_status"]
@@ -308,6 +394,45 @@ export type Database = {
           },
         ]
       }
+      manager_members: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          invite_token: string | null
+          manager_user_id: string
+          member_user_id: string | null
+          name: string
+          role_label: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          invite_token?: string | null
+          manager_user_id: string
+          member_user_id?: string | null
+          name: string
+          role_label?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          invite_token?: string | null
+          manager_user_id?: string
+          member_user_id?: string | null
+          name?: string
+          role_label?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -335,13 +460,19 @@ export type Database = {
       properties: {
         Row: {
           address: string
+          assigned_member_id: string | null
           city: string | null
+          code: string | null
           condo_fee: number
           created_at: string
           id: string
           iptu: number
+          manager_id: string | null
+          neighborhood: string | null
           nickname: string
           notes: string | null
+          owner_commission_percent: number
+          owner_name: string | null
           rent_price: number
           state: string | null
           status: Database["public"]["Enums"]["property_status"]
@@ -352,13 +483,19 @@ export type Database = {
         }
         Insert: {
           address: string
+          assigned_member_id?: string | null
           city?: string | null
+          code?: string | null
           condo_fee?: number
           created_at?: string
           id?: string
           iptu?: number
+          manager_id?: string | null
+          neighborhood?: string | null
           nickname: string
           notes?: string | null
+          owner_commission_percent?: number
+          owner_name?: string | null
           rent_price?: number
           state?: string | null
           status?: Database["public"]["Enums"]["property_status"]
@@ -369,13 +506,19 @@ export type Database = {
         }
         Update: {
           address?: string
+          assigned_member_id?: string | null
           city?: string | null
+          code?: string | null
           condo_fee?: number
           created_at?: string
           id?: string
           iptu?: number
+          manager_id?: string | null
+          neighborhood?: string | null
           nickname?: string
           notes?: string | null
+          owner_commission_percent?: number
+          owner_name?: string | null
           rent_price?: number
           state?: string | null
           status?: Database["public"]["Enums"]["property_status"]
@@ -454,6 +597,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      current_manager_id: { Args: never; Returns: string }
       current_tenant_id: { Args: never; Returns: string }
       has_role: {
         Args: {
@@ -464,7 +608,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "owner" | "tenant"
+      app_role: "owner" | "tenant" | "manager"
       installment_status: "pendente" | "pago" | "atrasado"
       maintenance_responsible: "proprietario" | "inquilino"
       maintenance_status: "pendente" | "em_andamento" | "concluido"
@@ -598,7 +742,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["owner", "tenant"],
+      app_role: ["owner", "tenant", "manager"],
       installment_status: ["pendente", "pago", "atrasado"],
       maintenance_responsible: ["proprietario", "inquilino"],
       maintenance_status: ["pendente", "em_andamento", "concluido"],

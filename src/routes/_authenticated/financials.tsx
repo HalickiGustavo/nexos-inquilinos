@@ -147,7 +147,20 @@ function FinancialsPage() {
                               <td className="p-2 text-right font-medium">{formatBRL(Number(i.amount))}</td>
                               <td className="p-2 text-right text-muted-foreground">{Number(i.extra_fees) > 0 ? formatBRL(Number(i.extra_fees)) : "—"}</td>
                               <td className="p-2"><StatusBadge status={s} /></td>
-                              <td className="p-2 text-right whitespace-nowrap">
+                              <td className="p-2 text-right whitespace-nowrap space-x-1">
+                                {i.status !== "pago" && !i.asaas_payment_id && <GenerateBoletoButton installment={i} />}
+                                {i.boleto_url && (
+                                  <Button size="sm" variant="outline" asChild>
+                                    <a href={i.boleto_url} target="_blank" rel="noreferrer">
+                                      <FileText className="size-3.5 mr-1" /> Boleto
+                                    </a>
+                                  </Button>
+                                )}
+                                {i.barcode && (
+                                  <Button size="sm" variant="ghost" onClick={() => { navigator.clipboard.writeText(i.barcode); toast.success("Linha digitável copiada"); }}>
+                                    <Copy className="size-3.5" />
+                                  </Button>
+                                )}
                                 {i.status !== "pago" && <MarkPaidButton installment={i} />}
                                 <Button size="sm" variant="outline" onClick={() => setExtraDlg(i)}>
                                   <Plus className="size-3.5 mr-1" />Taxa

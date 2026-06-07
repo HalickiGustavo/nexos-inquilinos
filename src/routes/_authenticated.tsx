@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { TenantShell } from "@/components/TenantShell";
+import { InstallPwaButton } from "@/components/InstallPwaButton";
 import nexoLogoAsset from "@/assets/nexo-logo.png.asset.json";
 
 export const Route = createFileRoute("/_authenticated")({

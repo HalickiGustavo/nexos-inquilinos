@@ -10,13 +10,14 @@ export const Route = createFileRoute("/_manager")({
   component: ManagerLayout,
 });
 
-const navItems = [
+const navItems: { to: string; label: string; icon: typeof LayoutDashboard; exact?: boolean }[] = [
   { to: "/manager", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/manager/carteira", label: "Carteira", icon: Briefcase },
   { to: "/manager/financeiro", label: "Financeiro", icon: Wallet },
   { to: "/manager/equipe", label: "Equipe", icon: Users },
   { to: "/manager/crm", label: "CRM", icon: KanbanSquare },
-] as const;
+];
+
 
 function ManagerLayout() {
   const { user, loading, signOut } = useAuth();

@@ -74,6 +74,12 @@ function Equipe() {
         </Button>
       </header>
 
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <MetricCard icon={UsersIcon} label="Membros ativos" value={String((q.data ?? []).filter((m: any) => m.status === "ativo").length)} />
+        <MetricCard icon={Briefcase} label="Locações sob gestão" value={String(Object.values(qContracts.data?.counts ?? {}).reduce((a, b) => a + b, 0))} />
+        <MetricCard icon={TrendingUp} label="Valor mensal sob gestão" value={formatBRL(Object.values(qContracts.data?.values ?? {}).reduce((a, b) => a + b, 0))} />
+      </div>
+
       <Card><CardContent className="p-0">
         <Table>
           <TableHeader><TableRow>
@@ -81,11 +87,12 @@ function Equipe() {
             <TableHead>Email</TableHead>
             <TableHead>Função</TableHead>
             <TableHead>Status</TableHead>
-            <TableHead className="text-right">Contratos ativos</TableHead>
+            <TableHead className="text-right">Locações</TableHead>
+            <TableHead className="text-right">Valor mensal</TableHead>
             <TableHead></TableHead>
           </TableRow></TableHeader>
           <TableBody>
-            {(q.data ?? []).length === 0 && <TableRow><TableCell colSpan={6} className="text-center py-8 text-zinc-500">Nenhum membro cadastrado</TableCell></TableRow>}
+            {(q.data ?? []).length === 0 && <TableRow><TableCell colSpan={7} className="text-center py-8 text-zinc-500">Nenhum membro cadastrado</TableCell></TableRow>}
             {(q.data ?? []).map((m: any) => (
               <TableRow key={m.id}>
                 <TableCell className="font-medium">{m.name}</TableCell>
@@ -94,7 +101,8 @@ function Equipe() {
                 <TableCell>
                   <Badge variant={m.status === "ativo" ? "default" : "secondary"}>{m.status}</Badge>
                 </TableCell>
-                <TableCell className="text-right">{qContracts.data?.[m.id] ?? 0}</TableCell>
+                <TableCell className="text-right">{qContracts.data?.counts?.[m.id] ?? 0}</TableCell>
+                <TableCell className="text-right font-medium">{formatBRL(qContracts.data?.values?.[m.id] ?? 0)}</TableCell>
                 <TableCell className="text-right space-x-2">
                   {m.status === "pendente" && (
                     <Button size="sm" variant="outline" onClick={() => {

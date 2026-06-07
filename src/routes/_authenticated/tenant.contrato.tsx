@@ -116,7 +116,69 @@ function TenantContrato() {
           <Download className="size-4 mr-2" /> Baixar contrato (PDF)
         </Button>
       </Card>
+
+      <TenantInspections contractId={contract.id} />
     </div>
+  );
+}
+
+function TenantInspections({ contractId }: { contractId: string }) {
+  const { data: inspections = [], isLoading } = useTenantInspections(contractId);
+
+  async function open(path: string | null) {
+    if (!path) return toast.error("PDF indisponível.");
+    try {
+      const url = await getSignedPdfUrl(path);
+      window.open(url, "_blank");
+    } catch (e: any) {
+      toast.error(e.message ?? "Falha ao abrir PDF");
+    }
+  }
+
+  return (
+    <Card className="p-5 space-y-3">
+      <div className="flex items-center gap-2">
+        <ClipboardCheck className="size-4 text-primary" />
+        <h2 className="font-semibold">Vistorias</h2>
+      </div>
+      {isLoading ? (
+        <p className="text-sm text-muted-foreground">Carregando...</p>
+      ) : inspections.length === 0 ? (
+        <p className="text-sm text-muted-foreground">
+          Nenhuma vistoria registrada para este contrato.
+        </p>
+      ) : (
+        <div className="space-y-2">
+          {inspections.map((i) => (
+            <div
+              key={i.id}
+              className="flex items-center justify-between gap-3 p-3 rounded-md border bg-muted/30 flex-wrap"
+            >
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="font-medium text-sm">
+                    {KIND_LABEL[i.kind as InspectionKind]}
+                  </span>
+                  <Badge variant="outline" className="text-[10px]">
+                    {STATUS_LABEL[i.status as InspectionStatus]}
+                  </Badge>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {formatDate(i.inspection_date)} • Estado geral:{" "}
+                  {COND_LABEL[i.general_condition as InspectionCondition]}
+                </p>
+              </div>
+              {i.pdf_path && (
+                <Button size="sm" variant="outline" onClick={() => open(i.pdf_path)}>
+                  <FileText className="size-3.5 mr-1.5" />
+                  Abrir PDF
+                </Button>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </Card>
   );
 }
 

@@ -391,6 +391,12 @@ export type Database = {
       }
       maintenances: {
         Row: {
+          budget_amount: number
+          budget_applied_installment_id: string | null
+          budget_decided_at: string | null
+          budget_notes: string | null
+          budget_rent_deduction: boolean
+          budget_status: string
           completed_date: string | null
           cost: number
           created_at: string
@@ -406,6 +412,12 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          budget_amount?: number
+          budget_applied_installment_id?: string | null
+          budget_decided_at?: string | null
+          budget_notes?: string | null
+          budget_rent_deduction?: boolean
+          budget_status?: string
           completed_date?: string | null
           cost?: number
           created_at?: string
@@ -421,6 +433,12 @@ export type Database = {
           user_id: string
         }
         Update: {
+          budget_amount?: number
+          budget_applied_installment_id?: string | null
+          budget_decided_at?: string | null
+          budget_notes?: string | null
+          budget_rent_deduction?: boolean
+          budget_status?: string
           completed_date?: string | null
           cost?: number
           created_at?: string

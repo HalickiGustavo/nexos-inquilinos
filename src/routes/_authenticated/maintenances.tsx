@@ -137,6 +137,7 @@ function MaintenanceCard({ item }: { item: any }) {
           <Trash2 className="size-3.5 text-destructive" />
         </Button>
       </div>
+      <MaintenanceBudgetPanel item={item} />
     </Card>
   );
 }

@@ -15,6 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useMaintenances, useProperties, useInvalidate, type Maintenance } from "@/lib/queries";
 import { MaintenanceChat } from "@/components/MaintenanceChat";
+import { MaintenanceBudgetPanel } from "@/components/MaintenanceBudgetPanel";
 import { formatBRL, formatDate, parseNumber } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/maintenances")({

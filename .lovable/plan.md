@@ -1,69 +1,68 @@
-## Objetivo
 
-Permitir emitir boletos com vencimento original respeitando a regra do Asaas (não aceita data passada), **sem perder juros e multa** do atraso. A solução calcula juros/multa proporcional aos dias vencidos, soma ao valor do boleto e emite com vencimento de hoje. As taxas são configuráveis por contrato.
+# NEXO Manager — Portal da Imobiliária
 
-## Mudanças
+Novo portal paralelo ao painel do Owner e ao do Inquilino, voltado para imobiliárias gerenciando carteira grande, equipe e CRM. Compartilha o mesmo banco (Lovable Cloud).
 
-### 1. Banco de dados
-Adicionar dois campos em `contracts`:
-- `late_fee_percent` (numeric, default 2.00) — multa única em %
-- `daily_interest_percent` (numeric, default 0.033) — juros ao dia em % (0,033%/dia ≈ 1% ao mês)
+## 1. Banco de dados (migração única)
 
-Migration via tool de migração.
+Novo role `manager` no enum `app_role` + tabelas:
 
-### 2. Formulário de contrato (`src/routes/_authenticated/contracts.tsx`)
-- Adicionar dois inputs no formulário de criação/edição: **Multa por atraso (%)** e **Juros ao dia (%)**, com os defaults acima preenchidos.
-- Mostrar os valores na listagem/detalhe do contrato.
+- `manager_members` — equipe da imobiliária
+  - `manager_user_id` (dono da imobiliária — auth.uid), `member_user_id` (nullable, preenchido após aceite do convite), `name`, `email`, `role_label` (corretor/admin/financeiro), `invite_token`, `status` (pendente/ativo/inativo)
+- `properties` — adicionar `manager_id` (nullable), `owner_name`, `owner_commission_percent` (default 10), `assigned_member_id`, `neighborhood`, `code` (gerado)
+- `installments` — adicionar `management_fee_percent` (default 10), `payout_status` (pendente/aguardando/repassado), `payout_date`
+- `crm_leads` — `manager_user_id`, `name`, `phone`, `email`, `budget`, `interested_property_id` (nullable), `interested_code` (texto livre), `stage` (novos/contato/proposta/fechado), `notes`
+- `crm_lead_notes` — histórico de notas por lead
 
-### 3. Geração do boleto (`src/lib/asaas.functions.ts` — `generateAsaasCharge`)
-- Carregar `late_fee_percent` e `daily_interest_percent` do contrato junto com a parcela.
-- Calcular dias de atraso = `today - due_date` (se > 0).
-- `multa = baseValue * late_fee_percent / 100`
-- `juros = baseValue * daily_interest_percent / 100 * diasAtraso`
-- `valorTotal = baseValue + multa + juros + taxa NEXO`
-- `dueDate` enviado ao Asaas: `today` se vencido, senão data original.
-- Descrição do boleto detalha: valor base, multa, juros (X dias), taxa NEXO e o vencimento original.
-- Persistir `extra_fees = multa + juros` (ou campo dedicado, ver "Decisão técnica") para refletir no financeiro local.
+Triggers `set_updated_at` + RLS por `manager_user_id = auth.uid()` (e leitura para membros via subquery em `manager_members`). GRANTs para `authenticated` e `service_role`.
 
-### 4. Atualização de boleto existente (`updateAsaasChargeFee`)
-- Mesma lógica: se a parcela já vencida ainda está pendente, recalcular juros/multa atuais e enviar `PUT /payments/:id` com novo `value` e `dueDate` ajustado.
+`handle_new_user` permanece criando `owner`. Manager se torna manager por uma rota de onboarding `/manager-setup` que insere `manager` em `user_roles`.
 
-### 5. UI Financeiro
-- No card/linha da parcela vencida, exibir prévia do "Valor com juros hoje" antes de gerar o boleto, para o owner ter visibilidade.
+## 2. Roteamento e shell
 
-## Decisão técnica
+- Novo layout `src/routes/_manager/route.tsx` (gate igual ao `_authenticated`, mas exige role `manager`).
+- Sidebar shadcn (`src/components/ManagerSidebar.tsx`) com: Dashboard, Carteira, Financeiro, Equipe, CRM.
+- Tema corporativo: paleta zinc/slate com accent emerald. Tokens em `src/styles.css` sob seletor `.theme-manager` aplicado no shell.
+- Rotas:
+  - `_manager/index.tsx` → Dashboard
+  - `_manager/carteira.tsx`
+  - `_manager/financeiro.tsx`
+  - `_manager/equipe.tsx`
+  - `_manager/crm.tsx`
 
-- **Campo `extra_fees` vs novo campo**: hoje `extra_fees` é editável manualmente pelo owner. Para evitar conflito, vou usar um novo campo `late_charges` (numeric, default 0) em `installments` para guardar multa+juros calculados automaticamente. `extra_fees` continua para ajustes manuais. Soma final = `amount + extra_fees + late_charges`.
-- **Recalcular ao pagar**: o webhook do Asaas atualiza `paid_amount` com o que o inquilino pagou. Não recalculamos juros após emissão — o valor do boleto já está fechado.
-- **Casos sem atraso**: lógica antiga preservada, `dueDate` = data original, sem juros/multa.
+Login: detectar role `manager` em `useUserRole` e redirecionar para `/manager`. Adicionar botão "Sou Imobiliária" no login que vai para `/manager-setup`.
 
-## Diagrama do fluxo
+## 3. Módulos
 
-```text
-Owner clica "Gerar boleto" em parcela vencida
-   │
-   ▼
-Carrega parcela + contract.late_fee_percent + daily_interest_percent
-   │
-   ▼
-diasAtraso = today - due_date
-multa  = base * 2%          (configurável)
-juros  = base * 0,033% * dias (configurável)
-   │
-   ▼
-POST /payments Asaas:
-  value    = base + multa + juros + taxa NEXO
-  dueDate  = today
-  desc.    = "venc. original DD/MM (X dias de atraso: multa R$X + juros R$Y)"
-   │
-   ▼
-installments.late_charges = multa + juros
-installments.boleto_url   = <url>
-```
+### A. Dashboard
+4 KPI cards: VGV sob gestão (sum `rent_price * 12` dos imóveis), Receita do mês (sum `paid_amount` installments do mês), Taxa de vacância (% imóveis disponíveis), Leads ativos (count crm_leads stage ≠ fechado). Gráfico Recharts BarChart "Previsto vs Recebido" últimos 6 meses.
 
-## Arquivos afetados
+### B. Carteira
+Tabela shadcn de `properties` com join em contrato ativo + inquilino. Colunas: Código, Tipo, Endereço, Proprietário, Inquilino/Disponível, Aluguel. Filtros: status select, busca por cidade/bairro. Ações: Ver detalhes (dialog), Editar contrato (link `/manager/...`), Adicionar imóvel (dialog reaproveitando lógica de properties).
 
-- `supabase/migrations/<novo>.sql` — adiciona colunas em `contracts` e `installments`
-- `src/lib/asaas.functions.ts` — cálculo de juros/multa em `generateAsaasCharge` e `updateAsaasChargeFee`
-- `src/routes/_authenticated/contracts.tsx` — campos no form
-- `src/routes/_authenticated/financials.tsx` — prévia do valor com juros
+### C. Financeiro
+Tabs shadcn:
+- **Recebimentos**: lista global de installments com filtros por status e data, badges de status, link para boleto.
+- **Repasses**: agrupado por proprietário/imóvel, calcula `paid_amount - (paid_amount * management_fee_percent/100)`, status "Aguardando" vs "Repassado", botão "Confirmar repasse" que atualiza `payout_status` + `payout_date`.
+
+### D. Equipe
+Tabela de `manager_members` com Nome, Email, Função, Contratos ativos sob responsabilidade (count `contracts` via `assigned_member_id`). Dialog "Convidar novo membro" cria registro com `invite_token` e exibe link `/manager-invite?token=...` (envio de email fica como TODO simples — toast com o link).
+
+### E. CRM
+Kanban com 4 colunas (`novos`, `contato`, `proposta`, `fechado`) usando `@dnd-kit` (já comum). Cards mostram nome, budget BRL, código do imóvel, telefone. Drag-and-drop atualiza `stage`. Dialog para criar/editar lead + adicionar notas (lista de `crm_lead_notes`).
+
+## 4. Bibliotecas
+
+Adicionar `@dnd-kit/core` e `@dnd-kit/sortable` para o Kanban.
+
+## 5. Formatação
+
+Reutilizar `formatBRL` e `formatDate` de `src/lib/format.ts` em todas as tabelas.
+
+## Observações
+
+- Não mexer no fluxo existente de Owner/Tenant.
+- Realtime: subscribe nas tabelas `installments` e `crm_leads` no Dashboard para refletir mutações ao vivo.
+- Tudo em PT-BR.
+
+Confirma para eu seguir com a migração e implementação?

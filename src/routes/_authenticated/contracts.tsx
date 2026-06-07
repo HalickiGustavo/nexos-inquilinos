@@ -138,8 +138,11 @@ function ContractDialog({ onDone }: { onDone: () => void }) {
             rent_amount: parseNumber(form.rent_amount),
             readjustment_index: form.readjustment_index as any,
             security_deposit: parseNumber(form.security_deposit),
+            late_fee_percent: parseNumber(form.late_fee_percent),
+            daily_interest_percent: parseNumber(form.daily_interest_percent),
             active: true,
           };
+
           const { error } = await supabase.from("contracts").insert(payload);
           if (error) return toast.error(error.message);
           toast.success("Contrato criado e parcelas geradas!");

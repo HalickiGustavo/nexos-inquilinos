@@ -14,7 +14,7 @@ import { Plus, Search, Eye } from "lucide-react";
 import { formatBRL } from "@/lib/format";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/_manager/carteira")({
+export const Route = createFileRoute("/_manager/manager/carteira")({
   component: Carteira,
 });
 

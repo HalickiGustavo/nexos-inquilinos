@@ -14,7 +14,7 @@ import { Plus, Phone, Wallet } from "lucide-react";
 import { formatBRL } from "@/lib/format";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/_manager/crm")({
+export const Route = createFileRoute("/_manager/manager/crm")({
   component: CRM,
 });
 

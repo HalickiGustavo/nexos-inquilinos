@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { UserPlus, Copy } from "lucide-react";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/_manager/equipe")({
+export const Route = createFileRoute("/_manager/manager/equipe")({
   component: Equipe,
 });
 

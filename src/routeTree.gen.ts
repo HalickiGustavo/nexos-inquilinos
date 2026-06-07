@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as TenantSetupRouteImport } from './routes/tenant-setup'
 import { Route as ManagerSetupRouteImport } from './routes/manager-setup'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as ManagerRouteImport } from './routes/_manager'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedTenantsRouteImport } from './routes/_authenticated/tenants'
@@ -21,8 +22,13 @@ import { Route as AuthenticatedIntegrationsRouteImport } from './routes/_authent
 import { Route as AuthenticatedFinancialsRouteImport } from './routes/_authenticated/financials'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedContractsRouteImport } from './routes/_authenticated/contracts'
+import { Route as ManagerManagerIndexRouteImport } from './routes/_manager/manager.index'
 import { Route as AuthenticatedTenantIndexRouteImport } from './routes/_authenticated/tenant.index'
 import { Route as ApiPublicAsaasWebhookRouteImport } from './routes/api/public/asaas-webhook'
+import { Route as ManagerManagerFinanceiroRouteImport } from './routes/_manager/manager.financeiro'
+import { Route as ManagerManagerEquipeRouteImport } from './routes/_manager/manager.equipe'
+import { Route as ManagerManagerCrmRouteImport } from './routes/_manager/manager.crm'
+import { Route as ManagerManagerCarteiraRouteImport } from './routes/_manager/manager.carteira'
 import { Route as AuthenticatedTenantManutencoesRouteImport } from './routes/_authenticated/tenant.manutencoes'
 import { Route as AuthenticatedTenantFinanceiroRouteImport } from './routes/_authenticated/tenant.financeiro'
 import { Route as AuthenticatedTenantContratoRouteImport } from './routes/_authenticated/tenant.contrato'
@@ -40,6 +46,10 @@ const ManagerSetupRoute = ManagerSetupRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ManagerRoute = ManagerRouteImport.update({
+  id: '/_manager',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
@@ -88,6 +98,11 @@ const AuthenticatedContractsRoute = AuthenticatedContractsRouteImport.update({
   path: '/contracts',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const ManagerManagerIndexRoute = ManagerManagerIndexRouteImport.update({
+  id: '/manager/',
+  path: '/manager/',
+  getParentRoute: () => ManagerRoute,
+} as any)
 const AuthenticatedTenantIndexRoute =
   AuthenticatedTenantIndexRouteImport.update({
     id: '/tenant/',
@@ -98,6 +113,27 @@ const ApiPublicAsaasWebhookRoute = ApiPublicAsaasWebhookRouteImport.update({
   id: '/api/public/asaas-webhook',
   path: '/api/public/asaas-webhook',
   getParentRoute: () => rootRouteImport,
+} as any)
+const ManagerManagerFinanceiroRoute =
+  ManagerManagerFinanceiroRouteImport.update({
+    id: '/manager/financeiro',
+    path: '/manager/financeiro',
+    getParentRoute: () => ManagerRoute,
+  } as any)
+const ManagerManagerEquipeRoute = ManagerManagerEquipeRouteImport.update({
+  id: '/manager/equipe',
+  path: '/manager/equipe',
+  getParentRoute: () => ManagerRoute,
+} as any)
+const ManagerManagerCrmRoute = ManagerManagerCrmRouteImport.update({
+  id: '/manager/crm',
+  path: '/manager/crm',
+  getParentRoute: () => ManagerRoute,
+} as any)
+const ManagerManagerCarteiraRoute = ManagerManagerCarteiraRouteImport.update({
+  id: '/manager/carteira',
+  path: '/manager/carteira',
+  getParentRoute: () => ManagerRoute,
 } as any)
 const AuthenticatedTenantManutencoesRoute =
   AuthenticatedTenantManutencoesRouteImport.update({
@@ -133,10 +169,16 @@ export interface FileRoutesByFullPath {
   '/tenant/contrato': typeof AuthenticatedTenantContratoRoute
   '/tenant/financeiro': typeof AuthenticatedTenantFinanceiroRoute
   '/tenant/manutencoes': typeof AuthenticatedTenantManutencoesRoute
+  '/manager/carteira': typeof ManagerManagerCarteiraRoute
+  '/manager/crm': typeof ManagerManagerCrmRoute
+  '/manager/equipe': typeof ManagerManagerEquipeRoute
+  '/manager/financeiro': typeof ManagerManagerFinanceiroRoute
   '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
   '/tenant/': typeof AuthenticatedTenantIndexRoute
+  '/manager/': typeof ManagerManagerIndexRoute
 }
 export interface FileRoutesByTo {
+  '/': typeof AuthenticatedIndexRoute
   '/login': typeof LoginRoute
   '/manager-setup': typeof ManagerSetupRoute
   '/tenant-setup': typeof TenantSetupRoute
@@ -147,16 +189,21 @@ export interface FileRoutesByTo {
   '/maintenances': typeof AuthenticatedMaintenancesRoute
   '/properties': typeof AuthenticatedPropertiesRoute
   '/tenants': typeof AuthenticatedTenantsRoute
-  '/': typeof AuthenticatedIndexRoute
   '/tenant/contrato': typeof AuthenticatedTenantContratoRoute
   '/tenant/financeiro': typeof AuthenticatedTenantFinanceiroRoute
   '/tenant/manutencoes': typeof AuthenticatedTenantManutencoesRoute
+  '/manager/carteira': typeof ManagerManagerCarteiraRoute
+  '/manager/crm': typeof ManagerManagerCrmRoute
+  '/manager/equipe': typeof ManagerManagerEquipeRoute
+  '/manager/financeiro': typeof ManagerManagerFinanceiroRoute
   '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
   '/tenant': typeof AuthenticatedTenantIndexRoute
+  '/manager': typeof ManagerManagerIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/_manager': typeof ManagerRouteWithChildren
   '/login': typeof LoginRoute
   '/manager-setup': typeof ManagerSetupRoute
   '/tenant-setup': typeof TenantSetupRoute
@@ -171,8 +218,13 @@ export interface FileRoutesById {
   '/_authenticated/tenant/contrato': typeof AuthenticatedTenantContratoRoute
   '/_authenticated/tenant/financeiro': typeof AuthenticatedTenantFinanceiroRoute
   '/_authenticated/tenant/manutencoes': typeof AuthenticatedTenantManutencoesRoute
+  '/_manager/manager/carteira': typeof ManagerManagerCarteiraRoute
+  '/_manager/manager/crm': typeof ManagerManagerCrmRoute
+  '/_manager/manager/equipe': typeof ManagerManagerEquipeRoute
+  '/_manager/manager/financeiro': typeof ManagerManagerFinanceiroRoute
   '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
   '/_authenticated/tenant/': typeof AuthenticatedTenantIndexRoute
+  '/_manager/manager/': typeof ManagerManagerIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -191,10 +243,16 @@ export interface FileRouteTypes {
     | '/tenant/contrato'
     | '/tenant/financeiro'
     | '/tenant/manutencoes'
+    | '/manager/carteira'
+    | '/manager/crm'
+    | '/manager/equipe'
+    | '/manager/financeiro'
     | '/api/public/asaas-webhook'
     | '/tenant/'
+    | '/manager/'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/'
     | '/login'
     | '/manager-setup'
     | '/tenant-setup'
@@ -205,15 +263,20 @@ export interface FileRouteTypes {
     | '/maintenances'
     | '/properties'
     | '/tenants'
-    | '/'
     | '/tenant/contrato'
     | '/tenant/financeiro'
     | '/tenant/manutencoes'
+    | '/manager/carteira'
+    | '/manager/crm'
+    | '/manager/equipe'
+    | '/manager/financeiro'
     | '/api/public/asaas-webhook'
     | '/tenant'
+    | '/manager'
   id:
     | '__root__'
     | '/_authenticated'
+    | '/_manager'
     | '/login'
     | '/manager-setup'
     | '/tenant-setup'
@@ -228,12 +291,18 @@ export interface FileRouteTypes {
     | '/_authenticated/tenant/contrato'
     | '/_authenticated/tenant/financeiro'
     | '/_authenticated/tenant/manutencoes'
+    | '/_manager/manager/carteira'
+    | '/_manager/manager/crm'
+    | '/_manager/manager/equipe'
+    | '/_manager/manager/financeiro'
     | '/api/public/asaas-webhook'
     | '/_authenticated/tenant/'
+    | '/_manager/manager/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  ManagerRoute: typeof ManagerRouteWithChildren
   LoginRoute: typeof LoginRoute
   ManagerSetupRoute: typeof ManagerSetupRoute
   TenantSetupRoute: typeof TenantSetupRoute
@@ -261,6 +330,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_manager': {
+      id: '/_manager'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof ManagerRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -326,6 +402,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedContractsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_manager/manager/': {
+      id: '/_manager/manager/'
+      path: '/manager'
+      fullPath: '/manager/'
+      preLoaderRoute: typeof ManagerManagerIndexRouteImport
+      parentRoute: typeof ManagerRoute
+    }
     '/_authenticated/tenant/': {
       id: '/_authenticated/tenant/'
       path: '/tenant'
@@ -339,6 +422,34 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/public/asaas-webhook'
       preLoaderRoute: typeof ApiPublicAsaasWebhookRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_manager/manager/financeiro': {
+      id: '/_manager/manager/financeiro'
+      path: '/manager/financeiro'
+      fullPath: '/manager/financeiro'
+      preLoaderRoute: typeof ManagerManagerFinanceiroRouteImport
+      parentRoute: typeof ManagerRoute
+    }
+    '/_manager/manager/equipe': {
+      id: '/_manager/manager/equipe'
+      path: '/manager/equipe'
+      fullPath: '/manager/equipe'
+      preLoaderRoute: typeof ManagerManagerEquipeRouteImport
+      parentRoute: typeof ManagerRoute
+    }
+    '/_manager/manager/crm': {
+      id: '/_manager/manager/crm'
+      path: '/manager/crm'
+      fullPath: '/manager/crm'
+      preLoaderRoute: typeof ManagerManagerCrmRouteImport
+      parentRoute: typeof ManagerRoute
+    }
+    '/_manager/manager/carteira': {
+      id: '/_manager/manager/carteira'
+      path: '/manager/carteira'
+      fullPath: '/manager/carteira'
+      preLoaderRoute: typeof ManagerManagerCarteiraRouteImport
+      parentRoute: typeof ManagerRoute
     }
     '/_authenticated/tenant/manutencoes': {
       id: '/_authenticated/tenant/manutencoes'
@@ -398,8 +509,28 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
   AuthenticatedRouteChildren,
 )
 
+interface ManagerRouteChildren {
+  ManagerManagerCarteiraRoute: typeof ManagerManagerCarteiraRoute
+  ManagerManagerCrmRoute: typeof ManagerManagerCrmRoute
+  ManagerManagerEquipeRoute: typeof ManagerManagerEquipeRoute
+  ManagerManagerFinanceiroRoute: typeof ManagerManagerFinanceiroRoute
+  ManagerManagerIndexRoute: typeof ManagerManagerIndexRoute
+}
+
+const ManagerRouteChildren: ManagerRouteChildren = {
+  ManagerManagerCarteiraRoute: ManagerManagerCarteiraRoute,
+  ManagerManagerCrmRoute: ManagerManagerCrmRoute,
+  ManagerManagerEquipeRoute: ManagerManagerEquipeRoute,
+  ManagerManagerFinanceiroRoute: ManagerManagerFinanceiroRoute,
+  ManagerManagerIndexRoute: ManagerManagerIndexRoute,
+}
+
+const ManagerRouteWithChildren =
+  ManagerRoute._addFileChildren(ManagerRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  ManagerRoute: ManagerRouteWithChildren,
   LoginRoute: LoginRoute,
   ManagerSetupRoute: ManagerSetupRoute,
   TenantSetupRoute: TenantSetupRoute,

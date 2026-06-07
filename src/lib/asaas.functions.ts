@@ -188,7 +188,6 @@ export const generateAsaasCharge = createServerFn({ method: "POST" })
       // boleto-only payments may not return Pix
     }
 
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const upd = await supabaseAdmin
       .from("installments")
       .update({

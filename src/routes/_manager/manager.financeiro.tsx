@@ -10,8 +10,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatBRL, formatDate } from "@/lib/format";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, Receipt } from "lucide-react";
 import { toast } from "sonner";
+import { VariableExpensesDialog } from "@/components/VariableExpensesDialog";
+import { parseExpenses, expensesTotals } from "@/lib/variable-expenses";
 
 export const Route = createFileRoute("/_manager/manager/financeiro")({
   component: Financeiro,
@@ -37,8 +39,10 @@ function Financeiro() {
 }
 
 function Recebimentos() {
+  const qc = useQueryClient();
   const [statusF, setStatusF] = useState("todos");
   const [from, setFrom] = useState("");
+  const [expensesFor, setExpensesFor] = useState<any | null>(null);
   const [to, setTo] = useState("");
 
   const q = useQuery({
@@ -93,25 +97,56 @@ function Recebimentos() {
             <TableHead>Vencimento</TableHead>
             <TableHead>Imóvel</TableHead>
             <TableHead>Inquilino</TableHead>
-            <TableHead className="text-right">Valor</TableHead>
-            <TableHead className="text-right">Pago</TableHead>
+            <TableHead className="text-right">Aluguel</TableHead>
+            <TableHead className="text-right">Despesas</TableHead>
+            <TableHead className="text-right">Devido</TableHead>
             <TableHead>Status</TableHead>
+            <TableHead></TableHead>
           </TableRow></TableHeader>
           <TableBody>
-            {rows.length === 0 && <TableRow><TableCell colSpan={6} className="text-center py-8 text-zinc-500">Sem registros</TableCell></TableRow>}
-            {rows.map((i: any) => (
-              <TableRow key={i.id}>
-                <TableCell>{formatDate(i.due_date)}</TableCell>
-                <TableCell className="text-xs font-mono">{i.contract?.property?.code ?? "—"}</TableCell>
-                <TableCell>{i.contract?.tenant?.full_name ?? "—"}</TableCell>
-                <TableCell className="text-right">{formatBRL(i.amount)}</TableCell>
-                <TableCell className="text-right">{formatBRL(i.paid_amount)}</TableCell>
-                <TableCell>{badge(i.status)}</TableCell>
-              </TableRow>
-            ))}
+            {rows.length === 0 && <TableRow><TableCell colSpan={8} className="text-center py-8 text-zinc-500">Sem registros</TableCell></TableRow>}
+            {rows.map((i: any) => {
+              const exps = parseExpenses(i.variable_expenses);
+              const t = expensesTotals(exps);
+              const due = Number(i.amount) + t.tenant;
+              return (
+                <TableRow key={i.id}>
+                  <TableCell>{formatDate(i.due_date)}</TableCell>
+                  <TableCell className="text-xs font-mono">{i.contract?.property?.code ?? "—"}</TableCell>
+                  <TableCell>{i.contract?.tenant?.full_name ?? "—"}</TableCell>
+                  <TableCell className="text-right">{formatBRL(i.amount)}</TableCell>
+                  <TableCell className="text-right text-xs">
+                    {exps.length === 0 ? (
+                      <span className="text-zinc-400">—</span>
+                    ) : (
+                      <span>
+                        <span className="text-amber-600">+{formatBRL(t.tenant)}</span>
+                        {t.owner > 0 && <span className="text-primary ml-1">−{formatBRL(t.owner)}</span>}
+                      </span>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-right font-medium">{formatBRL(due)}</TableCell>
+                  <TableCell>{badge(i.status)}</TableCell>
+                  <TableCell className="text-right">
+                    <Button size="sm" variant="outline" onClick={() => setExpensesFor(i)}>
+                      <Receipt className="size-4 mr-1" /> Despesas
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </CardContent></Card>
+
+      {expensesFor && (
+        <VariableExpensesDialog
+          installment={expensesFor}
+          open={!!expensesFor}
+          onOpenChange={(o) => !o && setExpensesFor(null)}
+          onSaved={() => qc.invalidateQueries({ queryKey: ["mgr-receb"] })}
+        />
+      )}
     </div>
   );
 }

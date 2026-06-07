@@ -1,5 +1,5 @@
 import { Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
-import { Home, Wallet, FileText, Wrench, LogOut } from "lucide-react";
+import { Home, Wallet, FileText, Wrench, Bell, LogOut } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -12,6 +12,7 @@ const tenantNav: ReadonlyArray<{ to: string; label: string; icon: typeof Home; e
   { to: "/tenant/financeiro", label: "Financeiro", icon: Wallet },
   { to: "/tenant/contrato", label: "Contrato", icon: FileText },
   { to: "/tenant/manutencoes", label: "Manutenções", icon: Wrench },
+  { to: "/tenant/alertas", label: "Alertas", icon: Bell },
 ];
 
 export function TenantShell() {
@@ -58,7 +59,7 @@ export function TenantShell() {
 
       {/* Bottom nav (mobile) + sidebar-like row (desktop) */}
       <nav className="fixed bottom-0 inset-x-0 z-30 md:static md:max-w-3xl md:mx-auto bg-card border-t md:border-0 md:hidden">
-        <div className="grid grid-cols-4">
+        <div className="grid grid-cols-5">
           {tenantNav.map((item) => {
             const active = isActive(item.to, item.exact);
             const Icon = item.icon;

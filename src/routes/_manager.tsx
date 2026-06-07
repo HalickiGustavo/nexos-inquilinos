@@ -1,8 +1,9 @@
 import { createFileRoute, Outlet, useNavigate, useRouterState, Link } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { LayoutDashboard, Briefcase, Wallet, Users, KanbanSquare, ClipboardCheck, LogOut, Loader2 } from "lucide-react";
+import { LayoutDashboard, Briefcase, Wallet, Users, KanbanSquare, ClipboardCheck, Bell, LogOut, Loader2 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useUserRole } from "@/lib/useUserRole";
+import { useManagerAlerts } from "@/lib/alerts";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -17,6 +18,7 @@ const navItems: { to: string; label: string; icon: typeof LayoutDashboard; exact
   { to: "/manager/financeiro", label: "Financeiro", icon: Wallet },
   { to: "/manager/equipe", label: "Equipe", icon: Users },
   { to: "/manager/vistorias", label: "Vistorias", icon: ClipboardCheck },
+  { to: "/manager/alertas", label: "Alertas", icon: Bell },
   { to: "/manager/crm", label: "CRM", icon: KanbanSquare },
 ];
 
@@ -26,6 +28,8 @@ function ManagerLayout() {
   const { role, loading: roleLoading } = useUserRole();
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const { alerts } = useManagerAlerts();
+  const criticalCount = alerts.filter((a) => a.severity === "critico").length;
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/login", replace: true });
@@ -57,6 +61,7 @@ function ManagerLayout() {
           {navItems.map((item) => {
             const active = item.exact ? pathname === item.to : pathname.startsWith(item.to);
             const Icon = item.icon;
+            const showBadge = item.to === "/manager/alertas" && criticalCount > 0;
             return (
               <Link key={item.to} to={item.to}
                 className={cn(
@@ -64,7 +69,12 @@ function ManagerLayout() {
                   active ? "bg-primary text-primary-foreground font-medium shadow-sm" : "text-zinc-300 hover:bg-zinc-800 hover:text-white"
                 )}>
                 <Icon className="size-4" />
-                {item.label}
+                <span className="flex-1">{item.label}</span>
+                {showBadge && (
+                  <span className="ml-auto inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-destructive text-destructive-foreground text-[10px] font-semibold">
+                    {criticalCount}
+                  </span>
+                )}
               </Link>
             );
           })}

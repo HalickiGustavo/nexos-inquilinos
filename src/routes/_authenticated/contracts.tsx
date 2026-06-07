@@ -115,7 +115,10 @@ function ContractDialog({ onDone }: { onDone: () => void }) {
     rent_amount: "",
     readjustment_index: "IGP-M",
     security_deposit: "0",
+    late_fee_percent: "2",
+    daily_interest_percent: "0.033",
   });
+
 
   return (
     <DialogContent className="max-w-2xl">

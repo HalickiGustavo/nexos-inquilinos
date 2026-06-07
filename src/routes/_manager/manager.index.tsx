@@ -7,7 +7,7 @@ import { Building2, TrendingUp, PercentCircle, UserPlus } from "lucide-react";
 import { formatBRL } from "@/lib/format";
 import { BarChart, Bar, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from "recharts";
 
-export const Route = createFileRoute("/_manager/")({
+export const Route = createFileRoute("/_manager/manager/")({
   component: ManagerDashboard,
 });
 

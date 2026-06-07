@@ -192,6 +192,9 @@ function ContractDialog({ onDone }: { onDone: () => void }) {
           </Select>
         </div>
         <div className="space-y-2"><Label>Caução (R$)</Label><Input type="number" step="0.01" value={form.security_deposit} onChange={(e) => setForm({ ...form, security_deposit: e.target.value })} /></div>
+        <div className="space-y-2"><Label>Multa por atraso (%)</Label><Input type="number" step="0.01" value={form.late_fee_percent} onChange={(e) => setForm({ ...form, late_fee_percent: e.target.value })} /></div>
+        <div className="space-y-2 sm:col-span-2"><Label>Juros ao dia (%)</Label><Input type="number" step="0.001" value={form.daily_interest_percent} onChange={(e) => setForm({ ...form, daily_interest_percent: e.target.value })} /><p className="text-xs text-muted-foreground">0,033% ao dia ≈ 1% ao mês</p></div>
+
         <DialogFooter className="sm:col-span-2">
           <Button type="submit" disabled={!form.property_id || !form.tenant_id}>Criar contrato e gerar parcelas</Button>
         </DialogFooter>

@@ -176,3 +176,19 @@ function ConvidarDialog({ open, onOpenChange, onSaved }: { open: boolean; onOpen
     </Dialog>
   );
 }
+
+function MetricCard({ icon: Icon, label, value }: { icon: any; label: string; value: string }) {
+  return (
+    <Card>
+      <CardContent className="p-4 flex items-center gap-3">
+        <div className="size-10 rounded-md bg-primary/10 grid place-items-center text-primary">
+          <Icon className="size-5" />
+        </div>
+        <div className="min-w-0">
+          <div className="text-xs text-zinc-500">{label}</div>
+          <div className="font-semibold truncate">{value}</div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}

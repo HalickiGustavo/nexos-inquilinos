@@ -27,7 +27,7 @@ import {
 } from "@/lib/tenant-queries";
 import { MaintenanceChat } from "@/components/MaintenanceChat";
 import { cn } from "@/lib/utils";
-import { formatDate } from "@/lib/format";
+import { formatBRL, formatDate } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/tenant/manutencoes")({
   head: () => ({ meta: [{ title: "Manutenções — Nexo Inquilino" }] }),
@@ -107,10 +107,43 @@ function TenantManutencoes() {
                   <ArrowLeft className="size-4 mr-1" /> Voltar
                 </Button>
               </div>
-              <Card className="p-4">
+              <Card className="p-4 space-y-2">
                 <p className="font-semibold">{current.title}</p>
                 {current.description && (
-                  <p className="text-sm text-muted-foreground mt-1">{current.description}</p>
+                  <p className="text-sm text-muted-foreground">{current.description}</p>
+                )}
+                {current.budget_status && current.budget_status !== "nenhum" && (
+                  <div className="mt-2 pt-2 border-t text-xs space-y-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">Orçamento:</span>
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          current.budget_status === "pendente" &&
+                            "border-amber-500/40 text-amber-700 dark:text-amber-400",
+                          current.budget_status === "aprovado" &&
+                            "border-emerald-500/40 text-emerald-700 dark:text-emerald-400",
+                          current.budget_status === "recusado" &&
+                            "border-destructive/40 text-destructive",
+                        )}
+                      >
+                        {current.budget_status === "pendente" && "Aguardando proprietário"}
+                        {current.budget_status === "aprovado" && "Aprovado"}
+                        {current.budget_status === "recusado" && "Recusado"}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">Valor:</span>
+                      <span className="font-medium">
+                        {formatBRL(Number(current.budget_amount ?? 0))}
+                      </span>
+                    </div>
+                    {current.budget_status === "aprovado" && current.budget_rent_deduction && (
+                      <p className="text-primary">
+                        ✓ Será abatido do seu próximo aluguel.
+                      </p>
+                    )}
+                  </div>
                 )}
               </Card>
               <MaintenanceChat maintenanceId={current.id} />

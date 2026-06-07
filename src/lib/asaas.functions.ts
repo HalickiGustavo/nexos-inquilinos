@@ -110,8 +110,9 @@ export const generateAsaasCharge = createServerFn({ method: "POST" })
       throw new Error("Esta parcela já possui boleto gerado.");
     }
 
-    const tenant = (inst.data as any).contract?.tenant;
-    const property = (inst.data as any).contract?.property;
+    const contract = (inst.data as any).contract;
+    const tenant = contract?.tenant;
+    const property = contract?.property;
     if (!tenant) throw new Error("Contrato sem inquilino vinculado");
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -154,23 +155,32 @@ export const generateAsaasCharge = createServerFn({ method: "POST" })
     const nexoFee = getNexoFee();
     const nexoWallet = getNexoWalletId();
     const baseValue = Number(inst.data.amount) + Number(inst.data.extra_fees ?? 0);
-    // Taxa NEXO embutida no boleto + split fixo para a carteira do NEXO
-    const value = baseValue + (nexoWallet && nexoFee > 0 ? nexoFee : 0);
 
-    // Asaas não permite criar cobrança com vencimento no passado.
-    // Se a data original já passou, usamos a data de hoje como vencimento do boleto,
-    // mantendo a referência da data original na descrição.
+    // Cálculo de juros/multa por atraso
     const todayStr = new Date().toISOString().slice(0, 10);
     const originalDue = inst.data.due_date as string;
-    const effectiveDueDate = originalDue < todayStr ? todayStr : originalDue;
-    const overdueNote = originalDue < todayStr ? ` (vencimento original ${originalDue} — em atraso)` : "";
+    const isOverdue = originalDue < todayStr;
+    const daysLate = isOverdue
+      ? Math.max(0, Math.floor((Date.parse(todayStr) - Date.parse(originalDue)) / 86400000))
+      : 0;
+    const finePct = Number(contract?.late_fee_percent ?? 0);
+    const dailyPct = Number(contract?.daily_interest_percent ?? 0);
+    const fine = isOverdue ? +(baseValue * finePct / 100).toFixed(2) : 0;
+    const interest = isOverdue ? +(baseValue * dailyPct / 100 * daysLate).toFixed(2) : 0;
+    const lateCharges = +(fine + interest).toFixed(2);
+
+    const value = +(baseValue + lateCharges + (nexoWallet && nexoFee > 0 ? nexoFee : 0)).toFixed(2);
+    const effectiveDueDate = isOverdue ? todayStr : originalDue;
+    const lateNote = isOverdue
+      ? ` (venc. original ${originalDue}, ${daysLate} dia(s) de atraso: multa R$ ${fine.toFixed(2)} + juros R$ ${interest.toFixed(2)})`
+      : "";
 
     const body: Record<string, unknown> = {
       customer: customerId as string,
       billingType: data.billingType,
       value,
       dueDate: effectiveDueDate,
-      description: `Aluguel — ${property?.nickname ?? ""} — venc. ${originalDue}${overdueNote}${nexoFee > 0 ? ` (inclui taxa NEXO de R$ ${nexoFee.toFixed(2)})` : ""}`,
+      description: `Aluguel — ${property?.nickname ?? ""} — venc. ${originalDue}${lateNote}${nexoFee > 0 ? ` (inclui taxa NEXO de R$ ${nexoFee.toFixed(2)})` : ""}`,
       externalReference: inst.data.id,
     };
     if (nexoWallet && nexoFee > 0 && nexoFee < value) {
@@ -196,12 +206,14 @@ export const generateAsaasCharge = createServerFn({ method: "POST" })
         barcode: payment.identificationField ?? null,
         pix_qrcode: pix.encodedImage ?? null,
         pix_payload: pix.payload ?? null,
+        late_charges: lateCharges,
       })
       .eq("id", inst.data.id);
     if (upd.error) throw new Error(upd.error.message);
 
-    return { ok: true, paymentId: payment.id };
+    return { ok: true, paymentId: payment.id, value, lateCharges };
   });
+
 
 // ===== Update existing Asaas charge (apply NEXO fee retroactively) =====
 const updateInput = z.object({ installmentId: z.string().uuid() });

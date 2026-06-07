@@ -28,7 +28,13 @@ export const Route = createRootRoute({
       { name: "twitter:card", content: "summary_large_image" },
       { property: "og:type", content: "website" },
     ],
-    links: [{ rel: "stylesheet", href: appCss }],
+    links: [
+      { rel: "stylesheet", href: appCss },
+      { rel: "manifest", href: "https://progressier.app/KaHnwaaTl4brmyedFUG4/progressier.json" },
+    ],
+    scripts: [
+      { defer: true, src: "https://progressier.app/KaHnwaaTl4brmyedFUG4/script.js" },
+    ],
   }),
   shellComponent: RootShell,
   component: RootComponent,

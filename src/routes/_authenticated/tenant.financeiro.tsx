@@ -80,6 +80,17 @@ function TenantFinanceiro() {
 
               {open && (
                 <div className="border-t p-4 bg-muted/20 space-y-3">
+                  <div className="rounded-md border bg-background p-3 text-sm space-y-1">
+                    <div className="flex justify-between"><span>Aluguel</span><span>{formatBRL(Number(i.amount))}</span></div>
+                    {exps.filter((e) => e.payer === "inquilino").map((e) => (
+                      <div key={e.id} className="flex justify-between text-amber-700 dark:text-amber-400">
+                        <span>+ {e.description}</span><span>{formatBRL(e.amount)}</span>
+                      </div>
+                    ))}
+                    <div className="flex justify-between font-semibold pt-1 border-t mt-1">
+                      <span>Total a pagar</span><span>{formatBRL(totalDue)}</span>
+                    </div>
+                  </div>
                   {s === "pago" ? (
                     <>
                       <p className="text-sm text-muted-foreground">

@@ -226,6 +226,54 @@ export type Database = {
         }
         Relationships: []
       }
+      inspections: {
+        Row: {
+          contract_id: string
+          created_at: string
+          general_condition: Database["public"]["Enums"]["inspection_condition"]
+          id: string
+          inspection_date: string
+          inspector_name: string | null
+          kind: Database["public"]["Enums"]["inspection_kind"]
+          observations: string | null
+          pdf_path: string | null
+          rooms: Json
+          status: Database["public"]["Enums"]["inspection_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          contract_id: string
+          created_at?: string
+          general_condition?: Database["public"]["Enums"]["inspection_condition"]
+          id?: string
+          inspection_date?: string
+          inspector_name?: string | null
+          kind: Database["public"]["Enums"]["inspection_kind"]
+          observations?: string | null
+          pdf_path?: string | null
+          rooms?: Json
+          status?: Database["public"]["Enums"]["inspection_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          contract_id?: string
+          created_at?: string
+          general_condition?: Database["public"]["Enums"]["inspection_condition"]
+          id?: string
+          inspection_date?: string
+          inspector_name?: string | null
+          kind?: Database["public"]["Enums"]["inspection_kind"]
+          observations?: string | null
+          pdf_path?: string | null
+          rooms?: Json
+          status?: Database["public"]["Enums"]["inspection_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       installments: {
         Row: {
           amount: number
@@ -615,6 +663,9 @@ export type Database = {
     }
     Enums: {
       app_role: "owner" | "tenant" | "manager"
+      inspection_condition: "otimo" | "bom" | "regular" | "ruim"
+      inspection_kind: "entrada" | "saida"
+      inspection_status: "rascunho" | "assinada"
       installment_status: "pendente" | "pago" | "atrasado"
       maintenance_responsible: "proprietario" | "inquilino"
       maintenance_status: "pendente" | "em_andamento" | "concluido"
@@ -749,6 +800,9 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["owner", "tenant", "manager"],
+      inspection_condition: ["otimo", "bom", "regular", "ruim"],
+      inspection_kind: ["entrada", "saida"],
+      inspection_status: ["rascunho", "assinada"],
       installment_status: ["pendente", "pago", "atrasado"],
       maintenance_responsible: ["proprietario", "inquilino"],
       maintenance_status: ["pendente", "em_andamento", "concluido"],

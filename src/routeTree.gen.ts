@@ -25,6 +25,7 @@ import { Route as AuthenticatedContractsRouteImport } from './routes/_authentica
 import { Route as ManagerManagerIndexRouteImport } from './routes/_manager/manager.index'
 import { Route as AuthenticatedTenantIndexRouteImport } from './routes/_authenticated/tenant.index'
 import { Route as ApiPublicAsaasWebhookRouteImport } from './routes/api/public/asaas-webhook'
+import { Route as ManagerManagerVistoriasRouteImport } from './routes/_manager/manager.vistorias'
 import { Route as ManagerManagerFinanceiroRouteImport } from './routes/_manager/manager.financeiro'
 import { Route as ManagerManagerEquipeRouteImport } from './routes/_manager/manager.equipe'
 import { Route as ManagerManagerCrmRouteImport } from './routes/_manager/manager.crm'
@@ -114,6 +115,11 @@ const ApiPublicAsaasWebhookRoute = ApiPublicAsaasWebhookRouteImport.update({
   path: '/api/public/asaas-webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ManagerManagerVistoriasRoute = ManagerManagerVistoriasRouteImport.update({
+  id: '/manager/vistorias',
+  path: '/manager/vistorias',
+  getParentRoute: () => ManagerRoute,
+} as any)
 const ManagerManagerFinanceiroRoute =
   ManagerManagerFinanceiroRouteImport.update({
     id: '/manager/financeiro',
@@ -173,6 +179,7 @@ export interface FileRoutesByFullPath {
   '/manager/crm': typeof ManagerManagerCrmRoute
   '/manager/equipe': typeof ManagerManagerEquipeRoute
   '/manager/financeiro': typeof ManagerManagerFinanceiroRoute
+  '/manager/vistorias': typeof ManagerManagerVistoriasRoute
   '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
   '/tenant/': typeof AuthenticatedTenantIndexRoute
   '/manager/': typeof ManagerManagerIndexRoute
@@ -196,6 +203,7 @@ export interface FileRoutesByTo {
   '/manager/crm': typeof ManagerManagerCrmRoute
   '/manager/equipe': typeof ManagerManagerEquipeRoute
   '/manager/financeiro': typeof ManagerManagerFinanceiroRoute
+  '/manager/vistorias': typeof ManagerManagerVistoriasRoute
   '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
   '/tenant': typeof AuthenticatedTenantIndexRoute
   '/manager': typeof ManagerManagerIndexRoute
@@ -222,6 +230,7 @@ export interface FileRoutesById {
   '/_manager/manager/crm': typeof ManagerManagerCrmRoute
   '/_manager/manager/equipe': typeof ManagerManagerEquipeRoute
   '/_manager/manager/financeiro': typeof ManagerManagerFinanceiroRoute
+  '/_manager/manager/vistorias': typeof ManagerManagerVistoriasRoute
   '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
   '/_authenticated/tenant/': typeof AuthenticatedTenantIndexRoute
   '/_manager/manager/': typeof ManagerManagerIndexRoute
@@ -247,6 +256,7 @@ export interface FileRouteTypes {
     | '/manager/crm'
     | '/manager/equipe'
     | '/manager/financeiro'
+    | '/manager/vistorias'
     | '/api/public/asaas-webhook'
     | '/tenant/'
     | '/manager/'
@@ -270,6 +280,7 @@ export interface FileRouteTypes {
     | '/manager/crm'
     | '/manager/equipe'
     | '/manager/financeiro'
+    | '/manager/vistorias'
     | '/api/public/asaas-webhook'
     | '/tenant'
     | '/manager'
@@ -295,6 +306,7 @@ export interface FileRouteTypes {
     | '/_manager/manager/crm'
     | '/_manager/manager/equipe'
     | '/_manager/manager/financeiro'
+    | '/_manager/manager/vistorias'
     | '/api/public/asaas-webhook'
     | '/_authenticated/tenant/'
     | '/_manager/manager/'
@@ -423,6 +435,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicAsaasWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_manager/manager/vistorias': {
+      id: '/_manager/manager/vistorias'
+      path: '/manager/vistorias'
+      fullPath: '/manager/vistorias'
+      preLoaderRoute: typeof ManagerManagerVistoriasRouteImport
+      parentRoute: typeof ManagerRoute
+    }
     '/_manager/manager/financeiro': {
       id: '/_manager/manager/financeiro'
       path: '/manager/financeiro'
@@ -514,6 +533,7 @@ interface ManagerRouteChildren {
   ManagerManagerCrmRoute: typeof ManagerManagerCrmRoute
   ManagerManagerEquipeRoute: typeof ManagerManagerEquipeRoute
   ManagerManagerFinanceiroRoute: typeof ManagerManagerFinanceiroRoute
+  ManagerManagerVistoriasRoute: typeof ManagerManagerVistoriasRoute
   ManagerManagerIndexRoute: typeof ManagerManagerIndexRoute
 }
 
@@ -522,6 +542,7 @@ const ManagerRouteChildren: ManagerRouteChildren = {
   ManagerManagerCrmRoute: ManagerManagerCrmRoute,
   ManagerManagerEquipeRoute: ManagerManagerEquipeRoute,
   ManagerManagerFinanceiroRoute: ManagerManagerFinanceiroRoute,
+  ManagerManagerVistoriasRoute: ManagerManagerVistoriasRoute,
   ManagerManagerIndexRoute: ManagerManagerIndexRoute,
 }
 

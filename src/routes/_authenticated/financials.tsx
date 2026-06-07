@@ -141,11 +141,27 @@ function FinancialsPage() {
                       <tbody>
                         {g.visible.map((i: any) => {
                           const s = effective(i, today);
+                          const finePct = Number(g.contract?.late_fee_percent ?? 0);
+                          const dailyPct = Number(g.contract?.daily_interest_percent ?? 0);
+                          const base = Number(i.amount) + Number(i.extra_fees);
+                          const daysLate = s === "atrasado"
+                            ? Math.max(0, Math.floor((Date.parse(today) - Date.parse(i.due_date)) / 86400000))
+                            : 0;
+                          const previewLate = s === "atrasado" && !i.asaas_payment_id
+                            ? +(base * finePct / 100 + base * dailyPct / 100 * daysLate).toFixed(2)
+                            : Number(i.late_charges ?? 0);
                           return (
                             <tr key={i.id} className="border-t">
                               <td className="p-2">{formatDate(i.due_date)}</td>
                               <td className="p-2 text-right font-medium">{formatBRL(Number(i.amount))}</td>
-                              <td className="p-2 text-right text-muted-foreground">{Number(i.extra_fees) > 0 ? formatBRL(Number(i.extra_fees)) : "—"}</td>
+                              <td className="p-2 text-right text-muted-foreground">
+                                {Number(i.extra_fees) > 0 ? formatBRL(Number(i.extra_fees)) : "—"}
+                                {previewLate > 0 && (
+                                  <div className="text-xs text-destructive">
+                                    +{formatBRL(previewLate)} juros/multa{daysLate > 0 ? ` (${daysLate}d)` : ""}
+                                  </div>
+                                )}
+                              </td>
                               <td className="p-2"><StatusBadge status={s} /></td>
                               <td className="p-2 text-right whitespace-nowrap space-x-1">
                                 {i.status !== "pago" && !i.asaas_payment_id && <GenerateBoletoButton installment={i} />}
@@ -170,6 +186,7 @@ function FinancialsPage() {
                             </tr>
                           );
                         })}
+
                       </tbody>
                     </table>
                   </div>

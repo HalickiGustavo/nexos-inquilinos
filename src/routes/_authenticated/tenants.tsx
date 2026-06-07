@@ -120,12 +120,25 @@ function TenantDialog({ editing, onDone }: { editing: Tenant | null; onDone: () 
             notes: form.notes || null,
             user_id_link: form.user_id_link?.trim() || null,
           };
-          const { error } = editing
-            ? await supabase.from("tenants").update(payload).eq("id", editing.id)
-            : await supabase.from("tenants").insert(payload);
+          const isNew = !editing;
+          const { data: saved, error } = editing
+            ? await supabase.from("tenants").update(payload).eq("id", editing.id).select().single()
+            : await supabase.from("tenants").insert(payload).select().single();
           if (error) return toast.error(error.message);
           toast.success(editing ? "Inquilino atualizado" : "Inquilino cadastrado");
           invalidate(["tenants"]);
+
+          // Auto-invite new tenants that have an email
+          if (isNew && saved?.email && saved?.id) {
+            try {
+              const { inviteTenantUser: invite } = await import("@/lib/asaas.functions");
+              const redirectUrl = `${window.location.origin}/tenant-setup`;
+              await invite({ data: { tenantId: saved.id, redirectUrl } });
+              toast.success("Convite de acesso enviado por e-mail");
+            } catch (err: any) {
+              toast.warning(`Inquilino salvo, mas falhou o convite: ${err?.message ?? "erro"}`);
+            }
+          }
           onDone();
         }}
       >

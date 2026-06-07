@@ -7,9 +7,10 @@ export const getAsaasAccount = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { supabase } = context;
+    // Explicitly exclude api_key (column SELECT privilege revoked for authenticated)
     const { data, error } = await supabase
       .from("asaas_accounts")
-      .select("*")
+      .select("id, user_id, asaas_account_id, wallet_id, status, onboarding_url, created_at, updated_at")
       .maybeSingle();
     if (error) throw new Error(error.message);
     return { account: data };

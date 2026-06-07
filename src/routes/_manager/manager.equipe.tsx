@@ -10,8 +10,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { UserPlus, Copy } from "lucide-react";
+import { UserPlus, Copy, Users as UsersIcon, Briefcase, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
+import { formatBRL } from "@/lib/format";
 
 export const Route = createFileRoute("/_manager/manager/equipe")({
   component: Equipe,
@@ -33,15 +34,17 @@ function Equipe() {
   const qContracts = useQuery({
     queryKey: ["mgr-team-contracts"],
     queryFn: async () => {
-      // count contracts per assigned_member_id via properties
-      const { data } = await supabase.from("properties").select("assigned_member_id, contracts(active)");
-      const map: Record<string, number> = {};
+      const { data } = await supabase.from("properties").select("assigned_member_id, contracts(active, rent_amount)");
+      const counts: Record<string, number> = {};
+      const values: Record<string, number> = {};
       (data ?? []).forEach((p: any) => {
         if (!p.assigned_member_id) return;
-        const activeCount = (p.contracts ?? []).filter((c: any) => c.active).length;
-        map[p.assigned_member_id] = (map[p.assigned_member_id] ?? 0) + activeCount;
+        (p.contracts ?? []).filter((c: any) => c.active).forEach((c: any) => {
+          counts[p.assigned_member_id] = (counts[p.assigned_member_id] ?? 0) + 1;
+          values[p.assigned_member_id] = (values[p.assigned_member_id] ?? 0) + Number(c.rent_amount ?? 0);
+        });
       });
-      return map;
+      return { counts, values };
     },
   });
 
@@ -71,6 +74,12 @@ function Equipe() {
         </Button>
       </header>
 
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <MetricCard icon={UsersIcon} label="Membros ativos" value={String((q.data ?? []).filter((m: any) => m.status === "ativo").length)} />
+        <MetricCard icon={Briefcase} label="Locações sob gestão" value={String(Object.values(qContracts.data?.counts ?? {}).reduce((a, b) => a + b, 0))} />
+        <MetricCard icon={TrendingUp} label="Valor mensal sob gestão" value={formatBRL(Object.values(qContracts.data?.values ?? {}).reduce((a, b) => a + b, 0))} />
+      </div>
+
       <Card><CardContent className="p-0">
         <Table>
           <TableHeader><TableRow>
@@ -78,11 +87,12 @@ function Equipe() {
             <TableHead>Email</TableHead>
             <TableHead>Função</TableHead>
             <TableHead>Status</TableHead>
-            <TableHead className="text-right">Contratos ativos</TableHead>
+            <TableHead className="text-right">Locações</TableHead>
+            <TableHead className="text-right">Valor mensal</TableHead>
             <TableHead></TableHead>
           </TableRow></TableHeader>
           <TableBody>
-            {(q.data ?? []).length === 0 && <TableRow><TableCell colSpan={6} className="text-center py-8 text-zinc-500">Nenhum membro cadastrado</TableCell></TableRow>}
+            {(q.data ?? []).length === 0 && <TableRow><TableCell colSpan={7} className="text-center py-8 text-zinc-500">Nenhum membro cadastrado</TableCell></TableRow>}
             {(q.data ?? []).map((m: any) => (
               <TableRow key={m.id}>
                 <TableCell className="font-medium">{m.name}</TableCell>
@@ -91,7 +101,8 @@ function Equipe() {
                 <TableCell>
                   <Badge variant={m.status === "ativo" ? "default" : "secondary"}>{m.status}</Badge>
                 </TableCell>
-                <TableCell className="text-right">{qContracts.data?.[m.id] ?? 0}</TableCell>
+                <TableCell className="text-right">{qContracts.data?.counts?.[m.id] ?? 0}</TableCell>
+                <TableCell className="text-right font-medium">{formatBRL(qContracts.data?.values?.[m.id] ?? 0)}</TableCell>
                 <TableCell className="text-right space-x-2">
                   {m.status === "pendente" && (
                     <Button size="sm" variant="outline" onClick={() => {
@@ -163,5 +174,21 @@ function ConvidarDialog({ open, onOpenChange, onSaved }: { open: boolean; onOpen
         </div>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function MetricCard({ icon: Icon, label, value }: { icon: any; label: string; value: string }) {
+  return (
+    <Card>
+      <CardContent className="p-4 flex items-center gap-3">
+        <div className="size-10 rounded-md bg-primary/10 grid place-items-center text-primary">
+          <Icon className="size-5" />
+        </div>
+        <div className="min-w-0">
+          <div className="text-xs text-zinc-500">{label}</div>
+          <div className="font-semibold truncate">{value}</div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

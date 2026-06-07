@@ -150,7 +150,7 @@ export const generateAsaasCharge = createServerFn({ method: "POST" })
       await supabaseAdmin.from("asaas_customers").insert({
         user_id: userId,
         tenant_id: tenant.id,
-        asaas_customer_id: customerId,
+        asaas_customer_id: customerId as string,
       });
     }
 

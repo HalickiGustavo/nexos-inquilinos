@@ -7,9 +7,10 @@ export const getAsaasAccount = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { supabase } = context;
+    // Explicitly exclude api_key (column SELECT privilege revoked for authenticated)
     const { data, error } = await supabase
       .from("asaas_accounts")
-      .select("*")
+      .select("id, user_id, asaas_account_id, wallet_id, status, onboarding_url, created_at, updated_at")
       .maybeSingle();
     if (error) throw new Error(error.message);
     return { account: data };
@@ -115,8 +116,9 @@ export const generateAsaasCharge = createServerFn({ method: "POST" })
     const property = (inst.data as any).contract?.property;
     if (!tenant) throw new Error("Contrato sem inquilino vinculado");
 
-    // Owner Asaas account
-    const acc = await supabase
+    // api_key is server-only — read via admin client (column SELECT revoked for authenticated)
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const acc = await supabaseAdmin
       .from("asaas_accounts")
       .select("api_key, status")
       .eq("user_id", userId)
@@ -146,7 +148,6 @@ export const generateAsaasCharge = createServerFn({ method: "POST" })
         }),
       });
       customerId = customer.id;
-      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       await supabaseAdmin.from("asaas_customers").insert({
         user_id: userId,
         tenant_id: tenant.id,
@@ -187,7 +188,6 @@ export const generateAsaasCharge = createServerFn({ method: "POST" })
       // boleto-only payments may not return Pix
     }
 
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const upd = await supabaseAdmin
       .from("installments")
       .update({

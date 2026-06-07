@@ -61,6 +61,7 @@ function ManagerLayout() {
           {navItems.map((item) => {
             const active = item.exact ? pathname === item.to : pathname.startsWith(item.to);
             const Icon = item.icon;
+            const showBadge = item.to === "/manager/alertas" && criticalCount > 0;
             return (
               <Link key={item.to} to={item.to}
                 className={cn(
@@ -68,7 +69,12 @@ function ManagerLayout() {
                   active ? "bg-primary text-primary-foreground font-medium shadow-sm" : "text-zinc-300 hover:bg-zinc-800 hover:text-white"
                 )}>
                 <Icon className="size-4" />
-                {item.label}
+                <span className="flex-1">{item.label}</span>
+                {showBadge && (
+                  <span className="ml-auto inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-destructive text-destructive-foreground text-[10px] font-semibold">
+                    {criticalCount}
+                  </span>
+                )}
               </Link>
             );
           })}

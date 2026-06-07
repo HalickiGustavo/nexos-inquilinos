@@ -13,7 +13,7 @@ import { formatBRL, formatDate } from "@/lib/format";
 import { CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/_manager/financeiro")({
+export const Route = createFileRoute("/_manager/manager/financeiro")({
   component: Financeiro,
 });
 

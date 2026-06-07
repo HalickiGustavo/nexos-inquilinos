@@ -1,11 +1,23 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Download, MapPin } from "lucide-react";
+import { Download, MapPin, ClipboardCheck, FileText } from "lucide-react";
+import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useTenantActiveContract } from "@/lib/tenant-queries";
 import { formatBRL, formatDate } from "@/lib/format";
 import { downloadPdf } from "@/lib/pdf";
+import {
+  COND_LABEL,
+  KIND_LABEL,
+  STATUS_LABEL,
+  getSignedPdfUrl,
+  useTenantInspections,
+  type InspectionCondition,
+  type InspectionKind,
+  type InspectionStatus,
+} from "@/lib/inspections";
 
 export const Route = createFileRoute("/_authenticated/tenant/contrato")({
   head: () => ({ meta: [{ title: "Meu Contrato — Nexo Inquilino" }] }),

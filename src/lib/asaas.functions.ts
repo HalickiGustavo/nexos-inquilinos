@@ -157,12 +157,20 @@ export const generateAsaasCharge = createServerFn({ method: "POST" })
     // Taxa NEXO embutida no boleto + split fixo para a carteira do NEXO
     const value = baseValue + (nexoWallet && nexoFee > 0 ? nexoFee : 0);
 
+    // Asaas não permite criar cobrança com vencimento no passado.
+    // Se a data original já passou, usamos a data de hoje como vencimento do boleto,
+    // mantendo a referência da data original na descrição.
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const originalDue = inst.data.due_date as string;
+    const effectiveDueDate = originalDue < todayStr ? todayStr : originalDue;
+    const overdueNote = originalDue < todayStr ? ` (vencimento original ${originalDue} — em atraso)` : "";
+
     const body: Record<string, unknown> = {
       customer: customerId as string,
       billingType: data.billingType,
       value,
-      dueDate: inst.data.due_date,
-      description: `Aluguel — ${property?.nickname ?? ""} — venc. ${inst.data.due_date}${nexoFee > 0 ? ` (inclui taxa NEXO de R$ ${nexoFee.toFixed(2)})` : ""}`,
+      dueDate: effectiveDueDate,
+      description: `Aluguel — ${property?.nickname ?? ""} — venc. ${originalDue}${overdueNote}${nexoFee > 0 ? ` (inclui taxa NEXO de R$ ${nexoFee.toFixed(2)})` : ""}`,
       externalReference: inst.data.id,
     };
     if (nexoWallet && nexoFee > 0 && nexoFee < value) {
@@ -229,9 +237,13 @@ export const updateAsaasChargeFee = createServerFn({ method: "POST" })
     const baseValue = Number(inst.data.amount) + Number(inst.data.extra_fees ?? 0);
     const value = baseValue + nexoFee;
 
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const originalDue = inst.data.due_date as string;
+    const effectiveDueDate = originalDue < todayStr ? todayStr : originalDue;
+
     const body: Record<string, unknown> = {
       value,
-      dueDate: inst.data.due_date,
+      dueDate: effectiveDueDate,
       split: [{ walletId: nexoWallet, fixedValue: nexoFee }],
     };
 

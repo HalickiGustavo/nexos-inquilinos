@@ -227,7 +227,7 @@ export const updateAsaasChargeFee = createServerFn({ method: "POST" })
 
     const inst = await supabase
       .from("installments")
-      .select("id, amount, extra_fees, asaas_payment_id, due_date, status")
+      .select("id, amount, extra_fees, asaas_payment_id, due_date, status, contract:contracts(late_fee_percent, daily_interest_percent)")
       .eq("id", data.installmentId)
       .maybeSingle();
     if (inst.error) throw new Error(inst.error.message);
@@ -247,11 +247,21 @@ export const updateAsaasChargeFee = createServerFn({ method: "POST" })
     if (!nexoWallet || nexoFee <= 0) throw new Error("Taxa NEXO não configurada.");
 
     const baseValue = Number(inst.data.amount) + Number(inst.data.extra_fees ?? 0);
-    const value = baseValue + nexoFee;
 
     const todayStr = new Date().toISOString().slice(0, 10);
     const originalDue = inst.data.due_date as string;
-    const effectiveDueDate = originalDue < todayStr ? todayStr : originalDue;
+    const isOverdue = originalDue < todayStr;
+    const daysLate = isOverdue
+      ? Math.max(0, Math.floor((Date.parse(todayStr) - Date.parse(originalDue)) / 86400000))
+      : 0;
+    const contract = (inst.data as any).contract;
+    const finePct = Number(contract?.late_fee_percent ?? 0);
+    const dailyPct = Number(contract?.daily_interest_percent ?? 0);
+    const fine = isOverdue ? +(baseValue * finePct / 100).toFixed(2) : 0;
+    const interest = isOverdue ? +(baseValue * dailyPct / 100 * daysLate).toFixed(2) : 0;
+    const lateCharges = +(fine + interest).toFixed(2);
+    const value = +(baseValue + lateCharges + nexoFee).toFixed(2);
+    const effectiveDueDate = isOverdue ? todayStr : originalDue;
 
     const body: Record<string, unknown> = {
       value,
@@ -270,11 +280,13 @@ export const updateAsaasChargeFee = createServerFn({ method: "POST" })
       .update({
         boleto_url: payment.bankSlipUrl ?? payment.invoiceUrl ?? null,
         barcode: payment.identificationField ?? null,
+        late_charges: lateCharges,
       })
       .eq("id", inst.data.id);
 
-    return { ok: true, value };
+    return { ok: true, value, lateCharges };
   });
+
 
 // ===== Invite a tenant to register on the platform =====
 const inviteInput = z.object({

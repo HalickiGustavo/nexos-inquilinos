@@ -81,9 +81,11 @@ export type Database = {
         Row: {
           active: boolean
           created_at: string
+          daily_interest_percent: number
           due_day: number
           end_date: string
           id: string
+          late_fee_percent: number
           notes: string | null
           property_id: string
           readjustment_index: Database["public"]["Enums"]["readjustment_index"]
@@ -97,9 +99,11 @@ export type Database = {
         Insert: {
           active?: boolean
           created_at?: string
+          daily_interest_percent?: number
           due_day: number
           end_date: string
           id?: string
+          late_fee_percent?: number
           notes?: string | null
           property_id: string
           readjustment_index?: Database["public"]["Enums"]["readjustment_index"]
@@ -113,9 +117,11 @@ export type Database = {
         Update: {
           active?: boolean
           created_at?: string
+          daily_interest_percent?: number
           due_day?: number
           end_date?: string
           id?: string
+          late_fee_percent?: number
           notes?: string | null
           property_id?: string
           readjustment_index?: Database["public"]["Enums"]["readjustment_index"]
@@ -154,6 +160,7 @@ export type Database = {
           due_date: string
           extra_fees: number
           id: string
+          late_charges: number
           notes: string | null
           paid_amount: number
           payment_date: string | null
@@ -173,6 +180,7 @@ export type Database = {
           due_date: string
           extra_fees?: number
           id?: string
+          late_charges?: number
           notes?: string | null
           paid_amount?: number
           payment_date?: string | null
@@ -192,6 +200,7 @@ export type Database = {
           due_date?: string
           extra_fees?: number
           id?: string
+          late_charges?: number
           notes?: string | null
           paid_amount?: number
           payment_date?: string | null

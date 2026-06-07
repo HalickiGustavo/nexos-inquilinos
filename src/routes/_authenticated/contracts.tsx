@@ -115,7 +115,10 @@ function ContractDialog({ onDone }: { onDone: () => void }) {
     rent_amount: "",
     readjustment_index: "IGP-M",
     security_deposit: "0",
+    late_fee_percent: "2",
+    daily_interest_percent: "0.033",
   });
+
 
   return (
     <DialogContent className="max-w-2xl">
@@ -135,8 +138,11 @@ function ContractDialog({ onDone }: { onDone: () => void }) {
             rent_amount: parseNumber(form.rent_amount),
             readjustment_index: form.readjustment_index as any,
             security_deposit: parseNumber(form.security_deposit),
+            late_fee_percent: parseNumber(form.late_fee_percent),
+            daily_interest_percent: parseNumber(form.daily_interest_percent),
             active: true,
           };
+
           const { error } = await supabase.from("contracts").insert(payload);
           if (error) return toast.error(error.message);
           toast.success("Contrato criado e parcelas geradas!");
@@ -186,6 +192,9 @@ function ContractDialog({ onDone }: { onDone: () => void }) {
           </Select>
         </div>
         <div className="space-y-2"><Label>Caução (R$)</Label><Input type="number" step="0.01" value={form.security_deposit} onChange={(e) => setForm({ ...form, security_deposit: e.target.value })} /></div>
+        <div className="space-y-2"><Label>Multa por atraso (%)</Label><Input type="number" step="0.01" value={form.late_fee_percent} onChange={(e) => setForm({ ...form, late_fee_percent: e.target.value })} /></div>
+        <div className="space-y-2 sm:col-span-2"><Label>Juros ao dia (%)</Label><Input type="number" step="0.001" value={form.daily_interest_percent} onChange={(e) => setForm({ ...form, daily_interest_percent: e.target.value })} /><p className="text-xs text-muted-foreground">0,033% ao dia ≈ 1% ao mês</p></div>
+
         <DialogFooter className="sm:col-span-2">
           <Button type="submit" disabled={!form.property_id || !form.tenant_id}>Criar contrato e gerar parcelas</Button>
         </DialogFooter>

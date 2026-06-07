@@ -61,7 +61,7 @@ function Recebimentos() {
 
   const badge = (s: string) => {
     const map: Record<string, string> = {
-      pago: "bg-emerald-500/15 text-emerald-700 border-emerald-500/30",
+      pago: "bg-primary/15 text-primary border-primary/30",
       atrasado: "bg-red-500/15 text-red-700 border-red-500/30",
       pendente: "bg-amber-500/15 text-amber-700 border-amber-500/30",
     };
@@ -163,10 +163,10 @@ function Repasses() {
                 <TableCell>{i.contract?.property?.owner_name ?? "—"}</TableCell>
                 <TableCell className="text-right">{formatBRL(pago)}</TableCell>
                 <TableCell className="text-right text-zinc-500">{formatBRL(taxa)} ({fee}%)</TableCell>
-                <TableCell className="text-right font-medium text-emerald-700">{formatBRL(repasse)}</TableCell>
+                <TableCell className="text-right font-medium text-primary">{formatBRL(repasse)}</TableCell>
                 <TableCell>
                   {status === "repassado"
-                    ? <Badge className="bg-emerald-500/15 text-emerald-700 border-emerald-500/30" variant="outline">Repassado</Badge>
+                    ? <Badge className="bg-primary/15 text-primary border-primary/30" variant="outline">Repassado</Badge>
                     : <Badge className="bg-amber-500/15 text-amber-700 border-amber-500/30" variant="outline">Aguardando Repasse</Badge>}
                 </TableCell>
                 <TableCell className="text-right">

@@ -78,8 +78,8 @@ function ManagerDashboard() {
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Kpi icon={Building2} label="VGV sob gestão" value={formatBRL(vgv)} accent="emerald" />
-        <Kpi icon={TrendingUp} label="Receita do mês" value={formatBRL(receitaMes)} accent="emerald" />
+        <Kpi icon={Building2} label="VGV sob gestão" value={formatBRL(vgv)} accent="primary" />
+        <Kpi icon={TrendingUp} label="Receita do mês" value={formatBRL(receitaMes)} accent="primary" />
         <Kpi icon={PercentCircle} label="Taxa de vacância" value={`${vacancia.toFixed(1)}%`} accent="amber" />
         <Kpi icon={UserPlus} label="Leads ativos" value={String(leadsAtivos)} accent="indigo" />
       </div>
@@ -94,8 +94,8 @@ function ManagerDashboard() {
               <YAxis tickFormatter={(v) => `R$${(v / 1000).toFixed(0)}k`} />
               <Tooltip formatter={(v: any) => formatBRL(Number(v))} />
               <Legend />
-              <Bar dataKey="previsto" name="Previsto" fill="#a1a1aa" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="recebido" name="Recebido" fill="#10b981" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="previsto" name="Previsto" fill="oklch(0.7 0 0)" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="recebido" name="Recebido" fill="oklch(0.48 0.27 280)" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </CardContent>
@@ -106,7 +106,7 @@ function ManagerDashboard() {
 
 function Kpi({ icon: Icon, label, value, accent }: { icon: any; label: string; value: string; accent: string }) {
   const colors: Record<string, string> = {
-    emerald: "bg-emerald-500/10 text-emerald-600",
+    primary: "bg-primary/10 text-primary",
     amber: "bg-amber-500/10 text-amber-600",
     indigo: "bg-indigo-500/10 text-indigo-600",
   };

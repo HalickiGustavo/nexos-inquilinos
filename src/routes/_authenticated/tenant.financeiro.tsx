@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { useTenantInstallments, useTenantActiveContract } from "@/lib/tenant-queries";
 import { formatBRL, formatDate, today } from "@/lib/format";
 import { downloadPdf } from "@/lib/pdf";
+import { parseExpenses, expensesTotals } from "@/lib/variable-expenses";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/tenant/financeiro")({
@@ -53,6 +54,9 @@ function TenantFinanceiro() {
         {sorted.map((i: any) => {
           const s = statusOf(i);
           const open = openId === i.id;
+          const exps = parseExpenses(i.variable_expenses);
+          const t = expensesTotals(exps);
+          const totalDue = Number(i.amount) + t.tenant;
           return (
             <Card key={i.id} className="overflow-hidden">
               <button
@@ -60,8 +64,11 @@ function TenantFinanceiro() {
                 onClick={() => setOpenId(open ? null : i.id)}
               >
                 <div>
-                  <p className="font-medium">{formatBRL(Number(i.amount))}</p>
-                  <p className="text-xs text-muted-foreground">Vencimento {formatDate(i.due_date)}</p>
+                  <p className="font-medium">{formatBRL(totalDue)}</p>
+                  <p className="text-xs text-muted-foreground">
+                    Vencimento {formatDate(i.due_date)}
+                    {t.tenant > 0 && <span className="ml-2 text-amber-600">+ {formatBRL(t.tenant)} despesas</span>}
+                  </p>
                 </div>
                 <div className="flex items-center gap-3">
                   <Badge variant="outline" className={cn("border", badge[s].className)}>

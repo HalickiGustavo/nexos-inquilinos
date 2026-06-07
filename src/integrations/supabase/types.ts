@@ -249,6 +249,7 @@ export type Database = {
           status: Database["public"]["Enums"]["installment_status"]
           updated_at: string
           user_id: string
+          variable_expenses: Json
         }
         Insert: {
           amount: number
@@ -272,6 +273,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["installment_status"]
           updated_at?: string
           user_id: string
+          variable_expenses?: Json
         }
         Update: {
           amount?: number
@@ -295,6 +297,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["installment_status"]
           updated_at?: string
           user_id?: string
+          variable_expenses?: Json
         }
         Relationships: [
           {
@@ -465,6 +468,7 @@ export type Database = {
           code: string | null
           condo_fee: number
           created_at: string
+          default_management_fee_percent: number
           id: string
           iptu: number
           manager_id: string | null
@@ -488,6 +492,7 @@ export type Database = {
           code?: string | null
           condo_fee?: number
           created_at?: string
+          default_management_fee_percent?: number
           id?: string
           iptu?: number
           manager_id?: string | null
@@ -511,6 +516,7 @@ export type Database = {
           code?: string | null
           condo_fee?: number
           created_at?: string
+          default_management_fee_percent?: number
           id?: string
           iptu?: number
           manager_id?: string | null

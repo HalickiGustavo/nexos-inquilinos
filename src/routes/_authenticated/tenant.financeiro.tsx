@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { useTenantInstallments, useTenantActiveContract } from "@/lib/tenant-queries";
 import { formatBRL, formatDate, today } from "@/lib/format";
 import { downloadPdf } from "@/lib/pdf";
+import { parseExpenses, expensesTotals } from "@/lib/variable-expenses";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/tenant/financeiro")({
@@ -53,6 +54,9 @@ function TenantFinanceiro() {
         {sorted.map((i: any) => {
           const s = statusOf(i);
           const open = openId === i.id;
+          const exps = parseExpenses(i.variable_expenses);
+          const t = expensesTotals(exps);
+          const totalDue = Number(i.amount) + t.tenant;
           return (
             <Card key={i.id} className="overflow-hidden">
               <button
@@ -60,8 +64,11 @@ function TenantFinanceiro() {
                 onClick={() => setOpenId(open ? null : i.id)}
               >
                 <div>
-                  <p className="font-medium">{formatBRL(Number(i.amount))}</p>
-                  <p className="text-xs text-muted-foreground">Vencimento {formatDate(i.due_date)}</p>
+                  <p className="font-medium">{formatBRL(totalDue)}</p>
+                  <p className="text-xs text-muted-foreground">
+                    Vencimento {formatDate(i.due_date)}
+                    {t.tenant > 0 && <span className="ml-2 text-amber-600">+ {formatBRL(t.tenant)} despesas</span>}
+                  </p>
                 </div>
                 <div className="flex items-center gap-3">
                   <Badge variant="outline" className={cn("border", badge[s].className)}>
@@ -73,6 +80,17 @@ function TenantFinanceiro() {
 
               {open && (
                 <div className="border-t p-4 bg-muted/20 space-y-3">
+                  <div className="rounded-md border bg-background p-3 text-sm space-y-1">
+                    <div className="flex justify-between"><span>Aluguel</span><span>{formatBRL(Number(i.amount))}</span></div>
+                    {exps.filter((e) => e.payer === "inquilino").map((e) => (
+                      <div key={e.id} className="flex justify-between text-amber-700 dark:text-amber-400">
+                        <span>+ {e.description}</span><span>{formatBRL(e.amount)}</span>
+                      </div>
+                    ))}
+                    <div className="flex justify-between font-semibold pt-1 border-t mt-1">
+                      <span>Total a pagar</span><span>{formatBRL(totalDue)}</span>
+                    </div>
+                  </div>
                   {s === "pago" ? (
                     <>
                       <p className="text-sm text-muted-foreground">

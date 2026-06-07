@@ -27,7 +27,7 @@ import {
 } from "@/lib/tenant-queries";
 import { MaintenanceChat } from "@/components/MaintenanceChat";
 import { cn } from "@/lib/utils";
-import { formatDate } from "@/lib/format";
+import { formatBRL, formatDate } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/tenant/manutencoes")({
   head: () => ({ meta: [{ title: "Manutenções — Nexo Inquilino" }] }),

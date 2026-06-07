@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_manager")({
+  ssr: false,
   component: ManagerLayout,
 });
 

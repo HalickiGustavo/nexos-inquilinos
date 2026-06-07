@@ -19,6 +19,7 @@ import { Route as AuthenticatedFinancialsRouteImport } from './routes/_authentic
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedContractsRouteImport } from './routes/_authenticated/contracts'
 import { Route as AuthenticatedTenantIndexRouteImport } from './routes/_authenticated/tenant.index'
+import { Route as ApiPublicAsaasWebhookRouteImport } from './routes/api/public/asaas-webhook'
 import { Route as AuthenticatedTenantManutencoesRouteImport } from './routes/_authenticated/tenant.manutencoes'
 import { Route as AuthenticatedTenantFinanceiroRouteImport } from './routes/_authenticated/tenant.financeiro'
 import { Route as AuthenticatedTenantContratoRouteImport } from './routes/_authenticated/tenant.contrato'
@@ -74,6 +75,11 @@ const AuthenticatedTenantIndexRoute =
     path: '/tenant/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const ApiPublicAsaasWebhookRoute = ApiPublicAsaasWebhookRouteImport.update({
+  id: '/api/public/asaas-webhook',
+  path: '/api/public/asaas-webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedTenantManutencoesRoute =
   AuthenticatedTenantManutencoesRouteImport.update({
     id: '/tenant/manutencoes',
@@ -105,6 +111,7 @@ export interface FileRoutesByFullPath {
   '/tenant/contrato': typeof AuthenticatedTenantContratoRoute
   '/tenant/financeiro': typeof AuthenticatedTenantFinanceiroRoute
   '/tenant/manutencoes': typeof AuthenticatedTenantManutencoesRoute
+  '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
   '/tenant/': typeof AuthenticatedTenantIndexRoute
 }
 export interface FileRoutesByTo {
@@ -119,6 +126,7 @@ export interface FileRoutesByTo {
   '/tenant/contrato': typeof AuthenticatedTenantContratoRoute
   '/tenant/financeiro': typeof AuthenticatedTenantFinanceiroRoute
   '/tenant/manutencoes': typeof AuthenticatedTenantManutencoesRoute
+  '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
   '/tenant': typeof AuthenticatedTenantIndexRoute
 }
 export interface FileRoutesById {
@@ -135,6 +143,7 @@ export interface FileRoutesById {
   '/_authenticated/tenant/contrato': typeof AuthenticatedTenantContratoRoute
   '/_authenticated/tenant/financeiro': typeof AuthenticatedTenantFinanceiroRoute
   '/_authenticated/tenant/manutencoes': typeof AuthenticatedTenantManutencoesRoute
+  '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
   '/_authenticated/tenant/': typeof AuthenticatedTenantIndexRoute
 }
 export interface FileRouteTypes {
@@ -151,6 +160,7 @@ export interface FileRouteTypes {
     | '/tenant/contrato'
     | '/tenant/financeiro'
     | '/tenant/manutencoes'
+    | '/api/public/asaas-webhook'
     | '/tenant/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -165,6 +175,7 @@ export interface FileRouteTypes {
     | '/tenant/contrato'
     | '/tenant/financeiro'
     | '/tenant/manutencoes'
+    | '/api/public/asaas-webhook'
     | '/tenant'
   id:
     | '__root__'
@@ -180,12 +191,14 @@ export interface FileRouteTypes {
     | '/_authenticated/tenant/contrato'
     | '/_authenticated/tenant/financeiro'
     | '/_authenticated/tenant/manutencoes'
+    | '/api/public/asaas-webhook'
     | '/_authenticated/tenant/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   LoginRoute: typeof LoginRoute
+  ApiPublicAsaasWebhookRoute: typeof ApiPublicAsaasWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -260,6 +273,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTenantIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/api/public/asaas-webhook': {
+      id: '/api/public/asaas-webhook'
+      path: '/api/public/asaas-webhook'
+      fullPath: '/api/public/asaas-webhook'
+      preLoaderRoute: typeof ApiPublicAsaasWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/tenant/manutencoes': {
       id: '/_authenticated/tenant/manutencoes'
       path: '/tenant/manutencoes'
@@ -319,7 +339,18 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   LoginRoute: LoginRoute,
+  ApiPublicAsaasWebhookRoute: ApiPublicAsaasWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

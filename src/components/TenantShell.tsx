@@ -12,6 +12,7 @@ const tenantNav: ReadonlyArray<{ to: string; label: string; icon: typeof Home; e
   { to: "/tenant/financeiro", label: "Financeiro", icon: Wallet },
   { to: "/tenant/contrato", label: "Contrato", icon: FileText },
   { to: "/tenant/manutencoes", label: "Manutenções", icon: Wrench },
+  { to: "/tenant/alertas", label: "Alertas", icon: Bell },
 ];
 
 export function TenantShell() {

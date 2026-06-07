@@ -13,6 +13,7 @@ import {
   createAsaasSubaccount,
   getAsaasAccount,
 } from "@/lib/asaas.functions";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export const Route = createFileRoute("/_authenticated/integrations")({
   head: () => ({ meta: [{ title: "Integrações — Nexo" }] }),
@@ -34,6 +35,8 @@ function IntegrationsPage() {
     email: "",
     cpfCnpj: "",
     mobilePhone: "",
+    companyType: "" as "" | "MEI" | "LIMITED" | "INDIVIDUAL" | "ASSOCIATION",
+    birthDate: "",
     address: "",
     addressNumber: "",
     province: "",

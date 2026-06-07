@@ -116,8 +116,9 @@ export const generateAsaasCharge = createServerFn({ method: "POST" })
     const property = (inst.data as any).contract?.property;
     if (!tenant) throw new Error("Contrato sem inquilino vinculado");
 
-    // Owner Asaas account
-    const acc = await supabase
+    // api_key is server-only — read via admin client (column SELECT revoked for authenticated)
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const acc = await supabaseAdmin
       .from("asaas_accounts")
       .select("api_key, status")
       .eq("user_id", userId)

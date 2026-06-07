@@ -237,9 +237,13 @@ export const updateAsaasChargeFee = createServerFn({ method: "POST" })
     const baseValue = Number(inst.data.amount) + Number(inst.data.extra_fees ?? 0);
     const value = baseValue + nexoFee;
 
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const originalDue = inst.data.due_date as string;
+    const effectiveDueDate = originalDue < todayStr ? todayStr : originalDue;
+
     const body: Record<string, unknown> = {
       value,
-      dueDate: inst.data.due_date,
+      dueDate: effectiveDueDate,
       split: [{ walletId: nexoWallet, fixedValue: nexoFee }],
     };
 

@@ -13,6 +13,7 @@ import {
   createAsaasSubaccount,
   getAsaasAccount,
 } from "@/lib/asaas.functions";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export const Route = createFileRoute("/_authenticated/integrations")({
   head: () => ({ meta: [{ title: "Integrações — Nexo" }] }),
@@ -34,6 +35,8 @@ function IntegrationsPage() {
     email: "",
     cpfCnpj: "",
     mobilePhone: "",
+    companyType: "" as "" | "MEI" | "LIMITED" | "INDIVIDUAL" | "ASSOCIATION",
+    birthDate: "",
     address: "",
     addressNumber: "",
     province: "",
@@ -100,7 +103,11 @@ function IntegrationsPage() {
               e.preventDefault();
               setSaving(true);
               try {
-                const res = await submit({ data: form });
+                const payload: any = { ...form };
+                if (!payload.companyType) delete payload.companyType;
+                if (!payload.birthDate) delete payload.birthDate;
+                if (!payload.mobilePhone) delete payload.mobilePhone;
+                const res = await submit({ data: payload });
                 toast.success("Subconta criada!");
                 if (res.onboardingUrl) {
                   toast.info("Complete o onboarding KYC no Asaas.");
@@ -121,8 +128,25 @@ function IntegrationsPage() {
             <Field label="CPF / CNPJ" required>
               <Input value={form.cpfCnpj} onChange={(e) => setForm({ ...form, cpfCnpj: e.target.value })} required />
             </Field>
+            <Field label="Tipo de empresa" required>
+              <Select
+                value={form.companyType}
+                onValueChange={(v) => setForm({ ...form, companyType: v as any })}
+              >
+                <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="INDIVIDUAL">Pessoa Física</SelectItem>
+                  <SelectItem value="MEI">MEI</SelectItem>
+                  <SelectItem value="LIMITED">LTDA / Limitada</SelectItem>
+                  <SelectItem value="ASSOCIATION">Associação</SelectItem>
+                </SelectContent>
+              </Select>
+            </Field>
             <Field label="Celular">
               <Input value={form.mobilePhone} onChange={(e) => setForm({ ...form, mobilePhone: e.target.value })} placeholder="(11) 99999-9999" />
+            </Field>
+            <Field label="Data de nascimento (PF)">
+              <Input type="date" value={form.birthDate} onChange={(e) => setForm({ ...form, birthDate: e.target.value })} />
             </Field>
             <Field label="CEP" required>
               <Input value={form.postalCode} onChange={(e) => setForm({ ...form, postalCode: e.target.value })} required />

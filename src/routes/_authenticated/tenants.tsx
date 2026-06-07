@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { Plus, Pencil, Trash2, Users, Mail, Phone } from "lucide-react";
+import { Plus, Pencil, Trash2, Users, Mail, Phone, Send } from "lucide-react";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useTenants, useInvalidate, type Tenant } from "@/lib/queries";
+import { inviteTenantUser } from "@/lib/asaas.functions";
 
 export const Route = createFileRoute("/_authenticated/tenants")({
   head: () => ({ meta: [{ title: "Inquilinos — ImovelPro" }] }),
@@ -69,6 +71,7 @@ function TenantsPage() {
                     </Button>
                   </DialogTrigger>
                 </Dialog>
+                {t.email && <InviteTenantButton tenant={t} />}
                 <Button variant="outline" size="sm" onClick={async () => {
                   if (!confirm("Excluir este inquilino?")) return;
                   const { error } = await supabase.from("tenants").delete().eq("id", t.id);
@@ -117,12 +120,25 @@ function TenantDialog({ editing, onDone }: { editing: Tenant | null; onDone: () 
             notes: form.notes || null,
             user_id_link: form.user_id_link?.trim() || null,
           };
-          const { error } = editing
-            ? await supabase.from("tenants").update(payload).eq("id", editing.id)
-            : await supabase.from("tenants").insert(payload);
+          const isNew = !editing;
+          const { data: saved, error } = editing
+            ? await supabase.from("tenants").update(payload).eq("id", editing.id).select().single()
+            : await supabase.from("tenants").insert(payload).select().single();
           if (error) return toast.error(error.message);
           toast.success(editing ? "Inquilino atualizado" : "Inquilino cadastrado");
           invalidate(["tenants"]);
+
+          // Auto-invite new tenants that have an email
+          if (isNew && saved?.email && saved?.id) {
+            try {
+              const { inviteTenantUser: invite } = await import("@/lib/asaas.functions");
+              const redirectUrl = `${window.location.origin}/tenant-setup`;
+              await invite({ data: { tenantId: saved.id, redirectUrl } });
+              toast.success("Convite de acesso enviado por e-mail");
+            } catch (err: any) {
+              toast.warning(`Inquilino salvo, mas falhou o convite: ${err?.message ?? "erro"}`);
+            }
+          }
           onDone();
         }}
       >
@@ -146,5 +162,32 @@ function TenantDialog({ editing, onDone }: { editing: Tenant | null; onDone: () 
         <DialogFooter><Button type="submit">{editing ? "Salvar" : "Cadastrar"}</Button></DialogFooter>
       </form>
     </DialogContent>
+  );
+}
+
+function InviteTenantButton({ tenant }: { tenant: Tenant }) {
+  const invite = useServerFn(inviteTenantUser);
+  const [loading, setLoading] = useState(false);
+  return (
+    <Button
+      variant="outline"
+      size="sm"
+      disabled={loading}
+      title="Reenviar convite por e-mail"
+      onClick={async () => {
+        setLoading(true);
+        try {
+          const redirectUrl = `${window.location.origin}/tenant-setup`;
+          await invite({ data: { tenantId: tenant.id, redirectUrl } });
+          toast.success("Convite enviado para " + tenant.email);
+        } catch (e: any) {
+          toast.error(e?.message ?? "Falha ao enviar convite");
+        } finally {
+          setLoading(false);
+        }
+      }}
+    >
+      <Send className="size-3.5" />
+    </Button>
   );
 }

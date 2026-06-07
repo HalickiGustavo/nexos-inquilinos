@@ -15,7 +15,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { supabase } from "@/integrations/supabase/client";
 import { useInstallments, useInvalidate, type Installment } from "@/lib/queries";
 import { formatBRL, formatDate, parseNumber } from "@/lib/format";
-import { generateAsaasCharge } from "@/lib/asaas.functions";
+import { generateAsaasCharge, updateAsaasChargeFee } from "@/lib/asaas.functions";
 
 export const Route = createFileRoute("/_authenticated/financials")({
   head: () => ({ meta: [{ title: "Finanças — ImovelPro" }] }),
@@ -149,6 +149,7 @@ function FinancialsPage() {
                               <td className="p-2"><StatusBadge status={s} /></td>
                               <td className="p-2 text-right whitespace-nowrap space-x-1">
                                 {i.status !== "pago" && !i.asaas_payment_id && <GenerateBoletoButton installment={i} />}
+                                {i.asaas_payment_id && i.status !== "pago" && <UpdateBoletoButton installment={i} />}
                                 {i.boleto_url && (
                                   <Button size="sm" variant="outline" asChild>
                                     <a href={i.boleto_url} target="_blank" rel="noreferrer">
@@ -210,6 +211,35 @@ function GenerateBoletoButton({ installment }: { installment: any }) {
     >
       {loading ? <Loader2 className="size-3.5 mr-1 animate-spin" /> : <FileText className="size-3.5 mr-1" />}
       Gerar boleto
+    </Button>
+  );
+}
+
+function UpdateBoletoButton({ installment }: { installment: any }) {
+  const update = useServerFn(updateAsaasChargeFee);
+  const invalidate = useInvalidate();
+  const [loading, setLoading] = useState(false);
+  return (
+    <Button
+      size="sm"
+      variant="outline"
+      disabled={loading}
+      title="Atualizar valor do boleto incluindo taxa NEXO"
+      onClick={async () => {
+        setLoading(true);
+        try {
+          await update({ data: { installmentId: installment.id } });
+          toast.success("Valor do boleto atualizado");
+          invalidate(["installments"]);
+        } catch (e: any) {
+          toast.error(e?.message ?? "Falha ao atualizar");
+        } finally {
+          setLoading(false);
+        }
+      }}
+    >
+      {loading ? <Loader2 className="size-3.5 mr-1 animate-spin" /> : <Wallet className="size-3.5 mr-1" />}
+      Atualizar taxa
     </Button>
   );
 }

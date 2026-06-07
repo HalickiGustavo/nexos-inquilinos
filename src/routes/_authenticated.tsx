@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { TenantShell } from "@/components/TenantShell";
+import { InstallPwaButton } from "@/components/InstallPwaButton";
 import nexoLogoAsset from "@/assets/nexo-logo.png.asset.json";
 
 export const Route = createFileRoute("/_authenticated")({
@@ -116,7 +117,10 @@ function AuthLayout() {
       {/* Mobile top bar */}
       <div className="flex-1 flex flex-col min-w-0">
         <header className="md:hidden flex items-center justify-between p-4 border-b bg-card">
-          <img src={nexoLogo} alt="Nexo" className="h-7 w-auto" />
+          <div className="flex items-center gap-2">
+            <img src={nexoLogo} alt="Nexo" className="h-7 w-auto" />
+            <InstallPwaButton />
+          </div>
 
           <Button variant="ghost" size="sm" onClick={async () => { await signOut(); navigate({ to: "/login" }); }}>
             <LogOut className="size-4" />

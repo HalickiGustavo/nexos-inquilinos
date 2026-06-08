@@ -22,6 +22,7 @@ import { Route as AuthenticatedIntegrationsRouteImport } from './routes/_authent
 import { Route as AuthenticatedFinancialsRouteImport } from './routes/_authenticated/financials'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedContractsRouteImport } from './routes/_authenticated/contracts'
+import { Route as AuthenticatedContaCorrenteRouteImport } from './routes/_authenticated/conta-corrente'
 import { Route as ManagerManagerIndexRouteImport } from './routes/_manager/manager.index'
 import { Route as AuthenticatedTenantIndexRouteImport } from './routes/_authenticated/tenant.index'
 import { Route as ApiPublicAsaasWebhookRouteImport } from './routes/api/public/asaas-webhook'
@@ -102,6 +103,12 @@ const AuthenticatedContractsRoute = AuthenticatedContractsRouteImport.update({
   path: '/contracts',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedContaCorrenteRoute =
+  AuthenticatedContaCorrenteRouteImport.update({
+    id: '/conta-corrente',
+    path: '/conta-corrente',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const ManagerManagerIndexRoute = ManagerManagerIndexRouteImport.update({
   id: '/manager/',
   path: '/manager/',
@@ -185,6 +192,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/manager-setup': typeof ManagerSetupRoute
   '/tenant-setup': typeof TenantSetupRoute
+  '/conta-corrente': typeof AuthenticatedContaCorrenteRoute
   '/contracts': typeof AuthenticatedContractsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/financials': typeof AuthenticatedFinancialsRoute
@@ -212,6 +220,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/manager-setup': typeof ManagerSetupRoute
   '/tenant-setup': typeof TenantSetupRoute
+  '/conta-corrente': typeof AuthenticatedContaCorrenteRoute
   '/contracts': typeof AuthenticatedContractsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/financials': typeof AuthenticatedFinancialsRoute
@@ -241,6 +250,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/manager-setup': typeof ManagerSetupRoute
   '/tenant-setup': typeof TenantSetupRoute
+  '/_authenticated/conta-corrente': typeof AuthenticatedContaCorrenteRoute
   '/_authenticated/contracts': typeof AuthenticatedContractsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/financials': typeof AuthenticatedFinancialsRoute
@@ -271,6 +281,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/manager-setup'
     | '/tenant-setup'
+    | '/conta-corrente'
     | '/contracts'
     | '/dashboard'
     | '/financials'
@@ -298,6 +309,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/manager-setup'
     | '/tenant-setup'
+    | '/conta-corrente'
     | '/contracts'
     | '/dashboard'
     | '/financials'
@@ -326,6 +338,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/manager-setup'
     | '/tenant-setup'
+    | '/_authenticated/conta-corrente'
     | '/_authenticated/contracts'
     | '/_authenticated/dashboard'
     | '/_authenticated/financials'
@@ -452,6 +465,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedContractsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/conta-corrente': {
+      id: '/_authenticated/conta-corrente'
+      path: '/conta-corrente'
+      fullPath: '/conta-corrente'
+      preLoaderRoute: typeof AuthenticatedContaCorrenteRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_manager/manager/': {
       id: '/_manager/manager/'
       path: '/manager'
@@ -554,6 +574,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteChildren {
+  AuthenticatedContaCorrenteRoute: typeof AuthenticatedContaCorrenteRoute
   AuthenticatedContractsRoute: typeof AuthenticatedContractsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedFinancialsRoute: typeof AuthenticatedFinancialsRoute
@@ -570,6 +591,7 @@ interface AuthenticatedRouteChildren {
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedContaCorrenteRoute: AuthenticatedContaCorrenteRoute,
   AuthenticatedContractsRoute: AuthenticatedContractsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedFinancialsRoute: AuthenticatedFinancialsRoute,

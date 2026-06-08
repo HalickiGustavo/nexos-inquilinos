@@ -10,6 +10,7 @@ import {
   LogOut,
   Loader2,
   Plug,
+  Coins,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useUserRole } from "@/lib/useUserRole";

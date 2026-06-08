@@ -179,6 +179,7 @@ function NewRequestDialog({ onDone }: { onDone: () => void }) {
   const { data: contract } = useTenantActiveContract();
   const qc = useQueryClient();
   const [form, setForm] = useState({ title: "", description: "", category: "eletrica" });
+  const [evidence, setEvidence] = useState<string[]>([]);
 
   const create = useMutation({
     mutationFn: async () => {
@@ -194,6 +195,7 @@ function NewRequestDialog({ onDone }: { onDone: () => void }) {
         cost: 0,
         status: "pendente",
         responsible: "proprietario",
+        evidence_urls: evidence,
       } as any);
       if (error) throw error;
     },

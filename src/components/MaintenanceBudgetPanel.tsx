@@ -103,6 +103,7 @@ function SubmitBudgetDialog({
   const invalidate = useInvalidate();
   const [amount, setAmount] = useState(item.budget_amount ? String(item.budget_amount) : "");
   const [notes, setNotes] = useState(item.budget_notes ?? "");
+  const [provider, setProvider] = useState(item.provider_name ?? "");
   const [saving, setSaving] = useState(false);
 
   async function submit(e: React.FormEvent) {
@@ -113,15 +114,16 @@ function SubmitBudgetDialog({
       .update({
         budget_amount: parseNumber(amount),
         budget_notes: notes || null,
+        provider_name: provider || null,
         budget_status: "pendente",
         budget_decided_at: null,
         budget_rent_deduction: false,
         budget_applied_installment_id: null,
-      })
+      } as any)
       .eq("id", item.id);
     setSaving(false);
     if (error) return toast.error(error.message);
-    toast.success("Orçamento enviado para aprovação");
+    toast.success("Orçamento enviado ao proprietário");
     invalidate(["maintenances"]);
     onOpenChange(false);
   }

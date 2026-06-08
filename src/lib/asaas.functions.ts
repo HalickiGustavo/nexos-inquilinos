@@ -377,15 +377,17 @@ export const linkTenantUser = createServerFn({ method: "POST" })
 
 // ===== Get NEXO fee from Supabase settings =====
 export const getNexoFeeSetting = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
-    const { supabase } = context;
-    const { data, error } = await (supabase as any)
-      .from("platform_settings")
-      .select("value")
-      .eq("key", "nexo_boleto_fee")
-      .maybeSingle();
-    if (error) throw new Error(error.message);
-    const fee = data?.value ? Number(data.value) : 24.99;
-    return { fee };
+  .handler(async () => {
+    try {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { data } = await (supabaseAdmin as any)
+        .from("platform_settings")
+        .select("value")
+        .eq("key", "nexo_boleto_fee")
+        .maybeSingle();
+      const fee = data?.value ? Number(data.value) : 24.99;
+      return { fee };
+    } catch {
+      return { fee: 24.99 };
+    }
   });

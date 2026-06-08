@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { createAsaasSubaccount, getAsaasAccount } from "@/lib/asaas.functions";
+import { createAsaasSubaccount, getAsaasAccount, getNexoFeeSetting } from "@/lib/asaas.functions";
 import { formatBRL } from "@/lib/format";
 
 export const Route = createFileRoute("/_manager/manager/integracao")({

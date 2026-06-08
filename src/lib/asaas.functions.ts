@@ -152,7 +152,12 @@ export const generateAsaasCharge = createServerFn({ method: "POST" })
       });
     }
 
-    const nexoFee = getNexoFee();
+    const { data: setting } = await supabaseAdmin
+      .from("platform_settings")
+      .select("value")
+      .eq("key", "nexo_boleto_fee")
+      .maybeSingle();
+    const nexoFee = setting?.value ? Number(setting.value) : getNexoFee();
     const nexoWallet = getNexoWalletId();
     const baseValue = Number(inst.data.amount) + Number(inst.data.extra_fees ?? 0);
 
@@ -242,7 +247,12 @@ export const updateAsaasChargeFee = createServerFn({ method: "POST" })
       .maybeSingle();
     const ownerApiKey = acc.data?.api_key || undefined;
 
-    const nexoFee = getNexoFee();
+    const { data: setting } = await supabaseAdmin
+      .from("platform_settings")
+      .select("value")
+      .eq("key", "nexo_boleto_fee")
+      .maybeSingle();
+    const nexoFee = setting?.value ? Number(setting.value) : getNexoFee();
     const nexoWallet = getNexoWalletId();
     if (!nexoWallet || nexoFee <= 0) throw new Error("Taxa NEXO não configurada.");
 

@@ -11,6 +11,7 @@ import { Toaster } from "sonner";
 
 import appCss from "../styles.css?url";
 import { AuthProvider } from "../lib/auth";
+import { ThemeProvider } from "@/components/ThemeProvider";
 
 export const Route = createRootRoute({
   head: () => ({
@@ -85,11 +86,11 @@ function RootErrorComponent({ error, reset }: { error: Error; reset: () => void 
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="pt-BR" className="dark">
+    <html lang="pt-BR">
       <head>
         <HeadContent />
       </head>
-      <body className="bg-black text-white">
+      <body>
         {children}
         <Scripts />
       </body>
@@ -103,10 +104,12 @@ function RootComponent() {
   }));
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <Outlet />
-        <Toaster richColors position="top-right" />
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <Outlet />
+          <Toaster richColors position="top-right" />
+        </AuthProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }

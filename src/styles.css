@@ -53,43 +53,43 @@
 
 :root {
   --radius: 0.875rem;
-  /* NEXO premium dark — pitch black + neon violet */
-  --background: oklch(0.05 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.13 0.01 280);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.11 0.01 280);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.68 0.22 295); /* neon violet #A78BFA-ish */
-  --primary-foreground: oklch(0.08 0.02 280);
-  --secondary: oklch(0.18 0.01 280);
-  --secondary-foreground: oklch(0.96 0.01 280);
-  --muted: oklch(0.16 0.01 280);
-  --muted-foreground: oklch(0.68 0.02 270);
-  --accent: oklch(0.22 0.06 295);
-  --accent-foreground: oklch(0.95 0.04 295);
+  /* NEXO light theme */
+  --background: oklch(0.99 0 0);
+  --foreground: oklch(0.15 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.15 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.15 0 0);
+  --primary: oklch(0.58 0.22 295);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.96 0.01 280);
+  --secondary-foreground: oklch(0.2 0.01 280);
+  --muted: oklch(0.96 0.01 280);
+  --muted-foreground: oklch(0.5 0.02 270);
+  --accent: oklch(0.96 0.06 295);
+  --accent-foreground: oklch(0.2 0.04 295);
   --destructive: oklch(0.62 0.24 25);
   --destructive-foreground: oklch(0.99 0.01 27);
   --success: oklch(0.74 0.18 155);
   --success-foreground: oklch(0.1 0.04 155);
   --warning: oklch(0.82 0.16 75);
   --warning-foreground: oklch(0.18 0.05 75);
-  --border: oklch(1 0 0 / 8%);
-  --input: oklch(1 0 0 / 10%);
-  --ring: oklch(0.68 0.22 295);
-  --chart-1: oklch(0.68 0.22 295);
+  --border: oklch(0.85 0 0 / 20%);
+  --input: oklch(0.85 0 0 / 25%);
+  --ring: oklch(0.58 0.22 295);
+  --chart-1: oklch(0.58 0.22 295);
   --chart-2: oklch(0.74 0.18 155);
   --chart-3: oklch(0.82 0.16 75);
   --chart-4: oklch(0.62 0.24 25);
   --chart-5: oklch(0.65 0.13 245);
-  --sidebar: oklch(0.09 0.01 280);
-  --sidebar-foreground: oklch(0.96 0.01 280);
-  --sidebar-primary: oklch(0.68 0.22 295);
-  --sidebar-primary-foreground: oklch(0.08 0.02 280);
-  --sidebar-accent: oklch(0.16 0.02 280);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 8%);
-  --sidebar-ring: oklch(0.68 0.22 295);
+  --sidebar: oklch(0.97 0.01 280);
+  --sidebar-foreground: oklch(0.2 0.01 280);
+  --sidebar-primary: oklch(0.58 0.22 295);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.93 0.02 280);
+  --sidebar-accent-foreground: oklch(0.2 0.01 280);
+  --sidebar-border: oklch(0.85 0 0 / 20%);
+  --sidebar-ring: oklch(0.58 0.22 295);
 }
 
 .dark {
@@ -129,7 +129,7 @@
 @layer base {
   * { border-color: var(--color-border); }
   html, body {
-    background-color: #000;
+    background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
@@ -148,10 +148,10 @@
   }
 }
 
-/* Globally remap legacy hardcoded light surfaces to the dark palette
+/* Dark-mode overrides: remap legacy hardcoded light surfaces to the dark palette
    so screens that still use bg-white / bg-zinc-50 / bg-zinc-100 / text-zinc-900
    stay on-brand without rewriting every file. */
-@layer utilities {
+.dark {
   .bg-white { background-color: #0a0a0a !important; }
   .bg-zinc-50 { background-color: #09090b !important; }
   .bg-zinc-100 { background-color: #111113 !important; }

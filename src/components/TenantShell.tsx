@@ -3,9 +3,9 @@ import { Home, Wallet, FileText, Wrench, Bell, LogOut } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { supabase } from "@/integrations/supabase/client";
 import { InstallPwaButton } from "@/components/InstallPwaButton";
 import nexoLogoAsset from "@/assets/nexo-logo.png.asset.json";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const tenantNav: ReadonlyArray<{ to: string; label: string; icon: typeof Home; exact?: boolean }> = [
   { to: "/tenant", label: "Início", icon: Home, exact: true },
@@ -37,6 +37,7 @@ export function TenantShell() {
             <span className="hidden sm:block text-xs text-muted-foreground truncate max-w-[180px]">
               {user?.email}
             </span>
+            <ThemeToggle size="icon" variant="ghost" />
             <Button
               variant="ghost"
               size="icon"
@@ -59,7 +60,7 @@ export function TenantShell() {
 
       {/* Bottom nav (mobile) + sidebar-like row (desktop) */}
       <nav className="fixed bottom-0 inset-x-0 z-30 md:static md:max-w-3xl md:mx-auto bg-card border-t md:border-0 md:hidden">
-        <div className="grid grid-cols-5">
+        <div className="grid grid-cols-6">
           {tenantNav.map((item) => {
             const active = isActive(item.to, item.exact);
             const Icon = item.icon;
@@ -77,6 +78,16 @@ export function TenantShell() {
               </Link>
             );
           })}
+          <button
+            onClick={async () => {
+              await signOut();
+              navigate({ to: "/login", replace: true });
+            }}
+            className="flex flex-col items-center justify-center gap-1 py-2.5 text-[11px] transition-colors text-muted-foreground hover:text-foreground"
+          >
+            <LogOut className="size-5" />
+            Sair
+          </button>
         </div>
       </nav>
 

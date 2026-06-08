@@ -7,6 +7,7 @@ import { useUserRole } from "@/lib/useUserRole";
 import { useManagerAlerts } from "@/lib/alerts";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export const Route = createFileRoute("/_manager")({
   ssr: false,
@@ -79,8 +80,9 @@ function ManagerLayout() {
             );
           })}
         </nav>
-        <div className="p-3 border-t border-zinc-800">
+        <div className="p-3 border-t border-zinc-800 space-y-1">
           <div className="px-3 py-2 text-xs text-zinc-500 truncate">{user.email}</div>
+          <ThemeToggle />
           <Button variant="ghost" className="w-full justify-start text-zinc-300 hover:bg-zinc-800 hover:text-white"
             onClick={async () => { await signOut(); navigate({ to: "/login", replace: true }); }}>
             <LogOut className="size-4 mr-2" />Sair
@@ -93,12 +95,19 @@ function ManagerLayout() {
           <Link to="/manager" className="flex items-center">
             <img src={nexoLogo.url} alt="NEXO" className="h-8 w-auto rounded-md bg-white p-1" />
           </Link>
-          <Link to="/manager/alertas" className="relative size-9 grid place-items-center rounded-full text-zinc-200 hover:bg-white/5">
-            <Bell className="size-5" strokeWidth={1.5} />
-            {criticalCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 inline-flex items-center justify-center min-w-4 h-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[9px] font-semibold">{criticalCount}</span>
-            )}
-          </Link>
+          <div className="flex items-center gap-2">
+            <ThemeToggle size="icon" variant="ghost" />
+            <Link to="/manager/alertas" className="relative size-9 grid place-items-center rounded-full text-zinc-200 hover:bg-white/5">
+              <Bell className="size-5" strokeWidth={1.5} />
+              {criticalCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 inline-flex items-center justify-center min-w-4 h-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[9px] font-semibold">{criticalCount}</span>
+              )}
+            </Link>
+            <Button variant="ghost" size="icon" className="text-zinc-200 hover:bg-white/5"
+              onClick={async () => { await signOut(); navigate({ to: "/login", replace: true }); }}>
+              <LogOut className="size-5" />
+            </Button>
+          </div>
         </div>
         <nav className="md:hidden flex overflow-x-auto gap-1 p-2 border-b border-white/5 bg-black text-zinc-100">
           {navItems.map((item) => {
@@ -112,6 +121,12 @@ function ManagerLayout() {
               </Link>
             );
           })}
+          <button
+            onClick={async () => { await signOut(); navigate({ to: "/login", replace: true }); }}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs whitespace-nowrap border bg-zinc-900 text-zinc-300 border-white/10"
+          >
+            <LogOut className="size-3.5" />Sair
+          </button>
         </nav>
         <main className="flex-1 overflow-y-auto"><Outlet /></main>
       </div>

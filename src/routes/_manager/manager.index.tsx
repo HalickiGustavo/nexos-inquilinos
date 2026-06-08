@@ -1,9 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
-import { Bell, Menu, FilePlus, FileSearch, Home, BarChart3, ChevronDown } from "lucide-react";
+import { FilePlus, FileSearch, Home, BarChart3, ChevronDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import nexoLogo from "@/assets/nexo-logo.jpeg.asset.json";
 import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
@@ -150,17 +149,6 @@ function ManagerDashboard() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <header className="sticky top-0 z-30 flex items-center justify-between px-5 py-4 bg-black/80 backdrop-blur-xl border-b border-white/5">
-        <img src={nexoLogo.url} alt="NEXO" className="h-9 w-auto rounded-md bg-white p-1.5" />
-        <div className="flex items-center gap-4">
-          <Link to="/manager/alertas" aria-label="Notificações" className="size-9 grid place-items-center rounded-full text-zinc-200 hover:bg-white/5">
-            <Bell className="size-5" strokeWidth={1.5} />
-          </Link>
-          <button aria-label="Menu" className="size-9 grid place-items-center rounded-full text-zinc-200 hover:bg-white/5">
-            <Menu className="size-5" strokeWidth={1.5} />
-          </button>
-        </div>
-      </header>
 
       <div className="px-5 py-5 space-y-7 max-w-md mx-auto md:max-w-2xl">
         <section

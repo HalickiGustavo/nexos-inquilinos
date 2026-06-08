@@ -60,7 +60,7 @@ export function TenantShell() {
 
       {/* Bottom nav (mobile) + sidebar-like row (desktop) */}
       <nav className="fixed bottom-0 inset-x-0 z-30 md:static md:max-w-3xl md:mx-auto bg-card border-t md:border-0 md:hidden">
-        <div className="grid grid-cols-5">
+        <div className="grid grid-cols-6">
           {tenantNav.map((item) => {
             const active = isActive(item.to, item.exact);
             const Icon = item.icon;
@@ -78,6 +78,16 @@ export function TenantShell() {
               </Link>
             );
           })}
+          <button
+            onClick={async () => {
+              await signOut();
+              navigate({ to: "/login", replace: true });
+            }}
+            className="flex flex-col items-center justify-center gap-1 py-2.5 text-[11px] transition-colors text-muted-foreground hover:text-foreground"
+          >
+            <LogOut className="size-5" />
+            Sair
+          </button>
         </div>
       </nav>
 

@@ -121,46 +121,22 @@ function TenantFinanceiro() {
                     </>
                   ) : (
                     <>
-                      {i.pix_qrcode && (
-                        <div className="flex justify-center">
-                          <img
-                            src={`data:image/png;base64,${i.pix_qrcode}`}
-                            alt="QR Code Pix"
-                            className="w-48 h-48 rounded border bg-white p-2"
-                          />
-                        </div>
-                      )}
-                      <div>
-                        <p className="text-xs uppercase text-muted-foreground tracking-wide">Pix Copia e Cola</p>
-                        <p className="font-mono text-xs break-all">{i.pix_payload ?? PIX_KEY}</p>
-                      </div>
-                      {i.barcode && (
-                        <div>
-                          <p className="text-xs uppercase text-muted-foreground tracking-wide">Linha digitável</p>
-                          <p className="font-mono text-xs break-all text-muted-foreground">{i.barcode}</p>
-                        </div>
-                      )}
-                      <div className="flex flex-wrap gap-2">
-                        <Button
-                          size="sm"
-                          onClick={() => {
-                            navigator.clipboard.writeText(i.pix_payload ?? PIX_KEY);
-                            toast.success("Pix copiado!");
-                          }}
-                        >
-                          <Copy className="size-4 mr-2" /> Copiar Pix
+                      <Button
+                        size="lg"
+                        className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold shadow-md"
+                        onClick={() => setPixFor(i)}
+                      >
+                        <QrCode className="size-5 mr-2" /> Pagar com PIX — {formatBRL(totalDue)}
+                      </Button>
+                      {i.boleto_url ? (
+                        <Button variant="outline" className="w-full" asChild>
+                          <a href={i.boleto_url} target="_blank" rel="noreferrer">
+                            <Download className="size-4 mr-2" /> Visualizar Boleto PDF
+                          </a>
                         </Button>
-                        {i.boleto_url && (
-                          <Button size="sm" variant="outline" asChild>
-                            <a href={i.boleto_url} target="_blank" rel="noreferrer">
-                              <Download className="size-4 mr-2" /> Abrir boleto
-                            </a>
-                          </Button>
-                        )}
-                      </div>
-                      {!i.boleto_url && (
-                        <p className="text-xs text-muted-foreground">
-                          Aguardando emissão do boleto pelo proprietário.
+                      ) : (
+                        <p className="text-xs text-muted-foreground text-center">
+                          Boleto em emissão. Use o PIX acima para pagamento imediato.
                         </p>
                       )}
                     </>
@@ -171,6 +147,11 @@ function TenantFinanceiro() {
           );
         })}
       </div>
+      <PixPaymentDialog
+        installment={pixFor}
+        open={!!pixFor}
+        onOpenChange={(o) => !o && setPixFor(null)}
+      />
     </div>
   );
 }

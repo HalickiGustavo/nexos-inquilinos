@@ -140,9 +140,14 @@ function Recebimentos() {
                   <TableCell className="text-right font-medium">{formatBRL(due)}</TableCell>
                   <TableCell>{badge(i.status)}</TableCell>
                   <TableCell className="text-right">
-                    <Button size="sm" variant="outline" onClick={() => setExpensesFor(i)}>
-                      <Receipt className="size-4 mr-1" /> Despesas
-                    </Button>
+                    <div className="flex justify-end gap-2 flex-wrap">
+                      <Button size="sm" variant="outline" onClick={() => setSplitFor(i)}>
+                        <Sparkles className="size-4 mr-1" /> Split
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => setExpensesFor(i)}>
+                        <Receipt className="size-4 mr-1" /> Despesas
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               );
@@ -159,6 +164,11 @@ function Recebimentos() {
           onSaved={() => qc.invalidateQueries({ queryKey: ["mgr-receb"] })}
         />
       )}
+      <SplitBreakdownDialog
+        installment={splitFor}
+        open={!!splitFor}
+        onOpenChange={(o) => !o && setSplitFor(null)}
+      />
     </div>
   );
 }

@@ -121,6 +121,12 @@ function ManagerLayout() {
               </Link>
             );
           })}
+          <button
+            onClick={async () => { await signOut(); navigate({ to: "/login", replace: true }); }}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs whitespace-nowrap border bg-zinc-900 text-zinc-300 border-white/10"
+          >
+            <LogOut className="size-3.5" />Sair
+          </button>
         </nav>
         <main className="flex-1 overflow-y-auto"><Outlet /></main>
       </div>

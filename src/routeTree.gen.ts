@@ -30,6 +30,7 @@ import { Route as ManagerManagerVistoriasRouteImport } from './routes/_manager/m
 import { Route as ManagerManagerIntegracaoRouteImport } from './routes/_manager/manager.integracao'
 import { Route as ManagerManagerFinanceiroRouteImport } from './routes/_manager/manager.financeiro'
 import { Route as ManagerManagerEquipeRouteImport } from './routes/_manager/manager.equipe'
+import { Route as ManagerManagerDimobRouteImport } from './routes/_manager/manager.dimob'
 import { Route as ManagerManagerCrmRouteImport } from './routes/_manager/manager.crm'
 import { Route as ManagerManagerCarteiraRouteImport } from './routes/_manager/manager.carteira'
 import { Route as ManagerManagerAlertasRouteImport } from './routes/_manager/manager.alertas'
@@ -147,6 +148,11 @@ const ManagerManagerEquipeRoute = ManagerManagerEquipeRouteImport.update({
   path: '/manager/equipe',
   getParentRoute: () => ManagerRoute,
 } as any)
+const ManagerManagerDimobRoute = ManagerManagerDimobRouteImport.update({
+  id: '/manager/dimob',
+  path: '/manager/dimob',
+  getParentRoute: () => ManagerRoute,
+} as any)
 const ManagerManagerCrmRoute = ManagerManagerCrmRouteImport.update({
   id: '/manager/crm',
   path: '/manager/crm',
@@ -207,6 +213,7 @@ export interface FileRoutesByFullPath {
   '/manager/alertas': typeof ManagerManagerAlertasRoute
   '/manager/carteira': typeof ManagerManagerCarteiraRoute
   '/manager/crm': typeof ManagerManagerCrmRoute
+  '/manager/dimob': typeof ManagerManagerDimobRoute
   '/manager/equipe': typeof ManagerManagerEquipeRoute
   '/manager/financeiro': typeof ManagerManagerFinanceiroRoute
   '/manager/integracao': typeof ManagerManagerIntegracaoRoute
@@ -235,6 +242,7 @@ export interface FileRoutesByTo {
   '/manager/alertas': typeof ManagerManagerAlertasRoute
   '/manager/carteira': typeof ManagerManagerCarteiraRoute
   '/manager/crm': typeof ManagerManagerCrmRoute
+  '/manager/dimob': typeof ManagerManagerDimobRoute
   '/manager/equipe': typeof ManagerManagerEquipeRoute
   '/manager/financeiro': typeof ManagerManagerFinanceiroRoute
   '/manager/integracao': typeof ManagerManagerIntegracaoRoute
@@ -266,6 +274,7 @@ export interface FileRoutesById {
   '/_manager/manager/alertas': typeof ManagerManagerAlertasRoute
   '/_manager/manager/carteira': typeof ManagerManagerCarteiraRoute
   '/_manager/manager/crm': typeof ManagerManagerCrmRoute
+  '/_manager/manager/dimob': typeof ManagerManagerDimobRoute
   '/_manager/manager/equipe': typeof ManagerManagerEquipeRoute
   '/_manager/manager/financeiro': typeof ManagerManagerFinanceiroRoute
   '/_manager/manager/integracao': typeof ManagerManagerIntegracaoRoute
@@ -296,6 +305,7 @@ export interface FileRouteTypes {
     | '/manager/alertas'
     | '/manager/carteira'
     | '/manager/crm'
+    | '/manager/dimob'
     | '/manager/equipe'
     | '/manager/financeiro'
     | '/manager/integracao'
@@ -324,6 +334,7 @@ export interface FileRouteTypes {
     | '/manager/alertas'
     | '/manager/carteira'
     | '/manager/crm'
+    | '/manager/dimob'
     | '/manager/equipe'
     | '/manager/financeiro'
     | '/manager/integracao'
@@ -354,6 +365,7 @@ export interface FileRouteTypes {
     | '/_manager/manager/alertas'
     | '/_manager/manager/carteira'
     | '/_manager/manager/crm'
+    | '/_manager/manager/dimob'
     | '/_manager/manager/equipe'
     | '/_manager/manager/financeiro'
     | '/_manager/manager/integracao'
@@ -521,6 +533,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ManagerManagerEquipeRouteImport
       parentRoute: typeof ManagerRoute
     }
+    '/_manager/manager/dimob': {
+      id: '/_manager/manager/dimob'
+      path: '/manager/dimob'
+      fullPath: '/manager/dimob'
+      preLoaderRoute: typeof ManagerManagerDimobRouteImport
+      parentRoute: typeof ManagerRoute
+    }
     '/_manager/manager/crm': {
       id: '/_manager/manager/crm'
       path: '/manager/crm'
@@ -615,6 +634,7 @@ interface ManagerRouteChildren {
   ManagerManagerAlertasRoute: typeof ManagerManagerAlertasRoute
   ManagerManagerCarteiraRoute: typeof ManagerManagerCarteiraRoute
   ManagerManagerCrmRoute: typeof ManagerManagerCrmRoute
+  ManagerManagerDimobRoute: typeof ManagerManagerDimobRoute
   ManagerManagerEquipeRoute: typeof ManagerManagerEquipeRoute
   ManagerManagerFinanceiroRoute: typeof ManagerManagerFinanceiroRoute
   ManagerManagerIntegracaoRoute: typeof ManagerManagerIntegracaoRoute
@@ -626,6 +646,7 @@ const ManagerRouteChildren: ManagerRouteChildren = {
   ManagerManagerAlertasRoute: ManagerManagerAlertasRoute,
   ManagerManagerCarteiraRoute: ManagerManagerCarteiraRoute,
   ManagerManagerCrmRoute: ManagerManagerCrmRoute,
+  ManagerManagerDimobRoute: ManagerManagerDimobRoute,
   ManagerManagerEquipeRoute: ManagerManagerEquipeRoute,
   ManagerManagerFinanceiroRoute: ManagerManagerFinanceiroRoute,
   ManagerManagerIntegracaoRoute: ManagerManagerIntegracaoRoute,

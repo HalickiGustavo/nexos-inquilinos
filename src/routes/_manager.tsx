@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet, useNavigate, useRouterState, Link } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { LayoutDashboard, Briefcase, Wallet, Users, KanbanSquare, ClipboardCheck, Bell, LogOut, Loader2, Plug } from "lucide-react";
+import { LayoutDashboard, Briefcase, Wallet, Users, KanbanSquare, ClipboardCheck, Bell, LogOut, Loader2, Plug, FileDigit } from "lucide-react";
 import nexoLogo from "@/assets/nexo-logo.jpeg.asset.json";
 import { useAuth } from "@/lib/auth";
 import { useUserRole } from "@/lib/useUserRole";
@@ -17,6 +17,7 @@ const navItems: { to: string; label: string; icon: typeof LayoutDashboard; exact
   { to: "/manager", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/manager/carteira", label: "Carteira", icon: Briefcase },
   { to: "/manager/financeiro", label: "Financeiro", icon: Wallet },
+  { to: "/manager/dimob", label: "DIMOB", icon: FileDigit },
   { to: "/manager/equipe", label: "Equipe", icon: Users },
   { to: "/manager/vistorias", label: "Vistorias", icon: ClipboardCheck },
   { to: "/manager/alertas", label: "Alertas", icon: Bell },

@@ -149,10 +149,18 @@ function SubmitBudgetDialog({
             />
           </div>
           <div className="space-y-2">
+            <Label>Prestador / fornecedor</Label>
+            <Input
+              placeholder="Ex.: Encanador João"
+              value={provider}
+              onChange={(e) => setProvider(e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
             <Label>Observações</Label>
             <Textarea
               rows={3}
-              placeholder="Detalhes do orçamento, prestador, validade…"
+              placeholder="Escopo do serviço, validade do orçamento…"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
             />
@@ -160,7 +168,7 @@ function SubmitBudgetDialog({
           <DialogFooter>
             <Button type="submit" disabled={saving || !amount}>
               {saving ? <Loader2 className="size-4 mr-2 animate-spin" /> : null}
-              Enviar para aprovação
+              Enviar para o proprietário
             </Button>
           </DialogFooter>
         </form>

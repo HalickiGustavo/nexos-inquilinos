@@ -175,9 +175,22 @@ function ManagerDashboard() {
         >
           <div className="flex items-center justify-between">
             <span className="text-xs text-white/70">Visão geral</span>
-            <button className="flex items-center gap-1.5 text-xs text-white/90 bg-black/40 border border-white/10 rounded-full px-3 py-1.5">
-              Este mês <ChevronDown className="size-3.5" />
-            </button>
+            <DropdownMenu>
+              <DropdownMenuTrigger className="flex items-center gap-1.5 text-xs text-white/90 bg-black/40 border border-white/10 rounded-full px-3 py-1.5 hover:bg-black/60 transition">
+                {RANGE_LABEL[range]} <ChevronDown className="size-3.5" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="bg-zinc-900 border-white/10 text-white">
+                {(Object.keys(RANGE_LABEL) as RangeKey[]).map((k) => (
+                  <DropdownMenuItem
+                    key={k}
+                    onClick={() => setRange(k)}
+                    className="text-xs cursor-pointer focus:bg-violet-500/20 focus:text-white"
+                  >
+                    {RANGE_LABEL[k]}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
           <h1 className="mt-4 text-2xl font-bold leading-tight tracking-tight">
             Tudo conectado.
@@ -185,13 +198,13 @@ function ManagerDashboard() {
             <span className="text-white/80 font-semibold">Tudo em um só lugar.</span>
           </h1>
           <div className="mt-3 text-xs text-white/70">
-            Receita do mês:{" "}
+            Receita ({RANGE_LABEL[range].toLowerCase()}):{" "}
             <span className="text-white font-semibold">
-              {qInst.isLoading ? "—" : fmtBRL(monthRevenue)}
+              {qChart.isLoading ? "—" : fmtBRL(totalRevenue)}
             </span>
           </div>
 
-          <div className="mt-4 -mx-1">
+          <div className={`mt-4 -mx-1 transition-opacity ${qChart.isFetching ? "opacity-50 animate-pulse" : "opacity-100"}`}>
             <svg viewBox="0 0 300 90" className="w-full h-24" preserveAspectRatio="none">
               <defs>
                 <linearGradient id="lineGrad" x1="0" x2="1" y1="0" y2="0">
@@ -212,7 +225,7 @@ function ManagerDashboard() {
               </defs>
               <path d={`${pathData.d} L 294 90 L 6 90 Z`} fill="url(#fillGrad)" />
               <path d={pathData.d} fill="none" stroke="url(#lineGrad)" strokeWidth="2" filter="url(#glow)" strokeLinecap="round" />
-              {pathData.pts.filter((_, i) => i % 3 === 0).map(([x, y], i) => (
+              {pathData.pts.filter((_: readonly [number, number], i: number) => i % Math.max(1, Math.floor(pathData.pts.length / 6)) === 0).map(([x, y]: readonly [number, number], i: number) => (
                 <circle key={i} cx={x} cy={y} r="2" fill="#E9D5FF" />
               ))}
             </svg>

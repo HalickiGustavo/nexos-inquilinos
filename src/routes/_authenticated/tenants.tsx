@@ -69,22 +69,39 @@ function TenantsPage() {
         </Card>
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {tenants.map((t) => (
+          {tenants.map((t) => {
+            const overdue = overdueByTenant.get(t.id) || [];
+            return (
             <Card key={t.id} className="p-5">
               <div className="flex items-center gap-3">
                 <div className="size-12 rounded-full bg-primary/10 text-primary grid place-items-center font-semibold">
                   {t.full_name.split(" ").map((s) => s[0]).slice(0, 2).join("")}
                 </div>
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <h3 className="font-semibold truncate">{t.full_name}</h3>
                   {t.document && <p className="text-xs text-muted-foreground">{t.document}</p>}
                 </div>
+                {overdue.length > 0 && (
+                  <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/30">
+                    {overdue.length} atrasada{overdue.length > 1 ? "s" : ""}
+                  </Badge>
+                )}
               </div>
               <div className="mt-4 space-y-1.5 text-sm">
                 {t.email && <p className="flex items-center gap-2 text-muted-foreground truncate"><Mail className="size-3.5 shrink-0" />{t.email}</p>}
                 {t.phone && <p className="flex items-center gap-2 text-muted-foreground"><Phone className="size-3.5 shrink-0" />{t.phone}</p>}
               </div>
-              <div className="mt-4 flex gap-2">
+              {overdue.length > 0 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-4 w-full border-violet-500/40 bg-violet-500/5 text-violet-300 hover:bg-violet-500/10 hover:text-violet-200"
+                  onClick={() => setAgreementFor(t)}
+                >
+                  <Handshake className="size-3.5 mr-1.5" /> Criar Acordo de Dívida
+                </Button>
+              )}
+              <div className="mt-3 flex gap-2">
                 <Dialog>
                   <DialogTrigger asChild>
                     <Button variant="outline" size="sm" className="flex-1" onClick={() => { setEditing(t); setOpen(true); }}>
@@ -103,8 +120,19 @@ function TenantsPage() {
                 </Button>
               </div>
             </Card>
-          ))}
+            );
+          })}
         </div>
+      )}
+
+      {agreementFor && (
+        <DebtAgreementDialog
+          open={!!agreementFor}
+          onOpenChange={(o) => !o && setAgreementFor(null)}
+          tenantId={agreementFor.id}
+          tenantName={agreementFor.full_name}
+          overdue={overdueByTenant.get(agreementFor.id) || []}
+        />
       )}
     </div>
   );

@@ -76,6 +76,16 @@ function Recebimentos() {
 
   return (
     <div className="space-y-3 mt-4">
+      <Card className="bg-primary/5 border-primary/20">
+        <CardContent className="p-4 flex items-center gap-3 flex-wrap">
+          <Sparkles className="size-4 text-primary" />
+          <div className="text-sm">
+            <span className="font-semibold">Split Automático Ativo:</span>{" "}
+            <span className="text-primary font-medium">{formatBRL(NEXO_FEE_PER_INSTALLMENT)} para NEXO</span>
+            <span className="text-muted-foreground"> + valor restante para sua subconta, por parcela emitida.</span>
+          </div>
+        </CardContent>
+      </Card>
       <Card>
         <CardContent className="p-4 flex flex-wrap gap-3 items-end">
           <div className="space-y-1"><label className="text-xs">Status</label>

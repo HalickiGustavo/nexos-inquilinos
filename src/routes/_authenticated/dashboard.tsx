@@ -1,10 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo } from "react";
-import { Building2, Wallet, TrendingUp, AlertCircle, CheckCircle2, Home } from "lucide-react";
+import { Building2, Wallet, TrendingUp, AlertCircle, CheckCircle2, Home, Bell, ArrowRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { useProperties, useInstallments } from "@/lib/queries";
+import { useProperties, useInstallments, useMaintenances } from "@/lib/queries";
 import { formatBRL, monthRange } from "@/lib/format";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Cell } from "recharts";
 

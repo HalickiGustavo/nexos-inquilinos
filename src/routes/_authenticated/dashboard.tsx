@@ -67,6 +67,37 @@ function Dashboard() {
         <p className="text-muted-foreground mt-1">Resumo financeiro e operacional do mês.</p>
       </div>
 
+      {pendingApprovals.length > 0 && (
+        <Link
+          to="/maintenances"
+          className="block group relative rounded-xl border border-primary/40 bg-gradient-to-br from-primary/15 via-primary/5 to-transparent p-5 overflow-hidden transition hover:border-primary"
+          style={{ boxShadow: "0 0 40px -10px color-mix(in oklab, var(--primary) 60%, transparent)" }}
+        >
+          <div className="absolute inset-0 -z-10 opacity-50 blur-2xl bg-primary/20" aria-hidden />
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="size-11 rounded-full bg-primary/20 grid place-items-center text-primary ring-2 ring-primary/40">
+                <Bell className="size-5" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-base flex items-center gap-2">
+                  Aprovações Pendentes
+                  <Badge className="bg-primary text-primary-foreground">{pendingApprovals.length}</Badge>
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  Orçamentos de manutenção aguardando sua decisão — valor total {" "}
+                  <span className="font-semibold text-foreground">
+                    {formatBRL(pendingApprovals.reduce((s, m) => s + Number(m.budget_amount ?? 0), 0))}
+                  </span>
+                </p>
+              </div>
+            </div>
+            <ArrowRight className="size-5 text-primary transition group-hover:translate-x-1" />
+          </div>
+        </Link>
+      )}
+
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard
           title="A receber este mês"

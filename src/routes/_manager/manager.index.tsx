@@ -1,9 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
-import { Bell, Menu, FilePlus, FileSearch, Home, BarChart3, ChevronDown } from "lucide-react";
+import { FilePlus, FileSearch, Home, BarChart3, ChevronDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import nexoLogo from "@/assets/nexo-logo.jpeg.asset.json";
 import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";

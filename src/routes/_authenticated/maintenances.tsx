@@ -93,6 +93,11 @@ function MaintenanceCard({ item }: { item: any }) {
       </div>
       <p className="text-xs text-muted-foreground mt-1">{item.property?.nickname}</p>
       {item.description && <p className="text-sm mt-2 text-muted-foreground line-clamp-3">{item.description}</p>}
+      {item.evidence_urls?.length > 0 && (
+        <div className="mt-3">
+          <EvidenceGrid paths={item.evidence_urls} />
+        </div>
+      )}
       <div className="flex items-center justify-between mt-3 text-sm">
         <span className="font-semibold text-primary">{formatBRL(Number(item.cost))}</span>
         {item.scheduled_date && <span className="text-xs text-muted-foreground">{formatDate(item.scheduled_date)}</span>}

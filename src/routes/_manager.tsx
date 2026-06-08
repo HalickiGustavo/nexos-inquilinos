@@ -50,12 +50,11 @@ function ManagerLayout() {
     <div className="min-h-screen flex bg-zinc-50 dark:bg-zinc-950">
       <aside className="hidden md:flex w-64 flex-col bg-zinc-900 text-zinc-100 border-r border-zinc-800">
         <div className="p-5 border-b border-zinc-800">
-          <div className="flex items-center gap-2">
-            <div className="size-8 rounded-md bg-primary grid place-items-center text-primary-foreground font-bold">N</div>
-            <div>
-              <div className="font-semibold text-sm">NEXO Manager</div>
-              <div className="text-[10px] text-zinc-400 uppercase tracking-wider">Imobiliária</div>
+          <div className="flex items-center gap-3">
+            <div className="text-2xl font-black tracking-tight text-white leading-none">
+              NE<span className="text-violet-400 drop-shadow-[0_0_10px_rgba(167,139,250,0.95)]">X</span>O
             </div>
+            <div className="text-[10px] text-zinc-400 uppercase tracking-wider">Imobiliária</div>
           </div>
         </div>
         <nav className="flex-1 p-3 space-y-1">

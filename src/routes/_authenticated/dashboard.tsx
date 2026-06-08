@@ -16,6 +16,8 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 function Dashboard() {
   const { data: properties = [] } = useProperties();
   const { data: installments = [] } = useInstallments();
+  const { data: maintenances = [] } = useMaintenances();
+  const pendingApprovals = (maintenances as any[]).filter((m) => m.budget_status === "pendente");
 
   const stats = useMemo(() => {
     const { start, end } = monthRange();

@@ -24,8 +24,26 @@ export const Route = createFileRoute("/_authenticated/tenants")({
 
 function TenantsPage() {
   const { data: tenants = [], isLoading } = useTenants();
+  const { data: installments = [] } = useInstallments();
   const [editing, setEditing] = useState<Tenant | null>(null);
   const [open, setOpen] = useState(false);
+  const [agreementFor, setAgreementFor] = useState<Tenant | null>(null);
+
+  // Mapa: tenant_id -> parcelas atrasadas
+  const overdueByTenant = useMemo(() => {
+    const todayStr = today();
+    const map = new Map<string, any[]>();
+    for (const i of installments as any[]) {
+      const tid = i.contract?.tenant?.id;
+      if (!tid) continue;
+      if (i.status === "pago" || i.status === "acordo_fechado") continue;
+      if (i.due_date >= todayStr) continue;
+      const arr = map.get(tid) || [];
+      arr.push(i);
+      map.set(tid, arr);
+    }
+    return map;
+  }, [installments]);
 
   return (
     <div className="p-6 lg:p-8 max-w-7xl mx-auto space-y-6">

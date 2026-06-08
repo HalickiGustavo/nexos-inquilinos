@@ -44,6 +44,7 @@ function Recebimentos() {
   const [statusF, setStatusF] = useState("todos");
   const [from, setFrom] = useState("");
   const [expensesFor, setExpensesFor] = useState<any | null>(null);
+  const [splitFor, setSplitFor] = useState<any | null>(null);
   const [to, setTo] = useState("");
 
   const q = useQuery({

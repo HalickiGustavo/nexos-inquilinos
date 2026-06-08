@@ -16,7 +16,7 @@ export const Route = createFileRoute("/_authenticated/tenant/financeiro")({
   component: TenantFinanceiro,
 });
 
-const PIX_KEY = "contato@nexo.com.br";
+
 
 type Status = "pago" | "pendente" | "atrasado";
 function statusOf(i: any): Status {

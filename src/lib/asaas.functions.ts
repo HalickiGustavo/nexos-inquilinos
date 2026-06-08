@@ -152,7 +152,7 @@ export const generateAsaasCharge = createServerFn({ method: "POST" })
       });
     }
 
-    const { data: setting } = await supabaseAdmin
+    const { data: setting } = await (supabaseAdmin as any)
       .from("platform_settings")
       .select("value")
       .eq("key", "nexo_boleto_fee")
@@ -247,7 +247,7 @@ export const updateAsaasChargeFee = createServerFn({ method: "POST" })
       .maybeSingle();
     const ownerApiKey = acc.data?.api_key || undefined;
 
-    const { data: setting } = await supabaseAdmin
+    const { data: setting } = await (supabaseAdmin as any)
       .from("platform_settings")
       .select("value")
       .eq("key", "nexo_boleto_fee")

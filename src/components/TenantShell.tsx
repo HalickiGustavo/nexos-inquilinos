@@ -3,9 +3,9 @@ import { Home, Wallet, FileText, Wrench, Bell, LogOut } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { supabase } from "@/integrations/supabase/client";
 import { InstallPwaButton } from "@/components/InstallPwaButton";
 import nexoLogoAsset from "@/assets/nexo-logo.png.asset.json";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const tenantNav: ReadonlyArray<{ to: string; label: string; icon: typeof Home; exact?: boolean }> = [
   { to: "/tenant", label: "Início", icon: Home, exact: true },
@@ -37,6 +37,7 @@ export function TenantShell() {
             <span className="hidden sm:block text-xs text-muted-foreground truncate max-w-[180px]">
               {user?.email}
             </span>
+            <ThemeToggle size="icon" variant="ghost" />
             <Button
               variant="ghost"
               size="icon"

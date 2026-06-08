@@ -26,6 +26,7 @@ import {
   useTenantMaintenances,
 } from "@/lib/tenant-queries";
 import { MaintenanceChat } from "@/components/MaintenanceChat";
+import { EvidenceUploader, EvidenceGrid } from "@/components/EvidenceUploader";
 import { cn } from "@/lib/utils";
 import { formatBRL, formatDate } from "@/lib/format";
 

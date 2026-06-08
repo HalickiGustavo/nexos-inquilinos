@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { Bell, Menu, FilePlus, FileSearch, Home, BarChart3, ChevronDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import nexoLogo from "@/assets/nexo-logo.jpeg.asset.json";
 import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
@@ -150,9 +151,7 @@ function ManagerDashboard() {
   return (
     <div className="min-h-screen bg-black text-white">
       <header className="sticky top-0 z-30 flex items-center justify-between px-5 py-4 bg-black/80 backdrop-blur-xl border-b border-white/5">
-        <div className="text-2xl font-black tracking-tight">
-          NE<span className="text-violet-400 drop-shadow-[0_0_10px_rgba(167,139,250,0.9)]">X</span>O
-        </div>
+        <img src={nexoLogo.url} alt="NEXO" className="h-9 w-auto rounded-md bg-white p-1.5" />
         <div className="flex items-center gap-4">
           <Link to="/manager/alertas" aria-label="Notificações" className="size-9 grid place-items-center rounded-full text-zinc-200 hover:bg-white/5">
             <Bell className="size-5" strokeWidth={1.5} />
@@ -235,10 +234,10 @@ function ManagerDashboard() {
         <section>
           <h2 className="text-base font-medium text-white/90 mb-4">Indicadores</h2>
           <div className="grid grid-cols-2 gap-3">
-            <MetricCard label="Contratos ativos" value={qContracts.data} loading={qContracts.isLoading} delta="+12%" />
-            <MetricCard label="Imóveis cadastrados" value={qProps.data} loading={qProps.isLoading} delta="+8%" />
-            <MetricCard label="Vistorias realizadas" value={qInspections.data} loading={qInspections.isLoading} delta="+15%" />
-            <MetricCard label="Tickets concluídos" value={qMaint.data} loading={qMaint.isLoading} delta="+10%" />
+            <MetricCard label="Contratos ativos" value={qContracts.data} loading={qContracts.isLoading} />
+            <MetricCard label="Imóveis cadastrados" value={qProps.data} loading={qProps.isLoading} />
+            <MetricCard label="Vistorias realizadas" value={qInspections.data} loading={qInspections.isLoading} />
+            <MetricCard label="Tickets concluídos" value={qMaint.data} loading={qMaint.isLoading} />
           </div>
         </section>
 
@@ -257,8 +256,8 @@ function ManagerDashboard() {
 }
 
 function MetricCard({
-  label, value, loading, delta,
-}: { label: string; value: number | undefined; loading?: boolean; delta: string }) {
+  label, value, loading,
+}: { label: string; value: number | undefined; loading?: boolean }) {
   return (
     <div className="rounded-2xl border border-white/5 bg-zinc-900/60 p-4 backdrop-blur-sm">
       <div className="text-[11px] text-zinc-400 leading-tight min-h-[28px]">{label}</div>
@@ -268,7 +267,6 @@ function MetricCard({
         ) : (
           <span className="text-3xl font-bold text-white tabular-nums">{value}</span>
         )}
-        <span className="text-xs font-medium text-emerald-400">{delta}</span>
       </div>
     </div>
   );

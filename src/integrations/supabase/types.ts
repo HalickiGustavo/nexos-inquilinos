@@ -477,8 +477,10 @@ export type Database = {
           cost: number
           created_at: string
           description: string | null
+          evidence_urls: string[]
           id: string
           property_id: string
+          provider_name: string | null
           responsible: Database["public"]["Enums"]["maintenance_responsible"]
           scheduled_date: string | null
           status: Database["public"]["Enums"]["maintenance_status"]
@@ -498,8 +500,10 @@ export type Database = {
           cost?: number
           created_at?: string
           description?: string | null
+          evidence_urls?: string[]
           id?: string
           property_id: string
+          provider_name?: string | null
           responsible?: Database["public"]["Enums"]["maintenance_responsible"]
           scheduled_date?: string | null
           status?: Database["public"]["Enums"]["maintenance_status"]
@@ -519,8 +523,10 @@ export type Database = {
           cost?: number
           created_at?: string
           description?: string | null
+          evidence_urls?: string[]
           id?: string
           property_id?: string
+          provider_name?: string | null
           responsible?: Database["public"]["Enums"]["maintenance_responsible"]
           scheduled_date?: string | null
           status?: Database["public"]["Enums"]["maintenance_status"]

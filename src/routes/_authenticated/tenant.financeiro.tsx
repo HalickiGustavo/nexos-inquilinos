@@ -36,6 +36,7 @@ function TenantFinanceiro() {
   const { data: contract } = useTenantActiveContract();
   const { data: items = [], isLoading } = useTenantInstallments();
   const [openId, setOpenId] = useState<string | null>(null);
+  const [pixFor, setPixFor] = useState<any | null>(null);
 
   const sorted = [...items].sort((a: any, b: any) => b.due_date.localeCompare(a.due_date));
 

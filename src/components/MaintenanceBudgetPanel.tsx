@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useInvalidate } from "@/lib/queries";
+import { EvidenceGrid } from "@/components/EvidenceUploader";
 import { formatBRL, formatDate, parseNumber, today } from "@/lib/format";
 
 export type BudgetStatus = "nenhum" | "pendente" | "aprovado" | "recusado";

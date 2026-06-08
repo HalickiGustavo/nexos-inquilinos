@@ -226,6 +226,72 @@ export type Database = {
         }
         Relationships: []
       }
+      debt_agreements: {
+        Row: {
+          contract_id: string
+          created_at: string
+          first_due_date: string
+          id: string
+          installments_count: number
+          interest_percent: number
+          late_fee_percent: number
+          notes: string | null
+          original_total: number
+          status: string
+          tenant_id: string
+          total_amount: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          contract_id: string
+          created_at?: string
+          first_due_date: string
+          id?: string
+          installments_count: number
+          interest_percent?: number
+          late_fee_percent?: number
+          notes?: string | null
+          original_total: number
+          status?: string
+          tenant_id: string
+          total_amount: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          contract_id?: string
+          created_at?: string
+          first_due_date?: string
+          id?: string
+          installments_count?: number
+          interest_percent?: number
+          late_fee_percent?: number
+          notes?: string | null
+          original_total?: number
+          status?: string
+          tenant_id?: string
+          total_amount?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "debt_agreements_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "debt_agreements_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       inspections: {
         Row: {
           contract_id: string
@@ -282,6 +348,7 @@ export type Database = {
           boleto_url: string | null
           contract_id: string
           created_at: string
+          debt_agreement_id: string | null
           due_date: string
           extra_fees: number
           id: string
@@ -306,6 +373,7 @@ export type Database = {
           boleto_url?: string | null
           contract_id: string
           created_at?: string
+          debt_agreement_id?: string | null
           due_date: string
           extra_fees?: number
           id?: string
@@ -330,6 +398,7 @@ export type Database = {
           boleto_url?: string | null
           contract_id?: string
           created_at?: string
+          debt_agreement_id?: string | null
           due_date?: string
           extra_fees?: number
           id?: string
@@ -353,6 +422,13 @@ export type Database = {
             columns: ["contract_id"]
             isOneToOne: false
             referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "installments_debt_agreement_id_fkey"
+            columns: ["debt_agreement_id"]
+            isOneToOne: false
+            referencedRelation: "debt_agreements"
             referencedColumns: ["id"]
           },
         ]
@@ -684,7 +760,7 @@ export type Database = {
       inspection_condition: "otimo" | "bom" | "regular" | "ruim"
       inspection_kind: "entrada" | "saida"
       inspection_status: "rascunho" | "assinada"
-      installment_status: "pendente" | "pago" | "atrasado"
+      installment_status: "pendente" | "pago" | "atrasado" | "acordo_fechado"
       maintenance_responsible: "proprietario" | "inquilino"
       maintenance_status: "pendente" | "em_andamento" | "concluido"
       property_status: "disponivel" | "alugado" | "manutencao"
@@ -821,7 +897,7 @@ export const Constants = {
       inspection_condition: ["otimo", "bom", "regular", "ruim"],
       inspection_kind: ["entrada", "saida"],
       inspection_status: ["rascunho", "assinada"],
-      installment_status: ["pendente", "pago", "atrasado"],
+      installment_status: ["pendente", "pago", "atrasado", "acordo_fechado"],
       maintenance_responsible: ["proprietario", "inquilino"],
       maintenance_status: ["pendente", "em_andamento", "concluido"],
       property_status: ["disponivel", "alugado", "manutencao"],

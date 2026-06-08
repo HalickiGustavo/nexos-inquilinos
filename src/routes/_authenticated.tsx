@@ -78,7 +78,7 @@ function AuthLayout() {
     <div className="min-h-screen flex bg-background">
       {/* Sidebar */}
       <aside className="hidden md:flex w-64 flex-col bg-sidebar text-sidebar-foreground border-r border-sidebar-border">
-        <div className="p-5 flex items-center gap-3 border-b border-sidebar-border bg-white/95">
+        <div className="p-5 flex items-center gap-3 border-b border-sidebar-border bg-card">
           <img src={nexoLogo} alt="Nexo" className="h-10 w-auto" />
         </div>
 

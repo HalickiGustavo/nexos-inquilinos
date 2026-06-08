@@ -152,7 +152,12 @@ export const generateAsaasCharge = createServerFn({ method: "POST" })
       });
     }
 
-    const nexoFee = getNexoFee();
+    const { data: setting } = await (supabaseAdmin as any)
+      .from("platform_settings")
+      .select("value")
+      .eq("key", "nexo_boleto_fee")
+      .maybeSingle();
+    const nexoFee = setting?.value ? Number(setting.value) : getNexoFee();
     const nexoWallet = getNexoWalletId();
     const baseValue = Number(inst.data.amount) + Number(inst.data.extra_fees ?? 0);
 
@@ -242,7 +247,12 @@ export const updateAsaasChargeFee = createServerFn({ method: "POST" })
       .maybeSingle();
     const ownerApiKey = acc.data?.api_key || undefined;
 
-    const nexoFee = getNexoFee();
+    const { data: setting } = await (supabaseAdmin as any)
+      .from("platform_settings")
+      .select("value")
+      .eq("key", "nexo_boleto_fee")
+      .maybeSingle();
+    const nexoFee = setting?.value ? Number(setting.value) : getNexoFee();
     const nexoWallet = getNexoWalletId();
     if (!nexoWallet || nexoFee <= 0) throw new Error("Taxa NEXO não configurada.");
 
@@ -363,4 +373,19 @@ export const linkTenantUser = createServerFn({ method: "POST" })
     if (roleErr && !roleErr.message.includes("duplicate")) throw new Error(roleErr.message);
 
     return { ok: true, linked: ids.length };
+  });
+
+// ===== Get NEXO fee from Supabase settings =====
+export const getNexoFeeSetting = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase } = context;
+    const { data, error } = await (supabase as any)
+      .from("platform_settings")
+      .select("value")
+      .eq("key", "nexo_boleto_fee")
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    const fee = data?.value ? Number(data.value) : 24.99;
+    return { fee };
   });

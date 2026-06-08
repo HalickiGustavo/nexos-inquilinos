@@ -43,9 +43,9 @@ export async function asaasFetch<T = any>(
 }
 
 export function getNexoFee(): number {
-  const raw = process.env.ASAAS_NEXO_FEE ?? "0";
+  const raw = process.env.ASAAS_NEXO_FEE ?? "24.99";
   const n = Number(raw);
-  return Number.isFinite(n) && n > 0 ? n : 0;
+  return Number.isFinite(n) && n > 0 ? n : 24.99;
 }
 
 export function getNexoWalletId(): string | null {

@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { createAsaasSubaccount, getAsaasAccount } from "@/lib/asaas.functions";
+import { createAsaasSubaccount, getAsaasAccount, getNexoFeeSetting } from "@/lib/asaas.functions";
 import { formatBRL } from "@/lib/format";
 
 export const Route = createFileRoute("/_manager/manager/integracao")({
@@ -19,7 +19,6 @@ export const Route = createFileRoute("/_manager/manager/integracao")({
   component: ManagerIntegracao,
 });
 
-const NEXO_FEE = 24.99; // R$ por boleto/Pix gerado
 const STORAGE_KEY = "nexo:manager:bank-info";
 
 type BankInfo = {
@@ -39,12 +38,18 @@ const emptyBank: BankInfo = {
 
 function ManagerIntegracao() {
   const fetchAccount = useServerFn(getAsaasAccount);
+  const fetchFee = useServerFn(getNexoFeeSetting);
   const submit = useServerFn(createAsaasSubaccount);
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["asaas-account"],
     queryFn: () => fetchAccount(),
   });
+  const { data: feeData } = useQuery({
+    queryKey: ["nexo-fee-setting"],
+    queryFn: () => fetchFee(),
+  });
   const account = data?.account;
+  const nexoFee = feeData?.fee ?? 24.99;
 
   const [bank, setBank] = useState<BankInfo>(emptyBank);
   const [saving, setSaving] = useState(false);
@@ -159,7 +164,7 @@ function ManagerIntegracao() {
             </div>
             <div className="rounded-md border bg-background p-3">
               <p className="text-xs uppercase tracking-wide text-muted-foreground">NEXO — Taxa de Serviço Digital</p>
-              <p className="text-lg font-semibold mt-1">{formatBRL(NEXO_FEE)} <span className="text-xs font-normal text-muted-foreground">por parcela</span></p>
+              <p className="text-lg font-semibold mt-1">{formatBRL(nexoFee)} <span className="text-xs font-normal text-muted-foreground">por parcela</span></p>
             </div>
           </div>
         </CardContent>

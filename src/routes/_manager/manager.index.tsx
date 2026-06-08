@@ -1,26 +1,31 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Bell, Menu, FilePlus, FileSearch, Home, BarChart3, ChevronDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
+
+type RangeKey = "mes" | "tri" | "ano";
+const RANGE_LABEL: Record<RangeKey, string> = {
+  mes: "Este mês",
+  tri: "Últimos 3 meses",
+  ano: "Este ano",
+};
 
 export const Route = createFileRoute("/_manager/manager/")({
   component: ManagerDashboard,
 });
 
 function ManagerDashboard() {
+  const [range, setRange] = useState<RangeKey>("mes");
+
   const qProps = useQuery({
     queryKey: ["mgr", "properties-count"],
     queryFn: async () => {
       const { count, error } = await supabase.from("properties").select("id", { count: "exact", head: true });
       if (error) throw error; return count ?? 0;
-    },
-  });
-  const qInst = useQuery({
-    queryKey: ["mgr", "installments"],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("installments").select("amount,paid_amount,due_date,status,payment_date");
-      if (error) throw error; return data ?? [];
     },
   });
   const qContracts = useQuery({
@@ -48,56 +53,85 @@ function ManagerDashboard() {
     },
   });
 
+  const { start, end, mode, bucketCount } = useMemo(() => {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = now.getMonth();
+    if (range === "mes") {
+      const s = new Date(y, m, 1);
+      const e = new Date(y, m + 1, 1);
+      const days = new Date(y, m + 1, 0).getDate();
+      return { start: s, end: e, mode: "day" as const, bucketCount: days };
+    }
+    if (range === "tri") {
+      const s = new Date(y, m - 2, 1);
+      const e = new Date(y, m + 1, 1);
+      return { start: s, end: e, mode: "month" as const, bucketCount: 3 };
+    }
+    const s = new Date(y, 0, 1);
+    const e = new Date(y + 1, 0, 1);
+    return { start: s, end: e, mode: "month" as const, bucketCount: 12 };
+  }, [range]);
+
+  const qChart = useQuery({
+    queryKey: ["mgr", "chart-installments", range],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("installments")
+        .select("paid_amount,amount,payment_date,status")
+        .gte("payment_date", start.toISOString().slice(0, 10))
+        .lt("payment_date", end.toISOString().slice(0, 10));
+      if (error) throw error;
+      return (data ?? []).filter((x: any) => String(x.status ?? "").toLowerCase() === "pago");
+    },
+  });
+
   useEffect(() => {
     const channel = supabase.channel("mgr-dash-v2")
-      .on("postgres_changes", { event: "*", schema: "public", table: "installments" }, () => qInst.refetch())
+      .on("postgres_changes", { event: "*", schema: "public", table: "installments" }, () => qChart.refetch())
       .on("postgres_changes", { event: "*", schema: "public", table: "properties" }, () => qProps.refetch())
       .on("postgres_changes", { event: "*", schema: "public", table: "contracts" }, () => qContracts.refetch())
       .on("postgres_changes", { event: "*", schema: "public", table: "inspections" }, () => qInspections.refetch())
       .on("postgres_changes", { event: "*", schema: "public", table: "maintenances" }, () => qMaint.refetch())
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [qInst, qProps, qContracts, qInspections, qMaint]);
+  }, [qChart, qProps, qContracts, qInspections, qMaint]);
 
-  const inst = qInst.data ?? [];
+  const inst = qChart.data ?? [];
 
-  // Build a smooth line chart from last 12 weeks of received installments
   const chartPoints = useMemo(() => {
-    const now = new Date();
-    const buckets: number[] = [];
-    for (let i = 11; i >= 0; i--) {
-      const end = new Date(now);
-      end.setDate(end.getDate() - i * 7);
-      const start = new Date(end);
-      start.setDate(start.getDate() - 7);
-      const sum = inst
-        .filter((x: any) => x.payment_date && new Date(x.payment_date) >= start && new Date(x.payment_date) < end)
-        .reduce((s: number, x: any) => s + Number(x.paid_amount ?? 0), 0);
-      buckets.push(sum);
-    }
-    if (buckets.every((v) => v === 0)) {
-      return [20, 35, 28, 45, 38, 55, 48, 62, 58, 72, 68, 80];
+    const buckets = new Array(bucketCount).fill(0);
+    for (const x of inst as any[]) {
+      if (!x.payment_date) continue;
+      const d = new Date(x.payment_date);
+      let idx = 0;
+      if (mode === "day") {
+        idx = d.getDate() - 1;
+      } else {
+        idx = (d.getFullYear() - start.getFullYear()) * 12 + (d.getMonth() - start.getMonth());
+      }
+      if (idx >= 0 && idx < bucketCount) {
+        buckets[idx] += Number(x.paid_amount ?? 0);
+      }
     }
     return buckets;
-  }, [inst]);
+  }, [inst, mode, bucketCount, start]);
 
-  const monthRevenue = useMemo(() => {
-    const now = new Date();
-    const ym = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-    return inst
-      .filter((x: any) => (x.payment_date ?? "").startsWith(ym))
-      .reduce((s: number, x: any) => s + Number(x.paid_amount ?? 0), 0);
-  }, [inst]);
+  const totalRevenue = useMemo(
+    () => chartPoints.reduce((s: number, v: number) => s + v, 0),
+    [chartPoints],
+  );
 
   const pathData = useMemo(() => {
     const W = 300, H = 90, P = 6;
-    const max = Math.max(...chartPoints, 1);
-    const min = Math.min(...chartPoints, 0);
-    const range = Math.max(max - min, 1);
-    const step = (W - P * 2) / (chartPoints.length - 1);
-    const pts = chartPoints.map((v, i) => {
+    const display = chartPoints.length >= 2 ? chartPoints : [0, 0];
+    const max = Math.max(...display, 1);
+    const min = Math.min(...display, 0);
+    const dataRange = Math.max(max - min, 1);
+    const step = (W - P * 2) / (display.length - 1);
+    const pts = display.map((v: number, i: number) => {
       const x = P + i * step;
-      const y = H - P - ((v - min) / range) * (H - P * 2);
+      const y = H - P - ((v - min) / dataRange) * (H - P * 2);
       return [x, y] as const;
     });
     let d = `M ${pts[0][0]} ${pts[0][1]}`;
@@ -141,9 +175,22 @@ function ManagerDashboard() {
         >
           <div className="flex items-center justify-between">
             <span className="text-xs text-white/70">Visão geral</span>
-            <button className="flex items-center gap-1.5 text-xs text-white/90 bg-black/40 border border-white/10 rounded-full px-3 py-1.5">
-              Este mês <ChevronDown className="size-3.5" />
-            </button>
+            <DropdownMenu>
+              <DropdownMenuTrigger className="flex items-center gap-1.5 text-xs text-white/90 bg-black/40 border border-white/10 rounded-full px-3 py-1.5 hover:bg-black/60 transition">
+                {RANGE_LABEL[range]} <ChevronDown className="size-3.5" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="bg-zinc-900 border-white/10 text-white">
+                {(Object.keys(RANGE_LABEL) as RangeKey[]).map((k) => (
+                  <DropdownMenuItem
+                    key={k}
+                    onClick={() => setRange(k)}
+                    className="text-xs cursor-pointer focus:bg-violet-500/20 focus:text-white"
+                  >
+                    {RANGE_LABEL[k]}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
           <h1 className="mt-4 text-2xl font-bold leading-tight tracking-tight">
             Tudo conectado.
@@ -151,13 +198,13 @@ function ManagerDashboard() {
             <span className="text-white/80 font-semibold">Tudo em um só lugar.</span>
           </h1>
           <div className="mt-3 text-xs text-white/70">
-            Receita do mês:{" "}
+            Receita ({RANGE_LABEL[range].toLowerCase()}):{" "}
             <span className="text-white font-semibold">
-              {qInst.isLoading ? "—" : fmtBRL(monthRevenue)}
+              {qChart.isLoading ? "—" : fmtBRL(totalRevenue)}
             </span>
           </div>
 
-          <div className="mt-4 -mx-1">
+          <div className={`mt-4 -mx-1 transition-opacity ${qChart.isFetching ? "opacity-50 animate-pulse" : "opacity-100"}`}>
             <svg viewBox="0 0 300 90" className="w-full h-24" preserveAspectRatio="none">
               <defs>
                 <linearGradient id="lineGrad" x1="0" x2="1" y1="0" y2="0">
@@ -178,7 +225,7 @@ function ManagerDashboard() {
               </defs>
               <path d={`${pathData.d} L 294 90 L 6 90 Z`} fill="url(#fillGrad)" />
               <path d={pathData.d} fill="none" stroke="url(#lineGrad)" strokeWidth="2" filter="url(#glow)" strokeLinecap="round" />
-              {pathData.pts.filter((_, i) => i % 3 === 0).map(([x, y], i) => (
+              {pathData.pts.filter((_: readonly [number, number], i: number) => i % Math.max(1, Math.floor(pathData.pts.length / 6)) === 0).map(([x, y]: readonly [number, number], i: number) => (
                 <circle key={i} cx={x} cy={y} r="2" fill="#E9D5FF" />
               ))}
             </svg>

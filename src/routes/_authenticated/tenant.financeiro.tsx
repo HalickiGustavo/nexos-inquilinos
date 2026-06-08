@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-import { Download, ChevronDown, QrCode } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Download, ChevronDown, QrCode, Handshake } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -10,6 +10,7 @@ import { downloadPdf } from "@/lib/pdf";
 import { parseExpenses, expensesTotals } from "@/lib/variable-expenses";
 import { PixPaymentDialog } from "@/components/PixPaymentDialog";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/tenant/financeiro")({
   head: () => ({ meta: [{ title: "Financeiro — Nexo Inquilino" }] }),
@@ -18,9 +19,10 @@ export const Route = createFileRoute("/_authenticated/tenant/financeiro")({
 
 
 
-type Status = "pago" | "pendente" | "atrasado";
+type Status = "pago" | "pendente" | "atrasado" | "acordo_fechado";
 function statusOf(i: any): Status {
   if (i.status === "pago") return "pago";
+  if (i.status === "acordo_fechado") return "acordo_fechado";
   if (i.due_date < today()) return "atrasado";
   return "pendente";
 }
@@ -29,6 +31,7 @@ const badge: Record<Status, { label: string; className: string }> = {
   pago: { label: "Pago", className: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30" },
   pendente: { label: "Pendente", className: "bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30" },
   atrasado: { label: "Atrasado", className: "bg-destructive/15 text-destructive border-destructive/30" },
+  acordo_fechado: { label: "Acordo Fechado", className: "bg-violet-500/15 text-violet-300 border-violet-500/30" },
 };
 
 function TenantFinanceiro() {
@@ -36,7 +39,25 @@ function TenantFinanceiro() {
   const { data: items = [], isLoading } = useTenantInstallments();
   const [openId, setOpenId] = useState<string | null>(null);
   const [pixFor, setPixFor] = useState<any | null>(null);
+  const [agreement, setAgreement] = useState<any | null>(null);
 
+  useEffect(() => {
+    if (!contract?.id) return;
+    (async () => {
+      const { data } = await (supabase as any)
+        .from("debt_agreements")
+        .select("*")
+        .eq("contract_id", contract.id)
+        .eq("status", "ativo")
+        .order("created_at", { ascending: false })
+        .limit(1);
+      setAgreement(data?.[0] ?? null);
+    })();
+  }, [contract?.id]);
+
+  const agreementInstallments = agreement
+    ? [...items].filter((i: any) => i.debt_agreement_id === agreement.id)
+    : [];
   const sorted = [...items].sort((a: any, b: any) => b.due_date.localeCompare(a.due_date));
 
   return (
@@ -46,10 +67,41 @@ function TenantFinanceiro() {
         <p className="text-sm text-muted-foreground">Histórico de parcelas do seu contrato.</p>
       </header>
 
+      {agreement && (
+        <Card className="p-5 border-violet-500/40 bg-violet-500/[0.07] shadow-[0_0_32px_-12px_rgb(168_85_247)]">
+          <div className="flex items-start gap-3">
+            <div className="p-2 rounded-lg bg-violet-500/20 text-violet-300">
+              <Handshake className="size-5" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <p className="font-semibold text-violet-100">Acordo de Renegociação Ativo</p>
+                <Badge variant="outline" className="border-violet-400/40 text-violet-200 bg-violet-500/10">
+                  {agreement.installments_count}x
+                </Badge>
+              </div>
+              <p className="text-sm text-violet-200/80 mt-1">
+                Suas parcelas atrasadas foram substituídas por <b>{agreement.installments_count}</b> parcela(s) de{" "}
+                <b>{formatBRL(Number(agreement.total_amount) / agreement.installments_count)}</b>.
+              </p>
+              <p className="text-xs text-violet-200/60 mt-1">
+                Total renegociado: {formatBRL(Number(agreement.total_amount))} • 1º vencimento {formatDate(agreement.first_due_date)}
+              </p>
+              {agreementInstallments.length > 0 && (
+                <p className="text-xs text-violet-200/60 mt-1">
+                  {agreementInstallments.filter((i: any) => i.status === "pago").length} de {agreementInstallments.length} parcela(s) já pagas.
+                </p>
+              )}
+            </div>
+          </div>
+        </Card>
+      )}
+
       {isLoading && <p className="text-muted-foreground text-sm">Carregando...</p>}
       {!isLoading && sorted.length === 0 && (
         <Card className="p-6 text-center text-muted-foreground">Nenhuma parcela registrada ainda.</Card>
       )}
+
 
       <div className="space-y-2">
         {sorted.map((i: any) => {

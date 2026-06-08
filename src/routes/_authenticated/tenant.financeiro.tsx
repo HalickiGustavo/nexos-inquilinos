@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { Copy, Download, ChevronDown } from "lucide-react";
+import { Copy, Download, ChevronDown, QrCode } from "lucide-react";
 import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { useTenantInstallments, useTenantActiveContract } from "@/lib/tenant-que
 import { formatBRL, formatDate, today } from "@/lib/format";
 import { downloadPdf } from "@/lib/pdf";
 import { parseExpenses, expensesTotals } from "@/lib/variable-expenses";
+import { PixPaymentDialog } from "@/components/PixPaymentDialog";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/tenant/financeiro")({

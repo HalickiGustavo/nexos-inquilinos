@@ -44,6 +44,7 @@ const ALLOWED_ROLES: Role[] = ["imobiliaria", "proprietario"];
 type Search = { role?: string };
 
 export const Route = createFileRoute("/cadastro")({
+  ssr: false,
   validateSearch: (search: Record<string, unknown>): Search => {
     const raw = typeof search.role === "string" ? search.role.toLowerCase().replace(/[^a-z]/g, "") : undefined;
     return { role: raw && (ALLOWED_ROLES as string[]).includes(raw) ? raw : undefined };

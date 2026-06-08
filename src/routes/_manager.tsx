@@ -99,19 +99,6 @@ function ManagerLayout() {
             )}
           </Link>
         </div>
-        <nav className="md:hidden flex overflow-x-auto gap-1 p-2 border-b bg-zinc-900 text-zinc-100">
-          {navItems.map((item) => {
-            const active = item.exact ? pathname === item.to : pathname.startsWith(item.to);
-            const Icon = item.icon;
-            return (
-              <Link key={item.to} to={item.to}
-                className={cn("flex items-center gap-2 px-3 py-1.5 rounded-md text-xs whitespace-nowrap",
-                  active ? "bg-primary text-primary-foreground" : "bg-zinc-800 text-zinc-300")}>
-                <Icon className="size-3.5" />{item.label}
-              </Link>
-            );
-          })}
-        </nav>
         <main className="flex-1 overflow-y-auto"><Outlet /></main>
       </div>
     </div>

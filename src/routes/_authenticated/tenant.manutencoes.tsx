@@ -252,6 +252,10 @@ function NewRequestDialog({ onDone }: { onDone: () => void }) {
             placeholder="Descreva o problema..."
           />
         </div>
+        <div className="space-y-1.5">
+          <Label>Evidências (fotos/vídeos)</Label>
+          <EvidenceUploader value={evidence} onChange={setEvidence} />
+        </div>
         <DialogFooter>
           <Button type="submit" disabled={create.isPending}>
             Abrir chamado

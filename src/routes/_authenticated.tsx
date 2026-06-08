@@ -10,6 +10,7 @@ import {
   LogOut,
   Loader2,
   Plug,
+  Coins,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useUserRole } from "@/lib/useUserRole";
@@ -26,6 +27,7 @@ export const Route = createFileRoute("/_authenticated")({
 
 const navItems = [
   { to: "/dashboard", label: "Visão Geral", icon: LayoutDashboard },
+  { to: "/conta-corrente", label: "Conta Corrente", icon: Coins },
   { to: "/properties", label: "Imóveis", icon: Building2 },
   { to: "/tenants", label: "Inquilinos", icon: Users },
   { to: "/contracts", label: "Contratos", icon: FileText },

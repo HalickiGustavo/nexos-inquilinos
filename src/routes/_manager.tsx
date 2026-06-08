@@ -1,6 +1,7 @@
 import { createFileRoute, Outlet, useNavigate, useRouterState, Link } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { LayoutDashboard, Briefcase, Wallet, Users, KanbanSquare, ClipboardCheck, Bell, LogOut, Loader2, Plug } from "lucide-react";
+import nexoLogo from "@/assets/nexo-logo.jpeg.asset.json";
 import { useAuth } from "@/lib/auth";
 import { useUserRole } from "@/lib/useUserRole";
 import { useManagerAlerts } from "@/lib/alerts";
@@ -51,9 +52,7 @@ function ManagerLayout() {
       <aside className="hidden md:flex w-64 flex-col bg-zinc-900 text-zinc-100 border-r border-zinc-800">
         <div className="p-5 border-b border-zinc-800">
           <div className="flex items-center gap-3">
-            <div className="text-2xl font-black tracking-tight text-white leading-none">
-              NE<span className="text-violet-400 drop-shadow-[0_0_10px_rgba(167,139,250,0.95)]">X</span>O
-            </div>
+            <img src={nexoLogo.url} alt="NEXO" className="h-9 w-auto rounded-md bg-white p-1.5" />
             <div className="text-[10px] text-zinc-400 uppercase tracking-wider">Imobiliária</div>
           </div>
         </div>
@@ -90,8 +89,8 @@ function ManagerLayout() {
 
       <div className="flex-1 flex flex-col min-w-0">
         <div className="md:hidden flex items-center justify-between px-4 py-3 bg-black border-b border-white/5">
-          <Link to="/manager" className="text-xl font-black tracking-tight text-white leading-none">
-            NE<span className="text-violet-400 drop-shadow-[0_0_10px_rgba(167,139,250,0.95)]">X</span>O
+          <Link to="/manager" className="flex items-center">
+            <img src={nexoLogo.url} alt="NEXO" className="h-8 w-auto rounded-md bg-white p-1" />
           </Link>
           <Link to="/manager/alertas" className="relative size-9 grid place-items-center rounded-full text-zinc-200 hover:bg-white/5">
             <Bell className="size-5" strokeWidth={1.5} />

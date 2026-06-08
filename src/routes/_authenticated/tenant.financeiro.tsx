@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-import { Download, ChevronDown, QrCode } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Download, ChevronDown, QrCode, Handshake } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -10,6 +10,7 @@ import { downloadPdf } from "@/lib/pdf";
 import { parseExpenses, expensesTotals } from "@/lib/variable-expenses";
 import { PixPaymentDialog } from "@/components/PixPaymentDialog";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/tenant/financeiro")({
   head: () => ({ meta: [{ title: "Financeiro — Nexo Inquilino" }] }),

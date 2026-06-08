@@ -148,30 +148,29 @@ function ManagerDashboard() {
     n.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
 
   return (
-    <div className="min-h-screen bg-black text-white">
-
-      <div className="px-5 py-5 space-y-7 max-w-md mx-auto md:max-w-2xl">
+    <div className="min-h-screen bg-background text-foreground">
+      <div className="px-4 sm:px-6 lg:px-8 py-5 sm:py-7 space-y-6 sm:space-y-8 max-w-7xl mx-auto">
         <section
-          className="relative overflow-hidden rounded-2xl p-5 border border-violet-500/20"
+          className="relative overflow-hidden rounded-3xl p-5 sm:p-7 lg:p-9 border border-primary/25 text-primary-foreground"
           style={{
             background:
-              "radial-gradient(120% 80% at 0% 0%, rgba(139,92,246,0.55) 0%, rgba(76,29,149,0.45) 35%, rgba(20,10,40,0.9) 75%)",
+              "radial-gradient(120% 80% at 0% 0%, color-mix(in oklab, var(--primary) 80%, transparent) 0%, color-mix(in oklab, var(--primary) 55%, black) 45%, color-mix(in oklab, var(--primary) 25%, black) 85%)",
             boxShadow:
-              "inset 0 1px 0 rgba(255,255,255,0.08), 0 10px 40px -10px rgba(139,92,246,0.5)",
+              "inset 0 1px 0 rgba(255,255,255,0.10), 0 20px 60px -20px color-mix(in oklab, var(--primary) 60%, transparent)",
           }}
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs text-white/70">Visão geral</span>
+            <span className="text-xs opacity-80">Visão geral</span>
             <DropdownMenu>
-              <DropdownMenuTrigger className="flex items-center gap-1.5 text-xs text-white/90 bg-black/40 border border-white/10 rounded-full px-3 py-1.5 hover:bg-black/60 transition">
+              <DropdownMenuTrigger className="flex items-center gap-1.5 text-xs bg-black/30 border border-white/15 rounded-full px-3 py-1.5 hover:bg-black/50 transition">
                 {RANGE_LABEL[range]} <ChevronDown className="size-3.5" />
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="bg-zinc-900 border-white/10 text-white">
+              <DropdownMenuContent align="end">
                 {(Object.keys(RANGE_LABEL) as RangeKey[]).map((k) => (
                   <DropdownMenuItem
                     key={k}
                     onClick={() => setRange(k)}
-                    className="text-xs cursor-pointer focus:bg-violet-500/20 focus:text-white"
+                    className="text-xs cursor-pointer"
                   >
                     {RANGE_LABEL[k]}
                   </DropdownMenuItem>
@@ -179,28 +178,28 @@ function ManagerDashboard() {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-          <h1 className="mt-4 text-2xl font-bold leading-tight tracking-tight">
+          <h1 className="mt-4 text-2xl sm:text-3xl lg:text-4xl font-bold leading-tight tracking-tight">
             Tudo conectado.
             <br />
-            <span className="text-white/80 font-semibold">Tudo em um só lugar.</span>
+            <span className="opacity-80 font-semibold">Tudo em um só lugar.</span>
           </h1>
-          <div className="mt-3 text-xs text-white/70">
+          <div className="mt-3 text-xs sm:text-sm opacity-80">
             Receita ({RANGE_LABEL[range].toLowerCase()}):{" "}
-            <span className="text-white font-semibold">
+            <span className="font-semibold opacity-100">
               {qChart.isLoading ? "—" : fmtBRL(totalRevenue)}
             </span>
           </div>
 
           <div className={`mt-4 -mx-1 transition-opacity ${qChart.isFetching ? "opacity-50 animate-pulse" : "opacity-100"}`}>
-            <svg viewBox="0 0 300 90" className="w-full h-24" preserveAspectRatio="none">
+            <svg viewBox="0 0 300 90" className="w-full h-24 sm:h-32 lg:h-40" preserveAspectRatio="none">
               <defs>
                 <linearGradient id="lineGrad" x1="0" x2="1" y1="0" y2="0">
-                  <stop offset="0%" stopColor="#C4B5FD" />
-                  <stop offset="100%" stopColor="#A78BFA" />
+                  <stop offset="0%" stopColor="#E9D5FF" />
+                  <stop offset="100%" stopColor="#FFFFFF" />
                 </linearGradient>
                 <linearGradient id="fillGrad" x1="0" x2="0" y1="0" y2="1">
-                  <stop offset="0%" stopColor="#A78BFA" stopOpacity="0.35" />
-                  <stop offset="100%" stopColor="#A78BFA" stopOpacity="0" />
+                  <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.35" />
+                  <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0" />
                 </linearGradient>
                 <filter id="glow">
                   <feGaussianBlur stdDeviation="2.5" result="b" />
@@ -213,15 +212,15 @@ function ManagerDashboard() {
               <path d={`${pathData.d} L 294 90 L 6 90 Z`} fill="url(#fillGrad)" />
               <path d={pathData.d} fill="none" stroke="url(#lineGrad)" strokeWidth="2" filter="url(#glow)" strokeLinecap="round" />
               {pathData.pts.filter((_: readonly [number, number], i: number) => i % Math.max(1, Math.floor(pathData.pts.length / 6)) === 0).map(([x, y]: readonly [number, number], i: number) => (
-                <circle key={i} cx={x} cy={y} r="2" fill="#E9D5FF" />
+                <circle key={i} cx={x} cy={y} r="2" fill="#FFFFFF" />
               ))}
             </svg>
           </div>
         </section>
 
         <section>
-          <h2 className="text-base font-medium text-white/90 mb-4">Indicadores</h2>
-          <div className="grid grid-cols-2 gap-3">
+          <h2 className="text-base sm:text-lg font-medium text-foreground/90 mb-4">Indicadores</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
             <MetricCard label="Contratos ativos" value={qContracts.data} loading={qContracts.isLoading} />
             <MetricCard label="Imóveis cadastrados" value={qProps.data} loading={qProps.isLoading} />
             <MetricCard label="Vistorias realizadas" value={qInspections.data} loading={qInspections.isLoading} />
@@ -230,8 +229,8 @@ function ManagerDashboard() {
         </section>
 
         <section className="pb-8">
-          <h2 className="text-base font-medium text-white/90 mb-4">Atalhos rápidos</h2>
-          <div className="grid grid-cols-4 gap-3">
+          <h2 className="text-base sm:text-lg font-medium text-foreground/90 mb-4">Atalhos rápidos</h2>
+          <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-8 gap-3 sm:gap-4">
             <Shortcut to="/manager/carteira" search={{ novo: "contrato" } as any} icon={FilePlus} label="Novo contrato" />
             <Shortcut to="/manager/vistorias" search={{ novo: "1" } as any} icon={FileSearch} label="Nova vistoria" />
             <Shortcut to="/maintenances" search={{ novo: "1" } as any} icon={Home} label="Novo chamado" />
@@ -247,13 +246,13 @@ function MetricCard({
   label, value, loading,
 }: { label: string; value: number | undefined; loading?: boolean }) {
   return (
-    <div className="rounded-2xl border border-white/5 bg-zinc-900/60 p-4 backdrop-blur-sm">
-      <div className="text-[11px] text-zinc-400 leading-tight min-h-[28px]">{label}</div>
+    <div className="rounded-2xl border border-border bg-card p-4 sm:p-5 backdrop-blur-sm shadow-sm">
+      <div className="text-[11px] sm:text-xs text-muted-foreground leading-tight min-h-[28px]">{label}</div>
       <div className="mt-2 flex items-baseline gap-2">
         {loading || value === undefined ? (
-          <span className="inline-block h-7 w-12 rounded-md bg-white/10 animate-pulse" aria-label="Carregando" />
+          <span className="inline-block h-7 w-12 rounded-md bg-muted animate-pulse" aria-label="Carregando" />
         ) : (
-          <span className="text-3xl font-bold text-white tabular-nums">{value}</span>
+          <span className="text-3xl sm:text-4xl font-bold text-foreground tabular-nums">{value}</span>
         )}
       </div>
     </div>
@@ -265,11 +264,10 @@ function Shortcut({
 }: { to: string; icon: any; label: string; search?: Record<string, string> }) {
   return (
     <Link to={to} search={search as any} className="flex flex-col items-center gap-2 group">
-      <div className="size-14 rounded-2xl border border-white/10 bg-zinc-900/60 grid place-items-center group-active:scale-95 group-hover:border-violet-400/40 transition">
-        <Icon className="size-5 text-white" strokeWidth={1.5} />
+      <div className="size-14 sm:size-16 rounded-2xl border border-border bg-card grid place-items-center group-active:scale-95 group-hover:border-primary/50 transition shadow-sm">
+        <Icon className="size-5 sm:size-6 text-foreground" strokeWidth={1.5} />
       </div>
-      <span className="text-[11px] text-zinc-300 text-center leading-tight">{label}</span>
+      <span className="text-[11px] sm:text-xs text-muted-foreground text-center leading-tight">{label}</span>
     </Link>
   );
 }
-

@@ -37,7 +37,25 @@ function TenantFinanceiro() {
   const { data: items = [], isLoading } = useTenantInstallments();
   const [openId, setOpenId] = useState<string | null>(null);
   const [pixFor, setPixFor] = useState<any | null>(null);
+  const [agreement, setAgreement] = useState<any | null>(null);
 
+  useEffect(() => {
+    if (!contract?.id) return;
+    (async () => {
+      const { data } = await (supabase as any)
+        .from("debt_agreements")
+        .select("*")
+        .eq("contract_id", contract.id)
+        .eq("status", "ativo")
+        .order("created_at", { ascending: false })
+        .limit(1);
+      setAgreement(data?.[0] ?? null);
+    })();
+  }, [contract?.id]);
+
+  const agreementInstallments = agreement
+    ? [...items].filter((i: any) => i.debt_agreement_id === agreement.id)
+    : [];
   const sorted = [...items].sort((a: any, b: any) => b.due_date.localeCompare(a.due_date));
 
   return (
@@ -47,10 +65,41 @@ function TenantFinanceiro() {
         <p className="text-sm text-muted-foreground">Histórico de parcelas do seu contrato.</p>
       </header>
 
+      {agreement && (
+        <Card className="p-5 border-violet-500/40 bg-violet-500/[0.07] shadow-[0_0_32px_-12px_rgb(168_85_247)]">
+          <div className="flex items-start gap-3">
+            <div className="p-2 rounded-lg bg-violet-500/20 text-violet-300">
+              <Handshake className="size-5" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <p className="font-semibold text-violet-100">Acordo de Renegociação Ativo</p>
+                <Badge variant="outline" className="border-violet-400/40 text-violet-200 bg-violet-500/10">
+                  {agreement.installments_count}x
+                </Badge>
+              </div>
+              <p className="text-sm text-violet-200/80 mt-1">
+                Suas parcelas atrasadas foram substituídas por <b>{agreement.installments_count}</b> parcela(s) de{" "}
+                <b>{formatBRL(Number(agreement.total_amount) / agreement.installments_count)}</b>.
+              </p>
+              <p className="text-xs text-violet-200/60 mt-1">
+                Total renegociado: {formatBRL(Number(agreement.total_amount))} • 1º vencimento {formatDate(agreement.first_due_date)}
+              </p>
+              {agreementInstallments.length > 0 && (
+                <p className="text-xs text-violet-200/60 mt-1">
+                  {agreementInstallments.filter((i: any) => i.status === "pago").length} de {agreementInstallments.length} parcela(s) já pagas.
+                </p>
+              )}
+            </div>
+          </div>
+        </Card>
+      )}
+
       {isLoading && <p className="text-muted-foreground text-sm">Carregando...</p>}
       {!isLoading && sorted.length === 0 && (
         <Card className="p-6 text-center text-muted-foreground">Nenhuma parcela registrada ainda.</Card>
       )}
+
 
       <div className="space-y-2">
         {sorted.map((i: any) => {

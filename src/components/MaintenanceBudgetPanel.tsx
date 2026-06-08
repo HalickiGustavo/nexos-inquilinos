@@ -274,6 +274,17 @@ function DecideBudgetDialog({
         </DialogHeader>
 
         <div className="space-y-3 py-2">
+          {item.provider_name && (
+            <p className="text-xs text-muted-foreground">
+              Prestador indicado: <span className="font-medium text-foreground">{item.provider_name}</span>
+            </p>
+          )}
+          {item.evidence_urls?.length > 0 && (
+            <div className="space-y-1.5">
+              <p className="text-xs text-muted-foreground">Evidências do inquilino</p>
+              <EvidenceGrid paths={item.evidence_urls} />
+            </div>
+          )}
           <label className="flex items-start gap-2 cursor-pointer">
             <Checkbox
               checked={deduct}
@@ -288,6 +299,7 @@ function DecideBudgetDialog({
             </span>
           </label>
         </div>
+
 
         <DialogFooter className="gap-2">
           <Button

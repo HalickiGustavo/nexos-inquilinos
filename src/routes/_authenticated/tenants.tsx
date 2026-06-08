@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-import { Plus, Pencil, Trash2, Users, Mail, Phone, Send } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Plus, Pencil, Trash2, Users, Mail, Phone, Send, Handshake } from "lucide-react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { Card } from "@/components/ui/card";
@@ -9,10 +9,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
-import { useTenants, useInvalidate, type Tenant } from "@/lib/queries";
+import { useTenants, useInstallments, useInvalidate, type Tenant } from "@/lib/queries";
 import { inviteTenantUser } from "@/lib/asaas.functions";
+import { DebtAgreementDialog } from "@/components/DebtAgreementDialog";
+import { today } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/tenants")({
   head: () => ({ meta: [{ title: "Inquilinos — ImovelPro" }] }),

@@ -24,6 +24,11 @@ function Carteira() {
   const [search, setSearch] = useState("");
   const [openNew, setOpenNew] = useState(false);
   const [openDetail, setOpenDetail] = useState<any | null>(null);
+  useEffect(() => {
+    if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("novo")) {
+      setOpenNew(true);
+    }
+  }, []);
 
   const q = useQuery({
     queryKey: ["mgr-carteira"],

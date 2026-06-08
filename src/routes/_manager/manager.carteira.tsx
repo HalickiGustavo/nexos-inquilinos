@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -24,6 +24,11 @@ function Carteira() {
   const [search, setSearch] = useState("");
   const [openNew, setOpenNew] = useState(false);
   const [openDetail, setOpenDetail] = useState<any | null>(null);
+  useEffect(() => {
+    if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("novo")) {
+      setOpenNew(true);
+    }
+  }, []);
 
   const q = useQuery({
     queryKey: ["mgr-carteira"],

@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Plus, Wrench, Trash2, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
@@ -32,6 +32,11 @@ const COLUMNS = [
 function MaintenancesPage() {
   const { data: items = [], isLoading } = useMaintenances();
   const [open, setOpen] = useState(false);
+  useEffect(() => {
+    if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("novo")) {
+      setOpen(true);
+    }
+  }, []);
 
   return (
     <div className="p-6 lg:p-8 max-w-7xl mx-auto space-y-6">

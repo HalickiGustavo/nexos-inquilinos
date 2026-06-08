@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Plus, ClipboardCheck, Trash2, Download, FileText, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
@@ -49,6 +49,11 @@ export const Route = createFileRoute("/_manager/manager/vistorias")({
 function VistoriasPage() {
   const { data: inspections = [], isLoading } = useInspections();
   const [open, setOpen] = useState(false);
+  useEffect(() => {
+    if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("novo")) {
+      setOpen(true);
+    }
+  }, []);
 
   return (
     <div className="p-6 lg:p-8 max-w-7xl mx-auto space-y-6">

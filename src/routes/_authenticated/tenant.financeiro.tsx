@@ -19,9 +19,10 @@ export const Route = createFileRoute("/_authenticated/tenant/financeiro")({
 
 
 
-type Status = "pago" | "pendente" | "atrasado";
+type Status = "pago" | "pendente" | "atrasado" | "acordo_fechado";
 function statusOf(i: any): Status {
   if (i.status === "pago") return "pago";
+  if (i.status === "acordo_fechado") return "acordo_fechado";
   if (i.due_date < today()) return "atrasado";
   return "pendente";
 }
@@ -30,6 +31,7 @@ const badge: Record<Status, { label: string; className: string }> = {
   pago: { label: "Pago", className: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30" },
   pendente: { label: "Pendente", className: "bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30" },
   atrasado: { label: "Atrasado", className: "bg-destructive/15 text-destructive border-destructive/30" },
+  acordo_fechado: { label: "Acordo Fechado", className: "bg-violet-500/15 text-violet-300 border-violet-500/30" },
 };
 
 function TenantFinanceiro() {

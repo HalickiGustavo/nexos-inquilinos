@@ -99,6 +99,19 @@ function ManagerLayout() {
             )}
           </Link>
         </div>
+        <nav className="md:hidden flex overflow-x-auto gap-1 p-2 border-b border-white/5 bg-black text-zinc-100">
+          {navItems.map((item) => {
+            const active = item.exact ? pathname === item.to : pathname.startsWith(item.to);
+            const Icon = item.icon;
+            return (
+              <Link key={item.to} to={item.to}
+                className={cn("flex items-center gap-2 px-3 py-1.5 rounded-full text-xs whitespace-nowrap border",
+                  active ? "bg-violet-500 text-white border-violet-400" : "bg-zinc-900 text-zinc-300 border-white/10")}>
+                <Icon className="size-3.5" />{item.label}
+              </Link>
+            );
+          })}
+        </nav>
         <main className="flex-1 overflow-y-auto"><Outlet /></main>
       </div>
     </div>

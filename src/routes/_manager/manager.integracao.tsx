@@ -38,12 +38,18 @@ const emptyBank: BankInfo = {
 
 function ManagerIntegracao() {
   const fetchAccount = useServerFn(getAsaasAccount);
+  const fetchFee = useServerFn(getNexoFeeSetting);
   const submit = useServerFn(createAsaasSubaccount);
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["asaas-account"],
     queryFn: () => fetchAccount(),
   });
+  const { data: feeData } = useQuery({
+    queryKey: ["nexo-fee-setting"],
+    queryFn: () => fetchFee(),
+  });
   const account = data?.account;
+  const nexoFee = feeData?.fee ?? 24.99;
 
   const [bank, setBank] = useState<BankInfo>(emptyBank);
   const [saving, setSaving] = useState(false);
@@ -158,7 +164,7 @@ function ManagerIntegracao() {
             </div>
             <div className="rounded-md border bg-background p-3">
               <p className="text-xs uppercase tracking-wide text-muted-foreground">NEXO — Taxa de Serviço Digital</p>
-              <p className="text-lg font-semibold mt-1">{formatBRL(NEXO_FEE)} <span className="text-xs font-normal text-muted-foreground">por parcela</span></p>
+              <p className="text-lg font-semibold mt-1">{formatBRL(nexoFee)} <span className="text-xs font-normal text-muted-foreground">por parcela</span></p>
             </div>
           </div>
         </CardContent>

@@ -4,7 +4,7 @@ import { formatBRL, formatDate } from "@/lib/format";
 import { parseExpenses, expensesTotals } from "@/lib/variable-expenses";
 import { ArrowRight, Building2, Sparkles } from "lucide-react";
 
-export const NEXO_FEE_PER_INSTALLMENT = 4.9;
+export const NEXO_FEE_PER_INSTALLMENT = 24.99;
 
 export function SplitBreakdownDialog({
   installment,

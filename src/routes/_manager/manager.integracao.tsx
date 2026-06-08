@@ -19,7 +19,7 @@ export const Route = createFileRoute("/_manager/manager/integracao")({
   component: ManagerIntegracao,
 });
 
-const NEXO_FEE = 4.9; // R$ por boleto/Pix gerado (mockup demonstrativo)
+const NEXO_FEE = 24.99; // R$ por boleto/Pix gerado
 const STORAGE_KEY = "nexo:manager:bank-info";
 
 type BankInfo = {

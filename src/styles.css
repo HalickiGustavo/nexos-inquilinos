@@ -129,7 +129,7 @@
 @layer base {
   * { border-color: var(--color-border); }
   html, body {
-    background-color: #000;
+    background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
@@ -148,10 +148,10 @@
   }
 }
 
-/* Globally remap legacy hardcoded light surfaces to the dark palette
+/* Dark-mode overrides: remap legacy hardcoded light surfaces to the dark palette
    so screens that still use bg-white / bg-zinc-50 / bg-zinc-100 / text-zinc-900
    stay on-brand without rewriting every file. */
-@layer utilities {
+.dark {
   .bg-white { background-color: #0a0a0a !important; }
   .bg-zinc-50 { background-color: #09090b !important; }
   .bg-zinc-100 { background-color: #111113 !important; }

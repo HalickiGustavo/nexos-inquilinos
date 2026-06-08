@@ -10,9 +10,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatBRL, formatDate } from "@/lib/format";
-import { CheckCircle2, Receipt } from "lucide-react";
+import { CheckCircle2, Receipt, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { VariableExpensesDialog } from "@/components/VariableExpensesDialog";
+import { SplitBreakdownDialog, NEXO_FEE_PER_INSTALLMENT } from "@/components/SplitBreakdownDialog";
 import { parseExpenses, expensesTotals } from "@/lib/variable-expenses";
 
 export const Route = createFileRoute("/_manager/manager/financeiro")({
@@ -43,6 +44,7 @@ function Recebimentos() {
   const [statusF, setStatusF] = useState("todos");
   const [from, setFrom] = useState("");
   const [expensesFor, setExpensesFor] = useState<any | null>(null);
+  const [splitFor, setSplitFor] = useState<any | null>(null);
   const [to, setTo] = useState("");
 
   const q = useQuery({
@@ -74,6 +76,16 @@ function Recebimentos() {
 
   return (
     <div className="space-y-3 mt-4">
+      <Card className="bg-primary/5 border-primary/20">
+        <CardContent className="p-4 flex items-center gap-3 flex-wrap">
+          <Sparkles className="size-4 text-primary" />
+          <div className="text-sm">
+            <span className="font-semibold">Split Automático Ativo:</span>{" "}
+            <span className="text-primary font-medium">{formatBRL(NEXO_FEE_PER_INSTALLMENT)} para NEXO</span>
+            <span className="text-muted-foreground"> + valor restante para sua subconta, por parcela emitida.</span>
+          </div>
+        </CardContent>
+      </Card>
       <Card>
         <CardContent className="p-4 flex flex-wrap gap-3 items-end">
           <div className="space-y-1"><label className="text-xs">Status</label>
@@ -128,9 +140,14 @@ function Recebimentos() {
                   <TableCell className="text-right font-medium">{formatBRL(due)}</TableCell>
                   <TableCell>{badge(i.status)}</TableCell>
                   <TableCell className="text-right">
-                    <Button size="sm" variant="outline" onClick={() => setExpensesFor(i)}>
-                      <Receipt className="size-4 mr-1" /> Despesas
-                    </Button>
+                    <div className="flex justify-end gap-2 flex-wrap">
+                      <Button size="sm" variant="outline" onClick={() => setSplitFor(i)}>
+                        <Sparkles className="size-4 mr-1" /> Split
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => setExpensesFor(i)}>
+                        <Receipt className="size-4 mr-1" /> Despesas
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               );
@@ -147,6 +164,11 @@ function Recebimentos() {
           onSaved={() => qc.invalidateQueries({ queryKey: ["mgr-receb"] })}
         />
       )}
+      <SplitBreakdownDialog
+        installment={splitFor}
+        open={!!splitFor}
+        onOpenChange={(o) => !o && setSplitFor(null)}
+      />
     </div>
   );
 }

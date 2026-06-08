@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet, useNavigate, useRouterState, Link } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { LayoutDashboard, Briefcase, Wallet, Users, KanbanSquare, ClipboardCheck, Bell, LogOut, Loader2 } from "lucide-react";
+import { LayoutDashboard, Briefcase, Wallet, Users, KanbanSquare, ClipboardCheck, Bell, LogOut, Loader2, Plug } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useUserRole } from "@/lib/useUserRole";
 import { useManagerAlerts } from "@/lib/alerts";
@@ -20,6 +20,7 @@ const navItems: { to: string; label: string; icon: typeof LayoutDashboard; exact
   { to: "/manager/vistorias", label: "Vistorias", icon: ClipboardCheck },
   { to: "/manager/alertas", label: "Alertas", icon: Bell },
   { to: "/manager/crm", label: "CRM", icon: KanbanSquare },
+  { to: "/manager/integracao", label: "Integração", icon: Plug },
 ];
 
 

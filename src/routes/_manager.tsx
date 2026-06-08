@@ -89,6 +89,17 @@ function ManagerLayout() {
       </aside>
 
       <div className="flex-1 flex flex-col min-w-0">
+        <div className="md:hidden flex items-center justify-between px-4 py-3 bg-black border-b border-white/5">
+          <Link to="/manager" className="text-xl font-black tracking-tight text-white leading-none">
+            NE<span className="text-violet-400 drop-shadow-[0_0_10px_rgba(167,139,250,0.95)]">X</span>O
+          </Link>
+          <Link to="/manager/alertas" className="relative size-9 grid place-items-center rounded-full text-zinc-200 hover:bg-white/5">
+            <Bell className="size-5" strokeWidth={1.5} />
+            {criticalCount > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 inline-flex items-center justify-center min-w-4 h-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[9px] font-semibold">{criticalCount}</span>
+            )}
+          </Link>
+        </div>
         <nav className="md:hidden flex overflow-x-auto gap-1 p-2 border-b bg-zinc-900 text-zinc-100">
           {navItems.map((item) => {
             const active = item.exact ? pathname === item.to : pathname.startsWith(item.to);

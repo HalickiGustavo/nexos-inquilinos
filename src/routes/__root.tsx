@@ -85,11 +85,11 @@ function RootErrorComponent({ error, reset }: { error: Error; reset: () => void 
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="pt-BR" className="dark">
+    <html lang="pt-BR">
       <head>
         <HeadContent />
       </head>
-      <body className="bg-black text-white">
+      <body>
         {children}
         <Scripts />
       </body>

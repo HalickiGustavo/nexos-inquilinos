@@ -20,6 +20,7 @@ const navItems: { to: string; label: string; icon: typeof LayoutDashboard; exact
   { to: "/manager/vistorias", label: "Vistorias", icon: ClipboardCheck },
   { to: "/manager/alertas", label: "Alertas", icon: Bell },
   { to: "/manager/crm", label: "CRM", icon: KanbanSquare },
+  { to: "/manager/integracao", label: "Integração", icon: Plug },
 ];
 
 

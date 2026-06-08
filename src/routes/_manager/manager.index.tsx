@@ -1,8 +1,18 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Bell, Menu, FilePlus, FileSearch, Home, BarChart3, ChevronDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
+
+type RangeKey = "mes" | "tri" | "ano";
+const RANGE_LABEL: Record<RangeKey, string> = {
+  mes: "Este mês",
+  tri: "Últimos 3 meses",
+  ano: "Este ano",
+};
 
 export const Route = createFileRoute("/_manager/manager/")({
   component: ManagerDashboard,

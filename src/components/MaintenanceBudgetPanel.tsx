@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useInvalidate } from "@/lib/queries";
+import { EvidenceGrid } from "@/components/EvidenceUploader";
 import { formatBRL, formatDate, parseNumber, today } from "@/lib/format";
 
 export type BudgetStatus = "nenhum" | "pendente" | "aprovado" | "recusado";
@@ -103,6 +104,7 @@ function SubmitBudgetDialog({
   const invalidate = useInvalidate();
   const [amount, setAmount] = useState(item.budget_amount ? String(item.budget_amount) : "");
   const [notes, setNotes] = useState(item.budget_notes ?? "");
+  const [provider, setProvider] = useState(item.provider_name ?? "");
   const [saving, setSaving] = useState(false);
 
   async function submit(e: React.FormEvent) {
@@ -113,15 +115,16 @@ function SubmitBudgetDialog({
       .update({
         budget_amount: parseNumber(amount),
         budget_notes: notes || null,
+        provider_name: provider || null,
         budget_status: "pendente",
         budget_decided_at: null,
         budget_rent_deduction: false,
         budget_applied_installment_id: null,
-      })
+      } as any)
       .eq("id", item.id);
     setSaving(false);
     if (error) return toast.error(error.message);
-    toast.success("Orçamento enviado para aprovação");
+    toast.success("Orçamento enviado ao proprietário");
     invalidate(["maintenances"]);
     onOpenChange(false);
   }
@@ -147,10 +150,18 @@ function SubmitBudgetDialog({
             />
           </div>
           <div className="space-y-2">
+            <Label>Prestador / fornecedor</Label>
+            <Input
+              placeholder="Ex.: Encanador João"
+              value={provider}
+              onChange={(e) => setProvider(e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
             <Label>Observações</Label>
             <Textarea
               rows={3}
-              placeholder="Detalhes do orçamento, prestador, validade…"
+              placeholder="Escopo do serviço, validade do orçamento…"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
             />
@@ -158,7 +169,7 @@ function SubmitBudgetDialog({
           <DialogFooter>
             <Button type="submit" disabled={saving || !amount}>
               {saving ? <Loader2 className="size-4 mr-2 animate-spin" /> : null}
-              Enviar para aprovação
+              Enviar para o proprietário
             </Button>
           </DialogFooter>
         </form>
@@ -264,6 +275,17 @@ function DecideBudgetDialog({
         </DialogHeader>
 
         <div className="space-y-3 py-2">
+          {item.provider_name && (
+            <p className="text-xs text-muted-foreground">
+              Prestador indicado: <span className="font-medium text-foreground">{item.provider_name}</span>
+            </p>
+          )}
+          {item.evidence_urls?.length > 0 && (
+            <div className="space-y-1.5">
+              <p className="text-xs text-muted-foreground">Evidências do inquilino</p>
+              <EvidenceGrid paths={item.evidence_urls} />
+            </div>
+          )}
           <label className="flex items-start gap-2 cursor-pointer">
             <Checkbox
               checked={deduct}
@@ -278,6 +300,7 @@ function DecideBudgetDialog({
             </span>
           </label>
         </div>
+
 
         <DialogFooter className="gap-2">
           <Button

@@ -26,6 +26,7 @@ import {
   useTenantMaintenances,
 } from "@/lib/tenant-queries";
 import { MaintenanceChat } from "@/components/MaintenanceChat";
+import { EvidenceUploader, EvidenceGrid } from "@/components/EvidenceUploader";
 import { cn } from "@/lib/utils";
 import { formatBRL, formatDate } from "@/lib/format";
 
@@ -107,10 +108,16 @@ function TenantManutencoes() {
                   <ArrowLeft className="size-4 mr-1" /> Voltar
                 </Button>
               </div>
-              <Card className="p-4 space-y-2">
+              <Card className="p-4 space-y-3">
                 <p className="font-semibold">{current.title}</p>
                 {current.description && (
                   <p className="text-sm text-muted-foreground">{current.description}</p>
+                )}
+                {current.evidence_urls?.length > 0 && (
+                  <div className="space-y-1.5">
+                    <p className="text-xs text-muted-foreground">Evidências enviadas</p>
+                    <EvidenceGrid paths={current.evidence_urls} />
+                  </div>
                 )}
                 {current.budget_status && current.budget_status !== "nenhum" && (
                   <div className="mt-2 pt-2 border-t text-xs space-y-1">
@@ -132,6 +139,12 @@ function TenantManutencoes() {
                         {current.budget_status === "recusado" && "Recusado"}
                       </Badge>
                     </div>
+                    {current.provider_name && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-muted-foreground">Prestador:</span>
+                        <span className="font-medium">{current.provider_name}</span>
+                      </div>
+                    )}
                     <div className="flex items-center justify-between">
                       <span className="text-muted-foreground">Valor:</span>
                       <span className="font-medium">
@@ -166,6 +179,7 @@ function NewRequestDialog({ onDone }: { onDone: () => void }) {
   const { data: contract } = useTenantActiveContract();
   const qc = useQueryClient();
   const [form, setForm] = useState({ title: "", description: "", category: "eletrica" });
+  const [evidence, setEvidence] = useState<string[]>([]);
 
   const create = useMutation({
     mutationFn: async () => {
@@ -181,6 +195,7 @@ function NewRequestDialog({ onDone }: { onDone: () => void }) {
         cost: 0,
         status: "pendente",
         responsible: "proprietario",
+        evidence_urls: evidence,
       } as any);
       if (error) throw error;
     },
@@ -236,6 +251,10 @@ function NewRequestDialog({ onDone }: { onDone: () => void }) {
             onChange={(e) => setForm({ ...form, description: e.target.value })}
             placeholder="Descreva o problema..."
           />
+        </div>
+        <div className="space-y-1.5">
+          <Label>Evidências (fotos/vídeos)</Label>
+          <EvidenceUploader value={evidence} onChange={setEvidence} />
         </div>
         <DialogFooter>
           <Button type="submit" disabled={create.isPending}>

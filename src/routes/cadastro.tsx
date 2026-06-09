@@ -233,6 +233,10 @@ function OnboardingWizard({ role, onChangeRole }: { role: Role; onChangeRole: ()
     }
   }
 
+  if (success) {
+    return <SuccessPanel role={role} email={form.email} />;
+  }
+
   return (
     <div className="rounded-2xl border border-zinc-800/80 bg-zinc-950/70 backdrop-blur-xl p-6 sm:p-8 shadow-2xl">
       <div className="flex items-center justify-between mb-6">

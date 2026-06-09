@@ -223,7 +223,7 @@ function OnboardingWizard({ role, onChangeRole }: { role: Role; onChangeRole: ()
       });
       if (error) throw error;
       toast.success("Cadastro realizado! Verifique seu e-mail para confirmar a conta.");
-      navigate({ to: "/login" });
+      setSuccess(true);
     } catch {
       captchaRef.current?.reset();
       update("captchaToken", null);

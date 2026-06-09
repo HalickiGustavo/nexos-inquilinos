@@ -14,7 +14,10 @@ import {
   ShieldCheck,
   ArrowRight,
   ArrowLeft,
+  Smartphone,
+  Download,
 } from "lucide-react";
+import appQrCode from "@/assets/app-qrcode.png.asset.json";
 
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";

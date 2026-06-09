@@ -377,6 +377,7 @@ export const linkTenantUser = createServerFn({ method: "POST" })
 
 // ===== Get NEXO fee from Supabase settings =====
 export const getNexoFeeSetting = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
   .handler(async () => {
     try {
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");

@@ -14,7 +14,10 @@ import {
   ShieldCheck,
   ArrowRight,
   ArrowLeft,
+  Smartphone,
+  Download,
 } from "lucide-react";
+import appQrCode from "@/assets/app-qrcode.png.asset.json";
 
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -175,9 +178,9 @@ interface FormState {
 }
 
 function OnboardingWizard({ role, onChangeRole }: { role: Role; onChangeRole: () => void }) {
-  const navigate = useNavigate();
   const [step, setStep] = useState<Step>(1);
   const [submitting, setSubmitting] = useState(false);
+  const [success, setSuccess] = useState(false);
   const captchaRef = useRef<ReCAPTCHA | null>(null);
 
   const [form, setForm] = useState<FormState>({
@@ -220,7 +223,7 @@ function OnboardingWizard({ role, onChangeRole }: { role: Role; onChangeRole: ()
       });
       if (error) throw error;
       toast.success("Cadastro realizado! Verifique seu e-mail para confirmar a conta.");
-      navigate({ to: "/login" });
+      setSuccess(true);
     } catch {
       captchaRef.current?.reset();
       update("captchaToken", null);
@@ -228,6 +231,10 @@ function OnboardingWizard({ role, onChangeRole }: { role: Role; onChangeRole: ()
     } finally {
       setSubmitting(false);
     }
+  }
+
+  if (success) {
+    return <SuccessPanel role={role} email={form.email} />;
   }
 
   return (
@@ -731,5 +738,74 @@ function BackButton({ onClick, disabled }: { onClick: () => void; disabled?: boo
     >
       <ArrowLeft className="size-4 mr-1" /> Voltar
     </Button>
+  );
+}
+
+/* -------------------- Tela de sucesso com QR -------------------- */
+
+function SuccessPanel({ role, email }: { role: Role; email: string }) {
+  return (
+    <div className="rounded-2xl border border-zinc-800/80 bg-zinc-950/70 backdrop-blur-xl p-6 sm:p-8 shadow-2xl">
+      <div className="text-center">
+        <div className="mx-auto inline-flex size-14 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-500/40 shadow-[0_0_30px_-4px_rgba(16,185,129,0.6)]">
+          <CheckCircle2 className="size-7" />
+        </div>
+        <h2 className="mt-4 text-2xl font-semibold tracking-tight">
+          Cadastro realizado com sucesso!
+        </h2>
+        <p className="mt-2 text-sm text-zinc-400">
+          Enviamos um link de confirmação para{" "}
+          <span className="text-zinc-200 font-medium">{email}</span>.
+        </p>
+        <p className="mt-1 text-xs text-zinc-500">
+          {role === "imobiliaria"
+            ? "Sua imobiliária está pronta para começar."
+            : "Sua conta de proprietário está pronta."}
+        </p>
+      </div>
+
+      <div className="my-6 h-px bg-gradient-to-r from-transparent via-zinc-800 to-transparent" />
+
+      <div className="text-center mb-5">
+        <div className="inline-flex items-center gap-2 text-xs uppercase tracking-wider text-violet-400 font-medium">
+          <Smartphone className="size-3.5" /> Baixe o aplicativo
+        </div>
+        <h3 className="mt-2 text-lg font-semibold">Leve o Nexo no seu bolso</h3>
+        <p className="mt-1 text-xs text-zinc-400">
+          Aponte a câmera do seu celular para o QR code abaixo.
+        </p>
+      </div>
+
+      <div className="flex justify-center">
+        <div className="rounded-2xl bg-zinc-900 p-4 ring-1 ring-zinc-800 shadow-[0_0_40px_-10px_rgba(139,92,246,0.5)]">
+          <img
+            src={appQrCode.url}
+            alt="QR code para baixar o app Nexo"
+            className="size-44 sm:size-52 rounded-lg"
+          />
+        </div>
+      </div>
+
+      <div className="mt-6 flex flex-col sm:flex-row gap-3">
+        <Link to="/login" className="flex-1">
+          <Button className="w-full h-11 bg-violet-600 hover:bg-violet-500 text-white shadow-[0_0_20px_-4px_rgba(139,92,246,0.7)]">
+            <ArrowRight className="size-4 mr-1" /> Ir para login
+          </Button>
+        </Link>
+        <a
+          href={appQrCode.url}
+          download="nexo-app-qrcode.png"
+          className="flex-1"
+        >
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full h-11 bg-transparent border-zinc-800 text-zinc-300 hover:bg-zinc-900 hover:text-zinc-100"
+          >
+            <Download className="size-4 mr-1" /> Baixar QR
+          </Button>
+        </a>
+      </div>
+    </div>
   );
 }

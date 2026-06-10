@@ -211,8 +211,8 @@ function ManagerDashboard() {
               </defs>
               <path d={`${pathData.d} L 294 90 L 6 90 Z`} fill="url(#fillGrad)" />
               <path d={pathData.d} fill="none" stroke="url(#lineGrad)" strokeWidth="2" filter="url(#glow)" strokeLinecap="round" />
-              {pathData.pts.filter((_: readonly [number, number], i: number) => i % Math.max(1, Math.floor(pathData.pts.length / 6)) === 0).map(([x, y]: readonly [number, number], i: number) => (
-                <circle key={i} cx={x} cy={y} r="2" fill="#FFFFFF" />
+              {pathData.pts.map(([x, y]: readonly [number, number], i: number) => (
+                <circle key={i} cx={x} cy={y} r={mode === "day" ? 1.4 : 2} fill="#FFFFFF" />
               ))}
             </svg>
           </div>

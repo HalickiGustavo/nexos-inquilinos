@@ -127,7 +127,7 @@ function IntegrationsPage() {
               <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
             </Field>
             <Field label="CPF / CNPJ" required>
-              <Input value={form.cpfCnpj} onChange={(e) => setForm({ ...form, cpfCnpj: e.target.value })} required />
+              <Input value={form.cpfCnpj} onChange={(e) => setForm({ ...form, cpfCnpj: maskCpfCnpj(e.target.value) })} required placeholder="000.000.000-00" inputMode="numeric" />
             </Field>
             <Field label="Tipo de empresa" required>
               <Select
@@ -144,13 +144,13 @@ function IntegrationsPage() {
               </Select>
             </Field>
             <Field label="Celular">
-              <Input value={form.mobilePhone} onChange={(e) => setForm({ ...form, mobilePhone: e.target.value })} placeholder="(11) 99999-9999" />
+              <Input value={form.mobilePhone} onChange={(e) => setForm({ ...form, mobilePhone: maskPhone(e.target.value) })} placeholder="(41) 99999-9999" inputMode="tel" />
             </Field>
             <Field label="Data de nascimento (PF)">
               <Input type="date" value={form.birthDate} onChange={(e) => setForm({ ...form, birthDate: e.target.value })} />
             </Field>
             <Field label="CEP" required>
-              <Input value={form.postalCode} onChange={(e) => setForm({ ...form, postalCode: e.target.value })} required />
+              <Input value={form.postalCode} onChange={(e) => setForm({ ...form, postalCode: maskCEP(e.target.value) })} required placeholder="00000-000" inputMode="numeric" />
             </Field>
             <Field label="Bairro" required>
               <Input value={form.province} onChange={(e) => setForm({ ...form, province: e.target.value })} required />

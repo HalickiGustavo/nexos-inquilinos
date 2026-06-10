@@ -31,6 +31,16 @@ export const maskPhone = (v: string) => {
     .replace(/(\d{5})(\d)/, "$1-$2");
 };
 
+export const maskCEP = (v: string) => {
+  const d = onlyDigits(v).slice(0, 8);
+  return d.replace(/^(\d{5})(\d)/, "$1-$2");
+};
+
+export const maskCpfCnpj = (v: string) => {
+  const d = onlyDigits(v);
+  return d.length <= 11 ? maskCPF(v) : maskCNPJ(v);
+};
+
 export const isValidCPF = (raw: string): boolean => {
   const cpf = onlyDigits(raw);
   if (cpf.length !== 11) return false;

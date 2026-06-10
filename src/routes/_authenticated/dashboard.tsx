@@ -137,8 +137,8 @@ function Dashboard() {
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData}>
-                <XAxis dataKey="month" stroke="var(--muted-foreground)" fontSize={12} />
-                <YAxis stroke="var(--muted-foreground)" fontSize={12} tickFormatter={(v) => `R$ ${(v / 1000).toFixed(0)}k`} />
+                <XAxis dataKey="month" stroke="var(--border)" fontSize={12} tick={{ fill: "var(--muted-foreground)" }} />
+                <YAxis stroke="var(--border)" fontSize={12} tick={{ fill: "var(--muted-foreground)" }} tickFormatter={(v) => `R$ ${(v / 1000).toFixed(0)}k`} />
                 <Tooltip
                   formatter={(v: number) => formatBRL(v)}
                   contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 8 }}

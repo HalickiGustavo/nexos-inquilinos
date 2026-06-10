@@ -198,8 +198,8 @@ function PropertyDialog({ editing, onDone }: { editing: Property | null; onDone:
           <Input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} />
         </div>
         <div className="grid grid-cols-2 gap-2">
-          <div className="space-y-2"><Label>Estado</Label><Input value={form.state} onChange={(e) => setForm({ ...form, state: e.target.value })} /></div>
-          <div className="space-y-2"><Label>CEP</Label><Input value={form.zip_code} onChange={(e) => setForm({ ...form, zip_code: e.target.value })} /></div>
+          <div className="space-y-2"><Label>Estado</Label><Input value={form.state} onChange={(e) => setForm({ ...form, state: e.target.value.toUpperCase().slice(0, 2) })} maxLength={2} placeholder="PR" /></div>
+          <div className="space-y-2"><Label>CEP</Label><Input value={form.zip_code} onChange={(e) => setForm({ ...form, zip_code: maskCEP(e.target.value) })} placeholder="00000-000" inputMode="numeric" /></div>
         </div>
         <div className="space-y-2">
           <Label>Tipo</Label>

@@ -151,7 +151,7 @@ function ManagerDashboard() {
     <div className="min-h-screen bg-background text-foreground">
       <div className="px-4 sm:px-6 lg:px-8 py-5 sm:py-7 space-y-6 sm:space-y-8 max-w-7xl mx-auto">
         <section
-          className="relative overflow-hidden rounded-3xl p-5 sm:p-7 lg:p-9 border border-primary/25 text-primary-foreground"
+          className="relative overflow-hidden rounded-3xl p-5 sm:p-7 lg:p-9 border border-primary/25 text-white [&_*]:text-white"
           style={{
             background:
               "radial-gradient(120% 80% at 0% 0%, color-mix(in oklab, var(--primary) 80%, transparent) 0%, color-mix(in oklab, var(--primary) 55%, black) 45%, color-mix(in oklab, var(--primary) 25%, black) 85%)",

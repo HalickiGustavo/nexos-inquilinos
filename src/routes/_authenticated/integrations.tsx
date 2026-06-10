@@ -14,6 +14,7 @@ import {
   getAsaasAccount,
 } from "@/lib/asaas.functions";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { maskCpfCnpj, maskPhone, maskCEP } from "@/lib/br-validators";
 
 export const Route = createFileRoute("/_authenticated/integrations")({
   head: () => ({ meta: [{ title: "Integrações — Nexo" }] }),

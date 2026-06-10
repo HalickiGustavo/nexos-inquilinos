@@ -13,6 +13,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { createAsaasSubaccount, getAsaasAccount, getNexoFeeSetting } from "@/lib/asaas.functions";
 import { formatBRL } from "@/lib/format";
+import { maskCpfCnpj, maskPhone } from "@/lib/br-validators";
 
 export const Route = createFileRoute("/_manager/manager/integracao")({
   head: () => ({ meta: [{ title: "Integração Financeira — NEXO Imobiliária" }] }),
@@ -182,10 +183,10 @@ function ManagerIntegracao() {
               <Input value={bank.legalName} onChange={(e) => setBank({ ...bank, legalName: e.target.value })} required maxLength={120} />
             </Field>
             <Field label="CNPJ / CPF" required>
-              <Input value={bank.document} onChange={(e) => setBank({ ...bank, document: e.target.value })} required maxLength={20} placeholder="00.000.000/0000-00" />
+              <Input value={bank.document} onChange={(e) => setBank({ ...bank, document: maskCpfCnpj(e.target.value) })} required maxLength={20} placeholder="00.000.000/0000-00" inputMode="numeric" />
             </Field>
             <Field label="Telefone" required>
-              <Input value={bank.phone} onChange={(e) => setBank({ ...bank, phone: e.target.value })} required maxLength={20} placeholder="(11) 99999-9999" />
+              <Input value={bank.phone} onChange={(e) => setBank({ ...bank, phone: maskPhone(e.target.value) })} required maxLength={20} placeholder="(41) 99999-9999" inputMode="tel" />
             </Field>
             <Field label="Banco" required>
               <Input value={bank.bank} onChange={(e) => setBank({ ...bank, bank: e.target.value })} required maxLength={80} placeholder="Ex.: Banco do Brasil" />

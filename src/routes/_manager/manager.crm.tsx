@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Plus, Phone, Wallet } from "lucide-react";
 import { formatBRL } from "@/lib/format";
 import { toast } from "sonner";
+import { maskPhone } from "@/lib/br-validators";
 
 export const Route = createFileRoute("/_manager/manager/crm")({
   component: CRM,
@@ -167,7 +168,7 @@ function LeadDialog({ open, onOpenChange, lead, onSaved }: { open: boolean; onOp
         <DialogHeader><DialogTitle>{isEdit ? "Editar Lead" : "Novo Lead"}</DialogTitle></DialogHeader>
         <div className="grid grid-cols-2 gap-3">
           <div className="col-span-2"><Label>Nome</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
-          <div><Label>Telefone</Label><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></div>
+          <div><Label>Telefone</Label><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: maskPhone(e.target.value) })} placeholder="(41) 99999-9999" inputMode="tel" /></div>
           <div><Label>Email</Label><Input value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></div>
           <div><Label>Orçamento (R$)</Label><Input type="number" value={form.budget} onChange={(e) => setForm({ ...form, budget: e.target.value })} /></div>
           <div><Label>Código do imóvel</Label><Input value={form.interested_code} onChange={(e) => setForm({ ...form, interested_code: e.target.value })} /></div>

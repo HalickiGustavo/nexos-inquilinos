@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Plus, Phone, Wallet } from "lucide-react";
 import { formatBRL } from "@/lib/format";
 import { toast } from "sonner";
+import { maskPhone } from "@/lib/br-validators";
 
 export const Route = createFileRoute("/_manager/manager/crm")({
   component: CRM,

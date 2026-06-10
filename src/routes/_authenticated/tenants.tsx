@@ -16,6 +16,7 @@ import { useTenants, useInstallments, useInvalidate, type Tenant } from "@/lib/q
 import { inviteTenantUser } from "@/lib/asaas.functions";
 import { DebtAgreementDialog } from "@/components/DebtAgreementDialog";
 import { today } from "@/lib/format";
+import { maskCpfCnpj, maskPhone } from "@/lib/br-validators";
 
 export const Route = createFileRoute("/_authenticated/tenants")({
   head: () => ({ meta: [{ title: "Inquilinos — ImovelPro" }] }),

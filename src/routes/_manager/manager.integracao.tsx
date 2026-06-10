@@ -13,6 +13,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { createAsaasSubaccount, getAsaasAccount, getNexoFeeSetting } from "@/lib/asaas.functions";
 import { formatBRL } from "@/lib/format";
+import { maskCpfCnpj, maskPhone, maskCEP } from "@/lib/br-validators";
 
 export const Route = createFileRoute("/_manager/manager/integracao")({
   head: () => ({ meta: [{ title: "Integração Financeira — NEXO Imobiliária" }] }),

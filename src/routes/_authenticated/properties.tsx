@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
+import { maskCEP } from "@/lib/br-validators";
 import { useAuth } from "@/lib/auth";
 import { useProperties, useInvalidate, type Property } from "@/lib/queries";
 import { formatBRL, parseNumber } from "@/lib/format";

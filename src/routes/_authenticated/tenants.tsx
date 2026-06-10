@@ -193,8 +193,8 @@ function TenantDialog({ editing, onDone }: { editing: Tenant | null; onDone: () 
       >
         <div className="space-y-2"><Label>Nome completo *</Label><Input required value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} /></div>
         <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-2"><Label>CPF / CNPJ</Label><Input value={form.document ?? ""} onChange={(e) => setForm({ ...form, document: e.target.value })} /></div>
-          <div className="space-y-2"><Label>Telefone</Label><Input value={form.phone ?? ""} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></div>
+          <div className="space-y-2"><Label>CPF / CNPJ</Label><Input value={form.document ?? ""} onChange={(e) => setForm({ ...form, document: maskCpfCnpj(e.target.value) })} placeholder="000.000.000-00" inputMode="numeric" /></div>
+          <div className="space-y-2"><Label>Telefone</Label><Input value={form.phone ?? ""} onChange={(e) => setForm({ ...form, phone: maskPhone(e.target.value) })} placeholder="(41) 99999-9999" inputMode="tel" /></div>
         </div>
         <div className="space-y-2"><Label>Email</Label><Input type="email" value={form.email ?? ""} onChange={(e) => setForm({ ...form, email: e.target.value })} /></div>
         <div className="space-y-2"><Label>Contato de emergência</Label><Input value={form.emergency_contact ?? ""} onChange={(e) => setForm({ ...form, emergency_contact: e.target.value })} placeholder="Nome e telefone" /></div>

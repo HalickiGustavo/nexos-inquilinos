@@ -114,11 +114,12 @@ function MigrarDadosPage() {
     setFinished(false);
     setErrors([]);
     setSuccess(0);
+    const { default: Papa } = await import("papaparse");
     Papa.parse<CsvRow>(f, {
       header: true,
       skipEmptyLines: true,
-      transformHeader: (h) => h.trim().toLowerCase().replace(/\s+/g, "_"),
-      complete: (result) => {
+      transformHeader: (h: string) => h.trim().toLowerCase().replace(/\s+/g, "_"),
+      complete: (result: { data: CsvRow[]; meta: { fields?: string[] } }) => {
         const missing = TEMPLATE_HEADERS.filter((h) => !result.meta.fields?.includes(h));
         if (missing.length > 0) {
           toast.error(`Cabeçalhos ausentes: ${missing.join(", ")}`);
@@ -129,7 +130,7 @@ function MigrarDadosPage() {
         setTotal(result.data.length);
         toast.success(`${result.data.length} linha(s) lida(s). Pronto para importar.`);
       },
-      error: (err) => toast.error(`Erro ao ler CSV: ${err.message}`),
+      error: (err: { message: string }) => toast.error(`Erro ao ler CSV: ${err.message}`),
     });
   }, []);
 

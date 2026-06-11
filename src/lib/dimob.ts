@@ -39,10 +39,6 @@ function onlyDigits(v: string | null | undefined) {
   return (v ?? "").replace(/\D+/g, "");
 }
 
-function fmtVal(n: number) {
-  // Formato Receita: sem separador de milhar, vírgula como decimal, 2 casas.
-  return (Math.round(n * 100) / 100).toFixed(2).replace(".", ",");
-}
 
 function padDoc(doc: string) {
   const d = onlyDigits(doc);

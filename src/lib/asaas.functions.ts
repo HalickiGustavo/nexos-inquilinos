@@ -561,3 +561,162 @@ export const getNexoFeeSetting = createServerFn({ method: "GET" })
       return { fee: 24.99 };
     }
   });
+
+// ===== Tenant: ensure PIX charge exists for own installment (MASTER PIX + split) =====
+const ensurePixInput = z.object({ installmentId: z.string().uuid() });
+
+export const ensureTenantPixCharge = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => ensurePixInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase } = context;
+    const { asaasFetch, getNexoFee, getNexoWalletId } = await import("./asaas.server");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // RLS garante que o inquilino só vê suas próprias parcelas.
+    const inst = await supabase
+      .from("installments")
+      .select("id, amount, extra_fees, late_charges, asaas_payment_id, pix_qrcode, pix_payload, boleto_url, due_date, status, contract:contracts(user_id, payout_wallet_id, late_fee_percent, daily_interest_percent, tenant:tenants(id, full_name, email, document, phone), property:properties(nickname))")
+      .eq("id", data.installmentId)
+      .maybeSingle();
+    if (inst.error) throw new Error(inst.error.message);
+    if (!inst.data) throw new Error("Parcela não encontrada");
+    if (inst.data.status === "pago") throw new Error("Parcela já está paga.");
+
+    if (inst.data.asaas_payment_id && inst.data.pix_qrcode && inst.data.pix_payload) {
+      return {
+        ok: true,
+        paymentId: inst.data.asaas_payment_id,
+        pixQrCode: inst.data.pix_qrcode,
+        pixPayload: inst.data.pix_payload,
+        boletoUrl: inst.data.boleto_url ?? null,
+      };
+    }
+
+    const contract = (inst.data as any).contract;
+    const tenant = contract?.tenant;
+    const property = contract?.property;
+    if (!tenant) throw new Error("Contrato sem inquilino vinculado");
+    const ownerUserId: string = contract.user_id;
+
+    // SEMPRE usa a chave MASTER (sem ownerApiKey). Dinheiro entra na conta
+    // MASTER e o split direciona a parte do aluguel para a wallet do proprietário.
+    const acc = await supabaseAdmin
+      .from("asaas_accounts")
+      .select("wallet_id")
+      .eq("user_id", ownerUserId)
+      .maybeSingle();
+    const nexoWallet = getNexoWalletId();
+    const payoutWalletId: string | null = contract?.payout_wallet_id || acc.data?.wallet_id || null;
+    const shouldSplitToOwner = Boolean(payoutWalletId && payoutWalletId !== nexoWallet);
+
+    const customerRow = await supabaseAdmin
+      .from("asaas_customers")
+      .select("asaas_customer_id")
+      .eq("tenant_id", tenant.id)
+      .maybeSingle();
+    let customerId = customerRow.data?.asaas_customer_id ?? null;
+    if (!customerId) {
+      if (!tenant.document) throw new Error("Inquilino sem CPF/CNPJ cadastrado");
+      const customer = await asaasFetch<any>("/customers", {
+        method: "POST",
+        body: JSON.stringify({
+          name: tenant.full_name,
+          cpfCnpj: String(tenant.document).replace(/\D/g, ""),
+          email: tenant.email ?? undefined,
+          mobilePhone: tenant.phone ? String(tenant.phone).replace(/\D/g, "") : undefined,
+          externalReference: tenant.id,
+        }),
+      });
+      customerId = customer.id;
+      await supabaseAdmin.from("asaas_customers").insert({
+        user_id: ownerUserId,
+        tenant_id: tenant.id,
+        asaas_customer_id: customerId as string,
+      });
+    }
+
+    const { data: setting } = await (supabaseAdmin as any)
+      .from("platform_settings")
+      .select("value")
+      .eq("key", "nexo_boleto_fee")
+      .maybeSingle();
+    const nexoFee = setting?.value ? Number(setting.value) : getNexoFee();
+    const baseValue = Number(inst.data.amount) + Number(inst.data.extra_fees ?? 0);
+
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const originalDue = inst.data.due_date as string;
+    const isOverdue = originalDue < todayStr;
+    const daysLate = isOverdue
+      ? Math.max(0, Math.floor((Date.parse(todayStr) - Date.parse(originalDue)) / 86400000))
+      : 0;
+    const finePct = Number(contract?.late_fee_percent ?? 0);
+    const monthlyInterestPct = Number(contract?.daily_interest_percent ?? 0);
+    const dailyPct = monthlyInterestPct / 30;
+    const fine = isOverdue ? +(baseValue * finePct / 100).toFixed(2) : 0;
+    const interest = isOverdue ? +(baseValue * dailyPct / 100 * daysLate).toFixed(2) : 0;
+    const lateCharges = +(fine + interest).toFixed(2);
+    const addFee = nexoFee > 0 && (payoutWalletId || nexoWallet);
+    const value = +(baseValue + lateCharges + (addFee ? nexoFee : 0)).toFixed(2);
+    const effectiveDueDate = isOverdue ? todayStr : originalDue;
+
+    let paymentId = inst.data.asaas_payment_id as string | null;
+
+    if (!paymentId) {
+      try {
+        const existingList = await asaasFetch<any>(
+          `/payments?externalReference=${encodeURIComponent(inst.data.id)}&limit=1`,
+        );
+        if (existingList?.data?.length > 0) paymentId = existingList.data[0].id;
+      } catch { /* segue */ }
+    }
+
+    if (!paymentId) {
+      const body: Record<string, unknown> = {
+        customer: customerId as string,
+        billingType: "PIX",
+        value,
+        dueDate: effectiveDueDate,
+        description: `Aluguel — ${property?.nickname ?? ""} — venc. ${originalDue}${addFee ? ` (inclui taxa NEXO de R$ ${nexoFee.toFixed(2)})` : ""}`,
+        externalReference: inst.data.id,
+      };
+      if (shouldSplitToOwner && payoutWalletId && nexoFee > 0 && nexoFee < value) {
+        const ownerPct = +(((value - nexoFee) / value) * 100).toFixed(4);
+        body.split = [{ walletId: payoutWalletId, percentualValue: ownerPct }];
+      }
+      const created = await asaasFetch<any>("/payments", {
+        method: "POST",
+        body: JSON.stringify(body),
+      });
+      paymentId = created.id;
+    } else {
+      try {
+        await asaasFetch<any>(`/payments/${paymentId}`, {
+          method: "PUT",
+          body: JSON.stringify({ billingType: "PIX", value, dueDate: effectiveDueDate }),
+        });
+      } catch { /* ignora */ }
+    }
+
+    const pix = await asaasFetch<any>(`/payments/${paymentId}/pixQrCode`);
+    const paymentInfo = await asaasFetch<any>(`/payments/${paymentId}`);
+
+    await supabaseAdmin
+      .from("installments")
+      .update({
+        asaas_payment_id: paymentId,
+        boleto_url: paymentInfo.bankSlipUrl ?? paymentInfo.invoiceUrl ?? null,
+        pix_qrcode: pix.encodedImage ?? null,
+        pix_payload: pix.payload ?? null,
+        late_charges: lateCharges,
+      })
+      .eq("id", inst.data.id);
+
+    return {
+      ok: true,
+      paymentId,
+      pixQrCode: pix.encodedImage ?? null,
+      pixPayload: pix.payload ?? null,
+      boletoUrl: paymentInfo.bankSlipUrl ?? paymentInfo.invoiceUrl ?? null,
+    };
+  });

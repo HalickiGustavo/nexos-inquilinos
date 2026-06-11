@@ -206,15 +206,16 @@ export const generateAsaasCharge = createServerFn({ method: "POST" })
       description: `Aluguel — ${property?.nickname ?? ""} — venc. ${originalDue}${lateNote}${addFee ? ` (inclui taxa NEXO de R$ ${nexoFee.toFixed(2)})` : ""}`,
       externalReference: inst.data.id,
     };
-    if (shouldSplitToOwner && payoutWalletId && nexoFee > 0 && nexoFee < value) {
-      // Use percentualValue so Asaas applies the split AFTER deducting its own
-      // transaction fee from the net receivable (avoids "split excede valor a receber").
-      const ownerPct = +(((value - nexoFee) / value) * 100).toFixed(4);
-      body.split = [{ walletId: payoutWalletId, percentualValue: ownerPct }];
-    } else if (ownerApiKey && nexoWallet && nexoFee > 0 && nexoFee < value) {
-      const nexoPct = +((nexoFee / value) * 100).toFixed(4);
-      body.split = [{ walletId: nexoWallet, percentualValue: nexoPct }];
-    }
+    const splitEntries = buildSplitEntries({
+      ownerWalletId: shouldSplitToOwner ? payoutWalletId : null,
+      ownerShare: +(baseValue + lateCharges).toFixed(2),
+      nexoWalletId: nexoWallet,
+      nexoFee,
+      totalValue: value,
+      paidViaOwnerKey: Boolean(ownerApiKey),
+    });
+    if (splitEntries.length > 0) body.split = splitEntries;
+
 
     // Idempotência remota: antes de POST /payments, checa se o Asaas já tem
     // uma cobrança com este externalReference (parcela id). Evita duplicar quando

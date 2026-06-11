@@ -189,6 +189,20 @@ function TenantDialog({ editing, onDone }: { editing: Tenant | null; onDone: () 
               toast.warning(`Inquilino salvo, mas falhou o convite: ${err?.message ?? "erro"}`);
             }
           }
+
+          // Fire-and-forget WhatsApp welcome — never blocks UI
+          if (isNew && saved?.phone && saved?.email && saved?.full_name) {
+            try {
+              const { sendWelcomeWhatsApp } = await import("@/lib/whatsapp.functions");
+              sendWelcomeWhatsApp({
+                data: { nome: saved.full_name, telefone: saved.phone, email: saved.email },
+              })
+                .then((r) => {
+                  if (r?.ok) toast.success("Mensagem de boas-vindas enviada no WhatsApp");
+                })
+                .catch(() => {/* silent */});
+            } catch {/* silent */}
+          }
           onDone();
         }}
       >

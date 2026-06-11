@@ -198,10 +198,13 @@ export const generateAsaasCharge = createServerFn({ method: "POST" })
       externalReference: inst.data.id,
     };
     if (shouldSplitToOwner && payoutWalletId && nexoFee > 0 && nexoFee < value) {
-      // Forward (value - nexoFee) to owner; NEXO master keeps nexoFee automatically.
-      body.split = [{ walletId: payoutWalletId, fixedValue: +(value - nexoFee).toFixed(2) }];
+      // Use percentualValue so Asaas applies the split AFTER deducting its own
+      // transaction fee from the net receivable (avoids "split excede valor a receber").
+      const ownerPct = +(((value - nexoFee) / value) * 100).toFixed(4);
+      body.split = [{ walletId: payoutWalletId, percentualValue: ownerPct }];
     } else if (ownerApiKey && nexoWallet && nexoFee > 0 && nexoFee < value) {
-      body.split = [{ walletId: nexoWallet, fixedValue: nexoFee }];
+      const nexoPct = +((nexoFee / value) * 100).toFixed(4);
+      body.split = [{ walletId: nexoWallet, percentualValue: nexoPct }];
     }
 
     const payment = await asaasFetch<any>("/payments", {

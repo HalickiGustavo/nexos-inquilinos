@@ -203,7 +203,7 @@ function TenantFinanceiro() {
                       <Button
                         size="lg"
                         className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold shadow-md"
-                        onClick={() => setPixFor(i)}
+                        onClick={() => openPix(i)}
                       >
                         <QrCode className="size-5 mr-2" /> Pagar com PIX — {formatBRL(totalDue)}
                       </Button>

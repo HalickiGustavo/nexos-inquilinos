@@ -299,8 +299,8 @@ export const updateAsaasChargeFee = createServerFn({ method: "POST" })
       value,
       dueDate: effectiveDueDate,
       split: shouldSplitToOwner && payoutWalletId
-        ? [{ walletId: payoutWalletId, fixedValue: +(value - nexoFee).toFixed(2) }]
-        : [{ walletId: nexoWallet!, fixedValue: nexoFee }],
+        ? [{ walletId: payoutWalletId, percentualValue: +(((value - nexoFee) / value) * 100).toFixed(4) }]
+        : [{ walletId: nexoWallet!, percentualValue: +((nexoFee / value) * 100).toFixed(4) }],
     };
 
     const payment = await asaasFetch<any>(`/payments/${inst.data.asaas_payment_id}`, {

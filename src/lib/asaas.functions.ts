@@ -330,8 +330,22 @@ export const simulateAsaasPayment = createServerFn({ method: "POST" })
       .maybeSingle();
     if (inst.error) throw new Error(inst.error.message);
     if (!inst.data) throw new Error("Parcela não encontrada");
-    if (!inst.data.asaas_payment_id) throw new Error("Parcela sem boleto/Pix gerado.");
     if (inst.data.status === "pago") throw new Error("Parcela já está paga.");
+
+    // Auto-gera a cobrança no Asaas caso ainda não exista, para permitir
+    // simular qualquer parcela diretamente.
+    if (!inst.data.asaas_payment_id) {
+      await generateAsaasCharge({ data: { installmentId: data.installmentId } });
+      const refreshed = await supabase
+        .from("installments")
+        .select("asaas_payment_id")
+        .eq("id", data.installmentId)
+        .maybeSingle();
+      (inst.data as any).asaas_payment_id = refreshed.data?.asaas_payment_id ?? null;
+      if (!(inst.data as any).asaas_payment_id) {
+        throw new Error("Falha ao gerar cobrança no Asaas para simulação.");
+      }
+    }
 
     const contract = (inst.data as any).contract;
     const payoutWalletId: string | null = contract?.payout_wallet_id ?? null;

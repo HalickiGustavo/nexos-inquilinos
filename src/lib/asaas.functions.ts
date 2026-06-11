@@ -344,7 +344,7 @@ export const updateAsaasChargeFee = createServerFn({ method: "POST" })
     return { ok: true, value, lateCharges };
   });
 
-// ===== Simulate sandbox payment (mark Asaas charge as received in cash) =====
+// ===== Simulate sandbox payment through credit card gateway (triggers split) =====
 const simulateInput = z.object({ installmentId: z.string().uuid() });
 
 export const simulateAsaasPayment = createServerFn({ method: "POST" })
@@ -352,7 +352,7 @@ export const simulateAsaasPayment = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => simulateInput.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    const { asaasFetch } = await import("./asaas.server");
+    const { asaasFetch, getNexoFee, getNexoWalletId } = await import("./asaas.server");
 
     const inst = await supabase
       .from("installments")
@@ -379,15 +379,18 @@ export const simulateAsaasPayment = createServerFn({ method: "POST" })
 
     const contract = (inst.data as any).contract;
     const tenant = contract?.tenant;
-    const payoutWalletId: string | null = contract?.payout_wallet_id ?? null;
+    const contractPayoutWalletId: string | null = contract?.payout_wallet_id ?? null;
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const acc = await supabaseAdmin
       .from("asaas_accounts")
-      .select("api_key")
+      .select("api_key, wallet_id")
       .eq("user_id", userId)
       .maybeSingle();
-    const ownerApiKey = payoutWalletId ? undefined : (acc.data?.api_key || undefined);
+    const nexoWallet = getNexoWalletId();
+    const payoutWalletId: string | null = contractPayoutWalletId || acc.data?.wallet_id || null;
+    const shouldSplitToOwner = Boolean(payoutWalletId && payoutWalletId !== nexoWallet);
+    const ownerApiKey = shouldSplitToOwner ? undefined : (acc.data?.api_key || undefined);
 
     // Muda billingType para CREDIT_CARD para permitir pagamento via cartão sandbox.
     // Esse fluxo passa pelo gateway → executa split (Azure recebe sua parte,
@@ -396,14 +399,24 @@ export const simulateAsaasPayment = createServerFn({ method: "POST" })
       method: "GET",
       apiKey: ownerApiKey,
     });
-    if (current.billingType !== "CREDIT_CARD") {
-      await asaasFetch<any>(`/payments/${inst.data.asaas_payment_id}`, {
-        method: "PUT",
-        apiKey: ownerApiKey,
-        body: JSON.stringify({ billingType: "CREDIT_CARD" }),
-      });
-    }
     const value = Number(current.value);
+    const { data: setting } = await (supabaseAdmin as any)
+      .from("platform_settings")
+      .select("value")
+      .eq("key", "nexo_boleto_fee")
+      .maybeSingle();
+    const nexoFee = setting?.value ? Number(setting.value) : getNexoFee();
+    const paymentUpdate: Record<string, unknown> = { billingType: "CREDIT_CARD" };
+    if (shouldSplitToOwner && payoutWalletId && nexoFee > 0 && nexoFee < value) {
+      paymentUpdate.split = [{ walletId: payoutWalletId, percentualValue: +(((value - nexoFee) / value) * 100).toFixed(4) }];
+    } else if (ownerApiKey && nexoWallet && nexoFee > 0 && nexoFee < value) {
+      paymentUpdate.split = [{ walletId: nexoWallet, percentualValue: +((nexoFee / value) * 100).toFixed(4) }];
+    }
+    await asaasFetch<any>(`/payments/${inst.data.asaas_payment_id}`, {
+      method: "PUT",
+      apiKey: ownerApiKey,
+      body: JSON.stringify(paymentUpdate),
+    });
 
     if (!tenant?.full_name || !tenant?.document) {
       throw new Error("Inquilino sem nome ou CPF/CNPJ — não é possível simular cartão.");

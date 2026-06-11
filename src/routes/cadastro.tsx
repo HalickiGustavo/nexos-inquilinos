@@ -67,11 +67,11 @@ function CadastroPage() {
   }, [roleParam]);
 
   return (
-    <div className="min-h-screen bg-black text-zinc-100 relative overflow-hidden">
+    <div className="min-h-screen bg-white text-zinc-100 relative overflow-hidden">
       {/* Glow ambiente */}
-      <div className="pointer-events-none absolute inset-0 opacity-60">
-        <div className="absolute -top-32 left-1/2 -translate-x-1/2 size-[600px] rounded-full bg-violet-600/20 blur-[120px]" />
-        <div className="absolute bottom-0 right-0 size-[400px] rounded-full bg-violet-500/10 blur-[100px]" />
+      <div className="pointer-events-none absolute inset-0 opacity-40">
+        <div className="absolute -top-32 left-1/2 -translate-x-1/2 size-[600px] rounded-full bg-violet-400/20 blur-[120px]" />
+        <div className="absolute bottom-0 right-0 size-[400px] rounded-full bg-violet-300/10 blur-[100px]" />
       </div>
 
       <div className="relative z-10 flex min-h-screen flex-col items-center justify-center p-4 sm:p-6">

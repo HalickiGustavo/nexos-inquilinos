@@ -106,6 +106,7 @@ function ContractDialog({ onDone }: { onDone: () => void }) {
 
   const today = new Date().toISOString().slice(0, 10);
   const oneYear = new Date(); oneYear.setFullYear(oneYear.getFullYear() + 1);
+  const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({
     property_id: "",
     tenant_id: "",
@@ -127,27 +128,35 @@ function ContractDialog({ onDone }: { onDone: () => void }) {
         className="grid grid-cols-1 sm:grid-cols-2 gap-4"
         onSubmit={async (e) => {
           e.preventDefault();
-          if (!user) return;
-          const payload = {
-            user_id: user.id,
-            property_id: form.property_id,
-            tenant_id: form.tenant_id,
-            start_date: form.start_date,
-            end_date: form.end_date,
-            due_day: parseInt(form.due_day),
-            rent_amount: parseNumber(form.rent_amount),
-            readjustment_index: form.readjustment_index as any,
-            security_deposit: parseNumber(form.security_deposit),
-            late_fee_percent: parseNumber(form.late_fee_percent),
-            daily_interest_percent: parseNumber(form.daily_interest_percent),
-            active: true,
-          };
+          if (!user || submitting) return;
+          setSubmitting(true);
+          try {
+            const payload = {
+              user_id: user.id,
+              property_id: form.property_id,
+              tenant_id: form.tenant_id,
+              start_date: form.start_date,
+              end_date: form.end_date,
+              due_day: parseInt(form.due_day),
+              rent_amount: parseNumber(form.rent_amount),
+              readjustment_index: form.readjustment_index as any,
+              security_deposit: parseNumber(form.security_deposit),
+              late_fee_percent: parseNumber(form.late_fee_percent),
+              daily_interest_percent: parseNumber(form.daily_interest_percent),
+              active: true,
+            };
 
-          const { error } = await supabase.from("contracts").insert(payload);
-          if (error) return toast.error(error.message);
-          toast.success("Contrato criado e parcelas geradas!");
-          invalidate();
-          onDone();
+            const { error } = await supabase.from("contracts").insert(payload);
+            if (error) {
+              toast.error(error.message);
+              return;
+            }
+            toast.success("Contrato criado e parcelas geradas!");
+            invalidate();
+            onDone();
+          } finally {
+            setSubmitting(false);
+          }
         }}
       >
         <div className="space-y-2 sm:col-span-2">
@@ -196,7 +205,9 @@ function ContractDialog({ onDone }: { onDone: () => void }) {
         <div className="space-y-2 sm:col-span-2"><Label>Juros ao dia (%)</Label><Input type="number" step="0.001" value={form.daily_interest_percent} onChange={(e) => setForm({ ...form, daily_interest_percent: e.target.value })} /><p className="text-xs text-muted-foreground">0,033% ao dia ≈ 1% ao mês</p></div>
 
         <DialogFooter className="sm:col-span-2">
-          <Button type="submit" disabled={!form.property_id || !form.tenant_id}>Criar contrato e gerar parcelas</Button>
+          <Button type="submit" disabled={submitting || !form.property_id || !form.tenant_id}>
+            {submitting ? "Criando..." : "Criar contrato e gerar parcelas"}
+          </Button>
         </DialogFooter>
       </form>
     </DialogContent>

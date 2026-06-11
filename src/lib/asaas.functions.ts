@@ -241,12 +241,15 @@ export const updateAsaasChargeFee = createServerFn({ method: "POST" })
 
     const inst = await supabase
       .from("installments")
-      .select("id, amount, extra_fees, asaas_payment_id, due_date, status, contract:contracts(late_fee_percent, daily_interest_percent)")
+      .select("id, amount, extra_fees, asaas_payment_id, due_date, status, contract:contracts(late_fee_percent, daily_interest_percent, payout_wallet_id)")
       .eq("id", data.installmentId)
       .maybeSingle();
     if (inst.error) throw new Error(inst.error.message);
     if (!inst.data?.asaas_payment_id) throw new Error("Parcela ainda não possui boleto.");
     if (inst.data.status === "pago") throw new Error("Parcela já foi paga.");
+
+    const contract = (inst.data as any).contract;
+    const payoutWalletId: string | null = contract?.payout_wallet_id ?? null;
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const acc = await supabaseAdmin
@@ -254,7 +257,7 @@ export const updateAsaasChargeFee = createServerFn({ method: "POST" })
       .select("api_key")
       .eq("user_id", userId)
       .maybeSingle();
-    const ownerApiKey = acc.data?.api_key || undefined;
+    const ownerApiKey = payoutWalletId ? undefined : (acc.data?.api_key || undefined);
 
     const { data: setting } = await (supabaseAdmin as any)
       .from("platform_settings")
@@ -263,7 +266,7 @@ export const updateAsaasChargeFee = createServerFn({ method: "POST" })
       .maybeSingle();
     const nexoFee = setting?.value ? Number(setting.value) : getNexoFee();
     const nexoWallet = getNexoWalletId();
-    if (!nexoWallet || nexoFee <= 0) throw new Error("Taxa NEXO não configurada.");
+    if (!payoutWalletId && (!nexoWallet || nexoFee <= 0)) throw new Error("Taxa NEXO não configurada.");
 
     const baseValue = Number(inst.data.amount) + Number(inst.data.extra_fees ?? 0);
 
@@ -273,19 +276,23 @@ export const updateAsaasChargeFee = createServerFn({ method: "POST" })
     const daysLate = isOverdue
       ? Math.max(0, Math.floor((Date.parse(todayStr) - Date.parse(originalDue)) / 86400000))
       : 0;
-    const contract = (inst.data as any).contract;
     const finePct = Number(contract?.late_fee_percent ?? 0);
     const dailyPct = Number(contract?.daily_interest_percent ?? 0);
     const fine = isOverdue ? +(baseValue * finePct / 100).toFixed(2) : 0;
     const interest = isOverdue ? +(baseValue * dailyPct / 100 * daysLate).toFixed(2) : 0;
     const lateCharges = +(fine + interest).toFixed(2);
-    const value = +(baseValue + lateCharges + nexoFee).toFixed(2);
+    // payout_wallet_id → taxa descontada do total; senão → somada
+    const value = payoutWalletId
+      ? +(baseValue + lateCharges).toFixed(2)
+      : +(baseValue + lateCharges + nexoFee).toFixed(2);
     const effectiveDueDate = isOverdue ? todayStr : originalDue;
 
     const body: Record<string, unknown> = {
       value,
       dueDate: effectiveDueDate,
-      split: [{ walletId: nexoWallet, fixedValue: nexoFee }],
+      split: payoutWalletId
+        ? [{ walletId: payoutWalletId, fixedValue: +(value - nexoFee).toFixed(2) }]
+        : [{ walletId: nexoWallet!, fixedValue: nexoFee }],
     };
 
     const payment = await asaasFetch<any>(`/payments/${inst.data.asaas_payment_id}`, {

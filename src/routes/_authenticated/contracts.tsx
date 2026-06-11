@@ -106,6 +106,7 @@ function ContractDialog({ onDone }: { onDone: () => void }) {
 
   const today = new Date().toISOString().slice(0, 10);
   const oneYear = new Date(); oneYear.setFullYear(oneYear.getFullYear() + 1);
+  const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({
     property_id: "",
     tenant_id: "",

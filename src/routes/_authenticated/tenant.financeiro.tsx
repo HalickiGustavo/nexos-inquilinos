@@ -229,7 +229,15 @@ function TenantFinanceiro() {
       <PixPaymentDialog
         installment={pixFor}
         open={!!pixFor}
-        onOpenChange={(o) => !o && setPixFor(null)}
+        loading={pixLoading}
+        error={pixError}
+        onOpenChange={(o) => {
+          if (!o) {
+            setPixFor(null);
+            setPixError(null);
+            setPixLoading(false);
+          }
+        }}
       />
     </div>
   );

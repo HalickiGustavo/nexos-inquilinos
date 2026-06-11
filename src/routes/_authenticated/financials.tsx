@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { CheckCircle2, Wallet, Plus, AlertCircle, Clock, Building2, FileText, Copy, Loader2 } from "lucide-react";
+import { CheckCircle2, Wallet, Plus, AlertCircle, Clock, Building2, FileText, Copy, Loader2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { Card } from "@/components/ui/card";
@@ -15,7 +15,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { supabase } from "@/integrations/supabase/client";
 import { useInstallments, useInvalidate, type Installment } from "@/lib/queries";
 import { formatBRL, formatDate, parseNumber } from "@/lib/format";
-import { generateAsaasCharge, updateAsaasChargeFee } from "@/lib/asaas.functions";
+import { generateAsaasCharge, updateAsaasChargeFee, simulateAsaasPayment } from "@/lib/asaas.functions";
 import { parseExpenses, expensesTotals } from "@/lib/variable-expenses";
 
 export const Route = createFileRoute("/_authenticated/financials")({
@@ -196,6 +196,7 @@ function FinancialsPage() {
                                   </Button>
                                 )}
                                 {i.status !== "pago" && <MarkPaidButton installment={i} />}
+                                {i.status !== "pago" && i.asaas_payment_id && <SimulatePayButton installment={i} />}
                                 <Button size="sm" variant="outline" onClick={() => setExtraDlg(i)}>
                                   <Plus className="size-3.5 mr-1" />Taxa
                                 </Button>
@@ -293,6 +294,36 @@ function MarkPaidButton({ installment }: { installment: any }) {
       invalidate(["installments"]);
     }}>
       <CheckCircle2 className="size-3.5 mr-1" />Pago
+    </Button>
+  );
+}
+
+function SimulatePayButton({ installment }: { installment: any }) {
+  const simulate = useServerFn(simulateAsaasPayment);
+  const invalidate = useInvalidate();
+  const [loading, setLoading] = useState(false);
+  return (
+    <Button
+      size="sm"
+      variant="outline"
+      disabled={loading}
+      title="Simular pagamento no sandbox Asaas"
+      className="border-amber-500/40 text-amber-600 hover:bg-amber-500/10"
+      onClick={async () => {
+        setLoading(true);
+        try {
+          await simulate({ data: { installmentId: installment.id } });
+          toast.success("Pagamento simulado no Asaas Sandbox");
+          invalidate(["installments"]);
+        } catch (e: any) {
+          toast.error(e?.message ?? "Falha ao simular pagamento");
+        } finally {
+          setLoading(false);
+        }
+      }}
+    >
+      {loading ? <Loader2 className="size-3.5 mr-1 animate-spin" /> : <Sparkles className="size-3.5 mr-1" />}
+      Simular
     </Button>
   );
 }

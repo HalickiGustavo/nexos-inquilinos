@@ -314,10 +314,8 @@ export const updateAsaasChargeFee = createServerFn({ method: "POST" })
     const fine = isOverdue ? +(baseValue * finePct / 100).toFixed(2) : 0;
     const interest = isOverdue ? +(baseValue * dailyPct / 100 * daysLate).toFixed(2) : 0;
     const lateCharges = +(fine + interest).toFixed(2);
-    // payout_wallet_id → taxa descontada do total; senão → somada
-    const value = payoutWalletId
-      ? +(baseValue + lateCharges).toFixed(2)
-      : +(baseValue + lateCharges + nexoFee).toFixed(2);
+    // Taxa NEXO sempre somada ao aluguel
+    const value = +(baseValue + lateCharges + nexoFee).toFixed(2);
     const effectiveDueDate = isOverdue ? todayStr : originalDue;
 
     const body: Record<string, unknown> = {

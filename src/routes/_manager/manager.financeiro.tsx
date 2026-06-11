@@ -165,9 +165,8 @@ function Recebimentos() {
                 return acc;
               }, {});
               return (
-                <>
+                <Fragment key={g.contractId}>
                   <TableRow
-                    key={g.contractId}
                     className="cursor-pointer hover:bg-muted/50 font-medium"
                     onClick={() => setExpanded((s) => ({ ...s, [g.contractId]: !s[g.contractId] }))}
                   >

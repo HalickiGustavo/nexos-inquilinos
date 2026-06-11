@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import nexoLogoAsset from "@/assets/nexo-logo.png.asset.json";
 
-// Production reCAPTCHA v2 site key (visible in client, safe to hardcode).
+const RECAPTCHA_SITE_KEY = "6LfxdhktAAAAADHvwxq3_auLwuUSO3oNrDUlUkD";
 
 export const Route = createFileRoute("/login")({
   head: () => ({ meta: [{ title: "Entrar — Nexo" }] }),

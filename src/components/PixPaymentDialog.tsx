@@ -1,40 +1,35 @@
 import { useState } from "react";
-import { Copy, Download, QrCode, Loader2 } from "lucide-react";
+import { Copy, Download, QrCode, Loader2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatBRL, formatDate } from "@/lib/format";
 
-const PIX_FALLBACK = "contato@nexo.com.br";
-
-// QR Code SVG mockup (placeholder genérico)
-const MOCK_QR_SVG = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' shape-rendering='crispEdges'><rect width='100' height='100' fill='white'/>${Array.from({ length: 400 }).map((_, i) => {
-  const x = (i % 20) * 5;
-  const y = Math.floor(i / 20) * 5;
-  // Pseudo-random pattern (deterministic)
-  return ((i * 73 + 17) % 7 < 3) ? `<rect x='${x}' y='${y}' width='5' height='5' fill='black'/>` : "";
-}).join("")}<rect x='5' y='5' width='25' height='25' fill='white' stroke='black' stroke-width='5'/><rect x='70' y='5' width='25' height='25' fill='white' stroke='black' stroke-width='5'/><rect x='5' y='70' width='25' height='25' fill='white' stroke='black' stroke-width='5'/></svg>`;
-
 export function PixPaymentDialog({
   installment,
   open,
   onOpenChange,
+  loading = false,
+  error = null,
 }: {
   installment: any | null;
   open: boolean;
   onOpenChange: (o: boolean) => void;
+  loading?: boolean;
+  error?: string | null;
 }) {
   const [copying, setCopying] = useState(false);
   if (!installment) return null;
 
   const amount = Number(installment.amount);
-  const pixPayload = installment.pix_payload ?? PIX_FALLBACK;
+  const pixPayload: string | null = installment.pix_payload ?? null;
   const qrSrc = installment.pix_qrcode
     ? `data:image/png;base64,${installment.pix_qrcode}`
-    : `data:image/svg+xml;utf8,${encodeURIComponent(MOCK_QR_SVG)}`;
+    : null;
 
   const copy = async () => {
+    if (!pixPayload) return;
     setCopying(true);
     try {
       await navigator.clipboard.writeText(pixPayload);
@@ -67,22 +62,41 @@ export function PixPaymentDialog({
             </Badge>
           </div>
 
-          <div className="flex justify-center">
-            <div className="p-3 bg-white rounded-lg border shadow-sm">
-              <img src={qrSrc} alt="QR Code Pix" className="w-52 h-52" />
+          {loading && (
+            <div className="flex flex-col items-center justify-center py-10 text-muted-foreground">
+              <Loader2 className="size-8 animate-spin mb-3 text-primary" />
+              <p className="text-sm">Gerando QR Code Pix...</p>
             </div>
-          </div>
+          )}
 
-          <div className="space-y-2">
-            <p className="text-xs uppercase tracking-wide text-muted-foreground">Pix Copia e Cola</p>
-            <div className="font-mono text-xs break-all rounded-md border bg-muted/40 p-3 max-h-20 overflow-auto">
-              {pixPayload}
+          {!loading && error && (
+            <div className="flex flex-col items-center justify-center py-8 text-center">
+              <AlertCircle className="size-8 text-destructive mb-2" />
+              <p className="text-sm font-medium text-destructive">Não foi possível gerar o PIX</p>
+              <p className="text-xs text-muted-foreground mt-1">{error}</p>
             </div>
-            <Button className="w-full" onClick={copy} disabled={copying}>
-              {copying ? <Loader2 className="size-4 mr-2 animate-spin" /> : <Copy className="size-4 mr-2" />}
-              Copiar Código Copia e Cola
-            </Button>
-          </div>
+          )}
+
+          {!loading && !error && qrSrc && pixPayload && (
+            <>
+              <div className="flex justify-center">
+                <div className="p-3 bg-white rounded-lg border shadow-sm">
+                  <img src={qrSrc} alt="QR Code Pix" className="w-52 h-52" />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">Pix Copia e Cola</p>
+                <div className="font-mono text-xs break-all rounded-md border bg-muted/40 p-3 max-h-20 overflow-auto">
+                  {pixPayload}
+                </div>
+                <Button className="w-full" onClick={copy} disabled={copying}>
+                  {copying ? <Loader2 className="size-4 mr-2 animate-spin" /> : <Copy className="size-4 mr-2" />}
+                  Copiar Código Copia e Cola
+                </Button>
+              </div>
+            </>
+          )}
 
           {installment.boleto_url && (
             <Button variant="outline" className="w-full" asChild>

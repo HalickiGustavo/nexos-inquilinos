@@ -11,6 +11,9 @@ import { parseExpenses, expensesTotals } from "@/lib/variable-expenses";
 import { PixPaymentDialog } from "@/components/PixPaymentDialog";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { ensureTenantPixCharge } from "@/lib/asaas.functions";
+import { useQueryClient } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/_authenticated/tenant/financeiro")({
   head: () => ({ meta: [{ title: "Financeiro — Nexo Inquilino" }] }),
@@ -39,7 +42,32 @@ function TenantFinanceiro() {
   const { data: items = [], isLoading } = useTenantInstallments();
   const [openId, setOpenId] = useState<string | null>(null);
   const [pixFor, setPixFor] = useState<any | null>(null);
+  const [pixLoading, setPixLoading] = useState(false);
+  const [pixError, setPixError] = useState<string | null>(null);
   const [agreement, setAgreement] = useState<any | null>(null);
+  const ensurePix = useServerFn(ensureTenantPixCharge);
+  const queryClient = useQueryClient();
+
+  const openPix = async (i: any) => {
+    setPixFor(i);
+    setPixError(null);
+    if (i.pix_qrcode && i.pix_payload) return;
+    setPixLoading(true);
+    try {
+      const res: any = await ensurePix({ data: { installmentId: i.id } });
+      setPixFor({
+        ...i,
+        pix_qrcode: res.pixQrCode,
+        pix_payload: res.pixPayload,
+        boleto_url: res.boletoUrl ?? i.boleto_url,
+      });
+      queryClient.invalidateQueries({ queryKey: ["tenant-installments"] });
+    } catch (e: any) {
+      setPixError(e?.message ?? "Erro ao gerar PIX");
+    } finally {
+      setPixLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (!contract?.id) return;
@@ -175,7 +203,7 @@ function TenantFinanceiro() {
                       <Button
                         size="lg"
                         className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold shadow-md"
-                        onClick={() => setPixFor(i)}
+                        onClick={() => openPix(i)}
                       >
                         <QrCode className="size-5 mr-2" /> Pagar com PIX — {formatBRL(totalDue)}
                       </Button>
@@ -201,7 +229,15 @@ function TenantFinanceiro() {
       <PixPaymentDialog
         installment={pixFor}
         open={!!pixFor}
-        onOpenChange={(o) => !o && setPixFor(null)}
+        loading={pixLoading}
+        error={pixError}
+        onOpenChange={(o) => {
+          if (!o) {
+            setPixFor(null);
+            setPixError(null);
+            setPixLoading(false);
+          }
+        }}
       />
     </div>
   );

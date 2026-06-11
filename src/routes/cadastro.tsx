@@ -37,8 +37,7 @@ import {
   scorePassword,
 } from "@/lib/br-validators";
 
-// Google's official reCAPTCHA v2 test key (always passes). Substituir pela chave real em produção.
-const RECAPTCHA_SITE_KEY = "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI";
+const RECAPTCHA_SITE_KEY = "6LfxdhktAAAAADHvwxq3_auLwuUSO3oNrDUlUkD";
 
 type Role = "imobiliaria" | "proprietario";
 

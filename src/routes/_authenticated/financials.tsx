@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { CheckCircle2, Wallet, Plus, AlertCircle, Clock, Building2, FileText, Copy, Loader2 } from "lucide-react";
+import { CheckCircle2, Wallet, Plus, AlertCircle, Clock, Building2, FileText, Copy, Loader2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { Card } from "@/components/ui/card";

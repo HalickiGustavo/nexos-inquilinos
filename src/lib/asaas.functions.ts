@@ -729,10 +729,16 @@ export const ensureTenantPixCharge = createServerFn({ method: "POST" })
         description: `Aluguel — ${property?.nickname ?? ""} — venc. ${originalDue}${addFee ? ` (inclui taxa NEXO de R$ ${nexoFee.toFixed(2)})` : ""}`,
         externalReference: inst.data.id,
       };
-      if (shouldSplitToOwner && payoutWalletId && nexoFee > 0 && nexoFee < value) {
-        const ownerPct = +(((value - nexoFee) / value) * 100).toFixed(4);
-        body.split = [{ walletId: payoutWalletId, percentualValue: ownerPct }];
-      }
+      const splitEntries = buildSplitEntries({
+        ownerWalletId: shouldSplitToOwner ? payoutWalletId : null,
+        ownerShare: +(baseValue + lateCharges).toFixed(2),
+        nexoWalletId: nexoWallet,
+        nexoFee,
+        totalValue: value,
+        paidViaOwnerKey: false, // tenant flow always uses MASTER key
+      });
+      if (splitEntries.length > 0) body.split = splitEntries;
+
       const created = await asaasFetch<any>("/payments", {
         method: "POST",
         body: JSON.stringify(body),

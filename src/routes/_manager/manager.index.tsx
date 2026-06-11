@@ -20,6 +20,8 @@ export const Route = createFileRoute("/_manager/manager/")({
 
 function ManagerDashboard() {
   const [range, setRange] = useState<RangeKey>("mes");
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [tooltip, setTooltip] = useState<{ x: number; y: number; label: string; value: string } | null>(null);
 
   const qProps = useQuery({
     queryKey: ["mgr", "properties-count"],
@@ -190,7 +192,7 @@ function ManagerDashboard() {
             </span>
           </div>
 
-          <div className={`mt-4 -mx-1 transition-opacity ${qChart.isFetching ? "opacity-50 animate-pulse" : "opacity-100"}`}>
+          <div className={`mt-4 -mx-1 transition-opacity relative ${qChart.isFetching ? "opacity-50 animate-pulse" : "opacity-100"}`}>
             <svg viewBox="0 0 300 90" className="w-full h-24 sm:h-32 lg:h-40" preserveAspectRatio="none">
               <defs>
                 <linearGradient id="lineGrad" x1="0" x2="1" y1="0" y2="0">
@@ -211,10 +213,80 @@ function ManagerDashboard() {
               </defs>
               <path d={`${pathData.d} L 294 90 L 6 90 Z`} fill="url(#fillGrad)" />
               <path d={pathData.d} fill="none" stroke="url(#lineGrad)" strokeWidth="2" filter="url(#glow)" strokeLinecap="round" />
-              {pathData.pts.map(([x, y]: readonly [number, number], i: number) => (
-                <circle key={i} cx={x} cy={y} r={mode === "day" ? 1.4 : 2} fill="#FFFFFF" />
-              ))}
+              {pathData.pts.map(([x, y]: readonly [number, number], i: number) => {
+                const isHovered = hoveredIndex === i;
+                const r = mode === "day" ? (isHovered ? 4 : 2.5) : (isHovered ? 5 : 3.5);
+                const label = mode === "day"
+                  ? `${i + 1}`
+                  : (() => {
+                      const d = new Date(start);
+                      d.setMonth(d.getMonth() + i);
+                      return d.toLocaleString("pt-BR", { month: "short" }).replace(".", "");
+                    })();
+                return (
+                  <g key={i}>
+                    <circle
+                      cx={x}
+                      cy={y}
+                      r={r}
+                      fill="#FFFFFF"
+                      style={{ transition: "r 0.15s ease" }}
+                      onMouseEnter={(e) => {
+                        setHoveredIndex(i);
+                        setTooltip({
+                          x: e.clientX,
+                          y: e.clientY,
+                          label: String(label),
+                          value: fmtBRL(chartPoints[i] ?? 0),
+                        });
+                      }}
+                      onMouseMove={(e) => {
+                        setTooltip((prev) => prev ? { ...prev, x: e.clientX, y: e.clientY } : prev);
+                      }}
+                      onMouseLeave={() => {
+                        setHoveredIndex(null);
+                        setTooltip(null);
+                      }}
+                    />
+                    <circle
+                      cx={x}
+                      cy={y}
+                      r={10}
+                      fill="transparent"
+                      style={{ cursor: "pointer" }}
+                      onMouseEnter={(e) => {
+                        setHoveredIndex(i);
+                        setTooltip({
+                          x: e.clientX,
+                          y: e.clientY,
+                          label: String(label),
+                          value: fmtBRL(chartPoints[i] ?? 0),
+                        });
+                      }}
+                      onMouseMove={(e) => {
+                        setTooltip((prev) => prev ? { ...prev, x: e.clientX, y: e.clientY } : prev);
+                      }}
+                      onMouseLeave={() => {
+                        setHoveredIndex(null);
+                        setTooltip(null);
+                      }}
+                    />
+                  </g>
+                );
+              })}
             </svg>
+            {tooltip && (
+              <div
+                className="fixed z-50 pointer-events-none bg-black/80 backdrop-blur-md text-white text-xs rounded-lg px-2.5 py-1.5 shadow-xl border border-white/10"
+                style={{
+                  left: tooltip.x + 12,
+                  top: tooltip.y - 36,
+                }}
+              >
+                <div className="font-semibold">{tooltip.value}</div>
+                <div className="opacity-70 text-[10px]">{tooltip.label}</div>
+              </div>
+            )}
           </div>
         </section>
 

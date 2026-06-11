@@ -114,17 +114,21 @@ export const generateAsaasCharge = createServerFn({ method: "POST" })
     const tenant = contract?.tenant;
     const property = contract?.property;
     if (!tenant) throw new Error("Contrato sem inquilino vinculado");
-    const payoutWalletId: string | null = contract?.payout_wallet_id ?? null;
+    const contractPayoutWalletId: string | null = contract?.payout_wallet_id ?? null;
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const acc = await supabaseAdmin
       .from("asaas_accounts")
-      .select("api_key, status")
+      .select("api_key, status, wallet_id")
       .eq("user_id", userId)
       .maybeSingle();
     if (acc.error) throw new Error(acc.error.message);
-    // When the contract has a payout wallet, charge through NEXO master and split to owner wallet
-    const ownerApiKey = payoutWalletId ? undefined : (acc.data?.api_key || undefined);
+    const nexoWallet = getNexoWalletId();
+    const payoutWalletId: string | null = contractPayoutWalletId || acc.data?.wallet_id || null;
+    const shouldSplitToOwner = Boolean(payoutWalletId && payoutWalletId !== nexoWallet);
+    // When we have an owner payout wallet, charge through NEXO master and split to that wallet.
+    // If no payout wallet exists, fall back to the owner's subaccount key when available.
+    const ownerApiKey = shouldSplitToOwner ? undefined : (acc.data?.api_key || undefined);
 
     const customerRow = await supabase
       .from("asaas_customers")
@@ -160,7 +164,6 @@ export const generateAsaasCharge = createServerFn({ method: "POST" })
       .eq("key", "nexo_boleto_fee")
       .maybeSingle();
     const nexoFee = setting?.value ? Number(setting.value) : getNexoFee();
-    const nexoWallet = getNexoWalletId();
     const baseValue = Number(inst.data.amount) + Number(inst.data.extra_fees ?? 0);
 
     // Cálculo de juros/multa por atraso
@@ -194,10 +197,10 @@ export const generateAsaasCharge = createServerFn({ method: "POST" })
       description: `Aluguel — ${property?.nickname ?? ""} — venc. ${originalDue}${lateNote}${!payoutWalletId && nexoFee > 0 ? ` (inclui taxa NEXO de R$ ${nexoFee.toFixed(2)})` : ""}`,
       externalReference: inst.data.id,
     };
-    if (payoutWalletId && nexoFee > 0 && nexoFee < value) {
+    if (shouldSplitToOwner && payoutWalletId && nexoFee > 0 && nexoFee < value) {
       // Forward (value - nexoFee) to owner; NEXO master keeps nexoFee automatically.
       body.split = [{ walletId: payoutWalletId, fixedValue: +(value - nexoFee).toFixed(2) }];
-    } else if (nexoWallet && nexoFee > 0 && nexoFee < value) {
+    } else if (ownerApiKey && nexoWallet && nexoFee > 0 && nexoFee < value) {
       body.split = [{ walletId: nexoWallet, fixedValue: nexoFee }];
     }
 

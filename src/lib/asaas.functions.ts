@@ -356,15 +356,14 @@ export const simulateAsaasPayment = createServerFn({ method: "POST" })
 
     const inst = await supabase
       .from("installments")
-      .select("id, amount, extra_fees, late_charges, asaas_payment_id, due_date, status, contract:contracts(payout_wallet_id)")
+      .select("id, amount, extra_fees, late_charges, asaas_payment_id, due_date, status, contract:contracts(payout_wallet_id, tenant:tenants(full_name, email, document, phone, address, postal_code))")
       .eq("id", data.installmentId)
       .maybeSingle();
     if (inst.error) throw new Error(inst.error.message);
     if (!inst.data) throw new Error("Parcela não encontrada");
     if (inst.data.status === "pago") throw new Error("Parcela já está paga.");
 
-    // Auto-gera a cobrança no Asaas caso ainda não exista, para permitir
-    // simular qualquer parcela diretamente.
+    // Auto-gera a cobrança no Asaas caso ainda não exista.
     if (!inst.data.asaas_payment_id) {
       await generateAsaasCharge({ data: { installmentId: data.installmentId } });
       const refreshed = await supabase
@@ -379,6 +378,7 @@ export const simulateAsaasPayment = createServerFn({ method: "POST" })
     }
 
     const contract = (inst.data as any).contract;
+    const tenant = contract?.tenant;
     const payoutWalletId: string | null = contract?.payout_wallet_id ?? null;
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -389,34 +389,55 @@ export const simulateAsaasPayment = createServerFn({ method: "POST" })
       .maybeSingle();
     const ownerApiKey = payoutWalletId ? undefined : (acc.data?.api_key || undefined);
 
-    // Force charge type to BOLETO so the cobrança aparece como boleto no Asaas
+    // Muda billingType para CREDIT_CARD para permitir pagamento via cartão sandbox.
+    // Esse fluxo passa pelo gateway → executa split (Azure recebe sua parte,
+    // NEXO recebe a taxa). Diferente de receiveInCash, que NÃO dispara split.
     const current = await asaasFetch<any>(`/payments/${inst.data.asaas_payment_id}`, {
       method: "GET",
       apiKey: ownerApiKey,
     });
-    if (current.billingType !== "BOLETO") {
+    if (current.billingType !== "CREDIT_CARD") {
       await asaasFetch<any>(`/payments/${inst.data.asaas_payment_id}`, {
         method: "PUT",
         apiKey: ownerApiKey,
-        body: JSON.stringify({ billingType: "BOLETO" }),
+        body: JSON.stringify({ billingType: "CREDIT_CARD" }),
       });
     }
     const value = Number(current.value);
-    const todayStr = new Date().toISOString().slice(0, 10);
 
-    // Sandbox-only: confirma o recebimento do boleto. A API pública só expõe
-    // receiveInCash, então a cobrança fica como "Recebido em dinheiro" no painel
-    // — mas o billingType permanece BOLETO.
-    await asaasFetch<any>(`/payments/${inst.data.asaas_payment_id}/receiveInCash`, {
+    if (!tenant?.full_name || !tenant?.document) {
+      throw new Error("Inquilino sem nome ou CPF/CNPJ — não é possível simular cartão.");
+    }
+
+    // Cartão de teste do sandbox Asaas (aprova automaticamente).
+    // Docs: https://docs.asaas.com/docs/cobrancas-com-cartao-de-credito-sandbox
+    const cleanDoc = String(tenant.document).replace(/\D/g, "");
+    const cleanPhone = tenant.phone ? String(tenant.phone).replace(/\D/g, "") : "11999999999";
+    const cleanCep = tenant.postal_code ? String(tenant.postal_code).replace(/\D/g, "") : "01001000";
+
+    const ccPayload = {
+      creditCard: {
+        holderName: tenant.full_name,
+        number: "5162306219378829",
+        expiryMonth: "05",
+        expiryYear: "2028",
+        ccv: "318",
+      },
+      creditCardHolderInfo: {
+        name: tenant.full_name,
+        email: tenant.email || "sandbox+tenant@nexo.test",
+        cpfCnpj: cleanDoc,
+        postalCode: cleanCep,
+        addressNumber: "0",
+        phone: cleanPhone,
+      },
+    };
+
+    await asaasFetch<any>(`/payments/${inst.data.asaas_payment_id}/payWithCreditCard`, {
       method: "POST",
       apiKey: ownerApiKey,
-      body: JSON.stringify({
-        paymentDate: todayStr,
-        value,
-        notifyCustomer: false,
-      }),
+      body: JSON.stringify(ccPayload),
     });
-
 
     await supabaseAdmin
       .from("installments")

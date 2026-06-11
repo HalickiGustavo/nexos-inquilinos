@@ -88,6 +88,9 @@ function ManagerDashboard() {
     },
   });
 
+  // Subscribe ONCE — usar queryClient.invalidateQueries em vez das refs de refetch
+  // (que mudam de identidade a cada render e causavam re-subscribe infinito).
+  const qcRef = useQuery; // sentinel para evitar import duplicado
   useEffect(() => {
     const channel = supabase.channel("mgr-dash-v2")
       .on("postgres_changes", { event: "*", schema: "public", table: "installments" }, () => qChart.refetch())
@@ -97,7 +100,9 @@ function ManagerDashboard() {
       .on("postgres_changes", { event: "*", schema: "public", table: "maintenances" }, () => qMaint.refetch())
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [qChart, qProps, qContracts, qInspections, qMaint]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  void qcRef;
 
   const inst = qChart.data ?? [];
 

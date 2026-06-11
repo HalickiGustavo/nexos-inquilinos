@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useCallback, useRef, useState } from "react";
-import Papa from "papaparse";
+// Papa é carregado dinamicamente dentro do handler (~50KB economizados no bundle inicial)
 import {
   Upload, FileSpreadsheet, Download, CheckCircle2, XCircle, Loader2,
   Database, ArrowRight, AlertTriangle, FileUp,
@@ -103,7 +103,7 @@ function MigrarDadosPage() {
     setSuccess(0); setErrors([]); setFinished(false);
   };
 
-  const handleFiles = useCallback((files: FileList | null) => {
+  const handleFiles = useCallback(async (files: FileList | null) => {
     if (!files || files.length === 0) return;
     const f = files[0];
     if (!/\.csv$/i.test(f.name)) {
@@ -114,11 +114,12 @@ function MigrarDadosPage() {
     setFinished(false);
     setErrors([]);
     setSuccess(0);
+    const { default: Papa } = await import("papaparse");
     Papa.parse<CsvRow>(f, {
       header: true,
       skipEmptyLines: true,
-      transformHeader: (h) => h.trim().toLowerCase().replace(/\s+/g, "_"),
-      complete: (result) => {
+      transformHeader: (h: string) => h.trim().toLowerCase().replace(/\s+/g, "_"),
+      complete: (result: { data: CsvRow[]; meta: { fields?: string[] } }) => {
         const missing = TEMPLATE_HEADERS.filter((h) => !result.meta.fields?.includes(h));
         if (missing.length > 0) {
           toast.error(`Cabeçalhos ausentes: ${missing.join(", ")}`);
@@ -129,7 +130,7 @@ function MigrarDadosPage() {
         setTotal(result.data.length);
         toast.success(`${result.data.length} linha(s) lida(s). Pronto para importar.`);
       },
-      error: (err) => toast.error(`Erro ao ler CSV: ${err.message}`),
+      error: (err: { message: string }) => toast.error(`Erro ao ler CSV: ${err.message}`),
     });
   }, []);
 

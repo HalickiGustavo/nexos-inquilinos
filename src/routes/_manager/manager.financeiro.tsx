@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Fragment, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -60,28 +60,28 @@ function Recebimentos() {
     },
   });
 
-  const rows = (q.data ?? []).filter((i: any) => {
-    if (statusF !== "todos" && i.status !== statusF) return false;
-    if (from && i.due_date < from) return false;
-    if (to && i.due_date > to) return false;
-    return true;
-  });
-
-  // Group by contract
-  const groups = rows.reduce((acc: Record<string, any>, i: any) => {
-    const cid = i.contract?.id ?? i.contract_id ?? "—";
-    if (!acc[cid]) {
-      acc[cid] = {
-        contractId: cid,
-        property: i.contract?.property,
-        tenant: i.contract?.tenant,
-        items: [],
-      };
+  const groupList = useMemo(() => {
+    const rows = (q.data ?? []).filter((i: any) => {
+      if (statusF !== "todos" && i.status !== statusF) return false;
+      if (from && i.due_date < from) return false;
+      if (to && i.due_date > to) return false;
+      return true;
+    });
+    const groups: Record<string, any> = {};
+    for (const i of rows) {
+      const cid = i.contract?.id ?? i.contract_id ?? "—";
+      if (!groups[cid]) {
+        groups[cid] = {
+          contractId: cid,
+          property: i.contract?.property,
+          tenant: i.contract?.tenant,
+          items: [],
+        };
+      }
+      groups[cid].items.push(i);
     }
-    acc[cid].items.push(i);
-    return acc;
-  }, {});
-  const groupList = Object.values(groups) as any[];
+    return Object.values(groups) as any[];
+  }, [q.data, statusF, from, to]);
 
   const badge = (s: string) => {
     const map: Record<string, string> = {

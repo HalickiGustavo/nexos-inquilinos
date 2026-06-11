@@ -9,11 +9,18 @@ export type Contract = Tables["contracts"]["Row"];
 export type Installment = Tables["installments"]["Row"];
 export type Maintenance = Tables["maintenances"]["Row"];
 
+// NOTE: select('*') intencional para preservar tipos gerados; ganhos de perf vêm de
+// staleTime (60s default), gcTime e limites server-side abaixo.
+
 export function useProperties() {
   return useQuery({
     queryKey: ["properties"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("properties").select("*").order("created_at", { ascending: false });
+      const { data, error } = await supabase
+        .from("properties")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(500);
       if (error) throw error;
       return data;
     },
@@ -24,7 +31,11 @@ export function useTenants() {
   return useQuery({
     queryKey: ["tenants"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("tenants").select("*").order("created_at", { ascending: false });
+      const { data, error } = await supabase
+        .from("tenants")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(500);
       if (error) throw error;
       return data;
     },
@@ -38,7 +49,8 @@ export function useContracts() {
       const { data, error } = await supabase
         .from("contracts")
         .select("*, property:properties(*), tenant:tenants(*)")
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })
+        .limit(500);
       if (error) throw error;
       return data;
     },
@@ -52,7 +64,8 @@ export function useInstallments() {
       const { data, error } = await supabase
         .from("installments")
         .select("*, contract:contracts(*, property:properties(*), tenant:tenants(*))")
-        .order("due_date", { ascending: true });
+        .order("due_date", { ascending: true })
+        .limit(1000);
       if (error) throw error;
       return data;
     },
@@ -66,7 +79,8 @@ export function useMaintenances() {
       const { data, error } = await supabase
         .from("maintenances")
         .select("*, property:properties(*)")
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })
+        .limit(500);
       if (error) throw error;
       return data;
     },

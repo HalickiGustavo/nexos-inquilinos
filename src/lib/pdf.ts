@@ -1,6 +1,6 @@
-import { jsPDF } from "jspdf";
-
-export function downloadPdf(filename: string, lines: string[]) {
+// jsPDF é pesado (~400KB). Importação dinâmica só quando o usuário clica em "baixar PDF".
+export async function downloadPdf(filename: string, lines: string[]) {
+  const { jsPDF } = await import("jspdf");
   const doc = new jsPDF();
   doc.setFont("helvetica", "normal");
   doc.setFontSize(11);

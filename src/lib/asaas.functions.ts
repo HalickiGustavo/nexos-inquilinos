@@ -2,6 +2,42 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
+// Build Asaas split[] using explicit fixedValue for auditability.
+// - Owner receives baseValue + lateCharges (rent + fines).
+// - NEXO receives nexoFee (platform fixed fee).
+// When the payment is processed under the NEXO master key, the owner entry is
+// enough — the residual stays in master (which is NEXO). When NEXO has a
+// dedicated wallet distinct from master/owner, push an explicit entry so the
+// fee lands in that specific subaccount instead of as silent residual.
+function buildSplitEntries(opts: {
+  ownerWalletId: string | null;
+  ownerShare: number;
+  nexoWalletId: string | null;
+  nexoFee: number;
+  totalValue: number;
+  paidViaOwnerKey: boolean;
+}): Array<{ walletId: string; fixedValue: number }> {
+  const entries: Array<{ walletId: string; fixedValue: number }> = [];
+  const { ownerWalletId, ownerShare, nexoWalletId, nexoFee, totalValue, paidViaOwnerKey } = opts;
+  if (ownerWalletId && ownerShare > 0 && ownerShare < totalValue) {
+    entries.push({ walletId: ownerWalletId, fixedValue: +ownerShare.toFixed(2) });
+  }
+  // Send explicit NEXO entry when:
+  //  - we have a wallet configured,
+  //  - the fee is positive and fits the total,
+  //  - AND it differs from the owner wallet (don't double-split to same wallet).
+  //  - OR the charge is being made via the owner's key (then NEXO needs an
+  //    explicit destination because the residual would stay in the owner subaccount).
+  const nexoDiffersOwner = nexoWalletId && nexoWalletId !== ownerWalletId;
+  const shouldEmitNexo =
+    nexoWalletId && nexoFee > 0 && nexoFee < totalValue && (paidViaOwnerKey || nexoDiffersOwner);
+  if (shouldEmitNexo) {
+    entries.push({ walletId: nexoWalletId!, fixedValue: +nexoFee.toFixed(2) });
+  }
+  return entries;
+}
+
+
 // ===== Get current owner's Asaas account state =====
 export const getAsaasAccount = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])

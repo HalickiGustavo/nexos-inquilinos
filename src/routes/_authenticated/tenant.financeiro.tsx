@@ -42,7 +42,32 @@ function TenantFinanceiro() {
   const { data: items = [], isLoading } = useTenantInstallments();
   const [openId, setOpenId] = useState<string | null>(null);
   const [pixFor, setPixFor] = useState<any | null>(null);
+  const [pixLoading, setPixLoading] = useState(false);
+  const [pixError, setPixError] = useState<string | null>(null);
   const [agreement, setAgreement] = useState<any | null>(null);
+  const ensurePix = useServerFn(ensureTenantPixCharge);
+  const queryClient = useQueryClient();
+
+  const openPix = async (i: any) => {
+    setPixFor(i);
+    setPixError(null);
+    if (i.pix_qrcode && i.pix_payload) return;
+    setPixLoading(true);
+    try {
+      const res: any = await ensurePix({ data: { installmentId: i.id } });
+      setPixFor({
+        ...i,
+        pix_qrcode: res.pixQrCode,
+        pix_payload: res.pixPayload,
+        boleto_url: res.boletoUrl ?? i.boleto_url,
+      });
+      queryClient.invalidateQueries({ queryKey: ["tenant-installments"] });
+    } catch (e: any) {
+      setPixError(e?.message ?? "Erro ao gerar PIX");
+    } finally {
+      setPixLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (!contract?.id) return;

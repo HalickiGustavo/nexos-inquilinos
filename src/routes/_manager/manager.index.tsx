@@ -20,6 +20,8 @@ export const Route = createFileRoute("/_manager/manager/")({
 
 function ManagerDashboard() {
   const [range, setRange] = useState<RangeKey>("mes");
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [tooltip, setTooltip] = useState<{ x: number; y: number; label: string; value: string } | null>(null);
 
   const qProps = useQuery({
     queryKey: ["mgr", "properties-count"],

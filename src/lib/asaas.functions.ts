@@ -181,7 +181,10 @@ export const generateAsaasCharge = createServerFn({ method: "POST" })
       ? Math.max(0, Math.floor((Date.parse(todayStr) - Date.parse(originalDue)) / 86400000))
       : 0;
     const finePct = Number(contract?.late_fee_percent ?? 0);
-    const dailyPct = Number(contract?.daily_interest_percent ?? 0);
+    // O campo daily_interest_percent armazena o juros MENSAL do contrato
+    // (padrão BR: ~1% a.m.). Convertemos para diário pro-rata (÷30).
+    const monthlyInterestPct = Number(contract?.daily_interest_percent ?? 0);
+    const dailyPct = monthlyInterestPct / 30;
     const fine = isOverdue ? +(baseValue * finePct / 100).toFixed(2) : 0;
     const interest = isOverdue ? +(baseValue * dailyPct / 100 * daysLate).toFixed(2) : 0;
     const lateCharges = +(fine + interest).toFixed(2);

@@ -239,7 +239,7 @@ function Recebimentos() {
                       </TableCell>
                     </TableRow>
                   )}
-                </>
+                </Fragment>
               );
             })}
           </TableBody>

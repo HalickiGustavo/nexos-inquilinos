@@ -189,11 +189,10 @@ export const generateAsaasCharge = createServerFn({ method: "POST" })
     const interest = isOverdue ? +(baseValue * dailyPct / 100 * daysLate).toFixed(2) : 0;
     const lateCharges = +(fine + interest).toFixed(2);
 
-    // When the contract has a payout wallet, the NEXO fee is DEDUCTED from the rent
-    // (not added on top). The owner receives baseValue - nexoFee via split; NEXO keeps the rest.
-    const value = payoutWalletId
-      ? +(baseValue + lateCharges).toFixed(2)
-      : +(baseValue + lateCharges + (nexoWallet && nexoFee > 0 ? nexoFee : 0)).toFixed(2);
+    // A taxa NEXO é SEMPRE somada ao aluguel (não é deduzida do valor do proprietário).
+    // O inquilino paga baseValue + encargos + nexoFee; o proprietário recebe baseValue+encargos via split; NEXO fica com a taxa.
+    const addFee = nexoFee > 0 && (payoutWalletId || nexoWallet);
+    const value = +(baseValue + lateCharges + (addFee ? nexoFee : 0)).toFixed(2);
     const effectiveDueDate = isOverdue ? todayStr : originalDue;
     const lateNote = isOverdue
       ? ` (venc. original ${originalDue}, ${daysLate} dia(s) de atraso: multa R$ ${fine.toFixed(2)} + juros R$ ${interest.toFixed(2)})`
@@ -204,7 +203,7 @@ export const generateAsaasCharge = createServerFn({ method: "POST" })
       billingType: data.billingType,
       value,
       dueDate: effectiveDueDate,
-      description: `Aluguel — ${property?.nickname ?? ""} — venc. ${originalDue}${lateNote}${!payoutWalletId && nexoFee > 0 ? ` (inclui taxa NEXO de R$ ${nexoFee.toFixed(2)})` : ""}`,
+      description: `Aluguel — ${property?.nickname ?? ""} — venc. ${originalDue}${lateNote}${addFee ? ` (inclui taxa NEXO de R$ ${nexoFee.toFixed(2)})` : ""}`,
       externalReference: inst.data.id,
     };
     if (shouldSplitToOwner && payoutWalletId && nexoFee > 0 && nexoFee < value) {
@@ -315,10 +314,8 @@ export const updateAsaasChargeFee = createServerFn({ method: "POST" })
     const fine = isOverdue ? +(baseValue * finePct / 100).toFixed(2) : 0;
     const interest = isOverdue ? +(baseValue * dailyPct / 100 * daysLate).toFixed(2) : 0;
     const lateCharges = +(fine + interest).toFixed(2);
-    // payout_wallet_id → taxa descontada do total; senão → somada
-    const value = payoutWalletId
-      ? +(baseValue + lateCharges).toFixed(2)
-      : +(baseValue + lateCharges + nexoFee).toFixed(2);
+    // Taxa NEXO sempre somada ao aluguel
+    const value = +(baseValue + lateCharges + nexoFee).toFixed(2);
     const effectiveDueDate = isOverdue ? todayStr : originalDue;
 
     const body: Record<string, unknown> = {

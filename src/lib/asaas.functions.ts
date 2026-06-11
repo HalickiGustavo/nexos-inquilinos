@@ -451,11 +451,16 @@ export const simulateAsaasPayment = createServerFn({ method: "POST" })
       .maybeSingle();
     const nexoFee = setting?.value ? Number(setting.value) : getNexoFee();
     const paymentUpdate: Record<string, unknown> = { billingType: "CREDIT_CARD" };
-    if (shouldSplitToOwner && payoutWalletId && nexoFee > 0 && nexoFee < value) {
-      paymentUpdate.split = [{ walletId: payoutWalletId, percentualValue: +(((value - nexoFee) / value) * 100).toFixed(4) }];
-    } else if (ownerApiKey && nexoWallet && nexoFee > 0 && nexoFee < value) {
-      paymentUpdate.split = [{ walletId: nexoWallet, percentualValue: +((nexoFee / value) * 100).toFixed(4) }];
-    }
+    const simSplit = buildSplitEntries({
+      ownerWalletId: shouldSplitToOwner ? payoutWalletId : null,
+      ownerShare: +(value - nexoFee).toFixed(2),
+      nexoWalletId: nexoWallet,
+      nexoFee,
+      totalValue: value,
+      paidViaOwnerKey: Boolean(ownerApiKey),
+    });
+    if (simSplit.length > 0) paymentUpdate.split = simSplit;
+
     await asaasFetch<any>(`/payments/${inst.data.asaas_payment_id}`, {
       method: "PUT",
       apiKey: ownerApiKey,

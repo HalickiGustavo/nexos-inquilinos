@@ -252,15 +252,18 @@ export const updateAsaasChargeFee = createServerFn({ method: "POST" })
     if (inst.data.status === "pago") throw new Error("Parcela já foi paga.");
 
     const contract = (inst.data as any).contract;
-    const payoutWalletId: string | null = contract?.payout_wallet_id ?? null;
+    const contractPayoutWalletId: string | null = contract?.payout_wallet_id ?? null;
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const acc = await supabaseAdmin
       .from("asaas_accounts")
-      .select("api_key")
+      .select("api_key, wallet_id")
       .eq("user_id", userId)
       .maybeSingle();
-    const ownerApiKey = payoutWalletId ? undefined : (acc.data?.api_key || undefined);
+    const nexoWallet = getNexoWalletId();
+    const payoutWalletId: string | null = contractPayoutWalletId || acc.data?.wallet_id || null;
+    const shouldSplitToOwner = Boolean(payoutWalletId && payoutWalletId !== nexoWallet);
+    const ownerApiKey = shouldSplitToOwner ? undefined : (acc.data?.api_key || undefined);
 
     const { data: setting } = await (supabaseAdmin as any)
       .from("platform_settings")
@@ -268,7 +271,6 @@ export const updateAsaasChargeFee = createServerFn({ method: "POST" })
       .eq("key", "nexo_boleto_fee")
       .maybeSingle();
     const nexoFee = setting?.value ? Number(setting.value) : getNexoFee();
-    const nexoWallet = getNexoWalletId();
     if (!payoutWalletId && (!nexoWallet || nexoFee <= 0)) throw new Error("Taxa NEXO não configurada.");
 
     const baseValue = Number(inst.data.amount) + Number(inst.data.extra_fees ?? 0);
@@ -293,7 +295,7 @@ export const updateAsaasChargeFee = createServerFn({ method: "POST" })
     const body: Record<string, unknown> = {
       value,
       dueDate: effectiveDueDate,
-      split: payoutWalletId
+      split: shouldSplitToOwner && payoutWalletId
         ? [{ walletId: payoutWalletId, fixedValue: +(value - nexoFee).toFixed(2) }]
         : [{ walletId: nexoWallet!, fixedValue: nexoFee }],
     };

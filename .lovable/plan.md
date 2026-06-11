@@ -1,68 +1,82 @@
+# Plano de Auditoria em 3 Fases
 
-# NEXO Manager — Portal da Imobiliária
+Cada fase entregue separadamente. Você valida (testa as telas críticas) antes da próxima.
 
-Novo portal paralelo ao painel do Owner e ao do Inquilino, voltado para imobiliárias gerenciando carteira grande, equipe e CRM. Compartilha o mesmo banco (Lovable Cloud).
+---
 
-## 1. Banco de dados (migração única)
+## Fase 1 — Segurança (entrega primeiro)
 
-Novo role `manager` no enum `app_role` + tabelas:
+**Objetivo:** fechar buracos sem mexer em UI nem em queries.
 
-- `manager_members` — equipe da imobiliária
-  - `manager_user_id` (dono da imobiliária — auth.uid), `member_user_id` (nullable, preenchido após aceite do convite), `name`, `email`, `role_label` (corretor/admin/financeiro), `invite_token`, `status` (pendente/ativo/inativo)
-- `properties` — adicionar `manager_id` (nullable), `owner_name`, `owner_commission_percent` (default 10), `assigned_member_id`, `neighborhood`, `code` (gerado)
-- `installments` — adicionar `management_fee_percent` (default 10), `payout_status` (pendente/aguardando/repassado), `payout_date`
-- `crm_leads` — `manager_user_id`, `name`, `phone`, `email`, `budget`, `interested_property_id` (nullable), `interested_code` (texto livre), `stage` (novos/contato/proposta/fechado), `notes`
-- `crm_lead_notes` — histórico de notas por lead
+1. **Route guards reforçados**
+   - Garantir que `_authenticated/route.tsx` e `_manager.tsx` redirecionam para `/login` quando `session === null` (não apenas `user`), evitando flash de conteúdo durante refresh.
+   - Adicionar verificação de role no `_manager` antes de montar — hoje já existe mas roda depois do render inicial; mover para `beforeLoad`-equivalente client-side.
 
-Triggers `set_updated_at` + RLS por `manager_user_id = auth.uid()` (e leitura para membros via subquery em `manager_members`). GRANTs para `authenticated` e `service_role`.
+2. **Limpeza de `console.log` sensíveis**
+   - Varrer `src/` por `console.log/info/debug` que imprimam `session`, `user`, `error` cru de Supabase, tokens ou payloads do Asaas.
+   - Manter apenas `console.error` em catch blocks, sanitizando para não vazar email/CPF/tokens.
 
-`handle_new_user` permanece criando `owner`. Manager se torna manager por uma rota de onboarding `/manager-setup` que insere `manager` em `user_roles`.
+3. **Sanitização de inputs**
+   - Validar com Zod nos formulários que ainda gravam direto: CRM leads, manutenções (mensagens), notas internas. Limites de tamanho + `.trim()`.
+   - Conferir `dangerouslySetInnerHTML` (não deve existir; confirmar).
 
-## 2. Roteamento e shell
+4. **Storage**
+   - Auditar `localStorage`/`sessionStorage` fora do Supabase auth client. Remover qualquer gravação de dados de contrato/inquilino/CPF.
 
-- Novo layout `src/routes/_manager/route.tsx` (gate igual ao `_authenticated`, mas exige role `manager`).
-- Sidebar shadcn (`src/components/ManagerSidebar.tsx`) com: Dashboard, Carteira, Financeiro, Equipe, CRM.
-- Tema corporativo: paleta zinc/slate com accent emerald. Tokens em `src/styles.css` sob seletor `.theme-manager` aplicado no shell.
-- Rotas:
-  - `_manager/index.tsx` → Dashboard
-  - `_manager/carteira.tsx`
-  - `_manager/financeiro.tsx`
-  - `_manager/equipe.tsx`
-  - `_manager/crm.tsx`
+5. **RLS lint**
+   - Rodar `supabase--linter` e corrigir findings críticos (tabelas sem RLS, policies abertas).
 
-Login: detectar role `manager` em `useUserRole` e redirecionar para `/manager`. Adicionar botão "Sou Imobiliária" no login que vai para `/manager-setup`.
+**Entrega:** relatório curto com itens corrigidos + arquivos tocados.
 
-## 3. Módulos
+---
 
-### A. Dashboard
-4 KPI cards: VGV sob gestão (sum `rent_price * 12` dos imóveis), Receita do mês (sum `paid_amount` installments do mês), Taxa de vacância (% imóveis disponíveis), Leads ativos (count crm_leads stage ≠ fechado). Gráfico Recharts BarChart "Previsto vs Recebido" últimos 6 meses.
+## Fase 2 — Performance
 
-### B. Carteira
-Tabela shadcn de `properties` com join em contrato ativo + inquilino. Colunas: Código, Tipo, Endereço, Proprietário, Inquilino/Disponível, Aluguel. Filtros: status select, busca por cidade/bairro. Ações: Ver detalhes (dialog), Editar contrato (link `/manager/...`), Adicionar imóvel (dialog reaproveitando lógica de properties).
+**Objetivo:** acelerar carga inicial e reduzir re-renders. Sem mudar comportamento.
 
-### C. Financeiro
-Tabs shadcn:
-- **Recebimentos**: lista global de installments com filtros por status e data, badges de status, link para boleto.
-- **Repasses**: agrupado por proprietário/imóvel, calcula `paid_amount - (paid_amount * management_fee_percent/100)`, status "Aguardando" vs "Repassado", botão "Confirmar repasse" que atualiza `payout_status` + `payout_date`.
+1. **Lazy loading de telas pesadas**
+   - `manager.migrar-dados` (papaparse), `manager.dimob` (gerador de TXT), `manager.financeiro` (charts), `manager.index` (recharts).
+   - Como TanStack Start já faz auto code-splitting de `component`, o ganho real vem de: (a) garantir que componentes não são `export`ados, (b) mover libs pesadas (papaparse, pdf-lib) para imports dinâmicos dentro de handlers, não no topo do módulo.
 
-### D. Equipe
-Tabela de `manager_members` com Nome, Email, Função, Contratos ativos sob responsabilidade (count `contracts` via `assigned_member_id`). Dialog "Convidar novo membro" cria registro com `invite_token` e exibe link `/manager-invite?token=...` (envio de email fica como TODO simples — toast com o link).
+2. **Queries Supabase**
+   - Trocar `select('*')` por colunas específicas em:
+     - `useProperties` / `useTenants` / `useContracts` / `useInstallments` em `src/lib/queries.ts`
+     - `manager.crm.tsx`, `manager.equipe.tsx`, `tenant.financeiro.tsx`
+   - Adicionar `.limit()` razoável + ordenação server-side onde a tela já pagina visualmente.
+   - Aumentar `staleTime` no QueryClient global de 30s para 60s nas listas que mudam pouco (properties, tenants).
 
-### E. CRM
-Kanban com 4 colunas (`novos`, `contato`, `proposta`, `fechado`) usando `@dnd-kit` (já comum). Cards mostram nome, budget BRL, código do imóvel, telefone. Drag-and-drop atualiza `stage`. Dialog para criar/editar lead + adicionar notas (lista de `crm_lead_notes`).
+3. **React.memo / useMemo / useCallback**
+   - Memoizar linhas das tabelas grandes (`manager.financeiro` parcelas agrupadas, `contracts`, `properties`).
+   - `useMemo` em agregações (somas de aluguel, totais do dashboard) que hoje recalculam a cada render.
 
-## 4. Bibliotecas
+4. **CLS**
+   - Reservar `min-h` nos cards do dashboard que carregam dados assíncronos para evitar pulo de layout.
 
-Adicionar `@dnd-kit/core` e `@dnd-kit/sortable` para o Kanban.
+**Entrega:** relatório com tela → técnica aplicada + medição visual (antes vs depois quando relevante).
 
-## 5. Formatação
+---
 
-Reutilizar `formatBRL` e `formatDate` de `src/lib/format.ts` em todas as tabelas.
+## Fase 3 — Cleanup
 
-## Observações
+1. Remover imports não usados (eslint --fix onde seguro).
+2. Apagar utilitários duplicados em `src/lib/` se houver.
+3. Padronizar formatação BRL/data via `src/lib/format.ts` em telas que ainda usam `toLocaleString` inline.
+4. Conferir que nenhum arquivo `*.functions.ts` importa `client.server` no topo (regra crítica do template).
 
-- Não mexer no fluxo existente de Owner/Tenant.
-- Realtime: subscribe nas tabelas `installments` e `crm_leads` no Dashboard para refletir mutações ao vivo.
-- Tudo em PT-BR.
+**Entrega:** diff resumo + lista de arquivos removidos/consolidados.
 
-Confirma para eu seguir com a migração e implementação?
+---
+
+## Como vou trabalhar
+
+- Início imediato pela **Fase 1** assim que aprovar este plano.
+- Ao final de cada fase: paro, mostro o relatório, espero seu OK antes da próxima.
+- Design (fundo preto, neon roxo) intocado em todas as fases.
+- Nada de mudanças no schema do banco sem te avisar.
+
+## Detalhes técnicos
+
+- Stack: TanStack Start + Supabase (Lovable Cloud) + React Query + Tailwind v4.
+- Auto code-splitting já ativo via Vite plugin — refactor de lazy foca em **dynamic imports** dentro de handlers/effects, não em `React.lazy` manual.
+- RLS check via tool `supabase--linter`.
+- Sem alterações em `routeTree.gen.ts`, `client.ts`, `auth-middleware.ts`, `types.ts` (auto-gerados).

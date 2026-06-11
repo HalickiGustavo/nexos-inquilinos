@@ -1,10 +1,18 @@
-export const formatBRL = (value: number | string | null | undefined) => {
+const toNumber = (value: number | string | null | undefined) => {
   const n = typeof value === "string" ? parseFloat(value) : (value ?? 0);
-  return new Intl.NumberFormat("pt-BR", {
+  return Number.isFinite(n) ? (n as number) : 0;
+};
+
+export const formatBRL = (value: number | string | null | undefined) =>
+  new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(toNumber(value));
+
+// Versão compacta para gráficos/dashboards (sem centavos)
+export const formatBRLCompact = (value: number | string | null | undefined) =>
+  new Intl.NumberFormat("pt-BR", {
     style: "currency",
     currency: "BRL",
-  }).format(Number.isFinite(n) ? (n as number) : 0);
-};
+    maximumFractionDigits: 0,
+  }).format(toNumber(value));
 
 export const formatDate = (value: string | Date | null | undefined) => {
   if (!value) return "—";

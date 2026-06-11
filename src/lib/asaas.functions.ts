@@ -313,6 +313,69 @@ export const updateAsaasChargeFee = createServerFn({ method: "POST" })
     return { ok: true, value, lateCharges };
   });
 
+// ===== Simulate sandbox payment (mark Asaas charge as received in cash) =====
+const simulateInput = z.object({ installmentId: z.string().uuid() });
+
+export const simulateAsaasPayment = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => simulateInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { asaasFetch } = await import("./asaas.server");
+
+    const inst = await supabase
+      .from("installments")
+      .select("id, amount, extra_fees, late_charges, asaas_payment_id, due_date, status, contract:contracts(payout_wallet_id)")
+      .eq("id", data.installmentId)
+      .maybeSingle();
+    if (inst.error) throw new Error(inst.error.message);
+    if (!inst.data) throw new Error("Parcela não encontrada");
+    if (!inst.data.asaas_payment_id) throw new Error("Parcela sem boleto/Pix gerado.");
+    if (inst.data.status === "pago") throw new Error("Parcela já está paga.");
+
+    const contract = (inst.data as any).contract;
+    const payoutWalletId: string | null = contract?.payout_wallet_id ?? null;
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const acc = await supabaseAdmin
+      .from("asaas_accounts")
+      .select("api_key")
+      .eq("user_id", userId)
+      .maybeSingle();
+    const ownerApiKey = payoutWalletId ? undefined : (acc.data?.api_key || undefined);
+
+    // Fetch current Asaas payment to use its exact value
+    const current = await asaasFetch<any>(`/payments/${inst.data.asaas_payment_id}`, {
+      method: "GET",
+      apiKey: ownerApiKey,
+    });
+    const value = Number(current.value);
+    const todayStr = new Date().toISOString().slice(0, 10);
+
+    await asaasFetch<any>(`/payments/${inst.data.asaas_payment_id}/receiveInCash`, {
+      method: "POST",
+      apiKey: ownerApiKey,
+      body: JSON.stringify({
+        paymentDate: todayStr,
+        value,
+        notifyCustomer: false,
+      }),
+    });
+
+    await supabaseAdmin
+      .from("installments")
+      .update({
+        status: "pago",
+        paid_amount: value,
+        payment_date: new Date().toISOString(),
+      })
+      .eq("id", inst.data.id);
+
+    return { ok: true, value };
+  });
+
+
+
 
 // ===== Invite a tenant to register on the platform =====
 const inviteInput = z.object({

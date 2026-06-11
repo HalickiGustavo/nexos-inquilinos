@@ -103,7 +103,7 @@ function MigrarDadosPage() {
     setSuccess(0); setErrors([]); setFinished(false);
   };
 
-  const handleFiles = useCallback((files: FileList | null) => {
+  const handleFiles = useCallback(async (files: FileList | null) => {
     if (!files || files.length === 0) return;
     const f = files[0];
     if (!/\.csv$/i.test(f.name)) {

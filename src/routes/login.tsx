@@ -1,7 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import ReCAPTCHA from "react-google-recaptcha";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
@@ -11,6 +12,8 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import nexoLogoAsset from "@/assets/nexo-logo.png.asset.json";
 
+// Google's official reCAPTCHA v2 test key (always passes). Replace in production.
+const RECAPTCHA_SITE_KEY = "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI";
 
 export const Route = createFileRoute("/login")({
   head: () => ({ meta: [{ title: "Entrar — Nexo" }] }),
@@ -49,7 +52,7 @@ function LoginPage() {
 
       <div className="flex items-center justify-center p-6 lg:p-12">
         <Card className="w-full max-w-md p-8 shadow-lg">
-        <div className="lg:hidden flex justify-center items-center mb-6">
+          <div className="lg:hidden flex justify-center items-center mb-6">
             <img src={nexoLogo} alt="Nexo" className="h-10 w-auto" />
           </div>
 
@@ -67,18 +70,34 @@ function LoginPage() {
 function SignInForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const captchaRef = useRef<ReCAPTCHA | null>(null);
   const navigate = useNavigate();
+
+  const canSubmit = !!email && !!password && !!captchaToken && !busy;
 
   return (
     <form
       className="space-y-4"
       onSubmit={async (e) => {
         e.preventDefault();
+        if (!captchaToken) {
+          toast.error("Por favor, complete a verificação reCAPTCHA.");
+          return;
+        }
         setBusy(true);
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+          options: { captchaToken },
+        });
         setBusy(false);
-        if (error) return toast.error(error.message);
+        if (error) {
+          captchaRef.current?.reset();
+          setCaptchaToken(null);
+          return toast.error(error.message);
+        }
         toast.success("Bem-vindo de volta!");
         navigate({ to: "/dashboard", replace: true });
       }}
@@ -91,10 +110,25 @@ function SignInForm() {
         <Label htmlFor="password">Senha</Label>
         <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
       </div>
-      <Button type="submit" className="w-full" disabled={busy}>
+
+      <div className="flex justify-center pt-1">
+        <div className="rounded-md overflow-hidden ring-1 ring-border">
+          <ReCAPTCHA
+            ref={captchaRef}
+            sitekey={RECAPTCHA_SITE_KEY}
+            theme="dark"
+            onChange={(token) => setCaptchaToken(token)}
+            onExpired={() => setCaptchaToken(null)}
+            onErrored={() => setCaptchaToken(null)}
+          />
+        </div>
+      </div>
+
+      <Button type="submit" className="w-full" disabled={!canSubmit}>
         {busy && <Loader2 className="size-4 animate-spin mr-2" />}
         Entrar
       </Button>
     </form>
   );
 }
+

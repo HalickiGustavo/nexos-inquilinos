@@ -344,14 +344,24 @@ export const simulateAsaasPayment = createServerFn({ method: "POST" })
       .maybeSingle();
     const ownerApiKey = payoutWalletId ? undefined : (acc.data?.api_key || undefined);
 
-    // Fetch current Asaas payment to use its exact value
+    // Force charge type to BOLETO so the cobrança aparece como boleto no Asaas
     const current = await asaasFetch<any>(`/payments/${inst.data.asaas_payment_id}`, {
       method: "GET",
       apiKey: ownerApiKey,
     });
+    if (current.billingType !== "BOLETO") {
+      await asaasFetch<any>(`/payments/${inst.data.asaas_payment_id}`, {
+        method: "PUT",
+        apiKey: ownerApiKey,
+        body: JSON.stringify({ billingType: "BOLETO" }),
+      });
+    }
     const value = Number(current.value);
     const todayStr = new Date().toISOString().slice(0, 10);
 
+    // Sandbox-only: confirma o recebimento do boleto. A API pública só expõe
+    // receiveInCash, então a cobrança fica como "Recebido em dinheiro" no painel
+    // — mas o billingType permanece BOLETO.
     await asaasFetch<any>(`/payments/${inst.data.asaas_payment_id}/receiveInCash`, {
       method: "POST",
       apiKey: ownerApiKey,
@@ -361,6 +371,7 @@ export const simulateAsaasPayment = createServerFn({ method: "POST" })
         notifyCustomer: false,
       }),
     });
+
 
     await supabaseAdmin
       .from("installments")

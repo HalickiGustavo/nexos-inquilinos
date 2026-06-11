@@ -205,7 +205,9 @@ function ContractDialog({ onDone }: { onDone: () => void }) {
         <div className="space-y-2 sm:col-span-2"><Label>Juros ao dia (%)</Label><Input type="number" step="0.001" value={form.daily_interest_percent} onChange={(e) => setForm({ ...form, daily_interest_percent: e.target.value })} /><p className="text-xs text-muted-foreground">0,033% ao dia ≈ 1% ao mês</p></div>
 
         <DialogFooter className="sm:col-span-2">
-          <Button type="submit" disabled={!form.property_id || !form.tenant_id}>Criar contrato e gerar parcelas</Button>
+          <Button type="submit" disabled={submitting || !form.property_id || !form.tenant_id}>
+            {submitting ? "Criando..." : "Criar contrato e gerar parcelas"}
+          </Button>
         </DialogFooter>
       </form>
     </DialogContent>

@@ -106,8 +106,15 @@ export const generateAsaasCharge = createServerFn({ method: "POST" })
       .maybeSingle();
     if (inst.error) throw new Error(inst.error.message);
     if (!inst.data) throw new Error("Parcela não encontrada");
+    // Idempotência local: se já gerou boleto, retorna o existente em vez de criar outro.
     if (inst.data.asaas_payment_id) {
-      throw new Error("Esta parcela já possui boleto gerado.");
+      return {
+        ok: true,
+        paymentId: inst.data.asaas_payment_id,
+        value: Number(inst.data.amount) + Number(inst.data.extra_fees ?? 0) + Number(inst.data.late_charges ?? 0),
+        lateCharges: Number(inst.data.late_charges ?? 0),
+        deduplicated: true as const,
+      };
     }
 
     const contract = (inst.data as any).contract;

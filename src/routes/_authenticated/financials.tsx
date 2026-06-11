@@ -143,7 +143,8 @@ function FinancialsPage() {
                         {g.visible.map((i: any) => {
                           const s = effective(i, today);
                           const finePct = Number(g.contract?.late_fee_percent ?? 0);
-                          const dailyPct = Number(g.contract?.daily_interest_percent ?? 0);
+                          const monthlyPct = Number(g.contract?.daily_interest_percent ?? 0);
+                          const dailyPct = monthlyPct / 30;
                           const base = Number(i.amount) + Number(i.extra_fees);
                           const daysLate = s === "atrasado"
                             ? Math.max(0, Math.floor((Date.parse(today) - Date.parse(i.due_date)) / 86400000))

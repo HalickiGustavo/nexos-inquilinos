@@ -87,6 +87,7 @@ export type Database = {
           id: string
           late_fee_percent: number
           notes: string | null
+          payout_wallet_id: string | null
           property_id: string
           readjustment_index: Database["public"]["Enums"]["readjustment_index"]
           rent_amount: number
@@ -105,6 +106,7 @@ export type Database = {
           id?: string
           late_fee_percent?: number
           notes?: string | null
+          payout_wallet_id?: string | null
           property_id: string
           readjustment_index?: Database["public"]["Enums"]["readjustment_index"]
           rent_amount: number
@@ -123,6 +125,7 @@ export type Database = {
           id?: string
           late_fee_percent?: number
           notes?: string | null
+          payout_wallet_id?: string | null
           property_id?: string
           readjustment_index?: Database["public"]["Enums"]["readjustment_index"]
           rent_amount?: number

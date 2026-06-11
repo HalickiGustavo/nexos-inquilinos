@@ -152,8 +152,7 @@ function ManagerDashboard() {
     return { d, pts };
   }, [chartPoints]);
 
-  const fmtBRL = (n: number) =>
-    n.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
+  const fmtBRL = formatBRLCompact;
 
   return (
     <div className="min-h-screen bg-background text-foreground">

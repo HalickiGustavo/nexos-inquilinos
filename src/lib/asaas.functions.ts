@@ -356,7 +356,7 @@ export const simulateAsaasPayment = createServerFn({ method: "POST" })
 
     const inst = await supabase
       .from("installments")
-      .select("id, amount, extra_fees, late_charges, asaas_payment_id, due_date, status, contract:contracts(payout_wallet_id, tenant:tenants(full_name, email, document, phone, address, postal_code))")
+      .select("id, amount, extra_fees, late_charges, asaas_payment_id, due_date, status, contract:contracts(payout_wallet_id, tenant:tenants(full_name, email, document, phone))")
       .eq("id", data.installmentId)
       .maybeSingle();
     if (inst.error) throw new Error(inst.error.message);

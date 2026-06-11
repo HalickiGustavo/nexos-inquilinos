@@ -15,7 +15,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { supabase } from "@/integrations/supabase/client";
 import { useInstallments, useInvalidate, type Installment } from "@/lib/queries";
 import { formatBRL, formatDate, parseNumber } from "@/lib/format";
-import { generateAsaasCharge, updateAsaasChargeFee } from "@/lib/asaas.functions";
+import { generateAsaasCharge, updateAsaasChargeFee, simulateAsaasPayment } from "@/lib/asaas.functions";
 import { parseExpenses, expensesTotals } from "@/lib/variable-expenses";
 
 export const Route = createFileRoute("/_authenticated/financials")({

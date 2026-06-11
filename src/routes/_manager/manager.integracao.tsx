@@ -20,7 +20,8 @@ export const Route = createFileRoute("/_manager/manager/integracao")({
   component: ManagerIntegracao,
 });
 
-const STORAGE_KEY = "nexo:manager:bank-info";
+// Bank info is NEVER persisted to localStorage — sensitive PII (CPF/CNPJ, phone, account)
+// must only travel through the server-side Asaas integration.
 
 type BankInfo = {
   legalName: string;
@@ -55,12 +56,7 @@ function ManagerIntegracao() {
   const [bank, setBank] = useState<BankInfo>(emptyBank);
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) setBank({ ...emptyBank, ...JSON.parse(raw) });
-    } catch {}
-  }, []);
+  // No client-side persistence of bank/PII data.
 
   const status = !account
     ? { key: "pendente", label: "Pendente de Configuração", className: "bg-zinc-200 text-zinc-700 border-zinc-300 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700", icon: Clock }
@@ -73,9 +69,6 @@ function ManagerIntegracao() {
     e.preventDefault();
     setSaving(true);
     try {
-      // Persistir dados bancários localmente (Asaas usa endpoint próprio para conta)
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(bank));
-
       if (!account) {
         await submit({
           data: {
@@ -87,6 +80,7 @@ function ManagerIntegracao() {
         });
         toast.success("Dados enviados com sucesso! Sua subconta está sendo criada.");
         await refetch();
+        setBank(emptyBank);
       } else {
         toast.success("Dados bancários atualizados com sucesso!");
       }

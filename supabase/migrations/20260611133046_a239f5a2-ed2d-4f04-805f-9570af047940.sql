@@ -1,0 +1,1 @@
+ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS payout_wallet_id text;

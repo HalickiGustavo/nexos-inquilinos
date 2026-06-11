@@ -2,6 +2,42 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
+// Build Asaas split[] using explicit fixedValue for auditability.
+// - Owner receives baseValue + lateCharges (rent + fines).
+// - NEXO receives nexoFee (platform fixed fee).
+// When the payment is processed under the NEXO master key, the owner entry is
+// enough — the residual stays in master (which is NEXO). When NEXO has a
+// dedicated wallet distinct from master/owner, push an explicit entry so the
+// fee lands in that specific subaccount instead of as silent residual.
+function buildSplitEntries(opts: {
+  ownerWalletId: string | null;
+  ownerShare: number;
+  nexoWalletId: string | null;
+  nexoFee: number;
+  totalValue: number;
+  paidViaOwnerKey: boolean;
+}): Array<{ walletId: string; fixedValue: number }> {
+  const entries: Array<{ walletId: string; fixedValue: number }> = [];
+  const { ownerWalletId, ownerShare, nexoWalletId, nexoFee, totalValue, paidViaOwnerKey } = opts;
+  if (ownerWalletId && ownerShare > 0 && ownerShare < totalValue) {
+    entries.push({ walletId: ownerWalletId, fixedValue: +ownerShare.toFixed(2) });
+  }
+  // Send explicit NEXO entry when:
+  //  - we have a wallet configured,
+  //  - the fee is positive and fits the total,
+  //  - AND it differs from the owner wallet (don't double-split to same wallet).
+  //  - OR the charge is being made via the owner's key (then NEXO needs an
+  //    explicit destination because the residual would stay in the owner subaccount).
+  const nexoDiffersOwner = nexoWalletId && nexoWalletId !== ownerWalletId;
+  const shouldEmitNexo =
+    nexoWalletId && nexoFee > 0 && nexoFee < totalValue && (paidViaOwnerKey || nexoDiffersOwner);
+  if (shouldEmitNexo) {
+    entries.push({ walletId: nexoWalletId!, fixedValue: +nexoFee.toFixed(2) });
+  }
+  return entries;
+}
+
+
 // ===== Get current owner's Asaas account state =====
 export const getAsaasAccount = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -206,15 +242,16 @@ export const generateAsaasCharge = createServerFn({ method: "POST" })
       description: `Aluguel — ${property?.nickname ?? ""} — venc. ${originalDue}${lateNote}${addFee ? ` (inclui taxa NEXO de R$ ${nexoFee.toFixed(2)})` : ""}`,
       externalReference: inst.data.id,
     };
-    if (shouldSplitToOwner && payoutWalletId && nexoFee > 0 && nexoFee < value) {
-      // Use percentualValue so Asaas applies the split AFTER deducting its own
-      // transaction fee from the net receivable (avoids "split excede valor a receber").
-      const ownerPct = +(((value - nexoFee) / value) * 100).toFixed(4);
-      body.split = [{ walletId: payoutWalletId, percentualValue: ownerPct }];
-    } else if (ownerApiKey && nexoWallet && nexoFee > 0 && nexoFee < value) {
-      const nexoPct = +((nexoFee / value) * 100).toFixed(4);
-      body.split = [{ walletId: nexoWallet, percentualValue: nexoPct }];
-    }
+    const splitEntries = buildSplitEntries({
+      ownerWalletId: shouldSplitToOwner ? payoutWalletId : null,
+      ownerShare: +(baseValue + lateCharges).toFixed(2),
+      nexoWalletId: nexoWallet,
+      nexoFee,
+      totalValue: value,
+      paidViaOwnerKey: Boolean(ownerApiKey),
+    });
+    if (splitEntries.length > 0) body.split = splitEntries;
+
 
     // Idempotência remota: antes de POST /payments, checa se o Asaas já tem
     // uma cobrança com este externalReference (parcela id). Evita duplicar quando
@@ -321,10 +358,17 @@ export const updateAsaasChargeFee = createServerFn({ method: "POST" })
     const body: Record<string, unknown> = {
       value,
       dueDate: effectiveDueDate,
-      split: shouldSplitToOwner && payoutWalletId
-        ? [{ walletId: payoutWalletId, percentualValue: +(((value - nexoFee) / value) * 100).toFixed(4) }]
-        : [{ walletId: nexoWallet!, percentualValue: +((nexoFee / value) * 100).toFixed(4) }],
     };
+    const splitEntries = buildSplitEntries({
+      ownerWalletId: shouldSplitToOwner ? payoutWalletId : null,
+      ownerShare: +(baseValue + lateCharges).toFixed(2),
+      nexoWalletId: nexoWallet,
+      nexoFee,
+      totalValue: value,
+      paidViaOwnerKey: Boolean(ownerApiKey),
+    });
+    if (splitEntries.length > 0) body.split = splitEntries;
+
 
     const payment = await asaasFetch<any>(`/payments/${inst.data.asaas_payment_id}`, {
       method: "PUT",
@@ -407,11 +451,16 @@ export const simulateAsaasPayment = createServerFn({ method: "POST" })
       .maybeSingle();
     const nexoFee = setting?.value ? Number(setting.value) : getNexoFee();
     const paymentUpdate: Record<string, unknown> = { billingType: "CREDIT_CARD" };
-    if (shouldSplitToOwner && payoutWalletId && nexoFee > 0 && nexoFee < value) {
-      paymentUpdate.split = [{ walletId: payoutWalletId, percentualValue: +(((value - nexoFee) / value) * 100).toFixed(4) }];
-    } else if (ownerApiKey && nexoWallet && nexoFee > 0 && nexoFee < value) {
-      paymentUpdate.split = [{ walletId: nexoWallet, percentualValue: +((nexoFee / value) * 100).toFixed(4) }];
-    }
+    const simSplit = buildSplitEntries({
+      ownerWalletId: shouldSplitToOwner ? payoutWalletId : null,
+      ownerShare: +(value - nexoFee).toFixed(2),
+      nexoWalletId: nexoWallet,
+      nexoFee,
+      totalValue: value,
+      paidViaOwnerKey: Boolean(ownerApiKey),
+    });
+    if (simSplit.length > 0) paymentUpdate.split = simSplit;
+
     await asaasFetch<any>(`/payments/${inst.data.asaas_payment_id}`, {
       method: "PUT",
       apiKey: ownerApiKey,
@@ -680,10 +729,16 @@ export const ensureTenantPixCharge = createServerFn({ method: "POST" })
         description: `Aluguel — ${property?.nickname ?? ""} — venc. ${originalDue}${addFee ? ` (inclui taxa NEXO de R$ ${nexoFee.toFixed(2)})` : ""}`,
         externalReference: inst.data.id,
       };
-      if (shouldSplitToOwner && payoutWalletId && nexoFee > 0 && nexoFee < value) {
-        const ownerPct = +(((value - nexoFee) / value) * 100).toFixed(4);
-        body.split = [{ walletId: payoutWalletId, percentualValue: ownerPct }];
-      }
+      const splitEntries = buildSplitEntries({
+        ownerWalletId: shouldSplitToOwner ? payoutWalletId : null,
+        ownerShare: +(baseValue + lateCharges).toFixed(2),
+        nexoWalletId: nexoWallet,
+        nexoFee,
+        totalValue: value,
+        paidViaOwnerKey: false, // tenant flow always uses MASTER key
+      });
+      if (splitEntries.length > 0) body.split = splitEntries;
+
       const created = await asaasFetch<any>("/payments", {
         method: "POST",
         body: JSON.stringify(body),

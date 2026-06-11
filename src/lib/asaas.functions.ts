@@ -214,11 +214,27 @@ export const generateAsaasCharge = createServerFn({ method: "POST" })
       body.split = [{ walletId: nexoWallet, percentualValue: nexoPct }];
     }
 
-    const payment = await asaasFetch<any>("/payments", {
-      method: "POST",
-      apiKey: ownerApiKey,
-      body: JSON.stringify(body),
-    });
+    // Idempotência remota: antes de POST /payments, checa se o Asaas já tem
+    // uma cobrança com este externalReference (parcela id). Evita duplicar quando
+    // o cliente reenviar a requisição (retry, double-click, race condition).
+    let payment: any = null;
+    try {
+      const existingList = await asaasFetch<any>(
+        `/payments?externalReference=${encodeURIComponent(inst.data.id)}&limit=1`,
+        { apiKey: ownerApiKey },
+      );
+      if (existingList?.data?.length > 0) {
+        payment = existingList.data[0];
+      }
+    } catch { /* segue e tenta criar */ }
+
+    if (!payment) {
+      payment = await asaasFetch<any>("/payments", {
+        method: "POST",
+        apiKey: ownerApiKey,
+        body: JSON.stringify(body),
+      });
+    }
 
     let pix: { encodedImage?: string; payload?: string } = {};
     try {

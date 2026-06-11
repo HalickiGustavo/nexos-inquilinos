@@ -178,6 +178,7 @@ interface FormState {
 }
 
 function OnboardingWizard({ role, onChangeRole }: { role: Role; onChangeRole: () => void }) {
+  const navigate = useNavigate();
   const [step, setStep] = useState<Step>(1);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);

@@ -178,6 +178,7 @@ interface FormState {
 }
 
 function OnboardingWizard({ role, onChangeRole }: { role: Role; onChangeRole: () => void }) {
+  const navigate = useNavigate();
   const [step, setStep] = useState<Step>(1);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -204,12 +205,11 @@ function OnboardingWizard({ role, onChangeRole }: { role: Role; onChangeRole: ()
     setSubmitting(true);
     try {
       const fullName = role === "imobiliaria" ? form.companyName : form.fullName;
-      const { error } = await supabase.auth.signUp({
+      const signUpPayload: Parameters<typeof supabase.auth.signUp>[0] = {
         email: form.email.trim(),
         password: form.password,
         options: {
           captchaToken: form.captchaToken ?? undefined,
-          emailRedirectTo: `${window.location.origin}/dashboard`,
           data: {
             role: role === "imobiliaria" ? "manager" : "owner",
             full_name: fullName,
@@ -220,14 +220,17 @@ function OnboardingWizard({ role, onChangeRole }: { role: Role; onChangeRole: ()
             birth_date: role !== "imobiliaria" ? form.birthDate : undefined,
           },
         },
-      });
+      };
+      const { error } = await supabase.auth.signUp(signUpPayload);
       if (error) throw error;
-      toast.success("Cadastro realizado! Verifique seu e-mail para confirmar a conta.");
-      setSuccess(true);
-    } catch {
+      toast.success("Cadastro realizado com sucesso! Verifique seu e-mail para confirmação.");
+      // Garantir que nenhuma sessão fique ativa — usuário precisa confirmar email e logar
+      await supabase.auth.signOut().catch(() => {});
+      navigate({ to: "/login", replace: true });
+    } catch (err: any) {
       captchaRef.current?.reset();
       update("captchaToken", null);
-      toast.error("Erro ao processar cadastro. Por favor, verifique os dados ou tente novamente.");
+      toast.error(err?.message || "Erro ao processar cadastro. Verifique os dados ou tente novamente.");
     } finally {
       setSubmitting(false);
     }

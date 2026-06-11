@@ -519,14 +519,46 @@ export const simulateAsaasPayment = createServerFn({ method: "POST" })
 // ===== Invite a tenant to register on the platform =====
 const inviteInput = z.object({
   tenantId: z.string().uuid(),
+  // redirectUrl is accepted but the origin is validated server-side against
+  // an allowlist to prevent open-redirect / phishing via the invite email.
   redirectUrl: z.string().url(),
 });
+
+// Allowed origins for invite/magic-link redirects. Tenant-supplied URLs whose
+// origin is not in this list are rejected to defeat token-harvesting phishing.
+function getAllowedRedirectOrigins(): string[] {
+  const raw = [
+    process.env.APP_ORIGIN,
+    process.env.VITE_APP_ORIGIN,
+    "https://nexos-inquilinos.lovable.app",
+  ].filter(Boolean) as string[];
+  return Array.from(new Set(raw));
+}
 
 export const inviteTenantUser = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => inviteInput.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
+
+    // Validate redirect origin against allowlist (open-redirect defense).
+    let safeRedirect: string;
+    try {
+      const parsed = new URL(data.redirectUrl);
+      const allowed = getAllowedRedirectOrigins();
+      if (!allowed.includes(parsed.origin)) {
+        throw new Error(`redirectUrl origin não permitido: ${parsed.origin}`);
+      }
+      // Force the path to /tenant-setup regardless of what the client sent —
+      // we only trust the origin, never the full path.
+      parsed.pathname = "/tenant-setup";
+      parsed.search = "";
+      parsed.hash = "";
+      safeRedirect = parsed.toString();
+    } catch (e: any) {
+      throw new Error(e?.message ?? "redirectUrl inválido");
+    }
+
     const tenant = await supabase
       .from("tenants")
       .select("id, full_name, email")
@@ -539,7 +571,7 @@ export const inviteTenantUser = createServerFn({ method: "POST" })
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin.auth.admin.inviteUserByEmail(tenant.data.email, {
-      redirectTo: data.redirectUrl,
+      redirectTo: safeRedirect,
       data: { full_name: tenant.data.full_name, tenant_invite: true },
     });
     if (error) {
@@ -547,12 +579,13 @@ export const inviteTenantUser = createServerFn({ method: "POST" })
       const link = await supabaseAdmin.auth.admin.generateLink({
         type: "magiclink",
         email: tenant.data.email,
-        options: { redirectTo: data.redirectUrl },
+        options: { redirectTo: safeRedirect },
       });
       if (link.error) throw new Error(link.error.message);
     }
     return { ok: true };
   });
+
 
 // ===== Link an authenticated user to a tenant record (called from /tenant-setup) =====
 export const linkTenantUser = createServerFn({ method: "POST" })

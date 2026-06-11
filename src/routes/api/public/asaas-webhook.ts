@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { timingSafeEqual } from "node:crypto";
 
 export const Route = createFileRoute("/api/public/asaas-webhook")({
   server: {
@@ -6,9 +7,19 @@ export const Route = createFileRoute("/api/public/asaas-webhook")({
       POST: async ({ request }) => {
         const expected = process.env.ASAAS_WEBHOOK_TOKEN;
         const token = request.headers.get("asaas-access-token") ?? request.headers.get("Asaas-Access-Token");
-        if (!expected || token !== expected) {
+        // Constant-time comparison to defeat timing side-channel attacks
+        // that could otherwise leak the webhook token byte-by-byte.
+        const tokenBuf = token ? Buffer.from(token) : null;
+        const expectedBuf = expected ? Buffer.from(expected) : null;
+        const ok =
+          !!tokenBuf &&
+          !!expectedBuf &&
+          tokenBuf.length === expectedBuf.length &&
+          timingSafeEqual(tokenBuf, expectedBuf);
+        if (!ok) {
           return new Response("Unauthorized", { status: 401 });
         }
+
 
         let body: any;
         try {

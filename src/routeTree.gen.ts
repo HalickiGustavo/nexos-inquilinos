@@ -15,7 +15,6 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as CadastroRouteImport } from './routes/cadastro'
 import { Route as ManagerRouteImport } from './routes/_manager'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
-import { Route as AdminRouteImport } from './routes/_admin'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedTenantsRouteImport } from './routes/_authenticated/tenants'
 import { Route as AuthenticatedPropertiesRouteImport } from './routes/_authenticated/properties'
@@ -41,7 +40,6 @@ import { Route as AuthenticatedTenantManutencoesRouteImport } from './routes/_au
 import { Route as AuthenticatedTenantFinanceiroRouteImport } from './routes/_authenticated/tenant.financeiro'
 import { Route as AuthenticatedTenantContratoRouteImport } from './routes/_authenticated/tenant.contrato'
 import { Route as AuthenticatedTenantAlertasRouteImport } from './routes/_authenticated/tenant.alertas'
-import { Route as AdminAdminConfiguracoesSegurancaRouteImport } from './routes/_admin/admin.configuracoes.seguranca'
 
 const TenantSetupRoute = TenantSetupRouteImport.update({
   id: '/tenant-setup',
@@ -69,10 +67,6 @@ const ManagerRoute = ManagerRouteImport.update({
 } as any)
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
   id: '/_authenticated',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminRoute = AdminRouteImport.update({
-  id: '/_admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
@@ -211,12 +205,6 @@ const AuthenticatedTenantAlertasRoute =
     path: '/tenant/alertas',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
-const AdminAdminConfiguracoesSegurancaRoute =
-  AdminAdminConfiguracoesSegurancaRouteImport.update({
-    id: '/admin/configuracoes/seguranca',
-    path: '/admin/configuracoes/seguranca',
-    getParentRoute: () => AdminRoute,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
@@ -248,7 +236,6 @@ export interface FileRoutesByFullPath {
   '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
   '/tenant/': typeof AuthenticatedTenantIndexRoute
   '/manager/': typeof ManagerManagerIndexRoute
-  '/admin/configuracoes/seguranca': typeof AdminAdminConfiguracoesSegurancaRoute
 }
 export interface FileRoutesByTo {
   '/': typeof AuthenticatedIndexRoute
@@ -280,11 +267,9 @@ export interface FileRoutesByTo {
   '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
   '/tenant': typeof AuthenticatedTenantIndexRoute
   '/manager': typeof ManagerManagerIndexRoute
-  '/admin/configuracoes/seguranca': typeof AdminAdminConfiguracoesSegurancaRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/_admin': typeof AdminRouteWithChildren
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/_manager': typeof ManagerRouteWithChildren
   '/cadastro': typeof CadastroRoute
@@ -316,7 +301,6 @@ export interface FileRoutesById {
   '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
   '/_authenticated/tenant/': typeof AuthenticatedTenantIndexRoute
   '/_manager/manager/': typeof ManagerManagerIndexRoute
-  '/_admin/admin/configuracoes/seguranca': typeof AdminAdminConfiguracoesSegurancaRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -350,7 +334,6 @@ export interface FileRouteTypes {
     | '/api/public/asaas-webhook'
     | '/tenant/'
     | '/manager/'
-    | '/admin/configuracoes/seguranca'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -382,10 +365,8 @@ export interface FileRouteTypes {
     | '/api/public/asaas-webhook'
     | '/tenant'
     | '/manager'
-    | '/admin/configuracoes/seguranca'
   id:
     | '__root__'
-    | '/_admin'
     | '/_authenticated'
     | '/_manager'
     | '/cadastro'
@@ -417,11 +398,9 @@ export interface FileRouteTypes {
     | '/api/public/asaas-webhook'
     | '/_authenticated/tenant/'
     | '/_manager/manager/'
-    | '/_admin/admin/configuracoes/seguranca'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  AdminRoute: typeof AdminRouteWithChildren
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   ManagerRoute: typeof ManagerRouteWithChildren
   CadastroRoute: typeof CadastroRoute
@@ -473,13 +452,6 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_admin': {
-      id: '/_admin'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/': {
@@ -657,25 +629,8 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTenantAlertasRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_admin/admin/configuracoes/seguranca': {
-      id: '/_admin/admin/configuracoes/seguranca'
-      path: '/admin/configuracoes/seguranca'
-      fullPath: '/admin/configuracoes/seguranca'
-      preLoaderRoute: typeof AdminAdminConfiguracoesSegurancaRouteImport
-      parentRoute: typeof AdminRoute
-    }
   }
 }
-
-interface AdminRouteChildren {
-  AdminAdminConfiguracoesSegurancaRoute: typeof AdminAdminConfiguracoesSegurancaRoute
-}
-
-const AdminRouteChildren: AdminRouteChildren = {
-  AdminAdminConfiguracoesSegurancaRoute: AdminAdminConfiguracoesSegurancaRoute,
-}
-
-const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 interface AuthenticatedRouteChildren {
   AuthenticatedContaCorrenteRoute: typeof AuthenticatedContaCorrenteRoute
@@ -745,7 +700,6 @@ const ManagerRouteWithChildren =
   ManagerRoute._addFileChildren(ManagerRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
-  AdminRoute: AdminRouteWithChildren,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   ManagerRoute: ManagerRouteWithChildren,
   CadastroRoute: CadastroRoute,
@@ -757,3 +711,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

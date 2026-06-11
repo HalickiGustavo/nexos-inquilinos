@@ -298,6 +298,36 @@ function MarkPaidButton({ installment }: { installment: any }) {
   );
 }
 
+function SimulatePayButton({ installment }: { installment: any }) {
+  const simulate = useServerFn(simulateAsaasPayment);
+  const invalidate = useInvalidate();
+  const [loading, setLoading] = useState(false);
+  return (
+    <Button
+      size="sm"
+      variant="outline"
+      disabled={loading}
+      title="Simular pagamento no sandbox Asaas"
+      className="border-amber-500/40 text-amber-600 hover:bg-amber-500/10"
+      onClick={async () => {
+        setLoading(true);
+        try {
+          await simulate({ data: { installmentId: installment.id } });
+          toast.success("Pagamento simulado no Asaas Sandbox");
+          invalidate(["installments"]);
+        } catch (e: any) {
+          toast.error(e?.message ?? "Falha ao simular pagamento");
+        } finally {
+          setLoading(false);
+        }
+      }}
+    >
+      {loading ? <Loader2 className="size-3.5 mr-1 animate-spin" /> : <Sparkles className="size-3.5 mr-1" />}
+      Simular
+    </Button>
+  );
+}
+
 function StatusBadge({ status }: { status: string }) {
   if (status === "pago") return <Badge className="bg-primary text-primary-foreground">Pago</Badge>;
   if (status === "atrasado") return <Badge variant="destructive">Atrasado</Badge>;

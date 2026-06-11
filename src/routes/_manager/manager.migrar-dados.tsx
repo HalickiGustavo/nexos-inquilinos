@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useCallback, useRef, useState } from "react";
-import Papa from "papaparse";
+// Papa é carregado dinamicamente dentro do handler (~50KB economizados no bundle inicial)
 import {
   Upload, FileSpreadsheet, Download, CheckCircle2, XCircle, Loader2,
   Database, ArrowRight, AlertTriangle, FileUp,

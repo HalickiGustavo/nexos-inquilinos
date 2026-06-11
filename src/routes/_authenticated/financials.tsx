@@ -196,6 +196,7 @@ function FinancialsPage() {
                                   </Button>
                                 )}
                                 {i.status !== "pago" && <MarkPaidButton installment={i} />}
+                                {i.status !== "pago" && i.asaas_payment_id && <SimulatePayButton installment={i} />}
                                 <Button size="sm" variant="outline" onClick={() => setExtraDlg(i)}>
                                   <Plus className="size-3.5 mr-1" />Taxa
                                 </Button>

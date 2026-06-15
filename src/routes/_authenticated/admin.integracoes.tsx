@@ -104,13 +104,17 @@ function AdminIntegracoesPage() {
           name="Imovelweb"
           description="Portal nacional de imóveis residenciais e comerciais."
           active={!!data?.activeImw}
+          connected={!!data?.connectedImw}
           feedUrl={feedUrl}
+          onToggle={(v) => toggleConnection("integration_imovelweb_connected", v)}
         />
         <PortalCard
           name="Grupo OLX (Zap / VivaReal)"
           description="Distribuição unificada nos portais Zap Imóveis e VivaReal."
           active={!!data?.activeZap}
+          connected={!!data?.connectedZap}
           feedUrl={feedUrl}
+          onToggle={(v) => toggleConnection("integration_zap_connected", v)}
         />
       </div>
 

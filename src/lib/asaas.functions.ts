@@ -56,13 +56,14 @@ const createSubaccountInput = z.object({
   name: z.string().min(2).max(120),
   email: z.string().email(),
   cpfCnpj: z.string().min(11).max(20),
-  mobilePhone: z.string().min(10).max(20).optional(),
+  mobilePhone: z.string().min(10).max(20),
   birthDate: z.string().optional(),
   companyType: z.enum(["MEI", "LIMITED", "INDIVIDUAL", "ASSOCIATION"]).optional(),
   address: z.string().min(2).max(200),
   addressNumber: z.string().min(1).max(20),
   province: z.string().min(2).max(120),
   postalCode: z.string().min(8).max(15),
+  incomeValue: z.coerce.number().positive(),
 });
 
 export const createAsaasSubaccount = createServerFn({ method: "POST" })

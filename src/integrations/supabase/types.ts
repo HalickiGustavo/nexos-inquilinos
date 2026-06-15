@@ -18,8 +18,16 @@ export type Database = {
         Row: {
           api_key: string | null
           asaas_account_id: string | null
+          auto_transfer_enabled: boolean
+          bank_account: string | null
+          bank_account_digit: string | null
+          bank_account_type: string | null
+          bank_agency: string | null
+          bank_code: string | null
           created_at: string
           id: string
+          kyc_reference_id: string | null
+          kyc_status: string
           onboarding_url: string | null
           status: string
           updated_at: string
@@ -29,8 +37,16 @@ export type Database = {
         Insert: {
           api_key?: string | null
           asaas_account_id?: string | null
+          auto_transfer_enabled?: boolean
+          bank_account?: string | null
+          bank_account_digit?: string | null
+          bank_account_type?: string | null
+          bank_agency?: string | null
+          bank_code?: string | null
           created_at?: string
           id?: string
+          kyc_reference_id?: string | null
+          kyc_status?: string
           onboarding_url?: string | null
           status?: string
           updated_at?: string
@@ -40,8 +56,16 @@ export type Database = {
         Update: {
           api_key?: string | null
           asaas_account_id?: string | null
+          auto_transfer_enabled?: boolean
+          bank_account?: string | null
+          bank_account_digit?: string | null
+          bank_account_type?: string | null
+          bank_agency?: string | null
+          bank_code?: string | null
           created_at?: string
           id?: string
+          kyc_reference_id?: string | null
+          kyc_status?: string
           onboarding_url?: string | null
           status?: string
           updated_at?: string

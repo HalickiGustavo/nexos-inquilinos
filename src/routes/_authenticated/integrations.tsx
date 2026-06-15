@@ -145,8 +145,11 @@ function IntegrationsPage() {
                 </SelectContent>
               </Select>
             </Field>
-            <Field label="Celular">
-              <Input value={form.mobilePhone} onChange={(e) => setForm({ ...form, mobilePhone: maskPhone(e.target.value) })} placeholder="(41) 99999-9999" inputMode="tel" />
+            <Field label="Celular" required>
+              <Input value={form.mobilePhone} onChange={(e) => setForm({ ...form, mobilePhone: maskPhone(e.target.value) })} placeholder="(41) 99999-9999" inputMode="tel" required />
+            </Field>
+            <Field label="Renda / Faturamento mensal (R$)" required>
+              <Input type="number" min="1" step="0.01" value={form.incomeValue} onChange={(e) => setForm({ ...form, incomeValue: e.target.value })} placeholder="5000" required />
             </Field>
             <Field label="Data de nascimento (PF)">
               <Input type="date" value={form.birthDate} onChange={(e) => setForm({ ...form, birthDate: e.target.value })} />

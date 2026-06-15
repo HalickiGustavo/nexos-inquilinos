@@ -109,7 +109,7 @@ function IntegrationsPage() {
                 const payload: any = { ...form };
                 if (!payload.companyType) delete payload.companyType;
                 if (!payload.birthDate) delete payload.birthDate;
-                if (!payload.mobilePhone) delete payload.mobilePhone;
+                payload.incomeValue = Number(form.incomeValue);
                 const res = await submit({ data: payload });
                 toast.success("Subconta criada!");
                 if (res.onboardingUrl) {

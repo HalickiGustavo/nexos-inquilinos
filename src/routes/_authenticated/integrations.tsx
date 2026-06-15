@@ -44,6 +44,11 @@ function IntegrationsPage() {
     province: "",
     postalCode: "",
     incomeValue: "",
+    bankCode: "",
+    bankAgency: "",
+    bankAccount: "",
+    bankAccountDigit: "",
+    bankAccountType: "CONTA_CORRENTE" as "CONTA_CORRENTE" | "CONTA_POUPANCA",
   });
   const [saving, setSaving] = useState(false);
 

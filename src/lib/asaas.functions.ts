@@ -926,7 +926,7 @@ export const uploadAsaasKycDocument = createServerFn({ method: "POST" })
     // Monta multipart e faz pass-through direto para o Asaas
     const form = new FormData();
     form.append("type", data.documentType);
-    form.append("documentFile", new Blob([bytes], { type: data.mimeType }), data.filename);
+    form.append("documentFile", new Blob([bytes.buffer as ArrayBuffer], { type: data.mimeType }), data.filename);
 
     const res = await fetch(`${ASAAS_BASE_URL}/myAccount/documents`, {
       method: "POST",

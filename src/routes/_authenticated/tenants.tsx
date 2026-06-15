@@ -149,7 +149,6 @@ function TenantDialog({ editing, onDone }: { editing: Tenant | null; onDone: () 
     phone: editing?.phone ?? "",
     emergency_contact: editing?.emergency_contact ?? "",
     notes: editing?.notes ?? "",
-    user_id_link: (editing as any)?.user_id_link ?? "",
   });
 
   return (
@@ -168,7 +167,6 @@ function TenantDialog({ editing, onDone }: { editing: Tenant | null; onDone: () 
             phone: form.phone || null,
             emergency_contact: form.emergency_contact || null,
             notes: form.notes || null,
-            user_id_link: form.user_id_link?.trim() || null,
           };
           const isNew = !editing;
           const { data: saved, error } = editing
@@ -213,15 +211,6 @@ function TenantDialog({ editing, onDone }: { editing: Tenant | null; onDone: () 
         </div>
         <div className="space-y-2"><Label>Email</Label><Input type="email" value={form.email ?? ""} onChange={(e) => setForm({ ...form, email: e.target.value })} /></div>
         <div className="space-y-2"><Label>Contato de emergência</Label><Input value={form.emergency_contact ?? ""} onChange={(e) => setForm({ ...form, emergency_contact: e.target.value })} placeholder="Nome e telefone" /></div>
-        <div className="space-y-2">
-          <Label>ID do usuário (acesso ao portal)</Label>
-          <Input
-            value={form.user_id_link}
-            onChange={(e) => setForm({ ...form, user_id_link: e.target.value })}
-            placeholder="UUID da conta do inquilino"
-          />
-          <p className="text-xs text-muted-foreground">Cole o ID do usuário cadastrado para liberar o portal do inquilino.</p>
-        </div>
         <div className="space-y-2"><Label>Observações</Label><Textarea value={form.notes ?? ""} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></div>
         <DialogFooter><Button type="submit">{editing ? "Salvar" : "Cadastrar"}</Button></DialogFooter>
       </form>

@@ -28,7 +28,9 @@ import {
 import { MaintenanceChat } from "@/components/MaintenanceChat";
 import { EvidenceUploader, EvidenceGrid } from "@/components/EvidenceUploader";
 import { cn } from "@/lib/utils";
-import { formatBRL, formatDate } from "@/lib/format";
+import { formatBRL, formatDate, parseNumber } from "@/lib/format";
+import { Receipt, Loader2 } from "lucide-react";
+
 
 export const Route = createFileRoute("/_authenticated/tenant/manutencoes")({
   head: () => ({ meta: [{ title: "Manutenções — Nexo Inquilino" }] }),

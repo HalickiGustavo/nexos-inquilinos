@@ -185,7 +185,7 @@ function OnboardingWizard({ role, onChangeRole }: { role: Role; onChangeRole: ()
   const [step, setStep] = useState<Step>(1);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
-  const captchaRef = useRef<ReCAPTCHA | null>(null);
+  const captchaRef = useRef<import("react-google-recaptcha").default | null>(null);
 
   const [form, setForm] = useState<FormState>({
     email: "",

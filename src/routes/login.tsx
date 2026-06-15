@@ -119,14 +119,16 @@ function SignInForm() {
 
       <div className="flex justify-center pt-1">
         <div className="rounded-md overflow-hidden ring-1 ring-border">
-          <ReCAPTCHA
-            ref={captchaRef}
-            sitekey={RECAPTCHA_SITE_KEY}
-            theme="dark"
-            onChange={(token) => setCaptchaToken(token)}
-            onExpired={() => setCaptchaToken(null)}
-            onErrored={() => setCaptchaToken(null)}
-          />
+          <ClientOnly fallback={<div className="h-[78px] w-[304px]" />}>
+            <ReCAPTCHA
+              ref={captchaRef}
+              sitekey={RECAPTCHA_SITE_KEY}
+              theme="dark"
+              onChange={(token) => setCaptchaToken(token)}
+              onExpired={() => setCaptchaToken(null)}
+              onErrored={() => setCaptchaToken(null)}
+            />
+          </ClientOnly>
         </div>
       </div>
 

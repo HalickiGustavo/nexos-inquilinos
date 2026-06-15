@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { createAsaasSubaccount, getAsaasAccount, getNexoFeeSetting } from "@/lib/asaas.functions";
+import { AsaasBankAndKycPanel } from "@/components/AsaasBankAndKycPanel";
 import { formatBRL } from "@/lib/format";
 import { maskCpfCnpj, maskPhone } from "@/lib/br-validators";
 

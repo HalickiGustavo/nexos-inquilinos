@@ -51,7 +51,8 @@ function AdminIntegracoesPage() {
 
   async function toggleConnection(field: "integration_imovelweb_connected" | "integration_zap_connected", value: boolean) {
     if (!user) return;
-    const { error } = await supabase.from("profiles").update({ [field]: value }).eq("id", user.id);
+    const patch: any = { [field]: value };
+    const { error } = await supabase.from("profiles").update(patch).eq("id", user.id);
     if (error) return toast.error(error.message);
     toast.success(value ? "Portal conectado com sucesso!" : "Portal desconectado.");
     refetch();

@@ -43,6 +43,7 @@ function IntegrationsPage() {
     addressNumber: "",
     province: "",
     postalCode: "",
+    incomeValue: "",
   });
   const [saving, setSaving] = useState(false);
 

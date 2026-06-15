@@ -2,39 +2,58 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-// Build Asaas split[] using explicit fixedValue for auditability.
-// - Owner receives baseValue + lateCharges (rent + fines).
-// - NEXO receives nexoFee (platform fixed fee).
-// When the payment is processed under the NEXO master key, the owner entry is
-// enough — the residual stays in master (which is NEXO). When NEXO has a
-// dedicated wallet distinct from master/owner, push an explicit entry so the
-// fee lands in that specific subaccount instead of as silent residual.
-function buildSplitEntries(opts: {
-  ownerWalletId: string | null;
-  ownerShare: number;
-  nexoWalletId: string | null;
+// === Modelo B (cobrança na subconta + split para a wallet master) ===
+// O boleto/Pix é emitido DENTRO da subconta do proprietário (landlord), usando
+// a `api_key` armazenada em `asaas_accounts`. O saldo do aluguel permanece
+// naturalmente na subconta que emitiu a cobrança; o split apenas transfere a
+// taxa fixa da plataforma (NEXO) para a wallet master da Nexo.
+function buildPlatformSplit(opts: {
+  masterWalletId: string;
   nexoFee: number;
   totalValue: number;
-  paidViaOwnerKey: boolean;
 }): Array<{ walletId: string; fixedValue: number }> {
-  const entries: Array<{ walletId: string; fixedValue: number }> = [];
-  const { ownerWalletId, ownerShare, nexoWalletId, nexoFee, totalValue, paidViaOwnerKey } = opts;
-  if (ownerWalletId && ownerShare > 0 && ownerShare < totalValue) {
-    entries.push({ walletId: ownerWalletId, fixedValue: +ownerShare.toFixed(2) });
+  const { masterWalletId, nexoFee, totalValue } = opts;
+  if (!masterWalletId || nexoFee <= 0 || nexoFee >= totalValue) return [];
+  return [{ walletId: masterWalletId, fixedValue: +nexoFee.toFixed(2) }];
+}
+
+async function getLandlordAsaasCredentials(supabaseAdmin: any, landlordUserId: string) {
+  const acc = await supabaseAdmin
+    .from("asaas_accounts")
+    .select("api_key, asaas_account_id, wallet_id, status")
+    .eq("user_id", landlordUserId)
+    .maybeSingle();
+  if (acc.error) throw new Error(acc.error.message);
+  const d = acc.data;
+  if (!d?.api_key || !d?.asaas_account_id) {
+    throw new Error("Imobiliária/Proprietário não possui subconta de recebimento configurada.");
   }
-  // Send explicit NEXO entry when:
-  //  - we have a wallet configured,
-  //  - the fee is positive and fits the total,
-  //  - AND it differs from the owner wallet (don't double-split to same wallet).
-  //  - OR the charge is being made via the owner's key (then NEXO needs an
-  //    explicit destination because the residual would stay in the owner subaccount).
-  const nexoDiffersOwner = nexoWalletId && nexoWalletId !== ownerWalletId;
-  const shouldEmitNexo =
-    nexoWalletId && nexoFee > 0 && nexoFee < totalValue && (paidViaOwnerKey || nexoDiffersOwner);
-  if (shouldEmitNexo) {
-    entries.push({ walletId: nexoWalletId!, fixedValue: +nexoFee.toFixed(2) });
+  return {
+    apiKey: d.api_key as string,
+    accountId: d.asaas_account_id as string,
+    walletId: (d.wallet_id ?? null) as string | null,
+  };
+}
+
+async function getMasterPlatformWalletId(supabaseAdmin: any): Promise<string> {
+  const envWallet = process.env.NEXO_MASTER_WALLET_ID || process.env.ASAAS_NEXO_WALLET_ID;
+  if (envWallet) return envWallet;
+  const { data } = await (supabaseAdmin as any)
+    .from("platform_settings")
+    .select("value")
+    .eq("key", "nexo_wallet_id")
+    .maybeSingle();
+  if (data?.value) return String(data.value);
+  throw new Error("Carteira master da plataforma não configurada (NEXO_MASTER_WALLET_ID).");
+}
+
+function mapAsaasError(e: any): Error {
+  const status = e?.status;
+  if (status === 401 || status === 403) {
+    return new Error("Credenciais da subconta inválidas ou expiradas junto ao gateway.");
   }
-  return entries;
+  if (e instanceof Error) return e;
+  return new Error(String(e?.message ?? e));
 }
 
 

@@ -194,34 +194,62 @@ function ManagerIntegracao() {
             <Field label="Razão Social / Nome" required>
               <Input value={bank.legalName} onChange={(e) => setBank({ ...bank, legalName: e.target.value })} required maxLength={120} />
             </Field>
+            <Field label="E-mail" required>
+              <Input type="email" value={bank.email} onChange={(e) => setBank({ ...bank, email: e.target.value })} required maxLength={120} />
+            </Field>
             <Field label="CNPJ / CPF" required>
               <Input value={bank.document} onChange={(e) => setBank({ ...bank, document: maskCpfCnpj(e.target.value) })} required maxLength={20} placeholder="00.000.000/0000-00" inputMode="numeric" />
             </Field>
-            <Field label="Telefone" required>
+            <Field label="Telefone (celular)" required>
               <Input value={bank.phone} onChange={(e) => setBank({ ...bank, phone: maskPhone(e.target.value) })} required maxLength={20} placeholder="(41) 99999-9999" inputMode="tel" />
             </Field>
-            <Field label="Banco" required>
-              <Input value={bank.bank} onChange={(e) => setBank({ ...bank, bank: e.target.value })} required maxLength={80} placeholder="Ex.: Banco do Brasil" />
+            <Field label="Faturamento mensal (R$)" required>
+              <Input type="number" min="1" step="0.01" value={bank.incomeValue} onChange={(e) => setBank({ ...bank, incomeValue: e.target.value })} placeholder="10000" required />
             </Field>
-            <Field label="Agência" required>
-              <Input value={bank.agency} onChange={(e) => setBank({ ...bank, agency: e.target.value })} required maxLength={10} />
+            <Field label="CEP" required>
+              <Input value={bank.postalCode} onChange={(e) => setBank({ ...bank, postalCode: e.target.value })} required maxLength={15} placeholder="00000-000" inputMode="numeric" />
             </Field>
-            <Field label="Número da Conta" required>
-              <Input value={bank.account} onChange={(e) => setBank({ ...bank, account: e.target.value })} required maxLength={20} />
+            <Field label="Bairro" required>
+              <Input value={bank.province} onChange={(e) => setBank({ ...bank, province: e.target.value })} required maxLength={120} />
+            </Field>
+            <Field label="Endereço" required>
+              <Input value={bank.address} onChange={(e) => setBank({ ...bank, address: e.target.value })} required maxLength={200} />
+            </Field>
+            <Field label="Número" required>
+              <Input value={bank.addressNumber} onChange={(e) => setBank({ ...bank, addressNumber: e.target.value })} required maxLength={20} />
+            </Field>
+
+            <div className="sm:col-span-2 mt-2 pt-4 border-t">
+              <h4 className="font-semibold mb-1">Conta bancária de recebimento</h4>
+              <p className="text-xs text-muted-foreground">Saldo será transferido automaticamente todo dia útil.</p>
+            </div>
+            <Field label="Código do banco (Febraban)" required>
+              <Input value={bank.bankCode} onChange={(e) => setBank({ ...bank, bankCode: e.target.value.replace(/\D/g, "") })} required maxLength={4} placeholder="Ex.: 341 (Itaú), 001 (BB)" inputMode="numeric" />
             </Field>
             <Field label="Tipo de Conta" required>
               <Select value={bank.accountType} onValueChange={(v) => setBank({ ...bank, accountType: v as any })}>
-                <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="corrente">Conta Corrente</SelectItem>
-                  <SelectItem value="poupanca">Conta Poupança</SelectItem>
+                  <SelectItem value="CONTA_CORRENTE">Conta Corrente</SelectItem>
+                  <SelectItem value="CONTA_POUPANCA">Conta Poupança</SelectItem>
                 </SelectContent>
               </Select>
             </Field>
+            <Field label="Agência (sem dígito)" required>
+              <Input value={bank.agency} onChange={(e) => setBank({ ...bank, agency: e.target.value.replace(/\D/g, "") })} required maxLength={10} inputMode="numeric" />
+            </Field>
+            <div className="grid grid-cols-[1fr_90px] gap-2">
+              <Field label="Conta" required>
+                <Input value={bank.account} onChange={(e) => setBank({ ...bank, account: e.target.value.replace(/\D/g, "") })} required maxLength={20} inputMode="numeric" />
+              </Field>
+              <Field label="Dígito" required>
+                <Input value={bank.accountDigit} onChange={(e) => setBank({ ...bank, accountDigit: e.target.value.replace(/\D/g, "") })} required maxLength={2} inputMode="numeric" />
+              </Field>
+            </div>
             <div className="sm:col-span-2 flex justify-end">
-              <Button type="submit" disabled={saving}>
+              <Button type="submit" disabled={saving || !!account}>
                 {saving && <Loader2 className="size-4 mr-2 animate-spin" />}
-                {account ? "Atualizar dados bancários" : "Enviar para análise Asaas"}
+                {account ? "Subconta já criada" : "Enviar para análise Asaas"}
               </Button>
             </div>
           </form>

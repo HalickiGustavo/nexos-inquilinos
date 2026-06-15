@@ -1,1 +1,4 @@
 project_id = "zmqkuifaatqqisovrfbz"
+
+[functions.portal-xml-feed]
+verify_jwt = false

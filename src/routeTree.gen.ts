@@ -40,6 +40,7 @@ import { Route as AuthenticatedTenantManutencoesRouteImport } from './routes/_au
 import { Route as AuthenticatedTenantFinanceiroRouteImport } from './routes/_authenticated/tenant.financeiro'
 import { Route as AuthenticatedTenantContratoRouteImport } from './routes/_authenticated/tenant.contrato'
 import { Route as AuthenticatedTenantAlertasRouteImport } from './routes/_authenticated/tenant.alertas'
+import { Route as AuthenticatedAdminIntegracoesRouteImport } from './routes/_authenticated/admin.integracoes'
 
 const TenantSetupRoute = TenantSetupRouteImport.update({
   id: '/tenant-setup',
@@ -205,6 +206,12 @@ const AuthenticatedTenantAlertasRoute =
     path: '/tenant/alertas',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedAdminIntegracoesRoute =
+  AuthenticatedAdminIntegracoesRouteImport.update({
+    id: '/admin/integracoes',
+    path: '/admin/integracoes',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
@@ -220,6 +227,7 @@ export interface FileRoutesByFullPath {
   '/maintenances': typeof AuthenticatedMaintenancesRoute
   '/properties': typeof AuthenticatedPropertiesRoute
   '/tenants': typeof AuthenticatedTenantsRoute
+  '/admin/integracoes': typeof AuthenticatedAdminIntegracoesRoute
   '/tenant/alertas': typeof AuthenticatedTenantAlertasRoute
   '/tenant/contrato': typeof AuthenticatedTenantContratoRoute
   '/tenant/financeiro': typeof AuthenticatedTenantFinanceiroRoute
@@ -251,6 +259,7 @@ export interface FileRoutesByTo {
   '/maintenances': typeof AuthenticatedMaintenancesRoute
   '/properties': typeof AuthenticatedPropertiesRoute
   '/tenants': typeof AuthenticatedTenantsRoute
+  '/admin/integracoes': typeof AuthenticatedAdminIntegracoesRoute
   '/tenant/alertas': typeof AuthenticatedTenantAlertasRoute
   '/tenant/contrato': typeof AuthenticatedTenantContratoRoute
   '/tenant/financeiro': typeof AuthenticatedTenantFinanceiroRoute
@@ -285,6 +294,7 @@ export interface FileRoutesById {
   '/_authenticated/properties': typeof AuthenticatedPropertiesRoute
   '/_authenticated/tenants': typeof AuthenticatedTenantsRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/_authenticated/admin/integracoes': typeof AuthenticatedAdminIntegracoesRoute
   '/_authenticated/tenant/alertas': typeof AuthenticatedTenantAlertasRoute
   '/_authenticated/tenant/contrato': typeof AuthenticatedTenantContratoRoute
   '/_authenticated/tenant/financeiro': typeof AuthenticatedTenantFinanceiroRoute
@@ -318,6 +328,7 @@ export interface FileRouteTypes {
     | '/maintenances'
     | '/properties'
     | '/tenants'
+    | '/admin/integracoes'
     | '/tenant/alertas'
     | '/tenant/contrato'
     | '/tenant/financeiro'
@@ -349,6 +360,7 @@ export interface FileRouteTypes {
     | '/maintenances'
     | '/properties'
     | '/tenants'
+    | '/admin/integracoes'
     | '/tenant/alertas'
     | '/tenant/contrato'
     | '/tenant/financeiro'
@@ -382,6 +394,7 @@ export interface FileRouteTypes {
     | '/_authenticated/properties'
     | '/_authenticated/tenants'
     | '/_authenticated/'
+    | '/_authenticated/admin/integracoes'
     | '/_authenticated/tenant/alertas'
     | '/_authenticated/tenant/contrato'
     | '/_authenticated/tenant/financeiro'
@@ -629,6 +642,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTenantAlertasRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/admin/integracoes': {
+      id: '/_authenticated/admin/integracoes'
+      path: '/admin/integracoes'
+      fullPath: '/admin/integracoes'
+      preLoaderRoute: typeof AuthenticatedAdminIntegracoesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
   }
 }
 
@@ -642,6 +662,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedPropertiesRoute: typeof AuthenticatedPropertiesRoute
   AuthenticatedTenantsRoute: typeof AuthenticatedTenantsRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+  AuthenticatedAdminIntegracoesRoute: typeof AuthenticatedAdminIntegracoesRoute
   AuthenticatedTenantAlertasRoute: typeof AuthenticatedTenantAlertasRoute
   AuthenticatedTenantContratoRoute: typeof AuthenticatedTenantContratoRoute
   AuthenticatedTenantFinanceiroRoute: typeof AuthenticatedTenantFinanceiroRoute
@@ -659,6 +680,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedPropertiesRoute: AuthenticatedPropertiesRoute,
   AuthenticatedTenantsRoute: AuthenticatedTenantsRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+  AuthenticatedAdminIntegracoesRoute: AuthenticatedAdminIntegracoesRoute,
   AuthenticatedTenantAlertasRoute: AuthenticatedTenantAlertasRoute,
   AuthenticatedTenantContratoRoute: AuthenticatedTenantContratoRoute,
   AuthenticatedTenantFinanceiroRoute: AuthenticatedTenantFinanceiroRoute,

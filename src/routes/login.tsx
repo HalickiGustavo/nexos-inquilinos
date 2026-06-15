@@ -1,8 +1,15 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { ClientOnly } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import ReCAPTCHA from "react-google-recaptcha";
+import * as ReCAPTCHAModule from "react-google-recaptcha";
+// react-google-recaptcha is CJS — under SSR the default import can resolve
+// to the module namespace { default: Component } instead of the component.
+const ReCAPTCHA: typeof import("react-google-recaptcha").default =
+  (ReCAPTCHAModule as any).default?.default ??
+  (ReCAPTCHAModule as any).default ??
+  (ReCAPTCHAModule as any);
 
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
@@ -71,7 +78,7 @@ function SignInForm() {
   const [password, setPassword] = useState("");
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const captchaRef = useRef<ReCAPTCHA | null>(null);
+  const captchaRef = useRef<import("react-google-recaptcha").default | null>(null);
   const navigate = useNavigate();
 
   const canSubmit = !!email && !!password && !!captchaToken && !busy;
@@ -112,14 +119,16 @@ function SignInForm() {
 
       <div className="flex justify-center pt-1">
         <div className="rounded-md overflow-hidden ring-1 ring-border">
-          <ReCAPTCHA
-            ref={captchaRef}
-            sitekey={RECAPTCHA_SITE_KEY}
-            theme="dark"
-            onChange={(token) => setCaptchaToken(token)}
-            onExpired={() => setCaptchaToken(null)}
-            onErrored={() => setCaptchaToken(null)}
-          />
+          <ClientOnly fallback={<div className="h-[78px] w-[304px]" />}>
+            <ReCAPTCHA
+              ref={captchaRef}
+              sitekey={RECAPTCHA_SITE_KEY}
+              theme="dark"
+              onChange={(token) => setCaptchaToken(token)}
+              onExpired={() => setCaptchaToken(null)}
+              onErrored={() => setCaptchaToken(null)}
+            />
+          </ClientOnly>
         </div>
       </div>
 

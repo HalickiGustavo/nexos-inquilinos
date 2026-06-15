@@ -1,6 +1,10 @@
 import { createFileRoute, useNavigate, useSearch, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import ReCAPTCHA from "react-google-recaptcha";
+import * as ReCAPTCHAModule from "react-google-recaptcha";
+const ReCAPTCHA: typeof import("react-google-recaptcha").default =
+  (ReCAPTCHAModule as any).default?.default ??
+  (ReCAPTCHAModule as any).default ??
+  (ReCAPTCHAModule as any);
 import { toast } from "sonner";
 import {
   Building2,
@@ -181,7 +185,7 @@ function OnboardingWizard({ role, onChangeRole }: { role: Role; onChangeRole: ()
   const [step, setStep] = useState<Step>(1);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
-  const captchaRef = useRef<ReCAPTCHA | null>(null);
+  const captchaRef = useRef<import("react-google-recaptcha").default | null>(null);
 
   const [form, setForm] = useState<FormState>({
     email: "",
@@ -345,7 +349,7 @@ function StepCredentials({
 }: {
   form: FormState;
   update: <K extends keyof FormState>(k: K, v: FormState[K]) => void;
-  captchaRef: React.MutableRefObject<ReCAPTCHA | null>;
+  captchaRef: React.MutableRefObject<import("react-google-recaptcha").default | null>;
   onNext: () => void;
 }) {
   const [showPw, setShowPw] = useState(false);

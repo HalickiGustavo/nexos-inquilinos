@@ -141,31 +141,54 @@ function DeleteButton({ id }: { id: string }) {
 function PropertyDialog({ editing, onDone }: { editing: Property | null; onDone: () => void }) {
   const { user } = useAuth();
   const invalidate = useInvalidate();
+  const e: any = editing ?? {};
   const [form, setForm] = useState({
-    nickname: editing?.nickname ?? "",
-    address: editing?.address ?? "",
-    city: editing?.city ?? "",
-    state: editing?.state ?? "",
-    zip_code: editing?.zip_code ?? "",
-    type: editing?.type ?? "apartamento",
+    nickname: e.nickname ?? "",
+    address: e.address ?? "",
+    city: e.city ?? "",
+    state: e.state ?? "",
+    zip_code: e.zip_code ?? "",
+    type: e.type ?? "apartamento",
     rent_price: editing ? String(editing.rent_price) : "0",
     condo_fee: editing ? String(editing.condo_fee) : "0",
     iptu: editing ? String(editing.iptu) : "0",
-    status: editing?.status ?? "disponivel",
-    notes: editing?.notes ?? "",
+    status: e.status ?? "disponivel",
+    notes: e.notes ?? "",
+    tipo_transacao: (e.tipo_transacao as "Aluguel" | "Venda") ?? "Aluguel",
+    valor_aluguel: e.valor_aluguel != null ? String(e.valor_aluguel) : "",
+    valor_venda: e.valor_venda != null ? String(e.valor_venda) : "",
+    publish_imovelweb: Boolean(e.publish_imovelweb),
+    publish_zap: Boolean(e.publish_zap),
+    bedrooms: String(e.bedrooms ?? 0),
+    bathrooms: String(e.bathrooms ?? 0),
+    garages: String(e.garages ?? 0),
+    area_total: e.area_total != null ? String(e.area_total) : "",
   });
 
+  const indisponivel = form.status === "alugado" || form.status === "manutencao";
+
+  // Fail-safe: when property becomes unavailable, force-off syndication switches
+  function handleStatusChange(v: string) {
+    const next = v as Property["status"];
+    setForm((f) => ({
+      ...f,
+      status: next,
+      ...(next !== "disponivel" ? { publish_imovelweb: false, publish_zap: false } : {}),
+    }));
+  }
+
   return (
-    <DialogContent className="max-w-2xl">
+    <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
       <DialogHeader>
         <DialogTitle>{editing ? "Editar imóvel" : "Novo imóvel"}</DialogTitle>
       </DialogHeader>
       <form
         className="grid grid-cols-1 sm:grid-cols-2 gap-4"
-        onSubmit={async (e) => {
-          e.preventDefault();
+        onSubmit={async (ev) => {
+          ev.preventDefault();
           if (!user) return;
-          const payload = {
+          const isSale = form.tipo_transacao === "Venda";
+          const payload: any = {
             user_id: user.id,
             nickname: form.nickname,
             address: form.address,
@@ -178,6 +201,15 @@ function PropertyDialog({ editing, onDone }: { editing: Property | null; onDone:
             iptu: parseNumber(form.iptu),
             status: form.status as Property["status"],
             notes: form.notes || null,
+            tipo_transacao: form.tipo_transacao,
+            valor_aluguel: isSale ? null : (form.valor_aluguel ? parseNumber(form.valor_aluguel) : null),
+            valor_venda: isSale ? (form.valor_venda ? parseNumber(form.valor_venda) : null) : null,
+            publish_imovelweb: indisponivel ? false : form.publish_imovelweb,
+            publish_zap: indisponivel ? false : form.publish_zap,
+            bedrooms: Number(form.bedrooms) || 0,
+            bathrooms: Number(form.bathrooms) || 0,
+            garages: Number(form.garages) || 0,
+            area_total: form.area_total ? parseNumber(form.area_total) : null,
           };
           const { error } = editing
             ? await supabase.from("properties").update(payload).eq("id", editing.id)
@@ -190,19 +222,19 @@ function PropertyDialog({ editing, onDone }: { editing: Property | null; onDone:
       >
         <div className="sm:col-span-2 space-y-2">
           <Label>Apelido / Identificação *</Label>
-          <Input required value={form.nickname} onChange={(e) => setForm({ ...form, nickname: e.target.value })} placeholder="Ex: Apto 302 - Centro" />
+          <Input required value={form.nickname} onChange={(ev) => setForm({ ...form, nickname: ev.target.value })} placeholder="Ex: Apto 302 - Centro" />
         </div>
         <div className="sm:col-span-2 space-y-2">
           <Label>Endereço completo *</Label>
-          <Input required value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
+          <Input required value={form.address} onChange={(ev) => setForm({ ...form, address: ev.target.value })} />
         </div>
         <div className="space-y-2">
           <Label>Cidade</Label>
-          <Input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} />
+          <Input value={form.city} onChange={(ev) => setForm({ ...form, city: ev.target.value })} />
         </div>
         <div className="grid grid-cols-2 gap-2">
-          <div className="space-y-2"><Label>Estado</Label><Input value={form.state} onChange={(e) => setForm({ ...form, state: e.target.value.toUpperCase().slice(0, 2) })} maxLength={2} placeholder="PR" /></div>
-          <div className="space-y-2"><Label>CEP</Label><Input value={form.zip_code} onChange={(e) => setForm({ ...form, zip_code: maskCEP(e.target.value) })} placeholder="00000-000" inputMode="numeric" /></div>
+          <div className="space-y-2"><Label>Estado</Label><Input value={form.state} onChange={(ev) => setForm({ ...form, state: ev.target.value.toUpperCase().slice(0, 2) })} maxLength={2} placeholder="PR" /></div>
+          <div className="space-y-2"><Label>CEP</Label><Input value={form.zip_code} onChange={(ev) => setForm({ ...form, zip_code: maskCEP(ev.target.value) })} placeholder="00000-000" inputMode="numeric" /></div>
         </div>
         <div className="space-y-2">
           <Label>Tipo</Label>
@@ -219,7 +251,7 @@ function PropertyDialog({ editing, onDone }: { editing: Property | null; onDone:
         </div>
         <div className="space-y-2">
           <Label>Status</Label>
-          <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v as Property["status"] })}>
+          <Select value={form.status} onValueChange={handleStatusChange}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="disponivel">Disponível</SelectItem>
@@ -228,10 +260,82 @@ function PropertyDialog({ editing, onDone }: { editing: Property | null; onDone:
             </SelectContent>
           </Select>
         </div>
-        <div className="space-y-2"><Label>Aluguel (R$)</Label><Input type="number" step="0.01" value={form.rent_price} onChange={(e) => setForm({ ...form, rent_price: e.target.value })} /></div>
-        <div className="space-y-2"><Label>Condomínio (R$)</Label><Input type="number" step="0.01" value={form.condo_fee} onChange={(e) => setForm({ ...form, condo_fee: e.target.value })} /></div>
-        <div className="space-y-2"><Label>IPTU (R$)</Label><Input type="number" step="0.01" value={form.iptu} onChange={(e) => setForm({ ...form, iptu: e.target.value })} /></div>
-        <div className="sm:col-span-2 space-y-2"><Label>Observações</Label><Textarea value={form.notes ?? ""} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></div>
+
+        {/* Tipo de negócio reativo */}
+        <div className="space-y-2">
+          <Label>Tipo de Negócio</Label>
+          <Select value={form.tipo_transacao} onValueChange={(v) => setForm({ ...form, tipo_transacao: v as "Aluguel" | "Venda" })}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Aluguel">Aluguel</SelectItem>
+              <SelectItem value="Venda">Venda</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        {form.tipo_transacao === "Aluguel" ? (
+          <div className="space-y-2">
+            <Label>Valor do Aluguel (R$)</Label>
+            <Input type="number" step="0.01" value={form.valor_aluguel} onChange={(ev) => setForm({ ...form, valor_aluguel: ev.target.value })} placeholder="0,00" />
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <Label>Valor de Venda (R$)</Label>
+            <Input type="number" step="0.01" value={form.valor_venda} onChange={(ev) => setForm({ ...form, valor_venda: ev.target.value })} placeholder="0,00" />
+          </div>
+        )}
+
+        <div className="space-y-2"><Label>Aluguel base (R$)</Label><Input type="number" step="0.01" value={form.rent_price} onChange={(ev) => setForm({ ...form, rent_price: ev.target.value })} /></div>
+        <div className="space-y-2"><Label>Condomínio (R$)</Label><Input type="number" step="0.01" value={form.condo_fee} onChange={(ev) => setForm({ ...form, condo_fee: ev.target.value })} /></div>
+        <div className="space-y-2"><Label>IPTU (R$)</Label><Input type="number" step="0.01" value={form.iptu} onChange={(ev) => setForm({ ...form, iptu: ev.target.value })} /></div>
+        <div className="space-y-2"><Label>Área total (m²)</Label><Input type="number" step="0.01" value={form.area_total} onChange={(ev) => setForm({ ...form, area_total: ev.target.value })} /></div>
+        <div className="grid grid-cols-3 gap-2 sm:col-span-2">
+          <div className="space-y-2"><Label>Quartos</Label><Input type="number" min={0} value={form.bedrooms} onChange={(ev) => setForm({ ...form, bedrooms: ev.target.value })} /></div>
+          <div className="space-y-2"><Label>Banheiros</Label><Input type="number" min={0} value={form.bathrooms} onChange={(ev) => setForm({ ...form, bathrooms: ev.target.value })} /></div>
+          <div className="space-y-2"><Label>Vagas</Label><Input type="number" min={0} value={form.garages} onChange={(ev) => setForm({ ...form, garages: ev.target.value })} /></div>
+        </div>
+
+        <div className="sm:col-span-2 space-y-2"><Label>Observações / Descrição</Label><Textarea value={form.notes ?? ""} onChange={(ev) => setForm({ ...form, notes: ev.target.value })} /></div>
+
+        {/* Sincronização com Portais */}
+        <div className="sm:col-span-2 space-y-3 rounded-lg border bg-card p-4">
+          <div>
+            <h4 className="font-semibold text-sm">Sincronização com Portais</h4>
+            <p className="text-xs text-muted-foreground">Controle a distribuição automática deste imóvel para os portais imobiliários.</p>
+          </div>
+
+          {indisponivel && (
+            <Alert className="border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
+              <CheckCircle2 className="size-4 text-emerald-600 dark:text-emerald-400" />
+              <AlertDescription className="text-emerald-700 dark:text-emerald-300">
+                Imóvel indisponível. Os anúncios correspondentes serão limpos e removidos dos portais na próxima sincronização automática.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          <div className="flex items-center justify-between gap-3 rounded-md border p-3">
+            <div>
+              <p className="text-sm font-medium">Imovelweb</p>
+              <p className="text-xs text-muted-foreground">Publicar este imóvel no feed Imovelweb.</p>
+            </div>
+            <Switch
+              checked={form.publish_imovelweb}
+              disabled={indisponivel}
+              onCheckedChange={(v) => setForm({ ...form, publish_imovelweb: v })}
+            />
+          </div>
+          <div className="flex items-center justify-between gap-3 rounded-md border p-3">
+            <div>
+              <p className="text-sm font-medium">Grupo OLX (Zap / VivaReal)</p>
+              <p className="text-xs text-muted-foreground">Distribuir automaticamente nos portais Zap e VivaReal.</p>
+            </div>
+            <Switch
+              checked={form.publish_zap}
+              disabled={indisponivel}
+              onCheckedChange={(v) => setForm({ ...form, publish_zap: v })}
+            />
+          </div>
+        </div>
+
         <DialogFooter className="sm:col-span-2">
           <Button type="submit">{editing ? "Salvar alterações" : "Cadastrar imóvel"}</Button>
         </DialogFooter>

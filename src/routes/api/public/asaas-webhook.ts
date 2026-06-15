@@ -46,23 +46,21 @@ export const Route = createFileRoute("/api/public/asaas-webhook")({
           (typeof payment.externalMetadata?.installmentId === "string" && payment.externalMetadata.installmentId) ||
           null;
 
-        const matchInstallment = () => {
-          const q = supabaseAdmin.from("installments");
-          return externalRef
-            ? q.eq("id", externalRef)
-            : q.eq("asaas_payment_id", payment.id);
+        const applyUpdate = (patch: Record<string, unknown>) => {
+          const q = supabaseAdmin.from("installments").update(patch as any);
+          return externalRef ? q.eq("id", externalRef) : q.eq("asaas_payment_id", payment.id);
         };
 
         if (paid) {
           const paidValue = Number(payment.netValue ?? payment.value ?? 0);
-          await matchInstallment().update({
+          await applyUpdate({
             status: "pago",
             paid_amount: paidValue,
             payment_date: payment.paymentDate ?? payment.clientPaymentDate ?? new Date().toISOString(),
             asaas_payment_id: payment.id,
           });
         } else if (refunded) {
-          await matchInstallment().update({ status: "pendente", paid_amount: 0, payment_date: null });
+          await applyUpdate({ status: "pendente", paid_amount: 0, payment_date: null });
         } else if (overdue) {
           // status stays 'pendente'; UI calculates 'atrasado' via due_date
         }

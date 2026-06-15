@@ -209,6 +209,9 @@ function ManagerIntegracao() {
           </form>
         </CardContent>
       </Card>
+
+      {/* Conta bancária + KYC pass-through */}
+      <AsaasBankAndKycPanel account={account as any} onChanged={() => refetch()} />
     </div>
   );
 }

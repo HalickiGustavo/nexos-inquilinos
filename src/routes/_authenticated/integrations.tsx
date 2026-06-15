@@ -117,6 +117,9 @@ function IntegrationsPage() {
                 payload.incomeValue = Number(form.incomeValue);
                 const res = await submit({ data: payload });
                 toast.success("Subconta criada!");
+                if (res.bankWarning) {
+                  toast.warning(`Conta bancária: ${res.bankWarning}`);
+                }
                 if (res.onboardingUrl) {
                   toast.info("Complete o onboarding KYC no Asaas.");
                 }

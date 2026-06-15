@@ -45,7 +45,7 @@ export const getAsaasAccount = createServerFn({ method: "GET" })
     const { supabase } = context;
     const { data, error } = await supabase
       .from("asaas_accounts")
-      .select("id, user_id, asaas_account_id, wallet_id, status, onboarding_url, created_at, updated_at")
+      .select("id, user_id, asaas_account_id, wallet_id, status, onboarding_url, kyc_status, kyc_reference_id, bank_code, bank_agency, bank_account, bank_account_digit, bank_account_type, auto_transfer_enabled, created_at, updated_at")
       .maybeSingle();
     if (error) throw new Error(error.message);
     return { account: data };

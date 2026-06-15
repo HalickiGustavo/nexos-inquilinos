@@ -26,17 +26,25 @@ export const Route = createFileRoute("/_manager/manager/integracao")({
 
 type BankInfo = {
   legalName: string;
+  email: string;
   document: string;
   phone: string;
-  bank: string;
+  incomeValue: string;
+  postalCode: string;
+  province: string;
+  address: string;
+  addressNumber: string;
+  bankCode: string;
   agency: string;
   account: string;
-  accountType: "corrente" | "poupanca" | "";
+  accountDigit: string;
+  accountType: "CONTA_CORRENTE" | "CONTA_POUPANCA";
 };
 
 const emptyBank: BankInfo = {
-  legalName: "", document: "", phone: "",
-  bank: "", agency: "", account: "", accountType: "",
+  legalName: "", email: "", document: "", phone: "", incomeValue: "",
+  postalCode: "", province: "", address: "", addressNumber: "",
+  bankCode: "", agency: "", account: "", accountDigit: "", accountType: "CONTA_CORRENTE",
 };
 
 function ManagerIntegracao() {
@@ -57,8 +65,6 @@ function ManagerIntegracao() {
   const [bank, setBank] = useState<BankInfo>(emptyBank);
   const [saving, setSaving] = useState(false);
 
-  // No client-side persistence of bank/PII data.
-
   const status = !account
     ? { key: "pendente", label: "Pendente de Configuração", className: "bg-zinc-200 text-zinc-700 border-zinc-300 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700", icon: Clock }
     : account.status === "active"
@@ -71,15 +77,26 @@ function ManagerIntegracao() {
     setSaving(true);
     try {
       if (!account) {
-        await submit({
+        const res = await submit({
           data: {
             name: bank.legalName,
-            email: "",
+            email: bank.email,
             cpfCnpj: bank.document,
             mobilePhone: bank.phone,
-          } as any,
+            incomeValue: Number(bank.incomeValue),
+            address: bank.address,
+            addressNumber: bank.addressNumber,
+            province: bank.province,
+            postalCode: bank.postalCode,
+            bankCode: bank.bankCode,
+            bankAgency: bank.agency,
+            bankAccount: bank.account,
+            bankAccountDigit: bank.accountDigit,
+            bankAccountType: bank.accountType,
+          },
         });
-        toast.success("Dados enviados com sucesso! Sua subconta está sendo criada.");
+        toast.success("Subconta criada com sucesso!");
+        if (res.bankWarning) toast.warning(`Conta bancária: ${res.bankWarning}`);
         await refetch();
         setBank(emptyBank);
       } else {

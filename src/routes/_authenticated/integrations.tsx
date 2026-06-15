@@ -172,6 +172,9 @@ function IntegrationsPage() {
         )}
       </Card>
 
+      <AsaasBankAndKycPanel account={account as any} onChanged={() => refetch()} />
+
+
       <Card className="p-6 bg-muted/30">
         <h3 className="font-semibold mb-2">Configuração do Webhook</h3>
         <p className="text-sm text-muted-foreground mb-3">

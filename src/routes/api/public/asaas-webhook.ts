@@ -38,21 +38,31 @@ export const Route = createFileRoute("/api/public/asaas-webhook")({
         const refunded = ["PAYMENT_REFUNDED", "PAYMENT_REFUND_IN_PROGRESS", "PAYMENT_DELETED"].includes(event);
         const overdue = event === "PAYMENT_OVERDUE";
 
+        // Modelo B: cobranças são emitidas em diferentes subcontas. Usamos o
+        // externalReference (= installment.id) como identificador canônico,
+        // independente de qual subconta disparou o evento. Fallback: asaas_payment_id.
+        const externalRef: string | null =
+          (typeof payment.externalReference === "string" && payment.externalReference) ||
+          (typeof payment.externalMetadata?.installmentId === "string" && payment.externalMetadata.installmentId) ||
+          null;
+
+        const matchInstallment = () => {
+          const q = supabaseAdmin.from("installments");
+          return externalRef
+            ? q.eq("id", externalRef)
+            : q.eq("asaas_payment_id", payment.id);
+        };
+
         if (paid) {
           const paidValue = Number(payment.netValue ?? payment.value ?? 0);
-          await supabaseAdmin
-            .from("installments")
-            .update({
-              status: "pago",
-              paid_amount: paidValue,
-              payment_date: payment.paymentDate ?? payment.clientPaymentDate ?? new Date().toISOString(),
-            })
-            .eq("asaas_payment_id", payment.id);
+          await matchInstallment().update({
+            status: "pago",
+            paid_amount: paidValue,
+            payment_date: payment.paymentDate ?? payment.clientPaymentDate ?? new Date().toISOString(),
+            asaas_payment_id: payment.id,
+          });
         } else if (refunded) {
-          await supabaseAdmin
-            .from("installments")
-            .update({ status: "pendente", paid_amount: 0, payment_date: null })
-            .eq("asaas_payment_id", payment.id);
+          await matchInstallment().update({ status: "pendente", paid_amount: 0, payment_date: null });
         } else if (overdue) {
           // status stays 'pendente'; UI calculates 'atrasado' via due_date
         }

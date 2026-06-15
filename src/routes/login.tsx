@@ -1,8 +1,15 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { ClientOnly } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import ReCAPTCHA from "react-google-recaptcha";
+import * as ReCAPTCHAModule from "react-google-recaptcha";
+// react-google-recaptcha is CJS — under SSR the default import can resolve
+// to the module namespace { default: Component } instead of the component.
+const ReCAPTCHA: typeof import("react-google-recaptcha").default =
+  (ReCAPTCHAModule as any).default?.default ??
+  (ReCAPTCHAModule as any).default ??
+  (ReCAPTCHAModule as any);
 
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";

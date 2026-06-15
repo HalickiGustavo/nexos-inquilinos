@@ -23,7 +23,11 @@ function AdminIntegracoesPage() {
     enabled: !!user,
     queryFn: async () => {
       const [profileRes, propsRes] = await Promise.all([
-        supabase.from("profiles").select("integration_token, full_name").eq("id", user!.id).maybeSingle(),
+        supabase
+          .from("profiles")
+          .select("integration_token, full_name, integration_imovelweb_connected, integration_zap_connected")
+          .eq("id", user!.id)
+          .maybeSingle(),
         supabase
           .from("properties")
           .select("id, publish_imovelweb, publish_zap, status")
@@ -36,12 +40,22 @@ function AdminIntegracoesPage() {
       return {
         token: profileRes.data?.integration_token as string | undefined,
         agency: profileRes.data?.full_name as string | undefined,
+        connectedImw: Boolean(profileRes.data?.integration_imovelweb_connected),
+        connectedZap: Boolean(profileRes.data?.integration_zap_connected),
         activeImw,
         activeZap,
         total: props.length,
       };
     },
   });
+
+  async function toggleConnection(field: "integration_imovelweb_connected" | "integration_zap_connected", value: boolean) {
+    if (!user) return;
+    const { error } = await supabase.from("profiles").update({ [field]: value }).eq("id", user.id);
+    if (error) return toast.error(error.message);
+    toast.success(value ? "Portal conectado com sucesso!" : "Portal desconectado.");
+    refetch();
+  }
 
   const supabaseUrl = (import.meta as any).env?.VITE_SUPABASE_URL ?? "";
   const feedUrl = data?.token ? `${supabaseUrl}/functions/v1/portal-xml-feed?token=${data.token}` : "";

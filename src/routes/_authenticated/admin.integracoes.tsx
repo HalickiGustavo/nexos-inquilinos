@@ -168,8 +168,8 @@ function FeedUrlTrack({ url }: { url: string }) {
 }
 
 function PortalCard({
-  name, description, active, feedUrl,
-}: { name: string; description: string; active: boolean; feedUrl: string }) {
+  name, description, active, connected, feedUrl, onToggle,
+}: { name: string; description: string; active: boolean; connected: boolean; feedUrl: string; onToggle: (v: boolean) => void }) {
   return (
     <Card className="p-5 space-y-3">
       <div className="flex items-start justify-between gap-3">
@@ -182,19 +182,37 @@ function PortalCard({
             <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
           </div>
         </div>
-        {active ? (
+        {!connected ? (
+          <Badge variant="secondary">Não conectado</Badge>
+        ) : active ? (
           <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/40">
             Sincronização Ativa
           </Badge>
         ) : (
-          <Badge variant="secondary">Inativa</Badge>
+          <Badge className="bg-primary/10 text-primary border border-primary/30">Conectado</Badge>
         )}
       </div>
-      <Button asChild variant="outline" size="sm" disabled={!feedUrl} className="w-full">
-        <a href={feedUrl || "#"} target="_blank" rel="noreferrer">
-          Visualizar feed XML <ExternalLink className="size-3.5 ml-2" />
-        </a>
-      </Button>
+      <div className="flex flex-col sm:flex-row gap-2">
+        {connected ? (
+          <Button variant="outline" size="sm" className="flex-1" onClick={() => onToggle(false)}>
+            Desconectar
+          </Button>
+        ) : (
+          <Button size="sm" className="flex-1" onClick={() => onToggle(true)}>
+            Conectar portal
+          </Button>
+        )}
+        <Button asChild variant="outline" size="sm" disabled={!feedUrl} className="flex-1">
+          <a href={feedUrl || "#"} target="_blank" rel="noreferrer">
+            Visualizar feed <ExternalLink className="size-3.5 ml-2" />
+          </a>
+        </Button>
+      </div>
+      {!connected && (
+        <p className="text-[11px] text-muted-foreground">
+          Conecte-se antes de habilitar a sincronização em qualquer imóvel.
+        </p>
+      )}
     </Card>
   );
 }

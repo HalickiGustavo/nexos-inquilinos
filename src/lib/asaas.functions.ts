@@ -808,3 +808,155 @@ export const ensureTenantPixCharge = createServerFn({ method: "POST" })
       boletoUrl: paymentInfo.bankSlipUrl ?? paymentInfo.invoiceUrl ?? null,
     };
   });
+
+// ===== Configure landlord settlement bank account + auto-transfer =====
+const bankAccountInput = z.object({
+  bankCode: z.string().min(1).max(10),
+  agency: z.string().min(1).max(10),
+  account: z.string().min(1).max(20),
+  accountDigit: z.string().min(1).max(3),
+  accountType: z.enum(["CONTA_CORRENTE", "CONTA_POUPANCA"]),
+  enableAutoTransfer: z.boolean().default(true),
+});
+
+export const linkAsaasBankAccount = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => bankAccountInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const { userId } = context;
+    const { asaasFetch } = await import("./asaas.server");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const acc = await supabaseAdmin
+      .from("asaas_accounts")
+      .select("api_key, asaas_account_id")
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (acc.error) throw new Error(acc.error.message);
+    const apiKey = acc.data?.api_key;
+    if (!apiKey) throw new Error("Subconta Asaas ainda não foi criada. Conclua o onboarding primeiro.");
+
+    // 1) Vincular conta bancária de liquidação
+    await asaasFetch<any>("/bankAccounts", {
+      method: "POST",
+      apiKey,
+      body: JSON.stringify({
+        bank: { code: data.bankCode },
+        agency: data.agency.replace(/\D/g, ""),
+        account: data.account.replace(/\D/g, ""),
+        accountDigit: data.accountDigit.replace(/\D/g, ""),
+        bankAccountType: data.accountType,
+      }),
+    });
+
+    // 2) Configurar transferência automática
+    if (data.enableAutoTransfer) {
+      try {
+        await asaasFetch<any>("/accountConfiguration", {
+          method: "POST",
+          apiKey,
+          body: JSON.stringify({
+            autoTransferEnabled: true,
+            autoTransferFrequency: "DAILY",
+          }),
+        });
+      } catch (e: any) {
+        // Sandbox pode não suportar — não derrubar o fluxo, só logar
+        console.warn("[Asaas] accountConfiguration falhou:", e?.message);
+      }
+    }
+
+    const upd = await supabaseAdmin
+      .from("asaas_accounts")
+      .update({
+        bank_code: data.bankCode,
+        bank_agency: data.agency,
+        bank_account: data.account,
+        bank_account_digit: data.accountDigit,
+        bank_account_type: data.accountType,
+        auto_transfer_enabled: data.enableAutoTransfer,
+      })
+      .eq("user_id", userId);
+    if (upd.error) throw new Error(upd.error.message);
+
+    return { ok: true };
+  });
+
+// ===== KYC document pass-through upload (NEVER persisted locally) =====
+// Aceita base64 do arquivo, transcodifica em memória e faz stream para o Asaas.
+// O arquivo NÃO é salvo em disco, Storage, nem em nenhuma tabela.
+const kycInput = z.object({
+  documentType: z.enum(["IDENTIFICATION", "ADDRESS", "SELFIE", "ENTREPRENEUR_DOCUMENT"]),
+  filename: z.string().min(1).max(160),
+  mimeType: z.enum(["image/jpeg", "image/png", "image/jpg", "application/pdf"]),
+  base64: z.string().min(10).max(8_500_000), // ~6MB binário após decode
+});
+
+export const uploadAsaasKycDocument = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => kycInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const { userId } = context;
+    const { ASAAS_BASE_URL } = await import("./asaas.server");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const acc = await supabaseAdmin
+      .from("asaas_accounts")
+      .select("api_key")
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (acc.error) throw new Error(acc.error.message);
+    const apiKey = acc.data?.api_key;
+    if (!apiKey) throw new Error("Subconta Asaas ainda não foi criada. Conclua o onboarding primeiro.");
+
+    // Decodifica base64 em memória → Uint8Array (sem tocar em disco/Storage).
+    let bytes: Uint8Array;
+    try {
+      const bin = atob(data.base64);
+      bytes = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    } catch {
+      throw new Error("Arquivo inválido: falha ao decodificar base64.");
+    }
+    // Limite defensivo de 5MB (em bytes decodificados)
+    if (bytes.byteLength > 5 * 1024 * 1024) {
+      throw new Error("Arquivo excede 5MB.");
+    }
+
+    // Monta multipart e faz pass-through direto para o Asaas
+    const form = new FormData();
+    form.append("type", data.documentType);
+    form.append("documentFile", new Blob([bytes], { type: data.mimeType }), data.filename);
+
+    const res = await fetch(`${ASAAS_BASE_URL}/myAccount/documents`, {
+      method: "POST",
+      headers: { access_token: apiKey, "User-Agent": "Nexo/1.0" },
+      body: form,
+    });
+    // Liberar buffer imediatamente
+    // @ts-expect-error - GC hint
+    bytes = undefined;
+
+    const text = await res.text();
+    const body = text ? (() => { try { return JSON.parse(text); } catch { return text; } })() : null;
+    if (!res.ok) {
+      const msg =
+        (body && typeof body === "object" && Array.isArray((body as any).errors)
+          ? (body as any).errors.map((e: any) => e.description).join("; ")
+          : null) || `Asaas ${res.status}`;
+      throw new Error(msg);
+    }
+
+    const referenceId =
+      (body && typeof body === "object" && ((body as any).id ?? (body as any).reference)) || null;
+
+    await supabaseAdmin
+      .from("asaas_accounts")
+      .update({
+        kyc_status: "EM_ANALISE",
+        kyc_reference_id: referenceId ?? null,
+      })
+      .eq("user_id", userId);
+
+    return { ok: true, referenceId };
+  });

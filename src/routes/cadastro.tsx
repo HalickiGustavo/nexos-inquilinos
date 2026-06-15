@@ -41,7 +41,7 @@ import {
   scorePassword,
 } from "@/lib/br-validators";
 
-const RECAPTCHA_SITE_KEY = "6LfxdhktAAAAADHvwxq3_auLwuUSO3oNrDUlUkDx";
+const RECAPTCHA_SITE_KEY = "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI";
 
 type Role = "imobiliaria" | "proprietario";
 

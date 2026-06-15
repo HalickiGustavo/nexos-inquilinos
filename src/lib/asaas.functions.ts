@@ -357,11 +357,12 @@ export const updateAsaasChargeFee = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => updateInput.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    const { asaasFetch, getNexoFee, getNexoWalletId } = await import("./asaas.server");
+    const { asaasFetch, getNexoFee } = await import("./asaas.server");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const inst = await supabase
       .from("installments")
-      .select("id, amount, extra_fees, asaas_payment_id, due_date, status, contract:contracts(late_fee_percent, daily_interest_percent, payout_wallet_id)")
+      .select("id, amount, extra_fees, asaas_payment_id, due_date, status, contract:contracts(id, user_id, late_fee_percent, daily_interest_percent)")
       .eq("id", data.installmentId)
       .maybeSingle();
     if (inst.error) throw new Error(inst.error.message);
@@ -369,75 +370,65 @@ export const updateAsaasChargeFee = createServerFn({ method: "POST" })
     if (inst.data.status === "pago") throw new Error("Parcela já foi paga.");
 
     const contract = (inst.data as any).contract;
-    const contractPayoutWalletId: string | null = contract?.payout_wallet_id ?? null;
+    const landlordUserId: string = contract?.user_id ?? userId;
+    const landlord = await getLandlordAsaasCredentials(supabaseAdmin, landlordUserId);
+    const masterWalletId = await getMasterPlatformWalletId(supabaseAdmin);
 
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const acc = await supabaseAdmin
-      .from("asaas_accounts")
-      .select("api_key, wallet_id")
-      .eq("user_id", userId)
-      .maybeSingle();
-    const nexoWallet = getNexoWalletId();
-    const payoutWalletId: string | null = contractPayoutWalletId || acc.data?.wallet_id || null;
-    const shouldSplitToOwner = Boolean(payoutWalletId && payoutWalletId !== nexoWallet);
-    const ownerApiKey = shouldSplitToOwner ? undefined : (acc.data?.api_key || undefined);
+    try {
+      const { data: setting } = await (supabaseAdmin as any)
+        .from("platform_settings")
+        .select("value")
+        .eq("key", "nexo_boleto_fee")
+        .maybeSingle();
+      const nexoFee = setting?.value ? Number(setting.value) : getNexoFee();
 
-    const { data: setting } = await (supabaseAdmin as any)
-      .from("platform_settings")
-      .select("value")
-      .eq("key", "nexo_boleto_fee")
-      .maybeSingle();
-    const nexoFee = setting?.value ? Number(setting.value) : getNexoFee();
-    if (!payoutWalletId && (!nexoWallet || nexoFee <= 0)) throw new Error("Taxa NEXO não configurada.");
+      const baseValue = Number(inst.data.amount) + Number(inst.data.extra_fees ?? 0);
+      const todayStr = new Date().toISOString().slice(0, 10);
+      const originalDue = inst.data.due_date as string;
+      const isOverdue = originalDue < todayStr;
+      const daysLate = isOverdue
+        ? Math.max(0, Math.floor((Date.parse(todayStr) - Date.parse(originalDue)) / 86400000))
+        : 0;
+      const finePct = Number(contract?.late_fee_percent ?? 0);
+      const dailyPct = Number(contract?.daily_interest_percent ?? 0) / 30;
+      const fine = isOverdue ? +(baseValue * finePct / 100).toFixed(2) : 0;
+      const interest = isOverdue ? +(baseValue * dailyPct / 100 * daysLate).toFixed(2) : 0;
+      const lateCharges = +(fine + interest).toFixed(2);
+      const value = +(baseValue + lateCharges + nexoFee).toFixed(2);
+      const effectiveDueDate = isOverdue ? todayStr : originalDue;
 
-    const baseValue = Number(inst.data.amount) + Number(inst.data.extra_fees ?? 0);
+      const body: Record<string, unknown> = {
+        value,
+        dueDate: effectiveDueDate,
+        externalReference: inst.data.id,
+        externalMetadata: {
+          installmentId: inst.data.id,
+          contractId: contract?.id ?? null,
+          landlordUserId,
+        },
+      };
+      const split = buildPlatformSplit({ masterWalletId, nexoFee, totalValue: value });
+      if (split.length > 0) body.split = split;
 
-    const todayStr = new Date().toISOString().slice(0, 10);
-    const originalDue = inst.data.due_date as string;
-    const isOverdue = originalDue < todayStr;
-    const daysLate = isOverdue
-      ? Math.max(0, Math.floor((Date.parse(todayStr) - Date.parse(originalDue)) / 86400000))
-      : 0;
-    const finePct = Number(contract?.late_fee_percent ?? 0);
-    const dailyPct = Number(contract?.daily_interest_percent ?? 0);
-    const fine = isOverdue ? +(baseValue * finePct / 100).toFixed(2) : 0;
-    const interest = isOverdue ? +(baseValue * dailyPct / 100 * daysLate).toFixed(2) : 0;
-    const lateCharges = +(fine + interest).toFixed(2);
-    // Taxa NEXO sempre somada ao aluguel
-    const value = +(baseValue + lateCharges + nexoFee).toFixed(2);
-    const effectiveDueDate = isOverdue ? todayStr : originalDue;
+      const payment = await asaasFetch<any>(`/payments/${inst.data.asaas_payment_id}`, {
+        method: "PUT",
+        apiKey: landlord.apiKey,
+        body: JSON.stringify(body),
+      });
 
-    const body: Record<string, unknown> = {
-      value,
-      dueDate: effectiveDueDate,
-    };
-    const splitEntries = buildSplitEntries({
-      ownerWalletId: shouldSplitToOwner ? payoutWalletId : null,
-      ownerShare: +(baseValue + lateCharges).toFixed(2),
-      nexoWalletId: nexoWallet,
-      nexoFee,
-      totalValue: value,
-      paidViaOwnerKey: Boolean(ownerApiKey),
-    });
-    if (splitEntries.length > 0) body.split = splitEntries;
+      await supabaseAdmin
+        .from("installments")
+        .update({
+          boleto_url: payment.bankSlipUrl ?? payment.invoiceUrl ?? null,
+          barcode: payment.identificationField ?? null,
+          late_charges: lateCharges,
+        })
+        .eq("id", inst.data.id);
 
-
-    const payment = await asaasFetch<any>(`/payments/${inst.data.asaas_payment_id}`, {
-      method: "PUT",
-      apiKey: ownerApiKey,
-      body: JSON.stringify(body),
-    });
-
-    await supabaseAdmin
-      .from("installments")
-      .update({
-        boleto_url: payment.bankSlipUrl ?? payment.invoiceUrl ?? null,
-        barcode: payment.identificationField ?? null,
-        late_charges: lateCharges,
-      })
-      .eq("id", inst.data.id);
-
-    return { ok: true, value, lateCharges };
+      return { ok: true, value, lateCharges };
+    } catch (e: any) {
+      throw mapAsaasError(e);
+    }
   });
 
 // ===== Simulate sandbox payment through credit card gateway (triggers split) =====

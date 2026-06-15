@@ -160,8 +160,15 @@ function TenantManutencoes() {
                     )}
                   </div>
                 )}
+                {(!current.budget_status ||
+                  current.budget_status === "nenhum" ||
+                  current.budget_status === "recusado" ||
+                  current.budget_status === "pendente") && (
+                  <TenantBudgetButton item={current} />
+                )}
               </Card>
               <MaintenanceChat maintenanceId={current.id} />
+
             </div>
           ) : (
             <Card className="hidden md:flex flex-col items-center justify-center text-center p-10 min-h-[400px] border-dashed">

@@ -439,18 +439,18 @@ export const simulateAsaasPayment = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => simulateInput.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    const { asaasFetch, getNexoFee, getNexoWalletId } = await import("./asaas.server");
+    const { asaasFetch, getNexoFee } = await import("./asaas.server");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const inst = await supabase
       .from("installments")
-      .select("id, amount, extra_fees, late_charges, asaas_payment_id, due_date, status, contract:contracts(payout_wallet_id, tenant:tenants(full_name, email, document, phone))")
+      .select("id, amount, extra_fees, late_charges, asaas_payment_id, due_date, status, contract:contracts(id, user_id, tenant:tenants(full_name, email, document, phone, postal_code))")
       .eq("id", data.installmentId)
       .maybeSingle();
     if (inst.error) throw new Error(inst.error.message);
     if (!inst.data) throw new Error("Parcela não encontrada");
     if (inst.data.status === "pago") throw new Error("Parcela já está paga.");
 
-    // Auto-gera a cobrança no Asaas caso ainda não exista.
     if (!inst.data.asaas_payment_id) {
       await generateAsaasCharge({ data: { installmentId: data.installmentId } });
       const refreshed = await supabase
@@ -466,94 +466,77 @@ export const simulateAsaasPayment = createServerFn({ method: "POST" })
 
     const contract = (inst.data as any).contract;
     const tenant = contract?.tenant;
-    const contractPayoutWalletId: string | null = contract?.payout_wallet_id ?? null;
+    const landlordUserId: string = contract?.user_id ?? userId;
+    const landlord = await getLandlordAsaasCredentials(supabaseAdmin, landlordUserId);
+    const masterWalletId = await getMasterPlatformWalletId(supabaseAdmin);
 
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const acc = await supabaseAdmin
-      .from("asaas_accounts")
-      .select("api_key, wallet_id")
-      .eq("user_id", userId)
-      .maybeSingle();
-    const nexoWallet = getNexoWalletId();
-    const payoutWalletId: string | null = contractPayoutWalletId || acc.data?.wallet_id || null;
-    const shouldSplitToOwner = Boolean(payoutWalletId && payoutWalletId !== nexoWallet);
-    const ownerApiKey = shouldSplitToOwner ? undefined : (acc.data?.api_key || undefined);
+    try {
+      const current = await asaasFetch<any>(`/payments/${inst.data.asaas_payment_id}`, {
+        method: "GET",
+        apiKey: landlord.apiKey,
+      });
+      const value = Number(current.value);
+      const { data: setting } = await (supabaseAdmin as any)
+        .from("platform_settings")
+        .select("value")
+        .eq("key", "nexo_boleto_fee")
+        .maybeSingle();
+      const nexoFee = setting?.value ? Number(setting.value) : getNexoFee();
+      const paymentUpdate: Record<string, unknown> = { billingType: "CREDIT_CARD" };
+      const split = buildPlatformSplit({ masterWalletId, nexoFee, totalValue: value });
+      if (split.length > 0) paymentUpdate.split = split;
 
-    // Muda billingType para CREDIT_CARD para permitir pagamento via cartão sandbox.
-    // Esse fluxo passa pelo gateway → executa split (Azure recebe sua parte,
-    // NEXO recebe a taxa). Diferente de receiveInCash, que NÃO dispara split.
-    const current = await asaasFetch<any>(`/payments/${inst.data.asaas_payment_id}`, {
-      method: "GET",
-      apiKey: ownerApiKey,
-    });
-    const value = Number(current.value);
-    const { data: setting } = await (supabaseAdmin as any)
-      .from("platform_settings")
-      .select("value")
-      .eq("key", "nexo_boleto_fee")
-      .maybeSingle();
-    const nexoFee = setting?.value ? Number(setting.value) : getNexoFee();
-    const paymentUpdate: Record<string, unknown> = { billingType: "CREDIT_CARD" };
-    const simSplit = buildSplitEntries({
-      ownerWalletId: shouldSplitToOwner ? payoutWalletId : null,
-      ownerShare: +(value - nexoFee).toFixed(2),
-      nexoWalletId: nexoWallet,
-      nexoFee,
-      totalValue: value,
-      paidViaOwnerKey: Boolean(ownerApiKey),
-    });
-    if (simSplit.length > 0) paymentUpdate.split = simSplit;
+      await asaasFetch<any>(`/payments/${inst.data.asaas_payment_id}`, {
+        method: "PUT",
+        apiKey: landlord.apiKey,
+        body: JSON.stringify(paymentUpdate),
+      });
 
-    await asaasFetch<any>(`/payments/${inst.data.asaas_payment_id}`, {
-      method: "PUT",
-      apiKey: ownerApiKey,
-      body: JSON.stringify(paymentUpdate),
-    });
+      if (!tenant?.full_name || !tenant?.document) {
+        throw new Error("Inquilino sem nome ou CPF/CNPJ — não é possível simular cartão.");
+      }
 
-    if (!tenant?.full_name || !tenant?.document) {
-      throw new Error("Inquilino sem nome ou CPF/CNPJ — não é possível simular cartão.");
+      const cleanDoc = String(tenant.document).replace(/\D/g, "");
+      const cleanPhone = tenant.phone ? String(tenant.phone).replace(/\D/g, "") : "11999999999";
+      const cleanCep = tenant.postal_code ? String(tenant.postal_code).replace(/\D/g, "") : "01001000";
+
+      const ccPayload = {
+        creditCard: {
+          holderName: tenant.full_name,
+          number: "5162306219378829",
+          expiryMonth: "05",
+          expiryYear: "2028",
+          ccv: "318",
+        },
+        creditCardHolderInfo: {
+          name: tenant.full_name,
+          email: tenant.email || "sandbox+tenant@nexo.test",
+          cpfCnpj: cleanDoc,
+          postalCode: cleanCep,
+          addressNumber: "0",
+          phone: cleanPhone,
+        },
+      };
+
+      await asaasFetch<any>(`/payments/${inst.data.asaas_payment_id}/payWithCreditCard`, {
+        method: "POST",
+        apiKey: landlord.apiKey,
+        body: JSON.stringify(ccPayload),
+      });
+
+      await supabaseAdmin
+        .from("installments")
+        .update({
+          status: "pago",
+          paid_amount: value,
+          payment_date: new Date().toISOString(),
+        })
+        .eq("id", inst.data.id);
+
+      return { ok: true, value };
+    } catch (e: any) {
+      throw mapAsaasError(e);
     }
-
-    // Cartão de teste do sandbox Asaas (aprova automaticamente).
-    // Docs: https://docs.asaas.com/docs/cobrancas-com-cartao-de-credito-sandbox
-    const cleanDoc = String(tenant.document).replace(/\D/g, "");
-    const cleanPhone = tenant.phone ? String(tenant.phone).replace(/\D/g, "") : "11999999999";
-    const cleanCep = tenant.postal_code ? String(tenant.postal_code).replace(/\D/g, "") : "01001000";
-
-    const ccPayload = {
-      creditCard: {
-        holderName: tenant.full_name,
-        number: "5162306219378829",
-        expiryMonth: "05",
-        expiryYear: "2028",
-        ccv: "318",
-      },
-      creditCardHolderInfo: {
-        name: tenant.full_name,
-        email: tenant.email || "sandbox+tenant@nexo.test",
-        cpfCnpj: cleanDoc,
-        postalCode: cleanCep,
-        addressNumber: "0",
-        phone: cleanPhone,
-      },
-    };
-
-    await asaasFetch<any>(`/payments/${inst.data.asaas_payment_id}/payWithCreditCard`, {
-      method: "POST",
-      apiKey: ownerApiKey,
-      body: JSON.stringify(ccPayload),
-    });
-
-    await supabaseAdmin
-      .from("installments")
-      .update({
-        status: "pago",
-        paid_amount: value,
-        payment_date: new Date().toISOString(),
-      })
-      .eq("id", inst.data.id);
-
-    return { ok: true, value };
   });
 
 

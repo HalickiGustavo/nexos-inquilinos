@@ -349,7 +349,7 @@ function StepCredentials({
 }: {
   form: FormState;
   update: <K extends keyof FormState>(k: K, v: FormState[K]) => void;
-  captchaRef: React.MutableRefObject<ReCAPTCHA | null>;
+  captchaRef: React.MutableRefObject<import("react-google-recaptcha").default | null>;
   onNext: () => void;
 }) {
   const [showPw, setShowPw] = useState(false);

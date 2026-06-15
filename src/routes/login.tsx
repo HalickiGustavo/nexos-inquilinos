@@ -78,7 +78,7 @@ function SignInForm() {
   const [password, setPassword] = useState("");
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const captchaRef = useRef<ReCAPTCHA | null>(null);
+  const captchaRef = useRef<import("react-google-recaptcha").default | null>(null);
   const navigate = useNavigate();
 
   const canSubmit = !!email && !!password && !!captchaToken && !busy;

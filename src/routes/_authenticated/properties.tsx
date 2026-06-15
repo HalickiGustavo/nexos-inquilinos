@@ -142,6 +142,26 @@ function DeleteButton({ id }: { id: string }) {
 function PropertyDialog({ editing, onDone }: { editing: Property | null; onDone: () => void }) {
   const { user } = useAuth();
   const invalidate = useInvalidate();
+
+  const { data: integ } = useQuery({
+    queryKey: ["profile-integrations", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("integration_imovelweb_connected, integration_zap_connected")
+        .eq("id", user!.id)
+        .maybeSingle();
+      if (error) throw error;
+      return {
+        imw: Boolean(data?.integration_imovelweb_connected),
+        zap: Boolean(data?.integration_zap_connected),
+      };
+    },
+  });
+  const imwConnected = !!integ?.imw;
+  const zapConnected = !!integ?.zap;
+
   const e: any = editing ?? {};
   const [form, setForm] = useState({
     nickname: e.nickname ?? "",

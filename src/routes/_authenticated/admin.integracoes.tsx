@@ -23,7 +23,11 @@ function AdminIntegracoesPage() {
     enabled: !!user,
     queryFn: async () => {
       const [profileRes, propsRes] = await Promise.all([
-        supabase.from("profiles").select("integration_token, full_name").eq("id", user!.id).maybeSingle(),
+        supabase
+          .from("profiles")
+          .select("integration_token, full_name, integration_imovelweb_connected, integration_zap_connected")
+          .eq("id", user!.id)
+          .maybeSingle(),
         supabase
           .from("properties")
           .select("id, publish_imovelweb, publish_zap, status")
@@ -36,12 +40,23 @@ function AdminIntegracoesPage() {
       return {
         token: profileRes.data?.integration_token as string | undefined,
         agency: profileRes.data?.full_name as string | undefined,
+        connectedImw: Boolean(profileRes.data?.integration_imovelweb_connected),
+        connectedZap: Boolean(profileRes.data?.integration_zap_connected),
         activeImw,
         activeZap,
         total: props.length,
       };
     },
   });
+
+  async function toggleConnection(field: "integration_imovelweb_connected" | "integration_zap_connected", value: boolean) {
+    if (!user) return;
+    const patch: any = { [field]: value };
+    const { error } = await supabase.from("profiles").update(patch).eq("id", user.id);
+    if (error) return toast.error(error.message);
+    toast.success(value ? "Portal conectado com sucesso!" : "Portal desconectado.");
+    refetch();
+  }
 
   const supabaseUrl = (import.meta as any).env?.VITE_SUPABASE_URL ?? "";
   const feedUrl = data?.token ? `${supabaseUrl}/functions/v1/portal-xml-feed?token=${data.token}` : "";
@@ -89,13 +104,17 @@ function AdminIntegracoesPage() {
           name="Imovelweb"
           description="Portal nacional de imóveis residenciais e comerciais."
           active={!!data?.activeImw}
+          connected={!!data?.connectedImw}
           feedUrl={feedUrl}
+          onToggle={(v) => toggleConnection("integration_imovelweb_connected", v)}
         />
         <PortalCard
           name="Grupo OLX (Zap / VivaReal)"
           description="Distribuição unificada nos portais Zap Imóveis e VivaReal."
           active={!!data?.activeZap}
+          connected={!!data?.connectedZap}
           feedUrl={feedUrl}
+          onToggle={(v) => toggleConnection("integration_zap_connected", v)}
         />
       </div>
 
@@ -149,8 +168,8 @@ function FeedUrlTrack({ url }: { url: string }) {
 }
 
 function PortalCard({
-  name, description, active, feedUrl,
-}: { name: string; description: string; active: boolean; feedUrl: string }) {
+  name, description, active, connected, feedUrl, onToggle,
+}: { name: string; description: string; active: boolean; connected: boolean; feedUrl: string; onToggle: (v: boolean) => void }) {
   return (
     <Card className="p-5 space-y-3">
       <div className="flex items-start justify-between gap-3">
@@ -163,19 +182,37 @@ function PortalCard({
             <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
           </div>
         </div>
-        {active ? (
+        {!connected ? (
+          <Badge variant="secondary">Não conectado</Badge>
+        ) : active ? (
           <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/40">
             Sincronização Ativa
           </Badge>
         ) : (
-          <Badge variant="secondary">Inativa</Badge>
+          <Badge className="bg-primary/10 text-primary border border-primary/30">Conectado</Badge>
         )}
       </div>
-      <Button asChild variant="outline" size="sm" disabled={!feedUrl} className="w-full">
-        <a href={feedUrl || "#"} target="_blank" rel="noreferrer">
-          Visualizar feed XML <ExternalLink className="size-3.5 ml-2" />
-        </a>
-      </Button>
+      <div className="flex flex-col sm:flex-row gap-2">
+        {connected ? (
+          <Button variant="outline" size="sm" className="flex-1" onClick={() => onToggle(false)}>
+            Desconectar
+          </Button>
+        ) : (
+          <Button size="sm" className="flex-1" onClick={() => onToggle(true)}>
+            Conectar portal
+          </Button>
+        )}
+        <Button asChild variant="outline" size="sm" disabled={!feedUrl} className="flex-1">
+          <a href={feedUrl || "#"} target="_blank" rel="noreferrer">
+            Visualizar feed <ExternalLink className="size-3.5 ml-2" />
+          </a>
+        </Button>
+      </div>
+      {!connected && (
+        <p className="text-[11px] text-muted-foreground">
+          Conecte-se antes de habilitar a sincronização em qualquer imóvel.
+        </p>
+      )}
     </Card>
   );
 }

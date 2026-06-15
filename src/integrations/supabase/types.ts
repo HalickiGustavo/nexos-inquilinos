@@ -620,7 +620,9 @@ export type Database = {
           email: string | null
           full_name: string | null
           id: string
+          integration_imovelweb_connected: boolean
           integration_token: string
+          integration_zap_connected: boolean
           updated_at: string
         }
         Insert: {
@@ -628,7 +630,9 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id: string
+          integration_imovelweb_connected?: boolean
           integration_token?: string
+          integration_zap_connected?: boolean
           updated_at?: string
         }
         Update: {
@@ -636,7 +640,9 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id?: string
+          integration_imovelweb_connected?: boolean
           integration_token?: string
+          integration_zap_connected?: boolean
           updated_at?: string
         }
         Relationships: []

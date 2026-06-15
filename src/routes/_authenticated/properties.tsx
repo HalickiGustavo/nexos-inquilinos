@@ -1,5 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Plus, Pencil, Trash2, Building2, Search } from "lucide-react";
 import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
@@ -19,7 +20,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, AlertTriangle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { maskCEP } from "@/lib/br-validators";
 import { useAuth } from "@/lib/auth";
@@ -141,6 +142,26 @@ function DeleteButton({ id }: { id: string }) {
 function PropertyDialog({ editing, onDone }: { editing: Property | null; onDone: () => void }) {
   const { user } = useAuth();
   const invalidate = useInvalidate();
+
+  const { data: integ } = useQuery({
+    queryKey: ["profile-integrations", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("integration_imovelweb_connected, integration_zap_connected")
+        .eq("id", user!.id)
+        .maybeSingle();
+      if (error) throw error;
+      return {
+        imw: Boolean(data?.integration_imovelweb_connected),
+        zap: Boolean(data?.integration_zap_connected),
+      };
+    },
+  });
+  const imwConnected = !!integ?.imw;
+  const zapConnected = !!integ?.zap;
+
   const e: any = editing ?? {};
   const [form, setForm] = useState({
     nickname: e.nickname ?? "",
@@ -204,8 +225,8 @@ function PropertyDialog({ editing, onDone }: { editing: Property | null; onDone:
             tipo_transacao: form.tipo_transacao,
             valor_aluguel: isSale ? null : (form.valor_aluguel ? parseNumber(form.valor_aluguel) : null),
             valor_venda: isSale ? (form.valor_venda ? parseNumber(form.valor_venda) : null) : null,
-            publish_imovelweb: indisponivel ? false : form.publish_imovelweb,
-            publish_zap: indisponivel ? false : form.publish_zap,
+            publish_imovelweb: indisponivel || !imwConnected ? false : form.publish_imovelweb,
+            publish_zap: indisponivel || !zapConnected ? false : form.publish_zap,
             bedrooms: Number(form.bedrooms) || 0,
             bathrooms: Number(form.bathrooms) || 0,
             garages: Number(form.garages) || 0,
@@ -312,26 +333,50 @@ function PropertyDialog({ editing, onDone }: { editing: Property | null; onDone:
             </Alert>
           )}
 
+          {(!imwConnected || !zapConnected) && (
+            <Alert className="border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300">
+              <AlertTriangle className="size-4 text-amber-600 dark:text-amber-400" />
+              <AlertDescription className="text-amber-700 dark:text-amber-300 flex flex-wrap items-center gap-2">
+                <span>Conecte os portais antes de habilitar a sincronização.</span>
+                <Link to="/admin/integracoes" className="underline font-medium hover:text-amber-800 dark:hover:text-amber-200">
+                  Ir para Integrações
+                </Link>
+              </AlertDescription>
+            </Alert>
+          )}
+
           <div className="flex items-center justify-between gap-3 rounded-md border p-3">
             <div>
-              <p className="text-sm font-medium">Imovelweb</p>
+              <p className="text-sm font-medium">Imovelweb {!imwConnected && <span className="text-[10px] text-amber-600 dark:text-amber-400 ml-1">(integração pendente)</span>}</p>
               <p className="text-xs text-muted-foreground">Publicar este imóvel no feed Imovelweb.</p>
             </div>
             <Switch
               checked={form.publish_imovelweb}
-              disabled={indisponivel}
-              onCheckedChange={(v) => setForm({ ...form, publish_imovelweb: v })}
+              disabled={indisponivel || !imwConnected}
+              onCheckedChange={(v) => {
+                if (!imwConnected) {
+                  toast.error("Conecte o Imovelweb em Integrações antes de ativar a sincronização.");
+                  return;
+                }
+                setForm({ ...form, publish_imovelweb: v });
+              }}
             />
           </div>
           <div className="flex items-center justify-between gap-3 rounded-md border p-3">
             <div>
-              <p className="text-sm font-medium">Grupo OLX (Zap / VivaReal)</p>
+              <p className="text-sm font-medium">Grupo OLX (Zap / VivaReal) {!zapConnected && <span className="text-[10px] text-amber-600 dark:text-amber-400 ml-1">(integração pendente)</span>}</p>
               <p className="text-xs text-muted-foreground">Distribuir automaticamente nos portais Zap e VivaReal.</p>
             </div>
             <Switch
               checked={form.publish_zap}
-              disabled={indisponivel}
-              onCheckedChange={(v) => setForm({ ...form, publish_zap: v })}
+              disabled={indisponivel || !zapConnected}
+              onCheckedChange={(v) => {
+                if (!zapConnected) {
+                  toast.error("Conecte o Grupo OLX em Integrações antes de ativar a sincronização.");
+                  return;
+                }
+                setForm({ ...form, publish_zap: v });
+              }}
             />
           </div>
         </div>

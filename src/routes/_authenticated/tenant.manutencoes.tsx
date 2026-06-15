@@ -28,7 +28,9 @@ import {
 import { MaintenanceChat } from "@/components/MaintenanceChat";
 import { EvidenceUploader, EvidenceGrid } from "@/components/EvidenceUploader";
 import { cn } from "@/lib/utils";
-import { formatBRL, formatDate } from "@/lib/format";
+import { formatBRL, formatDate, parseNumber } from "@/lib/format";
+import { Receipt, Loader2 } from "lucide-react";
+
 
 export const Route = createFileRoute("/_authenticated/tenant/manutencoes")({
   head: () => ({ meta: [{ title: "Manutenções — Nexo Inquilino" }] }),
@@ -158,8 +160,15 @@ function TenantManutencoes() {
                     )}
                   </div>
                 )}
+                {(!current.budget_status ||
+                  current.budget_status === "nenhum" ||
+                  current.budget_status === "recusado" ||
+                  current.budget_status === "pendente") && (
+                  <TenantBudgetButton item={current} />
+                )}
               </Card>
               <MaintenanceChat maintenanceId={current.id} />
+
             </div>
           ) : (
             <Card className="hidden md:flex flex-col items-center justify-center text-center p-10 min-h-[400px] border-dashed">
@@ -265,3 +274,95 @@ function NewRequestDialog({ onDone }: { onDone: () => void }) {
     </DialogContent>
   );
 }
+
+function TenantBudgetButton({ item }: { item: any }) {
+  const [open, setOpen] = useState(false);
+  const qc = useQueryClient();
+  const status = item.budget_status ?? "nenhum";
+  const isEditing = status === "pendente";
+  const [amount, setAmount] = useState(item.budget_amount ? String(item.budget_amount) : "");
+  const [provider, setProvider] = useState(item.provider_name ?? "");
+  const [notes, setNotes] = useState(item.budget_notes ?? "");
+  const [saving, setSaving] = useState(false);
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    setSaving(true);
+    const { error } = await supabase
+      .from("maintenances")
+      .update({
+        budget_amount: parseNumber(amount),
+        budget_notes: notes || null,
+        provider_name: provider || null,
+        budget_status: "pendente",
+        budget_decided_at: null,
+        budget_rent_deduction: false,
+        budget_applied_installment_id: null,
+      } as any)
+      .eq("id", item.id);
+    setSaving(false);
+    if (error) return toast.error(error.message);
+    toast.success("Orçamento enviado ao proprietário");
+    qc.invalidateQueries({ queryKey: ["tenant-maintenances"] });
+    setOpen(false);
+  }
+
+  const label =
+    status === "pendente"
+      ? "Editar orçamento"
+      : status === "recusado"
+        ? "Enviar novo orçamento"
+        : "Enviar orçamento ao proprietário";
+
+  return (
+    <>
+      <Button variant="outline" size="sm" className="w-full" onClick={() => setOpen(true)}>
+        <Receipt className="size-3.5 mr-1.5" />
+        {label}
+      </Button>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{isEditing ? "Editar orçamento" : "Enviar orçamento"}</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={submit} className="space-y-3">
+            <div className="space-y-1.5">
+              <Label>Valor (R$) *</Label>
+              <Input
+                type="number"
+                step="0.01"
+                required
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Prestador / fornecedor</Label>
+              <Input
+                placeholder="Ex.: Encanador João"
+                value={provider}
+                onChange={(e) => setProvider(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Observações</Label>
+              <Textarea
+                rows={3}
+                placeholder="Escopo do serviço, validade do orçamento…"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+              />
+            </div>
+            <DialogFooter>
+              <Button type="submit" disabled={saving || !amount}>
+                {saving ? <Loader2 className="size-4 mr-2 animate-spin" /> : null}
+                Enviar para o proprietário
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
+

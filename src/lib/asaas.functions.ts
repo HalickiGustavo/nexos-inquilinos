@@ -204,7 +204,8 @@ export const generateAsaasCharge = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => generateInput.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    const { asaasFetch, getNexoFee, getNexoWalletId } = await import("./asaas.server");
+    const { asaasFetch, getNexoFee } = await import("./asaas.server");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const inst = await supabase
       .from("installments")
@@ -213,7 +214,6 @@ export const generateAsaasCharge = createServerFn({ method: "POST" })
       .maybeSingle();
     if (inst.error) throw new Error(inst.error.message);
     if (!inst.data) throw new Error("Parcela não encontrada");
-    // Idempotência local: se já gerou boleto, retorna o existente em vez de criar outro.
     if (inst.data.asaas_payment_id) {
       return {
         ok: true,
@@ -228,143 +228,124 @@ export const generateAsaasCharge = createServerFn({ method: "POST" })
     const tenant = contract?.tenant;
     const property = contract?.property;
     if (!tenant) throw new Error("Contrato sem inquilino vinculado");
-    const contractPayoutWalletId: string | null = contract?.payout_wallet_id ?? null;
 
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const acc = await supabaseAdmin
-      .from("asaas_accounts")
-      .select("api_key, status, wallet_id")
-      .eq("user_id", userId)
-      .maybeSingle();
-    if (acc.error) throw new Error(acc.error.message);
-    const nexoWallet = getNexoWalletId();
-    const payoutWalletId: string | null = contractPayoutWalletId || acc.data?.wallet_id || null;
-    const shouldSplitToOwner = Boolean(payoutWalletId && payoutWalletId !== nexoWallet);
-    // When we have an owner payout wallet, charge through NEXO master and split to that wallet.
-    // If no payout wallet exists, fall back to the owner's subaccount key when available.
-    const ownerApiKey = shouldSplitToOwner ? undefined : (acc.data?.api_key || undefined);
+    // Modelo B: cobrança gerada DENTRO da subconta do landlord (context.userId).
+    const landlord = await getLandlordAsaasCredentials(supabaseAdmin, userId);
+    const masterWalletId = await getMasterPlatformWalletId(supabaseAdmin);
 
-    const customerRow = await supabase
-      .from("asaas_customers")
-      .select("asaas_customer_id")
-      .eq("tenant_id", tenant.id)
-      .maybeSingle();
-
-    let customerId = customerRow.data?.asaas_customer_id ?? null;
-    if (!customerId) {
-      if (!tenant.document) throw new Error("Inquilino sem CPF/CNPJ cadastrado");
-      const customer = await asaasFetch<any>("/customers", {
-        method: "POST",
-        apiKey: ownerApiKey,
-        body: JSON.stringify({
-          name: tenant.full_name,
-          cpfCnpj: String(tenant.document).replace(/\D/g, ""),
-          email: tenant.email ?? undefined,
-          mobilePhone: tenant.phone ? String(tenant.phone).replace(/\D/g, "") : undefined,
-          externalReference: tenant.id,
-        }),
-      });
-      customerId = customer.id;
-      await supabaseAdmin.from("asaas_customers").insert({
-        user_id: userId,
-        tenant_id: tenant.id,
-        asaas_customer_id: customerId as string,
-      });
-    }
-
-    const { data: setting } = await (supabaseAdmin as any)
-      .from("platform_settings")
-      .select("value")
-      .eq("key", "nexo_boleto_fee")
-      .maybeSingle();
-    const nexoFee = setting?.value ? Number(setting.value) : getNexoFee();
-    const baseValue = Number(inst.data.amount) + Number(inst.data.extra_fees ?? 0);
-
-    // Cálculo de juros/multa por atraso
-    const todayStr = new Date().toISOString().slice(0, 10);
-    const originalDue = inst.data.due_date as string;
-    const isOverdue = originalDue < todayStr;
-    const daysLate = isOverdue
-      ? Math.max(0, Math.floor((Date.parse(todayStr) - Date.parse(originalDue)) / 86400000))
-      : 0;
-    const finePct = Number(contract?.late_fee_percent ?? 0);
-    // O campo daily_interest_percent armazena o juros MENSAL do contrato
-    // (padrão BR: ~1% a.m.). Convertemos para diário pro-rata (÷30).
-    const monthlyInterestPct = Number(contract?.daily_interest_percent ?? 0);
-    const dailyPct = monthlyInterestPct / 30;
-    const fine = isOverdue ? +(baseValue * finePct / 100).toFixed(2) : 0;
-    const interest = isOverdue ? +(baseValue * dailyPct / 100 * daysLate).toFixed(2) : 0;
-    const lateCharges = +(fine + interest).toFixed(2);
-
-    // A taxa NEXO é SEMPRE somada ao aluguel (não é deduzida do valor do proprietário).
-    // O inquilino paga baseValue + encargos + nexoFee; o proprietário recebe baseValue+encargos via split; NEXO fica com a taxa.
-    const addFee = nexoFee > 0 && (payoutWalletId || nexoWallet);
-    const value = +(baseValue + lateCharges + (addFee ? nexoFee : 0)).toFixed(2);
-    const effectiveDueDate = isOverdue ? todayStr : originalDue;
-    const lateNote = isOverdue
-      ? ` (venc. original ${originalDue}, ${daysLate} dia(s) de atraso: multa R$ ${fine.toFixed(2)} + juros R$ ${interest.toFixed(2)})`
-      : "";
-
-    const body: Record<string, unknown> = {
-      customer: customerId as string,
-      billingType: data.billingType,
-      value,
-      dueDate: effectiveDueDate,
-      description: `Aluguel — ${property?.nickname ?? ""} — venc. ${originalDue}${lateNote}${addFee ? ` (inclui taxa NEXO de R$ ${nexoFee.toFixed(2)})` : ""}`,
-      externalReference: inst.data.id,
-    };
-    const splitEntries = buildSplitEntries({
-      ownerWalletId: shouldSplitToOwner ? payoutWalletId : null,
-      ownerShare: +(baseValue + lateCharges).toFixed(2),
-      nexoWalletId: nexoWallet,
-      nexoFee,
-      totalValue: value,
-      paidViaOwnerKey: Boolean(ownerApiKey),
-    });
-    if (splitEntries.length > 0) body.split = splitEntries;
-
-
-    // Idempotência remota: antes de POST /payments, checa se o Asaas já tem
-    // uma cobrança com este externalReference (parcela id). Evita duplicar quando
-    // o cliente reenviar a requisição (retry, double-click, race condition).
-    let payment: any = null;
     try {
-      const existingList = await asaasFetch<any>(
-        `/payments?externalReference=${encodeURIComponent(inst.data.id)}&limit=1`,
-        { apiKey: ownerApiKey },
-      );
-      if (existingList?.data?.length > 0) {
-        payment = existingList.data[0];
+      const customerRow = await supabaseAdmin
+        .from("asaas_customers")
+        .select("asaas_customer_id")
+        .eq("tenant_id", tenant.id)
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      let customerId = customerRow.data?.asaas_customer_id ?? null;
+      if (!customerId) {
+        if (!tenant.document) throw new Error("Inquilino sem CPF/CNPJ cadastrado");
+        const customer = await asaasFetch<any>("/customers", {
+          method: "POST",
+          apiKey: landlord.apiKey,
+          body: JSON.stringify({
+            name: tenant.full_name,
+            cpfCnpj: String(tenant.document).replace(/\D/g, ""),
+            email: tenant.email ?? undefined,
+            mobilePhone: tenant.phone ? String(tenant.phone).replace(/\D/g, "") : undefined,
+            externalReference: tenant.id,
+          }),
+        });
+        customerId = customer.id;
+        await supabaseAdmin.from("asaas_customers").insert({
+          user_id: userId,
+          tenant_id: tenant.id,
+          asaas_customer_id: customerId as string,
+        });
       }
-    } catch { /* segue e tenta criar */ }
 
-    if (!payment) {
-      payment = await asaasFetch<any>("/payments", {
-        method: "POST",
-        apiKey: ownerApiKey,
-        body: JSON.stringify(body),
-      });
+      const { data: setting } = await (supabaseAdmin as any)
+        .from("platform_settings")
+        .select("value")
+        .eq("key", "nexo_boleto_fee")
+        .maybeSingle();
+      const nexoFee = setting?.value ? Number(setting.value) : getNexoFee();
+      const baseValue = Number(inst.data.amount) + Number(inst.data.extra_fees ?? 0);
+
+      const todayStr = new Date().toISOString().slice(0, 10);
+      const originalDue = inst.data.due_date as string;
+      const isOverdue = originalDue < todayStr;
+      const daysLate = isOverdue
+        ? Math.max(0, Math.floor((Date.parse(todayStr) - Date.parse(originalDue)) / 86400000))
+        : 0;
+      const finePct = Number(contract?.late_fee_percent ?? 0);
+      const monthlyInterestPct = Number(contract?.daily_interest_percent ?? 0);
+      const dailyPct = monthlyInterestPct / 30;
+      const fine = isOverdue ? +(baseValue * finePct / 100).toFixed(2) : 0;
+      const interest = isOverdue ? +(baseValue * dailyPct / 100 * daysLate).toFixed(2) : 0;
+      const lateCharges = +(fine + interest).toFixed(2);
+
+      const value = +(baseValue + lateCharges + nexoFee).toFixed(2);
+      const effectiveDueDate = isOverdue ? todayStr : originalDue;
+      const lateNote = isOverdue
+        ? ` (venc. original ${originalDue}, ${daysLate} dia(s) de atraso: multa R$ ${fine.toFixed(2)} + juros R$ ${interest.toFixed(2)})`
+        : "";
+
+      const body: Record<string, unknown> = {
+        customer: customerId as string,
+        billingType: data.billingType,
+        value,
+        dueDate: effectiveDueDate,
+        description: `Aluguel — ${property?.nickname ?? ""} — venc. ${originalDue}${lateNote} (inclui taxa NEXO de R$ ${nexoFee.toFixed(2)})`,
+        externalReference: inst.data.id,
+        externalMetadata: {
+          installmentId: inst.data.id,
+          contractId: contract?.id ?? null,
+          landlordUserId: userId,
+        },
+      };
+      const split = buildPlatformSplit({ masterWalletId, nexoFee, totalValue: value });
+      if (split.length > 0) body.split = split;
+
+      // Idempotência remota
+      let payment: any = null;
+      try {
+        const existingList = await asaasFetch<any>(
+          `/payments?externalReference=${encodeURIComponent(inst.data.id)}&limit=1`,
+          { apiKey: landlord.apiKey },
+        );
+        if (existingList?.data?.length > 0) payment = existingList.data[0];
+      } catch { /* segue e tenta criar */ }
+
+      if (!payment) {
+        payment = await asaasFetch<any>("/payments", {
+          method: "POST",
+          apiKey: landlord.apiKey,
+          body: JSON.stringify(body),
+        });
+      }
+
+      let pix: { encodedImage?: string; payload?: string } = {};
+      try {
+        pix = await asaasFetch<any>(`/payments/${payment.id}/pixQrCode`, { apiKey: landlord.apiKey });
+      } catch { /* boleto-only */ }
+
+      const upd = await supabaseAdmin
+        .from("installments")
+        .update({
+          asaas_payment_id: payment.id,
+          boleto_url: payment.bankSlipUrl ?? payment.invoiceUrl ?? null,
+          barcode: payment.identificationField ?? null,
+          pix_qrcode: pix.encodedImage ?? null,
+          pix_payload: pix.payload ?? null,
+          late_charges: lateCharges,
+        })
+        .eq("id", inst.data.id);
+      if (upd.error) throw new Error(upd.error.message);
+
+      return { ok: true, paymentId: payment.id, value, lateCharges };
+    } catch (e: any) {
+      throw mapAsaasError(e);
     }
-
-    let pix: { encodedImage?: string; payload?: string } = {};
-    try {
-      pix = await asaasFetch<any>(`/payments/${payment.id}/pixQrCode`, { apiKey: ownerApiKey });
-    } catch { /* boleto-only */ }
-
-    const upd = await supabaseAdmin
-      .from("installments")
-      .update({
-        asaas_payment_id: payment.id,
-        boleto_url: payment.bankSlipUrl ?? payment.invoiceUrl ?? null,
-        barcode: payment.identificationField ?? null,
-        pix_qrcode: pix.encodedImage ?? null,
-        pix_payload: pix.payload ?? null,
-        late_charges: lateCharges,
-      })
-      .eq("id", inst.data.id);
-    if (upd.error) throw new Error(upd.error.message);
-
-    return { ok: true, paymentId: payment.id, value, lateCharges };
   });
 
 

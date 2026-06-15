@@ -56,13 +56,14 @@ const createSubaccountInput = z.object({
   name: z.string().min(2).max(120),
   email: z.string().email(),
   cpfCnpj: z.string().min(11).max(20),
-  mobilePhone: z.string().min(10).max(20).optional(),
+  mobilePhone: z.string().min(10).max(20),
   birthDate: z.string().optional(),
   companyType: z.enum(["MEI", "LIMITED", "INDIVIDUAL", "ASSOCIATION"]).optional(),
   address: z.string().min(2).max(200),
   addressNumber: z.string().min(1).max(20),
   province: z.string().min(2).max(120),
   postalCode: z.string().min(8).max(15),
+  incomeValue: z.coerce.number().positive(),
 });
 
 export const createAsaasSubaccount = createServerFn({ method: "POST" })
@@ -81,16 +82,23 @@ export const createAsaasSubaccount = createServerFn({ method: "POST" })
       throw new Error("Já existe uma subconta Asaas para este usuário.");
     }
 
+    const digits = data.mobilePhone.replace(/\D/g, "");
+    // Asaas exige celular (DDD + 9 + 8 dígitos). Valida que tem 11 dígitos e começa com 9 após DDD.
+    if (digits.length < 10 || digits.length > 11 || (digits.length === 11 && digits[2] !== "9")) {
+      throw new Error("Informe um celular válido com DDD (ex.: 41 99999-9999).");
+    }
+
     const payload: Record<string, unknown> = {
       name: data.name,
       email: data.email,
       cpfCnpj: data.cpfCnpj.replace(/\D/g, ""),
+      mobilePhone: digits,
+      incomeValue: Number(data.incomeValue),
       address: data.address,
       addressNumber: data.addressNumber,
       province: data.province,
       postalCode: data.postalCode.replace(/\D/g, ""),
     };
-    if (data.mobilePhone) payload.mobilePhone = data.mobilePhone.replace(/\D/g, "");
     if (data.birthDate) payload.birthDate = data.birthDate;
     if (data.companyType) payload.companyType = data.companyType;
 

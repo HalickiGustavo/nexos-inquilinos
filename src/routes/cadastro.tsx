@@ -1,6 +1,10 @@
 import { createFileRoute, useNavigate, useSearch, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import ReCAPTCHA from "react-google-recaptcha";
+import * as ReCAPTCHAModule from "react-google-recaptcha";
+const ReCAPTCHA: typeof import("react-google-recaptcha").default =
+  (ReCAPTCHAModule as any).default?.default ??
+  (ReCAPTCHAModule as any).default ??
+  (ReCAPTCHAModule as any);
 import { toast } from "sonner";
 import {
   Building2,

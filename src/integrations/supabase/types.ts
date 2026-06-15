@@ -620,6 +620,7 @@ export type Database = {
           email: string | null
           full_name: string | null
           id: string
+          integration_token: string
           updated_at: string
         }
         Insert: {
@@ -627,6 +628,7 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id: string
+          integration_token?: string
           updated_at?: string
         }
         Update: {
@@ -634,6 +636,7 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id?: string
+          integration_token?: string
           updated_at?: string
         }
         Relationships: []
@@ -641,12 +644,17 @@ export type Database = {
       properties: {
         Row: {
           address: string
+          area_total: number | null
           assigned_member_id: string | null
+          bathrooms: number
+          bedrooms: number
           city: string | null
           code: string | null
           condo_fee: number
           created_at: string
           default_management_fee_percent: number
+          description: string | null
+          garages: number
           id: string
           iptu: number
           manager_id: string | null
@@ -655,22 +663,32 @@ export type Database = {
           notes: string | null
           owner_commission_percent: number
           owner_name: string | null
+          publish_imovelweb: boolean
+          publish_zap: boolean
           rent_price: number
           state: string | null
           status: Database["public"]["Enums"]["property_status"]
+          tipo_transacao: Database["public"]["Enums"]["transaction_type"]
           type: Database["public"]["Enums"]["property_type"]
           updated_at: string
           user_id: string
+          valor_aluguel: number | null
+          valor_venda: number | null
           zip_code: string | null
         }
         Insert: {
           address: string
+          area_total?: number | null
           assigned_member_id?: string | null
+          bathrooms?: number
+          bedrooms?: number
           city?: string | null
           code?: string | null
           condo_fee?: number
           created_at?: string
           default_management_fee_percent?: number
+          description?: string | null
+          garages?: number
           id?: string
           iptu?: number
           manager_id?: string | null
@@ -679,22 +697,32 @@ export type Database = {
           notes?: string | null
           owner_commission_percent?: number
           owner_name?: string | null
+          publish_imovelweb?: boolean
+          publish_zap?: boolean
           rent_price?: number
           state?: string | null
           status?: Database["public"]["Enums"]["property_status"]
+          tipo_transacao?: Database["public"]["Enums"]["transaction_type"]
           type?: Database["public"]["Enums"]["property_type"]
           updated_at?: string
           user_id: string
+          valor_aluguel?: number | null
+          valor_venda?: number | null
           zip_code?: string | null
         }
         Update: {
           address?: string
+          area_total?: number | null
           assigned_member_id?: string | null
+          bathrooms?: number
+          bedrooms?: number
           city?: string | null
           code?: string | null
           condo_fee?: number
           created_at?: string
           default_management_fee_percent?: number
+          description?: string | null
+          garages?: number
           id?: string
           iptu?: number
           manager_id?: string | null
@@ -703,15 +731,55 @@ export type Database = {
           notes?: string | null
           owner_commission_percent?: number
           owner_name?: string | null
+          publish_imovelweb?: boolean
+          publish_zap?: boolean
           rent_price?: number
           state?: string | null
           status?: Database["public"]["Enums"]["property_status"]
+          tipo_transacao?: Database["public"]["Enums"]["transaction_type"]
           type?: Database["public"]["Enums"]["property_type"]
           updated_at?: string
           user_id?: string
+          valor_aluguel?: number | null
+          valor_venda?: number | null
           zip_code?: string | null
         }
         Relationships: []
+      }
+      property_photos: {
+        Row: {
+          created_at: string
+          id: string
+          position: number
+          property_id: string
+          url: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          position?: number
+          property_id: string
+          url: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          position?: number
+          property_id?: string
+          url?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "property_photos_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       tenants: {
         Row: {
@@ -802,6 +870,7 @@ export type Database = {
       property_status: "disponivel" | "alugado" | "manutencao"
       property_type: "casa" | "apartamento" | "comercial" | "terreno" | "outro"
       readjustment_index: "IGP-M" | "IPCA" | "INCC" | "nenhum"
+      transaction_type: "Aluguel" | "Venda"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -939,6 +1008,7 @@ export const Constants = {
       property_status: ["disponivel", "alugado", "manutencao"],
       property_type: ["casa", "apartamento", "comercial", "terreno", "outro"],
       readjustment_index: ["IGP-M", "IPCA", "INCC", "nenhum"],
+      transaction_type: ["Aluguel", "Venda"],
     },
   },
 } as const

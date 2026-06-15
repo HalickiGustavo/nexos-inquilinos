@@ -64,6 +64,12 @@ const createSubaccountInput = z.object({
   province: z.string().min(2).max(120),
   postalCode: z.string().min(8).max(15),
   incomeValue: z.coerce.number().positive(),
+  // Conta bancária de liquidação — obrigatória já no onboarding
+  bankCode: z.string().min(1).max(10),
+  bankAgency: z.string().min(1).max(10),
+  bankAccount: z.string().min(1).max(20),
+  bankAccountDigit: z.string().min(1).max(3),
+  bankAccountType: z.enum(["CONTA_CORRENTE", "CONTA_POUPANCA"]),
 });
 
 export const createAsaasSubaccount = createServerFn({ method: "POST" })
@@ -83,7 +89,6 @@ export const createAsaasSubaccount = createServerFn({ method: "POST" })
     }
 
     const digits = data.mobilePhone.replace(/\D/g, "");
-    // Asaas exige celular (DDD + 9 + 8 dígitos). Valida que tem 11 dígitos e começa com 9 após DDD.
     if (digits.length < 10 || digits.length > 11 || (digits.length === 11 && digits[2] !== "9")) {
       throw new Error("Informe um celular válido com DDD (ex.: 41 99999-9999).");
     }
@@ -108,6 +113,38 @@ export const createAsaasSubaccount = createServerFn({ method: "POST" })
     });
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // Vincula conta bancária + auto-transfer (best-effort).
+    // Se falhar, mantemos a subconta e devolvemos warning para refazer pelo painel.
+    let bankWarning: string | null = null;
+    const newApiKey: string | null = account.apiKey ?? null;
+    if (newApiKey) {
+      try {
+        await asaasFetch<any>("/bankAccounts", {
+          method: "POST",
+          apiKey: newApiKey,
+          body: JSON.stringify({
+            bank: { code: data.bankCode },
+            agency: data.bankAgency.replace(/\D/g, ""),
+            account: data.bankAccount.replace(/\D/g, ""),
+            accountDigit: data.bankAccountDigit.replace(/\D/g, ""),
+            bankAccountType: data.bankAccountType,
+          }),
+        });
+        try {
+          await asaasFetch<any>("/accountConfiguration", {
+            method: "POST",
+            apiKey: newApiKey,
+            body: JSON.stringify({ autoTransferEnabled: true, autoTransferFrequency: "DAILY" }),
+          });
+        } catch (e: any) {
+          console.warn("[Asaas] accountConfiguration falhou:", e?.message);
+        }
+      } catch (e: any) {
+        bankWarning = e?.message ?? "Falha ao vincular conta bancária — refaça pelo painel.";
+      }
+    }
+
     const { error } = await supabaseAdmin
       .from("asaas_accounts")
       .upsert(
@@ -115,9 +152,15 @@ export const createAsaasSubaccount = createServerFn({ method: "POST" })
           user_id: userId,
           asaas_account_id: account.id ?? null,
           wallet_id: account.walletId ?? null,
-          api_key: account.apiKey ?? null,
+          api_key: newApiKey,
           status: account.id ? "active" : "pending",
           onboarding_url: account.onboardingUrl ?? null,
+          bank_code: bankWarning ? null : data.bankCode,
+          bank_agency: bankWarning ? null : data.bankAgency,
+          bank_account: bankWarning ? null : data.bankAccount,
+          bank_account_digit: bankWarning ? null : data.bankAccountDigit,
+          bank_account_type: bankWarning ? null : data.bankAccountType,
+          auto_transfer_enabled: bankWarning ? false : true,
         },
         { onConflict: "user_id" },
       );
@@ -127,6 +170,7 @@ export const createAsaasSubaccount = createServerFn({ method: "POST" })
       ok: true,
       walletId: account.walletId ?? null,
       onboardingUrl: account.onboardingUrl ?? null,
+      bankWarning,
     };
   });
 

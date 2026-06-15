@@ -44,6 +44,11 @@ function IntegrationsPage() {
     province: "",
     postalCode: "",
     incomeValue: "",
+    bankCode: "",
+    bankAgency: "",
+    bankAccount: "",
+    bankAccountDigit: "",
+    bankAccountType: "CONTA_CORRENTE" as "CONTA_CORRENTE" | "CONTA_POUPANCA",
   });
   const [saving, setSaving] = useState(false);
 
@@ -112,6 +117,9 @@ function IntegrationsPage() {
                 payload.incomeValue = Number(form.incomeValue);
                 const res = await submit({ data: payload });
                 toast.success("Subconta criada!");
+                if (res.bankWarning) {
+                  toast.warning(`Conta bancária: ${res.bankWarning}`);
+                }
                 if (res.onboardingUrl) {
                   toast.info("Complete o onboarding KYC no Asaas.");
                 }
@@ -166,6 +174,35 @@ function IntegrationsPage() {
             <Field label="Número" required>
               <Input value={form.addressNumber} onChange={(e) => setForm({ ...form, addressNumber: e.target.value })} required />
             </Field>
+            <div className="sm:col-span-2 mt-2 pt-4 border-t">
+              <h3 className="font-semibold mb-1">Conta bancária para recebimento</h3>
+              <p className="text-xs text-muted-foreground mb-3">
+                Para onde o Asaas vai transferir o saldo automaticamente todo dia útil.
+              </p>
+            </div>
+            <Field label="Código do banco (Febraban)" required>
+              <Input value={form.bankCode} onChange={(e) => setForm({ ...form, bankCode: e.target.value.replace(/\D/g, "") })} placeholder="Ex.: 341 (Itaú), 001 (BB)" inputMode="numeric" maxLength={4} required />
+            </Field>
+            <Field label="Tipo de conta" required>
+              <Select value={form.bankAccountType} onValueChange={(v) => setForm({ ...form, bankAccountType: v as any })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="CONTA_CORRENTE">Conta Corrente</SelectItem>
+                  <SelectItem value="CONTA_POUPANCA">Conta Poupança</SelectItem>
+                </SelectContent>
+              </Select>
+            </Field>
+            <Field label="Agência (sem dígito)" required>
+              <Input value={form.bankAgency} onChange={(e) => setForm({ ...form, bankAgency: e.target.value.replace(/\D/g, "") })} inputMode="numeric" maxLength={10} required />
+            </Field>
+            <div className="grid grid-cols-[1fr_90px] gap-2">
+              <Field label="Conta" required>
+                <Input value={form.bankAccount} onChange={(e) => setForm({ ...form, bankAccount: e.target.value.replace(/\D/g, "") })} inputMode="numeric" maxLength={20} required />
+              </Field>
+              <Field label="Dígito" required>
+                <Input value={form.bankAccountDigit} onChange={(e) => setForm({ ...form, bankAccountDigit: e.target.value.replace(/\D/g, "") })} inputMode="numeric" maxLength={2} required />
+              </Field>
+            </div>
             <div className="sm:col-span-2 flex justify-end">
               <Button type="submit" disabled={saving}>
                 {saving && <Loader2 className="size-4 mr-2 animate-spin" />}

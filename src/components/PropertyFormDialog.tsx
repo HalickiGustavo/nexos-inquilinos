@@ -22,6 +22,7 @@ import { useAuth } from "@/lib/auth";
 import { useInvalidate, type Property } from "@/lib/queries";
 import { parseNumber } from "@/lib/format";
 import { maskCEP } from "@/lib/br-validators";
+import { PropertyPhotosUploader } from "@/components/PropertyPhotosUploader";
 
 type Mode = "owner" | "manager";
 

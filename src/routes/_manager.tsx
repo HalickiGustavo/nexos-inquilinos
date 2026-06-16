@@ -138,6 +138,7 @@ function ManagerLayout() {
         </nav>
         <main className="flex-1 overflow-y-auto"><Outlet /></main>
       </div>
+      <OnboardingTour tourKey="manager" steps={managerTourSteps} />
     </div>
   );
 }

@@ -928,6 +928,14 @@ export type Database = {
         Returns: boolean
       }
       sync_cron_secret: { Args: { _secret: string }; Returns: undefined }
+      verify_security_invariants: {
+        Args: never
+        Returns: {
+          check_name: string
+          details: string
+          status: string
+        }[]
+      }
     }
     Enums: {
       app_role: "owner" | "tenant" | "manager"

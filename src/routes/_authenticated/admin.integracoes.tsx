@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Copy, ExternalLink, Globe, ShieldCheck, RefreshCw, Loader2 } from "lucide-react";
+import { Copy, ExternalLink, Globe, ShieldCheck, RefreshCw, Loader2, Rss, Info } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -98,6 +98,9 @@ function AdminIntegracoesPage() {
         </div>
       </Card>
 
+      {/* Feed XML público (padrão Zap/VivaReal/OLX) */}
+      <PublicXmlFeedCard />
+
       {/* Portal connection cards */}
       <div className="grid sm:grid-cols-2 gap-4">
         <PortalCard
@@ -128,6 +131,60 @@ function AdminIntegracoesPage() {
         </Button>
       </Card>
     </div>
+  );
+}
+
+function PublicXmlFeedCard() {
+  const [copied, setCopied] = useState(false);
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
+  const url = `${origin}/api/public/listings.xml`;
+
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+      toast.success("Link do feed XML copiado!");
+    } catch {
+      toast.error("Não foi possível copiar o link.");
+    }
+  }
+
+  return (
+    <Card className="p-6 space-y-4 border-primary/30">
+      <div className="flex items-start gap-3">
+        <div className="p-2.5 rounded-lg bg-primary/10">
+          <Rss className="size-5 text-primary" />
+        </div>
+        <div className="flex-1">
+          <h2 className="text-lg font-semibold">Feed XML Público (Padrão Zap / VivaReal)</h2>
+          <p className="text-sm text-muted-foreground">
+            Endpoint público com todos os imóveis disponíveis e fotos permanentes do bucket público.
+          </p>
+        </div>
+      </div>
+
+      <div className="flex flex-col sm:flex-row gap-2">
+        <Input readOnly value={url} onClick={(e) => (e.currentTarget as HTMLInputElement).select()} className="font-mono text-xs bg-muted/40" />
+        <Button type="button" onClick={copy} className="shrink-0">
+          <Copy className="size-4 mr-2" />
+          {copied ? "Copiado!" : "Copiar Link"}
+        </Button>
+        <Button asChild variant="outline" className="shrink-0">
+          <a href={url} target="_blank" rel="noreferrer">
+            Abrir <ExternalLink className="size-3.5 ml-2" />
+          </a>
+        </Button>
+      </div>
+
+      <div className="flex items-start gap-2 rounded-lg border border-primary/20 bg-primary/5 p-3 text-sm text-foreground/90">
+        <Info className="size-4 text-primary mt-0.5 shrink-0" />
+        <p>
+          Copie este link e cole no painel do Zap, VivaReal ou OLX para ativar a sincronização automática
+          de anúncios e fotos de seus imóveis.
+        </p>
+      </div>
+    </Card>
   );
 }
 

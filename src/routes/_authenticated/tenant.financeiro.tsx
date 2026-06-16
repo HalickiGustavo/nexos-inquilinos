@@ -94,7 +94,7 @@ function TenantFinanceiro() {
   const agreementInstallments = agreement
     ? [...items].filter((i: any) => i.debt_agreement_id === agreement.id)
     : [];
-  const sorted = [...items].sort((a: any, b: any) => b.due_date.localeCompare(a.due_date));
+  const sorted = [...items].sort((a: any, b: any) => a.due_date.localeCompare(b.due_date));
 
   return (
     <div className="space-y-4">

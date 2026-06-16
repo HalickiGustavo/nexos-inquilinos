@@ -894,7 +894,13 @@ export type Database = {
       inspection_condition: "otimo" | "bom" | "regular" | "ruim"
       inspection_kind: "entrada" | "saida"
       inspection_status: "rascunho" | "assinada"
-      installment_status: "pendente" | "pago" | "atrasado" | "acordo_fechado"
+      installment_status:
+        | "pendente"
+        | "pago"
+        | "atrasado"
+        | "acordo_fechado"
+        | "agendado"
+        | "em_aberto"
       maintenance_responsible: "proprietario" | "inquilino"
       maintenance_status: "pendente" | "em_andamento" | "concluido"
       property_status: "disponivel" | "alugado" | "manutencao"
@@ -1032,7 +1038,14 @@ export const Constants = {
       inspection_condition: ["otimo", "bom", "regular", "ruim"],
       inspection_kind: ["entrada", "saida"],
       inspection_status: ["rascunho", "assinada"],
-      installment_status: ["pendente", "pago", "atrasado", "acordo_fechado"],
+      installment_status: [
+        "pendente",
+        "pago",
+        "atrasado",
+        "acordo_fechado",
+        "agendado",
+        "em_aberto",
+      ],
       maintenance_responsible: ["proprietario", "inquilino"],
       maintenance_status: ["pendente", "em_andamento", "concluido"],
       property_status: ["disponivel", "alugado", "manutencao"],

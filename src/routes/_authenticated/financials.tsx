@@ -17,6 +17,7 @@ import { useInstallments, useInvalidate, type Installment } from "@/lib/queries"
 import { formatBRL, formatDate, parseNumber } from "@/lib/format";
 import { generateAsaasCharge, updateAsaasChargeFee, simulateAsaasPayment } from "@/lib/asaas.functions";
 import { parseExpenses, expensesTotals } from "@/lib/variable-expenses";
+import { PainelRepasses } from "@/components/PainelRepasses";
 
 export const Route = createFileRoute("/_authenticated/financials")({
   head: () => ({ meta: [{ title: "Finanças — ImovelPro" }] }),
@@ -74,6 +75,10 @@ function FinancialsPage() {
         <h1 className="text-3xl font-bold tracking-tight">Finanças</h1>
         <p className="text-muted-foreground mt-1">Parcelas agrupadas por contrato. Clique para expandir.</p>
       </div>
+
+      <PainelRepasses />
+
+
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <SummaryCard icon={<Clock className="size-5" />} label="Pendente" value={formatBRL(totals.pending)} />

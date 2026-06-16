@@ -22,10 +22,15 @@ export const Route = createFileRoute("/_authenticated/tenant/financeiro")({
 
 
 
-type Status = "pago" | "pendente" | "atrasado" | "acordo_fechado";
+type Status = "pago" | "pendente" | "atrasado" | "acordo_fechado" | "agendado" | "em_aberto";
 function statusOf(i: any): Status {
   if (i.status === "pago") return "pago";
   if (i.status === "acordo_fechado") return "acordo_fechado";
+  if (i.status === "agendado") return "agendado";
+  if (i.status === "em_aberto") {
+    if (i.due_date < today()) return "atrasado";
+    return "em_aberto";
+  }
   if (i.due_date < today()) return "atrasado";
   return "pendente";
 }
@@ -33,9 +38,12 @@ function statusOf(i: any): Status {
 const badge: Record<Status, { label: string; className: string }> = {
   pago: { label: "Pago", className: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30" },
   pendente: { label: "Pendente", className: "bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30" },
+  em_aberto: { label: "Em aberto", className: "bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30" },
   atrasado: { label: "Atrasado", className: "bg-destructive/15 text-destructive border-destructive/30" },
   acordo_fechado: { label: "Acordo Fechado", className: "bg-violet-500/15 text-violet-300 border-violet-500/30" },
+  agendado: { label: "Agendado", className: "bg-zinc-500/15 text-zinc-600 dark:text-zinc-400 border-zinc-500/30" },
 };
+
 
 function TenantFinanceiro() {
   const { data: contract } = useTenantActiveContract();
@@ -86,7 +94,7 @@ function TenantFinanceiro() {
   const agreementInstallments = agreement
     ? [...items].filter((i: any) => i.debt_agreement_id === agreement.id)
     : [];
-  const sorted = [...items].sort((a: any, b: any) => b.due_date.localeCompare(a.due_date));
+  const sorted = [...items].sort((a: any, b: any) => a.due_date.localeCompare(b.due_date));
 
   return (
     <div className="space-y-4">
@@ -139,13 +147,21 @@ function TenantFinanceiro() {
           const t = expensesTotals(exps);
           const totalDue = Number(i.amount) + t.tenant;
           return (
-            <Card key={i.id} className="overflow-hidden">
+            <Card
+              key={i.id}
+              className={cn(
+                "overflow-hidden transition",
+                s === "agendado" && "opacity-70 border-dashed bg-muted/40",
+              )}
+            >
               <button
                 className="w-full p-4 flex items-center justify-between text-left hover:bg-muted/40 transition"
                 onClick={() => setOpenId(open ? null : i.id)}
               >
                 <div>
-                  <p className="font-medium">{formatBRL(totalDue)}</p>
+                  <p className={cn("font-medium", s === "agendado" && "text-muted-foreground")}>
+                    {formatBRL(totalDue)}
+                  </p>
                   <p className="text-xs text-muted-foreground">
                     Vencimento {formatDate(i.due_date)}
                     {t.tenant > 0 && <span className="ml-2 text-amber-600">+ {formatBRL(t.tenant)} despesas</span>}
@@ -172,7 +188,11 @@ function TenantFinanceiro() {
                       <span>Total a pagar</span><span>{formatBRL(totalDue)}</span>
                     </div>
                   </div>
-                  {s === "pago" ? (
+                  {s === "agendado" ? (
+                    <p className="text-xs text-muted-foreground text-center py-2">
+                      Parcela agendada. O boleto e o PIX serão liberados automaticamente até 15 dias antes do vencimento.
+                    </p>
+                  ) : s === "pago" ? (
                     <>
                       <p className="text-sm text-muted-foreground">
                         Pago em {i.payment_date ? formatDate(i.payment_date) : "—"}
@@ -220,6 +240,7 @@ function TenantFinanceiro() {
                       )}
                     </>
                   )}
+
                 </div>
               )}
             </Card>

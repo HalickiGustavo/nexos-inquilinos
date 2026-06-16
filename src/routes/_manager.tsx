@@ -68,7 +68,7 @@ function ManagerLayout() {
             const Icon = item.icon;
             const showBadge = item.to === "/manager/alertas" && criticalCount > 0;
             return (
-              <Link key={item.to} to={item.to}
+              <Link key={item.to} to={item.to} data-tour={item.tour}
                 className={cn(
                   "flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors",
                   active

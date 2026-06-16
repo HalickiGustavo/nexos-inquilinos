@@ -1,0 +1,1 @@
+DELETE FROM public.asaas_accounts WHERE user_id = 'a16923e1-ea22-490d-96d3-836a81b2d38c';

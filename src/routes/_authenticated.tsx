@@ -144,6 +144,7 @@ function AuthLayout() {
               <Link
                 key={item.to}
                 to={item.to}
+                data-tour={item.tour}
                 className={cn(
                   "flex items-center gap-2 px-3 py-1.5 rounded-md text-xs whitespace-nowrap",
                   active ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"

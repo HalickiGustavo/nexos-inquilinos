@@ -6,13 +6,15 @@ import { cn } from "@/lib/utils";
 import { InstallPwaButton } from "@/components/InstallPwaButton";
 import nexoLogoAsset from "@/assets/nexo-logo.png.asset.json";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { OnboardingTour } from "@/components/OnboardingTour";
+import { tenantTourSteps } from "@/lib/tour-steps";
 
-const tenantNav: ReadonlyArray<{ to: string; label: string; icon: typeof Home; exact?: boolean }> = [
-  { to: "/tenant", label: "Início", icon: Home, exact: true },
-  { to: "/tenant/financeiro", label: "Financeiro", icon: Wallet },
-  { to: "/tenant/contrato", label: "Contrato", icon: FileText },
-  { to: "/tenant/manutencoes", label: "Manutenções", icon: Wrench },
-  { to: "/tenant/alertas", label: "Alertas", icon: Bell },
+const tenantNav: ReadonlyArray<{ to: string; label: string; icon: typeof Home; exact?: boolean; tour: string }> = [
+  { to: "/tenant", label: "Início", icon: Home, exact: true, tour: "nav-tenant" },
+  { to: "/tenant/financeiro", label: "Financeiro", icon: Wallet, tour: "nav-tenant-financeiro" },
+  { to: "/tenant/contrato", label: "Contrato", icon: FileText, tour: "nav-tenant-contrato" },
+  { to: "/tenant/manutencoes", label: "Manutenções", icon: Wrench, tour: "nav-tenant-manutencoes" },
+  { to: "/tenant/alertas", label: "Alertas", icon: Bell, tour: "nav-tenant-alertas" },
 ];
 
 export function TenantShell() {

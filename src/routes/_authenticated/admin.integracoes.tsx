@@ -98,6 +98,9 @@ function AdminIntegracoesPage() {
         </div>
       </Card>
 
+      {/* Feed XML público (padrão Zap/VivaReal/OLX) */}
+      <PublicXmlFeedCard />
+
       {/* Portal connection cards */}
       <div className="grid sm:grid-cols-2 gap-4">
         <PortalCard

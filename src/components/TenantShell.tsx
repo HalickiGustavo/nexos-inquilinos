@@ -104,6 +104,7 @@ export function TenantShell() {
               <Link
                 key={item.to}
                 to={item.to as any}
+                data-tour={item.tour}
                 className={cn(
                   "flex items-center gap-2 px-4 py-3 text-sm border-b-2 transition-colors",
                   active

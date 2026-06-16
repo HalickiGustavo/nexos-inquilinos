@@ -28,6 +28,7 @@ import { Route as ManagerManagerIndexRouteImport } from './routes/_manager/manag
 import { Route as AuthenticatedTenantIndexRouteImport } from './routes/_authenticated/tenant.index'
 import { Route as ApiPublicAsaasWebhookRouteImport } from './routes/api/public/asaas-webhook'
 import { Route as ManagerManagerVistoriasRouteImport } from './routes/_manager/manager.vistorias'
+import { Route as ManagerManagerPortaisRouteImport } from './routes/_manager/manager.portais'
 import { Route as ManagerManagerMigrarDadosRouteImport } from './routes/_manager/manager.migrar-dados'
 import { Route as ManagerManagerIntegracaoRouteImport } from './routes/_manager/manager.integracao'
 import { Route as ManagerManagerFinanceiroRouteImport } from './routes/_manager/manager.financeiro'
@@ -140,6 +141,11 @@ const ManagerManagerVistoriasRoute = ManagerManagerVistoriasRouteImport.update({
   path: '/manager/vistorias',
   getParentRoute: () => ManagerRoute,
 } as any)
+const ManagerManagerPortaisRoute = ManagerManagerPortaisRouteImport.update({
+  id: '/manager/portais',
+  path: '/manager/portais',
+  getParentRoute: () => ManagerRoute,
+} as any)
 const ManagerManagerMigrarDadosRoute =
   ManagerManagerMigrarDadosRouteImport.update({
     id: '/manager/migrar-dados',
@@ -247,6 +253,7 @@ export interface FileRoutesByFullPath {
   '/manager/financeiro': typeof ManagerManagerFinanceiroRoute
   '/manager/integracao': typeof ManagerManagerIntegracaoRoute
   '/manager/migrar-dados': typeof ManagerManagerMigrarDadosRoute
+  '/manager/portais': typeof ManagerManagerPortaisRoute
   '/manager/vistorias': typeof ManagerManagerVistoriasRoute
   '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
   '/tenant/': typeof AuthenticatedTenantIndexRoute
@@ -280,6 +287,7 @@ export interface FileRoutesByTo {
   '/manager/financeiro': typeof ManagerManagerFinanceiroRoute
   '/manager/integracao': typeof ManagerManagerIntegracaoRoute
   '/manager/migrar-dados': typeof ManagerManagerMigrarDadosRoute
+  '/manager/portais': typeof ManagerManagerPortaisRoute
   '/manager/vistorias': typeof ManagerManagerVistoriasRoute
   '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
   '/tenant': typeof AuthenticatedTenantIndexRoute
@@ -316,6 +324,7 @@ export interface FileRoutesById {
   '/_manager/manager/financeiro': typeof ManagerManagerFinanceiroRoute
   '/_manager/manager/integracao': typeof ManagerManagerIntegracaoRoute
   '/_manager/manager/migrar-dados': typeof ManagerManagerMigrarDadosRoute
+  '/_manager/manager/portais': typeof ManagerManagerPortaisRoute
   '/_manager/manager/vistorias': typeof ManagerManagerVistoriasRoute
   '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
   '/_authenticated/tenant/': typeof AuthenticatedTenantIndexRoute
@@ -351,6 +360,7 @@ export interface FileRouteTypes {
     | '/manager/financeiro'
     | '/manager/integracao'
     | '/manager/migrar-dados'
+    | '/manager/portais'
     | '/manager/vistorias'
     | '/api/public/asaas-webhook'
     | '/tenant/'
@@ -384,6 +394,7 @@ export interface FileRouteTypes {
     | '/manager/financeiro'
     | '/manager/integracao'
     | '/manager/migrar-dados'
+    | '/manager/portais'
     | '/manager/vistorias'
     | '/api/public/asaas-webhook'
     | '/tenant'
@@ -419,6 +430,7 @@ export interface FileRouteTypes {
     | '/_manager/manager/financeiro'
     | '/_manager/manager/integracao'
     | '/_manager/manager/migrar-dados'
+    | '/_manager/manager/portais'
     | '/_manager/manager/vistorias'
     | '/api/public/asaas-webhook'
     | '/_authenticated/tenant/'
@@ -572,6 +584,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ManagerManagerVistoriasRouteImport
       parentRoute: typeof ManagerRoute
     }
+    '/_manager/manager/portais': {
+      id: '/_manager/manager/portais'
+      path: '/manager/portais'
+      fullPath: '/manager/portais'
+      preLoaderRoute: typeof ManagerManagerPortaisRouteImport
+      parentRoute: typeof ManagerRoute
+    }
     '/_manager/manager/migrar-dados': {
       id: '/_manager/manager/migrar-dados'
       path: '/manager/migrar-dados'
@@ -722,6 +741,7 @@ interface ManagerRouteChildren {
   ManagerManagerFinanceiroRoute: typeof ManagerManagerFinanceiroRoute
   ManagerManagerIntegracaoRoute: typeof ManagerManagerIntegracaoRoute
   ManagerManagerMigrarDadosRoute: typeof ManagerManagerMigrarDadosRoute
+  ManagerManagerPortaisRoute: typeof ManagerManagerPortaisRoute
   ManagerManagerVistoriasRoute: typeof ManagerManagerVistoriasRoute
   ManagerManagerIndexRoute: typeof ManagerManagerIndexRoute
 }
@@ -735,6 +755,7 @@ const ManagerRouteChildren: ManagerRouteChildren = {
   ManagerManagerFinanceiroRoute: ManagerManagerFinanceiroRoute,
   ManagerManagerIntegracaoRoute: ManagerManagerIntegracaoRoute,
   ManagerManagerMigrarDadosRoute: ManagerManagerMigrarDadosRoute,
+  ManagerManagerPortaisRoute: ManagerManagerPortaisRoute,
   ManagerManagerVistoriasRoute: ManagerManagerVistoriasRoute,
   ManagerManagerIndexRoute: ManagerManagerIndexRoute,
 }

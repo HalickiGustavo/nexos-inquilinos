@@ -473,11 +473,31 @@ export const updateAsaasChargeFee = createServerFn({ method: "POST" })
         })
         .eq("id", inst.data.id);
 
+      const { recordAudit } = await import("./audit.server");
+      await recordAudit({
+        userId,
+        userEmail: context.claims?.email ?? null,
+        action: "asaas.charge.update",
+        entity: "installments",
+        entityId: inst.data.id,
+        metadata: { paymentId: inst.data.asaas_payment_id, value, lateCharges, landlordUserId },
+      });
+
       return { ok: true, value, lateCharges };
     } catch (e: any) {
+      const { recordAudit } = await import("./audit.server");
+      await recordAudit({
+        userId,
+        userEmail: context.claims?.email ?? null,
+        action: "asaas.charge.update.error",
+        entity: "installments",
+        entityId: data.installmentId,
+        metadata: { error: String(e?.message ?? e) },
+      });
       throw mapAsaasError(e);
     }
   });
+
 
 // ===== Simulate sandbox payment through credit card gateway (triggers split) =====
 const simulateInput = z.object({ installmentId: z.string().uuid() });
@@ -600,12 +620,32 @@ export const simulateAsaasPayment = createServerFn({ method: "POST" })
         })
         .eq("id", inst.data.id);
 
+      const { recordAudit } = await import("./audit.server");
+      await recordAudit({
+        userId,
+        userEmail: context.claims?.email ?? null,
+        action: "asaas.payment.simulate",
+        entity: "installments",
+        entityId: inst.data.id,
+        metadata: { paymentId: inst.data.asaas_payment_id, value, landlordUserId },
+      });
+
       return { ok: true as const, value };
     } catch (e: any) {
       const mapped = mapAsaasError(e);
+      const { recordAudit } = await import("./audit.server");
+      await recordAudit({
+        userId,
+        userEmail: context.claims?.email ?? null,
+        action: "asaas.payment.simulate.error",
+        entity: "installments",
+        entityId: data.installmentId,
+        metadata: { error: mapped.message },
+      });
       return { ok: false as const, error: mapped.message };
     }
   });
+
 
 
 

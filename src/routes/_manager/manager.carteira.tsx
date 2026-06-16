@@ -8,11 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Plus, Search, Eye } from "lucide-react";
 import { formatBRL } from "@/lib/format";
-import { toast } from "sonner";
+import { PropertyFormDialog } from "@/components/PropertyFormDialog";
 
 export const Route = createFileRoute("/_manager/manager/carteira")({
   component: Carteira,

@@ -232,6 +232,16 @@ export function PropertyFormDialog({
 
         <div className="sm:col-span-2 space-y-2"><Label>Observações / Descrição</Label><Textarea value={form.notes ?? ""} onChange={(ev) => setForm({ ...form, notes: ev.target.value })} /></div>
 
+        {editing ? (
+          <div className="sm:col-span-2">
+            <PropertyPhotosUploader propertyId={editing.id} />
+          </div>
+        ) : (
+          <div className="sm:col-span-2 text-xs text-muted-foreground rounded-lg border border-dashed p-3 bg-muted/30">
+            💡 Salve o imóvel primeiro para começar a enviar fotos.
+          </div>
+        )}
+
         <div className="sm:col-span-2 space-y-3 rounded-lg border bg-card p-4">
           <div>
             <h4 className="font-semibold text-sm">Sincronização com Portais</h4>

@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet, useNavigate, useRouterState, Link } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { LayoutDashboard, Briefcase, Wallet, Users, KanbanSquare, ClipboardCheck, Bell, LogOut, Loader2, Plug, FileDigit, Database } from "lucide-react";
+import { LayoutDashboard, Briefcase, Wallet, Users, KanbanSquare, ClipboardCheck, Bell, LogOut, Loader2, Plug, FileDigit, Database, Coins, Globe } from "lucide-react";
 import nexoLogo from "@/assets/nexo-logo.jpeg.asset.json";
 import { useAuth } from "@/lib/auth";
 import { useUserRole } from "@/lib/useUserRole";

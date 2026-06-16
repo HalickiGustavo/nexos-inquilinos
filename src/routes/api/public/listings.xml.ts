@@ -59,29 +59,45 @@ export const Route = createFileRoute("/api/public/listings/xml")({
             );
           }
 
+          const SIGN_TTL = 60 * 60 * 24 * 7; // 7 dias
           const imoveis = await Promise.all(
             (properties ?? []).map(async (p: any) => {
-              // Lista arquivos no folder = property.id dentro do bucket público
+              // Lista arquivos no folder = property.id dentro do bucket privado
               const { data: files } = await supabaseAdmin.storage
                 .from("property-images")
                 .list(p.id, { limit: 100, sortBy: { column: "name", order: "asc" } });
 
-              const bucketPhotos = (files ?? [])
+              const bucketPaths = (files ?? [])
                 .filter((f) => f.name && !f.name.startsWith("."))
-                .map((f) => {
-                  const { data } = supabaseAdmin.storage
+                .map((f) => `${p.id}/${f.name}`);
+
+              let photoUrls: string[] = [];
+              if (bucketPaths.length > 0) {
+                const { data: signed } = await supabaseAdmin.storage
+                  .from("property-images")
+                  .createSignedUrls(bucketPaths, SIGN_TTL);
+                photoUrls = (signed ?? []).map((s) => s.signedUrl).filter(Boolean);
+              }
+
+              // Fallback / ordem definida pelo usuário: property_photos
+              if (photoUrls.length === 0) {
+                const dbRows = ((p.property_photos ?? []) as Array<{ url: string; position: number }>)
+                  .sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
+                const dbPaths = dbRows
+                  .map((ph) => {
+                    const marker = "/property-images/";
+                    const idx = ph.url.indexOf(marker);
+                    return idx >= 0 ? ph.url.slice(idx + marker.length).split("?")[0] : null;
+                  })
+                  .filter((x): x is string => !!x);
+                if (dbPaths.length > 0) {
+                  const { data: signed } = await supabaseAdmin.storage
                     .from("property-images")
-                    .getPublicUrl(`${p.id}/${f.name}`);
-                  return data.publicUrl;
-                });
+                    .createSignedUrls(dbPaths, SIGN_TTL);
+                  photoUrls = (signed ?? []).map((s) => s.signedUrl).filter(Boolean);
+                }
+              }
 
-              // Fallback: URLs já registradas em property_photos
-              const dbPhotos = ((p.property_photos ?? []) as Array<{ url: string; position: number }>)
-                .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
-                .map((ph) => ph.url)
-                .filter(Boolean);
-
-              const photoUrls = bucketPhotos.length > 0 ? bucketPhotos : dbPhotos;
 
               const fotosXml = photoUrls
                 .map(

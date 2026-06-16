@@ -365,3 +365,102 @@ function Repasses() {
     </CardContent></Card>
   );
 }
+
+function GenerateBoletoBtn({ installment, onDone }: { installment: any; onDone: () => void }) {
+  const generate = useServerFn(generateAsaasCharge);
+  const [loading, setLoading] = useState(false);
+  return (
+    <Button
+      size="sm"
+      variant="secondary"
+      disabled={loading}
+      onClick={async () => {
+        setLoading(true);
+        try {
+          const res: any = await generate({ data: { installmentId: installment.id, billingType: "UNDEFINED" } });
+          if (res?.ok === false) {
+            const msg = String(res.error ?? "Falha ao gerar boleto");
+            const isLimit = /limite/i.test(msg);
+            toast.error(msg, {
+              description: isLimit
+                ? "Você ainda pode registrar este pagamento manualmente em 'Pago'."
+                : undefined,
+              duration: 8000,
+            });
+          } else {
+            toast.success("Boleto gerado!");
+            onDone();
+          }
+        } catch (e: any) {
+          toast.error(e?.message ?? "Falha ao gerar boleto");
+        } finally {
+          setLoading(false);
+        }
+      }}
+    >
+      {loading ? <Loader2 className="size-4 mr-1 animate-spin" /> : <FileText className="size-4 mr-1" />}
+      Gerar boleto
+    </Button>
+  );
+}
+
+function UpdateBoletoBtn({ installment, onDone }: { installment: any; onDone: () => void }) {
+  const update = useServerFn(updateAsaasChargeFee);
+  const [loading, setLoading] = useState(false);
+  return (
+    <Button
+      size="sm"
+      variant="outline"
+      disabled={loading}
+      title="Atualizar valor do boleto incluindo taxa NEXO"
+      onClick={async () => {
+        setLoading(true);
+        try {
+          await update({ data: { installmentId: installment.id } });
+          toast.success("Valor do boleto atualizado");
+          onDone();
+        } catch (e: any) {
+          toast.error(e?.message ?? "Falha ao atualizar");
+        } finally {
+          setLoading(false);
+        }
+      }}
+    >
+      {loading ? <Loader2 className="size-4 mr-1 animate-spin" /> : <Wallet className="size-4 mr-1" />}
+      Atualizar taxa
+    </Button>
+  );
+}
+
+function SimulateBtn({ installment, onDone }: { installment: any; onDone: () => void }) {
+  const simulate = useServerFn(simulateAsaasPayment);
+  const [loading, setLoading] = useState(false);
+  return (
+    <Button
+      size="sm"
+      variant="outline"
+      disabled={loading}
+      title="Simular pagamento no sandbox Asaas"
+      className="border-amber-500/40 text-amber-600 hover:bg-amber-500/10"
+      onClick={async () => {
+        setLoading(true);
+        try {
+          const res: any = await simulate({ data: { installmentId: installment.id } });
+          if (res?.ok === false) {
+            toast.error(res.error ?? "Falha ao simular pagamento");
+          } else {
+            toast.success("Pagamento simulado no Asaas Sandbox");
+            onDone();
+          }
+        } catch (e: any) {
+          toast.error(e?.message ?? "Falha ao simular pagamento");
+        } finally {
+          setLoading(false);
+        }
+      }}
+    >
+      {loading ? <Loader2 className="size-4 mr-1 animate-spin" /> : <Sparkles className="size-4 mr-1" />}
+      Simular
+    </Button>
+  );
+}

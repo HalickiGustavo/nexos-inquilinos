@@ -48,7 +48,7 @@ function PropertiesPage() {
           <DialogTrigger asChild>
             <Button><Plus className="size-4 mr-2" />Novo imóvel</Button>
           </DialogTrigger>
-          <PropertyDialog editing={editing} onDone={() => { setOpen(false); setEditing(null); }} />
+          <PropertyFormDialog editing={editing} onDone={() => { setOpen(false); setEditing(null); }} />
         </Dialog>
       </div>
 

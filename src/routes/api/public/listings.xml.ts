@@ -76,7 +76,7 @@ export const Route = createFileRoute("/api/public/listings/xml")({
                 const { data: signed } = await supabaseAdmin.storage
                   .from("property-images")
                   .createSignedUrls(bucketPaths, SIGN_TTL);
-                photoUrls = (signed ?? []).map((s) => s.signedUrl).filter(Boolean);
+                photoUrls = (signed ?? []).map((s) => s.signedUrl).filter((u): u is string => !!u);
               }
 
               // Fallback / ordem definida pelo usuário: property_photos
@@ -94,7 +94,7 @@ export const Route = createFileRoute("/api/public/listings/xml")({
                   const { data: signed } = await supabaseAdmin.storage
                     .from("property-images")
                     .createSignedUrls(dbPaths, SIGN_TTL);
-                  photoUrls = (signed ?? []).map((s) => s.signedUrl).filter(Boolean);
+                  photoUrls = (signed ?? []).map((s) => s.signedUrl).filter((u): u is string => !!u);
                 }
               }
 

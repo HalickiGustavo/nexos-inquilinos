@@ -66,7 +66,7 @@ function AdminIntegracoesPage() {
       <header>
         <h1 className="text-3xl font-bold tracking-tight">Integrações com Portais</h1>
         <p className="text-muted-foreground mt-1">
-          Conecte sua carteira aos principais portais imobiliários do Brasil via feed XML automático.
+          Conecte seus imóveis aos principais portais imobiliários do Brasil de forma automática.
         </p>
       </header>
 
@@ -77,9 +77,9 @@ function AdminIntegracoesPage() {
             <ShieldCheck className="size-5 text-primary" />
           </div>
           <div className="flex-1">
-            <h2 className="text-lg font-semibold">URL Mestre de Distribuição</h2>
+            <h2 className="text-lg font-semibold">Link Principal de Compartilhamento</h2>
             <p className="text-sm text-muted-foreground">
-              Endereço seguro e tokenizado do feed XML. Cole esta URL no painel de cada portal.
+              Endereço seguro com chave de acesso. Cole este link no painel de cada portal.
             </p>
           </div>
         </div>
@@ -94,7 +94,7 @@ function AdminIntegracoesPage() {
 
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <ShieldCheck className="size-3.5" />
-          O token é único, opaco e não exibe IDs internos. Compartilhe apenas com portais confiáveis.
+          A chave de acesso é única e não mostra dados internos. Compartilhe apenas com portais confiáveis.
         </div>
       </Card>
 
@@ -144,7 +144,7 @@ function PublicXmlFeedCard() {
       await navigator.clipboard.writeText(url);
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
-      toast.success("Link do feed XML copiado!");
+      toast.success("Link copiado!");
     } catch {
       toast.error("Não foi possível copiar o link.");
     }
@@ -156,12 +156,12 @@ function PublicXmlFeedCard() {
         <div className="p-2.5 rounded-lg bg-primary/10">
           <Rss className="size-5 text-primary" />
         </div>
-        <div className="flex-1">
-          <h2 className="text-lg font-semibold">Feed XML Público (Padrão Zap / VivaReal)</h2>
-          <p className="text-sm text-muted-foreground">
-            Endpoint público com todos os imóveis disponíveis e fotos permanentes do bucket público.
-          </p>
-        </div>
+          <div className="flex-1">
+            <h2 className="text-lg font-semibold">Lista Pública de Imóveis (Padrão Zap / VivaReal)</h2>
+            <p className="text-sm text-muted-foreground">
+              Link público com todos os imóveis disponíveis e fotos acessíveis.
+            </p>
+          </div>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-2">
@@ -180,8 +180,8 @@ function PublicXmlFeedCard() {
       <div className="flex items-start gap-2 rounded-lg border border-primary/20 bg-primary/5 p-3 text-sm text-foreground/90">
         <Info className="size-4 text-primary mt-0.5 shrink-0" />
         <p>
-          Copie este link e cole no painel do Zap, VivaReal ou OLX para ativar a sincronização automática
-          de anúncios e fotos de seus imóveis.
+          Copie este link e cole no painel do Zap, VivaReal ou OLX para ativar a publicação automática
+          dos seus anúncios e fotos.
         </p>
       </div>
     </Card>
@@ -218,7 +218,7 @@ function FeedUrlTrack({ url }: { url: string }) {
       />
       <Button type="button" onClick={copy} className="shrink-0">
         <Copy className="size-4 mr-2" />
-        {copied ? "Copiado!" : "Copiar URL do Feed"}
+        {copied ? "Copiado!" : "Copiar Link"}
       </Button>
     </div>
   );

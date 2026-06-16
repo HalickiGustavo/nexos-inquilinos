@@ -77,7 +77,7 @@ function AdminIntegracoesPage() {
       .update({ integration_token: newToken })
       .eq("id", user.id);
     if (error) return toast.error(error.message);
-    toast.success("Nova URL mestre gerada. A URL antiga foi invalidada.", {
+    toast.success("Novo link principal gerado. O link antigo foi cancelado.", {
       className: "border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300",
     });
     refetch();
@@ -91,7 +91,7 @@ function AdminIntegracoesPage() {
       <header>
         <h1 className="text-3xl font-bold tracking-tight">Integrações com Portais</h1>
         <p className="text-muted-foreground mt-1">
-          Conecte sua carteira aos principais portais imobiliários do Brasil via feed XML automático.
+          Conecte seus imóveis aos principais portais imobiliários do Brasil de forma automática.
         </p>
       </header>
 
@@ -102,9 +102,9 @@ function AdminIntegracoesPage() {
             <ShieldCheck className="size-5 text-primary" />
           </div>
           <div className="flex-1">
-            <h2 className="text-lg font-semibold">URL Mestre de Distribuição</h2>
+            <h2 className="text-lg font-semibold">Link Principal de Compartilhamento</h2>
             <p className="text-sm text-muted-foreground">
-              Endereço seguro e tokenizado do feed XML. Cole esta URL no painel de cada portal.
+              Endereço seguro com chave de acesso. Cole este link no painel de cada portal.
             </p>
           </div>
         </div>
@@ -120,7 +120,7 @@ function AdminIntegracoesPage() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <ShieldCheck className="size-3.5" />
-            O token é único, opaco e não exibe IDs internos. Compartilhe apenas com portais confiáveis.
+            A chave de acesso é única e não mostra dados internos. Compartilhe apenas com portais confiáveis.
           </div>
           {!isLoading && (
             <AlertDialog>
@@ -132,9 +132,9 @@ function AdminIntegracoesPage() {
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Alterar URL mestre?</AlertDialogTitle>
+                  <AlertDialogTitle>Alterar link principal?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Isso invalidará imediatamente a URL atual. Os portais que já usam o feed antigo
+                    Isso cancelará imediatamente o link atual. Os portais que já usam o link antigo
                     pararão de receber atualizações até que você atualize a configuração deles.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
@@ -195,11 +195,11 @@ function FeedUrlTrack({ url }: { url: string }) {
     try {
       await navigator.clipboard.writeText(url);
       setCopied(true);
-      toast.success("URL do feed copiada com sucesso!", {
+      toast.success("Link copiado com sucesso!", {
         className: "border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
       });
     } catch {
-      toast.error("Não foi possível copiar a URL.");
+      toast.error("Não foi possível copiar o link.");
     }
   }
 
@@ -213,7 +213,7 @@ function FeedUrlTrack({ url }: { url: string }) {
       />
       <Button type="button" onClick={copy} className="shrink-0">
         <Copy className="size-4 mr-2" />
-        {copied ? "Copiado!" : "Copiar URL do Feed"}
+        {copied ? "Copiado!" : "Copiar Link"}
       </Button>
     </div>
   );

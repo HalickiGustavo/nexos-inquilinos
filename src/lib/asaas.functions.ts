@@ -501,7 +501,12 @@ export const simulateAsaasPayment = createServerFn({ method: "POST" })
     if (inst.data.status === "pago") throw new Error("Parcela já está paga.");
 
     if (!inst.data.asaas_payment_id) {
-      await generateAsaasCharge({ data: { installmentId: data.installmentId } });
+      try {
+        await generateAsaasCharge({ data: { installmentId: data.installmentId } });
+      } catch (e: any) {
+        const mapped = mapAsaasError(e);
+        return { ok: false as const, error: mapped.message };
+      }
       const refreshed = await supabase
         .from("installments")
         .select("asaas_payment_id")
@@ -509,7 +514,7 @@ export const simulateAsaasPayment = createServerFn({ method: "POST" })
         .maybeSingle();
       (inst.data as any).asaas_payment_id = refreshed.data?.asaas_payment_id ?? null;
       if (!(inst.data as any).asaas_payment_id) {
-        throw new Error("Falha ao gerar cobrança no Asaas para simulação.");
+        return { ok: false as const, error: "Falha ao gerar cobrança no Asaas para simulação." };
       }
     }
 

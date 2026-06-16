@@ -8,6 +8,8 @@ import { useManagerAlerts } from "@/lib/alerts";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { OnboardingTour } from "@/components/OnboardingTour";
+import { managerTourSteps } from "@/lib/tour-steps";
 
 export const Route = createFileRoute("/_manager")({
   ssr: false,

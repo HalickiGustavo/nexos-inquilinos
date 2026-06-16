@@ -59,9 +59,9 @@ function IntegrationsPage() {
   return (
     <div className="p-6 lg:p-8 max-w-3xl mx-auto space-y-6">
       <header>
-        <h1 className="text-3xl font-bold tracking-tight">Integrações</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Saldo e Saque</h1>
         <p className="text-muted-foreground mt-1">
-          Conecte sua conta Asaas para emitir boletos e Pix automaticamente.
+          Conecte sua conta de recebimento para emitir boletos e Pix e configurar os repasses automáticos.
         </p>
       </header>
 

@@ -52,7 +52,7 @@ function ManagerLayout() {
 
   return (
     <div className="min-h-screen flex bg-background text-foreground">
-      <aside className="hidden md:flex w-60 lg:w-64 flex-col bg-sidebar text-sidebar-foreground border-r border-sidebar-border">
+      <aside className="hidden md:fixed md:left-0 md:top-0 md:h-screen md:flex w-60 lg:w-64 flex-col bg-sidebar text-sidebar-foreground border-r border-sidebar-border">
         <div className="p-5 border-b border-sidebar-border">
           <div className="flex items-center gap-3">
             <img src={nexoLogo.url} alt="NEXO" className="h-9 w-auto rounded-md bg-white p-1.5" />
@@ -93,7 +93,7 @@ function ManagerLayout() {
         </div>
       </aside>
 
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 md:ml-60 lg:ml-64">
         <div className="md:hidden flex items-center justify-between px-4 py-3 bg-card border-b border-border">
           <Link to="/manager" className="flex items-center">
             <img src={nexoLogo.url} alt="NEXO" className="h-8 w-auto rounded-md bg-white p-1" />

@@ -49,7 +49,8 @@ export const Route = createFileRoute("/api/public/listings/xml")({
               bedrooms, bathrooms, garages, area_total,
               property_photos ( url, position )
             `)
-            .eq("status", "disponivel");
+            .eq("status", "disponivel")
+            .or("publish_imovelweb.eq.true,publish_zap.eq.true");
 
           if (error) {
             console.error("[listings.xml] erro ao consultar imóveis:", error);

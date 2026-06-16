@@ -399,8 +399,14 @@ export const updateAsaasChargeFee = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => updateInput.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
+    const [{ data: isManager }, { data: isOwner }] = await Promise.all([
+      supabase.rpc("has_role", { _user_id: userId, _role: "manager" }),
+      supabase.rpc("has_role", { _user_id: userId, _role: "owner" }),
+    ]);
+    if (!isManager && !isOwner) throw new Error("Forbidden");
     const { asaasFetch, getNexoFee } = await import("./asaas.server");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
 
     const inst = await supabase
       .from("installments")

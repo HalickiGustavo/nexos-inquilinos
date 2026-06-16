@@ -380,9 +380,13 @@ export const generateAsaasCharge = createServerFn({ method: "POST" })
         .eq("id", inst.data.id);
       if (upd.error) throw new Error(upd.error.message);
 
-      return { ok: true, paymentId: payment.id, value, lateCharges };
+      return { ok: true as const, paymentId: payment.id, value, lateCharges };
     } catch (e: any) {
-      throw mapAsaasError(e);
+      const mapped = mapAsaasError(e);
+      // Erros de negócio do Asaas (ex.: "limite de emissão atingido") são
+      // retornados como payload para que a UI possa orientar o usuário a
+      // registrar o pagamento manualmente, em vez de quebrar a tela.
+      return { ok: false as const, error: mapped.message };
     }
   });
 
@@ -502,7 +506,10 @@ export const simulateAsaasPayment = createServerFn({ method: "POST" })
 
     if (!inst.data.asaas_payment_id) {
       try {
-        await generateAsaasCharge({ data: { installmentId: data.installmentId } });
+        const gen: any = await generateAsaasCharge({ data: { installmentId: data.installmentId } });
+        if (gen?.ok === false) {
+          return { ok: false as const, error: gen.error ?? "Falha ao gerar cobrança no Asaas." };
+        }
       } catch (e: any) {
         const mapped = mapAsaasError(e);
         return { ok: false as const, error: mapped.message };

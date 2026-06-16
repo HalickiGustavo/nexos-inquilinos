@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Fragment, useMemo, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -10,11 +11,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatBRL, formatDate } from "@/lib/format";
-import { CheckCircle2, Receipt, Sparkles, ChevronRight, BadgeCheck } from "lucide-react";
+import { CheckCircle2, Receipt, Sparkles, ChevronRight, BadgeCheck, FileText, Loader2, Wallet, Copy } from "lucide-react";
 import { toast } from "sonner";
 import { VariableExpensesDialog } from "@/components/VariableExpensesDialog";
 import { SplitBreakdownDialog, NEXO_FEE_PER_INSTALLMENT } from "@/components/SplitBreakdownDialog";
 import { parseExpenses, expensesTotals } from "@/lib/variable-expenses";
+import { generateAsaasCharge, updateAsaasChargeFee, simulateAsaasPayment } from "@/lib/asaas.functions";
 
 export const Route = createFileRoute("/_manager/manager/financeiro")({
   component: Financeiro,
@@ -214,6 +216,31 @@ function Recebimentos() {
                                   <TableCell>{badge(i.status)}</TableCell>
                                   <TableCell className="text-right">
                                     <div className="flex justify-end gap-2 flex-wrap">
+                                      {i.status !== "pago" && !i.asaas_payment_id && (
+                                        <GenerateBoletoBtn installment={i} onDone={() => qc.invalidateQueries({ queryKey: ["mgr-receb"] })} />
+                                      )}
+                                      {i.status !== "pago" && i.asaas_payment_id && (
+                                        <UpdateBoletoBtn installment={i} onDone={() => qc.invalidateQueries({ queryKey: ["mgr-receb"] })} />
+                                      )}
+                                      {i.boleto_url && (
+                                        <Button size="sm" variant="outline" asChild>
+                                          <a href={i.boleto_url} target="_blank" rel="noreferrer">
+                                            <FileText className="size-4 mr-1" /> Boleto
+                                          </a>
+                                        </Button>
+                                      )}
+                                      {i.barcode && (
+                                        <Button
+                                          size="sm"
+                                          variant="ghost"
+                                          onClick={() => {
+                                            navigator.clipboard.writeText(i.barcode);
+                                            toast.success("Linha digitável copiada");
+                                          }}
+                                        >
+                                          <Copy className="size-4" />
+                                        </Button>
+                                      )}
                                       {i.status !== "pago" && (
                                         <Button
                                           size="sm"
@@ -222,6 +249,9 @@ function Recebimentos() {
                                         >
                                           <BadgeCheck className="size-4 mr-1" /> Pago
                                         </Button>
+                                      )}
+                                      {i.status !== "pago" && (
+                                        <SimulateBtn installment={i} onDone={() => qc.invalidateQueries({ queryKey: ["mgr-receb"] })} />
                                       )}
                                       <Button size="sm" variant="outline" onClick={() => setSplitFor(i)}>
                                         <Sparkles className="size-4 mr-1" /> Split
@@ -333,5 +363,104 @@ function Repasses() {
         </TableBody>
       </Table>
     </CardContent></Card>
+  );
+}
+
+function GenerateBoletoBtn({ installment, onDone }: { installment: any; onDone: () => void }) {
+  const generate = useServerFn(generateAsaasCharge);
+  const [loading, setLoading] = useState(false);
+  return (
+    <Button
+      size="sm"
+      variant="secondary"
+      disabled={loading}
+      onClick={async () => {
+        setLoading(true);
+        try {
+          const res: any = await generate({ data: { installmentId: installment.id, billingType: "UNDEFINED" } });
+          if (res?.ok === false) {
+            const msg = String(res.error ?? "Falha ao gerar boleto");
+            const isLimit = /limite/i.test(msg);
+            toast.error(msg, {
+              description: isLimit
+                ? "Você ainda pode registrar este pagamento manualmente em 'Pago'."
+                : undefined,
+              duration: 8000,
+            });
+          } else {
+            toast.success("Boleto gerado!");
+            onDone();
+          }
+        } catch (e: any) {
+          toast.error(e?.message ?? "Falha ao gerar boleto");
+        } finally {
+          setLoading(false);
+        }
+      }}
+    >
+      {loading ? <Loader2 className="size-4 mr-1 animate-spin" /> : <FileText className="size-4 mr-1" />}
+      Gerar boleto
+    </Button>
+  );
+}
+
+function UpdateBoletoBtn({ installment, onDone }: { installment: any; onDone: () => void }) {
+  const update = useServerFn(updateAsaasChargeFee);
+  const [loading, setLoading] = useState(false);
+  return (
+    <Button
+      size="sm"
+      variant="outline"
+      disabled={loading}
+      title="Atualizar valor do boleto incluindo taxa NEXO"
+      onClick={async () => {
+        setLoading(true);
+        try {
+          await update({ data: { installmentId: installment.id } });
+          toast.success("Valor do boleto atualizado");
+          onDone();
+        } catch (e: any) {
+          toast.error(e?.message ?? "Falha ao atualizar");
+        } finally {
+          setLoading(false);
+        }
+      }}
+    >
+      {loading ? <Loader2 className="size-4 mr-1 animate-spin" /> : <Wallet className="size-4 mr-1" />}
+      Atualizar taxa
+    </Button>
+  );
+}
+
+function SimulateBtn({ installment, onDone }: { installment: any; onDone: () => void }) {
+  const simulate = useServerFn(simulateAsaasPayment);
+  const [loading, setLoading] = useState(false);
+  return (
+    <Button
+      size="sm"
+      variant="outline"
+      disabled={loading}
+      title="Simular pagamento no sandbox Asaas"
+      className="border-amber-500/40 text-amber-600 hover:bg-amber-500/10"
+      onClick={async () => {
+        setLoading(true);
+        try {
+          const res: any = await simulate({ data: { installmentId: installment.id } });
+          if (res?.ok === false) {
+            toast.error(res.error ?? "Falha ao simular pagamento");
+          } else {
+            toast.success("Pagamento simulado no Asaas Sandbox");
+            onDone();
+          }
+        } catch (e: any) {
+          toast.error(e?.message ?? "Falha ao simular pagamento");
+        } finally {
+          setLoading(false);
+        }
+      }}
+    >
+      {loading ? <Loader2 className="size-4 mr-1 animate-spin" /> : <Sparkles className="size-4 mr-1" />}
+      Simular
+    </Button>
   );
 }

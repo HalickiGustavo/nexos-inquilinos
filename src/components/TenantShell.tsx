@@ -119,6 +119,7 @@ export function TenantShell() {
           })}
         </div>
       </nav>
+      <OnboardingTour tourKey="tenant" steps={tenantTourSteps} />
     </div>
   );
 }

@@ -27,14 +27,14 @@ export const Route = createFileRoute("/_authenticated")({
 });
 
 const navItems = [
-  { to: "/dashboard", label: "Visão Geral", icon: LayoutDashboard },
-  { to: "/conta-corrente", label: "Conta Corrente", icon: Coins },
-  { to: "/properties", label: "Imóveis", icon: Building2 },
-  { to: "/tenants", label: "Inquilinos", icon: Users },
-  { to: "/contracts", label: "Contratos", icon: FileText },
-  { to: "/financials", label: "Finanças", icon: Wallet },
-  { to: "/maintenances", label: "Manutenções", icon: Wrench },
-  { to: "/integrations", label: "Saldo e Saque", icon: Plug },
+  { to: "/dashboard", label: "Visão Geral", icon: LayoutDashboard, tour: "nav-dashboard" },
+  { to: "/conta-corrente", label: "Conta Corrente", icon: Coins, tour: "nav-conta-corrente" },
+  { to: "/properties", label: "Imóveis", icon: Building2, tour: "nav-properties" },
+  { to: "/tenants", label: "Inquilinos", icon: Users, tour: "nav-tenants" },
+  { to: "/contracts", label: "Contratos", icon: FileText, tour: "nav-contracts" },
+  { to: "/financials", label: "Finanças", icon: Wallet, tour: "nav-financials" },
+  { to: "/maintenances", label: "Manutenções", icon: Wrench, tour: "nav-maintenances" },
+  { to: "/integrations", label: "Saldo e Saque", icon: Plug, tour: "nav-integrations" },
 ] as const;
 
 function AuthLayout() {

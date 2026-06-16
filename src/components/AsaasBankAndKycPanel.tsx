@@ -79,10 +79,10 @@ export function AsaasBankAndKycPanel({
 
 function KycStatusBadge({ status }: { status: string }) {
   const map: Record<string, { label: string; className: string; Icon: typeof Clock }> = {
-    PENDENTE: { label: "KYC Pendente", className: "bg-zinc-200 text-zinc-700 border-zinc-300 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700", Icon: Clock },
-    EM_ANALISE: { label: "KYC em Análise", className: "bg-amber-500/15 text-amber-700 border-amber-500/30 dark:text-amber-400", Icon: Clock },
-    APROVADO: { label: "KYC Aprovado", className: "bg-emerald-500/15 text-emerald-700 border-emerald-500/30 dark:text-emerald-400", Icon: CheckCircle2 },
-    REJEITADO: { label: "KYC Rejeitado", className: "bg-destructive/15 text-destructive border-destructive/30", Icon: ShieldAlert },
+    PENDENTE: { label: "Verificação Pendente", className: "bg-zinc-200 text-zinc-700 border-zinc-300 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700", Icon: Clock },
+    EM_ANALISE: { label: "Verificação em Análise", className: "bg-amber-500/15 text-amber-700 border-amber-500/30 dark:text-amber-400", Icon: Clock },
+    APROVADO: { label: "Verificação Aprovada", className: "bg-emerald-500/15 text-emerald-700 border-emerald-500/30 dark:text-emerald-400", Icon: CheckCircle2 },
+    REJEITADO: { label: "Verificação Rejeitada", className: "bg-destructive/15 text-destructive border-destructive/30", Icon: ShieldAlert },
   };
   const s = map[status] ?? map.PENDENTE;
   const Icon = s.Icon;
@@ -197,7 +197,7 @@ function KycUploadSection({ onChanged }: { onChanged?: () => Promise<unknown> | 
       <CardContent className="p-6">
         <div className="flex items-center gap-2 mb-1">
           <FileCheck2 className="size-4 text-primary" />
-          <h3 className="font-semibold">Verificação de Identidade (KYC)</h3>
+          <h3 className="font-semibold">Verificação de Identidade</h3>
         </div>
         <p className="text-sm text-muted-foreground mb-4">
           Os arquivos são transmitidos em memória diretamente para o Asaas. <strong>Nada é salvo</strong> em

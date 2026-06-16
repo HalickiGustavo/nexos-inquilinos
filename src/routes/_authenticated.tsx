@@ -34,7 +34,7 @@ const navItems = [
   { to: "/contracts", label: "Contratos", icon: FileText },
   { to: "/financials", label: "Finanças", icon: Wallet },
   { to: "/maintenances", label: "Manutenções", icon: Wrench },
-  { to: "/integrations", label: "Integrações", icon: Plug },
+  { to: "/integrations", label: "Saldo e Saque", icon: Plug },
 ] as const;
 
 function AuthLayout() {

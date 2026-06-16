@@ -120,7 +120,7 @@ function ManagerLayout() {
             const active = item.exact ? pathname === item.to : pathname.startsWith(item.to);
             const Icon = item.icon;
             return (
-              <Link key={item.to} to={item.to}
+              <Link key={item.to} to={item.to} data-tour={item.tour}
                 className={cn("flex items-center gap-2 px-3 py-1.5 rounded-full text-xs whitespace-nowrap border transition-colors",
                   active
                     ? "bg-primary text-primary-foreground border-primary"

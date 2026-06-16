@@ -134,7 +134,14 @@ function Carteira() {
         </CardContent>
       </Card>
 
-      <NovoImovelDialog open={openNew} onOpenChange={setOpenNew} onSaved={() => qc.invalidateQueries({ queryKey: ["mgr-carteira"] })} />
+      <Dialog open={openNew} onOpenChange={setOpenNew}>
+        <PropertyFormDialog
+          editing={null}
+          mode="manager"
+          invalidateKeys={["mgr-carteira", "properties"]}
+          onDone={() => { setOpenNew(false); qc.invalidateQueries({ queryKey: ["mgr-carteira"] }); }}
+        />
+      </Dialog>
       <Dialog open={!!openDetail} onOpenChange={(o) => !o && setOpenDetail(null)}>
         <DialogContent>
           <DialogHeader><DialogTitle>Detalhes do Imóvel</DialogTitle></DialogHeader>

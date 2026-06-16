@@ -23,7 +23,8 @@ const navItems: { to: string; label: string; icon: typeof LayoutDashboard; exact
   { to: "/manager/vistorias", label: "Vistorias", icon: ClipboardCheck },
   { to: "/manager/alertas", label: "Alertas", icon: Bell },
   { to: "/manager/crm", label: "CRM", icon: KanbanSquare },
-  { to: "/manager/integracao", label: "Integração", icon: Plug },
+  { to: "/manager/integracao", label: "Saldo e Saque", icon: Coins },
+  { to: "/manager/portais", label: "Portais de Venda", icon: Globe },
   { to: "/manager/migrar-dados", label: "Migrar Dados", icon: Database },
 ];
 

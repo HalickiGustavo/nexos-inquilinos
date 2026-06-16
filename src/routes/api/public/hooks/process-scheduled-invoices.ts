@@ -4,15 +4,15 @@ import { timingSafeEqual } from "node:crypto";
 // Cron-triggered hook: emite Just-In-Time as cobranças `agendado` cujo
 // vencimento está dentro do horizonte (default 15 dias).
 //
-// Autenticação: exige `Authorization: Bearer <SUPABASE_SERVICE_ROLE_KEY>`.
-// O service role key é estritamente server-only (nunca é exposto ao bundle
-// do cliente como VITE_*), portanto serve como segredo compartilhado entre
-// o pg_cron (executado dentro do banco) e este endpoint público.
+// Autenticação: exige `Authorization: Bearer <CRON_SECRET>`. CRON_SECRET é
+// estritamente server-only (não é prefixado com VITE_ e nunca aparece no
+// bundle do navegador), portanto pode servir como segredo compartilhado
+// entre o pg_cron e este endpoint público.
 export const Route = createFileRoute("/api/public/hooks/process-scheduled-invoices")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const expected = process.env.SUPABASE_SERVICE_ROLE_KEY;
+        const expected = process.env.CRON_SECRET;
         const header = request.headers.get("authorization") ?? request.headers.get("Authorization") ?? "";
         const provided = header.startsWith("Bearer ") ? header.slice(7) : "";
         const a = provided ? Buffer.from(provided) : null;

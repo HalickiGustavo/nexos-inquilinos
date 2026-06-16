@@ -16,18 +16,18 @@ export const Route = createFileRoute("/_manager")({
   component: ManagerLayout,
 });
 
-const navItems: { to: string; label: string; icon: typeof LayoutDashboard; exact?: boolean }[] = [
-  { to: "/manager", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  { to: "/manager/carteira", label: "Carteira", icon: Briefcase },
-  { to: "/manager/financeiro", label: "Financeiro", icon: Wallet },
-  { to: "/manager/dimob", label: "DIMOB", icon: FileDigit },
-  { to: "/manager/equipe", label: "Equipe", icon: Users },
-  { to: "/manager/vistorias", label: "Vistorias", icon: ClipboardCheck },
-  { to: "/manager/alertas", label: "Alertas", icon: Bell },
-  { to: "/manager/crm", label: "CRM", icon: KanbanSquare },
-  { to: "/manager/integracao", label: "Saldo e Saque", icon: Coins },
-  { to: "/manager/portais", label: "Portais de Venda", icon: Globe },
-  { to: "/manager/migrar-dados", label: "Migrar Dados", icon: Database },
+const navItems: { to: string; label: string; icon: typeof LayoutDashboard; exact?: boolean; tour: string }[] = [
+  { to: "/manager", label: "Dashboard", icon: LayoutDashboard, exact: true, tour: "nav-manager" },
+  { to: "/manager/carteira", label: "Carteira", icon: Briefcase, tour: "nav-manager-carteira" },
+  { to: "/manager/financeiro", label: "Financeiro", icon: Wallet, tour: "nav-manager-financeiro" },
+  { to: "/manager/dimob", label: "DIMOB", icon: FileDigit, tour: "nav-manager-dimob" },
+  { to: "/manager/equipe", label: "Equipe", icon: Users, tour: "nav-manager-equipe" },
+  { to: "/manager/vistorias", label: "Vistorias", icon: ClipboardCheck, tour: "nav-manager-vistorias" },
+  { to: "/manager/alertas", label: "Alertas", icon: Bell, tour: "nav-manager-alertas" },
+  { to: "/manager/crm", label: "CRM", icon: KanbanSquare, tour: "nav-manager-crm" },
+  { to: "/manager/integracao", label: "Saldo e Saque", icon: Coins, tour: "nav-manager-integracao" },
+  { to: "/manager/portais", label: "Portais de Venda", icon: Globe, tour: "nav-manager-portais" },
+  { to: "/manager/migrar-dados", label: "Migrar Dados", icon: Database, tour: "nav-manager-migrar-dados" },
 ];
 
 

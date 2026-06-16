@@ -380,9 +380,13 @@ export const generateAsaasCharge = createServerFn({ method: "POST" })
         .eq("id", inst.data.id);
       if (upd.error) throw new Error(upd.error.message);
 
-      return { ok: true, paymentId: payment.id, value, lateCharges };
+      return { ok: true as const, paymentId: payment.id, value, lateCharges };
     } catch (e: any) {
-      throw mapAsaasError(e);
+      const mapped = mapAsaasError(e);
+      // Erros de negócio do Asaas (ex.: "limite de emissão atingido") são
+      // retornados como payload para que a UI possa orientar o usuário a
+      // registrar o pagamento manualmente, em vez de quebrar a tela.
+      return { ok: false as const, error: mapped.message };
     }
   });
 

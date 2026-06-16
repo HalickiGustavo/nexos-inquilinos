@@ -42,6 +42,7 @@ import { Route as AuthenticatedTenantFinanceiroRouteImport } from './routes/_aut
 import { Route as AuthenticatedTenantContratoRouteImport } from './routes/_authenticated/tenant.contrato'
 import { Route as AuthenticatedTenantAlertasRouteImport } from './routes/_authenticated/tenant.alertas'
 import { Route as AuthenticatedAdminIntegracoesRouteImport } from './routes/_authenticated/admin.integracoes'
+import { Route as ApiPublicListingsXmlRouteImport } from './routes/api/public/listings.xml'
 import { Route as ApiPublicHooksProcessScheduledInvoicesRouteImport } from './routes/api/public/hooks/process-scheduled-invoices'
 
 const TenantSetupRoute = TenantSetupRouteImport.update({
@@ -219,6 +220,11 @@ const AuthenticatedAdminIntegracoesRoute =
     path: '/admin/integracoes',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const ApiPublicListingsXmlRoute = ApiPublicListingsXmlRouteImport.update({
+  id: '/api/public/listings/xml',
+  path: '/api/public/listings/xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicHooksProcessScheduledInvoicesRoute =
   ApiPublicHooksProcessScheduledInvoicesRouteImport.update({
     id: '/api/public/hooks/process-scheduled-invoices',
@@ -259,6 +265,7 @@ export interface FileRoutesByFullPath {
   '/tenant/': typeof AuthenticatedTenantIndexRoute
   '/manager/': typeof ManagerManagerIndexRoute
   '/api/public/hooks/process-scheduled-invoices': typeof ApiPublicHooksProcessScheduledInvoicesRoute
+  '/api/public/listings/xml': typeof ApiPublicListingsXmlRoute
 }
 export interface FileRoutesByTo {
   '/': typeof AuthenticatedIndexRoute
@@ -293,6 +300,7 @@ export interface FileRoutesByTo {
   '/tenant': typeof AuthenticatedTenantIndexRoute
   '/manager': typeof ManagerManagerIndexRoute
   '/api/public/hooks/process-scheduled-invoices': typeof ApiPublicHooksProcessScheduledInvoicesRoute
+  '/api/public/listings/xml': typeof ApiPublicListingsXmlRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -330,6 +338,7 @@ export interface FileRoutesById {
   '/_authenticated/tenant/': typeof AuthenticatedTenantIndexRoute
   '/_manager/manager/': typeof ManagerManagerIndexRoute
   '/api/public/hooks/process-scheduled-invoices': typeof ApiPublicHooksProcessScheduledInvoicesRoute
+  '/api/public/listings/xml': typeof ApiPublicListingsXmlRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -366,6 +375,7 @@ export interface FileRouteTypes {
     | '/tenant/'
     | '/manager/'
     | '/api/public/hooks/process-scheduled-invoices'
+    | '/api/public/listings/xml'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -400,6 +410,7 @@ export interface FileRouteTypes {
     | '/tenant'
     | '/manager'
     | '/api/public/hooks/process-scheduled-invoices'
+    | '/api/public/listings/xml'
   id:
     | '__root__'
     | '/_authenticated'
@@ -436,6 +447,7 @@ export interface FileRouteTypes {
     | '/_authenticated/tenant/'
     | '/_manager/manager/'
     | '/api/public/hooks/process-scheduled-invoices'
+    | '/api/public/listings/xml'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -447,6 +459,7 @@ export interface RootRouteChildren {
   TenantSetupRoute: typeof TenantSetupRoute
   ApiPublicAsaasWebhookRoute: typeof ApiPublicAsaasWebhookRoute
   ApiPublicHooksProcessScheduledInvoicesRoute: typeof ApiPublicHooksProcessScheduledInvoicesRoute
+  ApiPublicListingsXmlRoute: typeof ApiPublicListingsXmlRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -682,6 +695,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminIntegracoesRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/api/public/listings/xml': {
+      id: '/api/public/listings/xml'
+      path: '/api/public/listings/xml'
+      fullPath: '/api/public/listings/xml'
+      preLoaderRoute: typeof ApiPublicListingsXmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/process-scheduled-invoices': {
       id: '/api/public/hooks/process-scheduled-invoices'
       path: '/api/public/hooks/process-scheduled-invoices'
@@ -773,6 +793,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicAsaasWebhookRoute: ApiPublicAsaasWebhookRoute,
   ApiPublicHooksProcessScheduledInvoicesRoute:
     ApiPublicHooksProcessScheduledInvoicesRoute,
+  ApiPublicListingsXmlRoute: ApiPublicListingsXmlRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

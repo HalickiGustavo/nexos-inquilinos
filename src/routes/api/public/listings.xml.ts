@@ -31,7 +31,7 @@ function xmlResponse(body: string, status = 200): Response {
   });
 }
 
-export const Route = createFileRoute("/api/public/listings.xml")({
+export const Route = createFileRoute("/api/public/listings/xml")({
   server: {
     handlers: {
       OPTIONS: async () => new Response(null, { status: 204, headers: CORS }),

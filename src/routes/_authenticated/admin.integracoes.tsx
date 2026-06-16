@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Copy, ExternalLink, Globe, ShieldCheck, RefreshCw, Loader2 } from "lucide-react";
+import { Copy, ExternalLink, Globe, ShieldCheck, RefreshCw, Loader2, Rss, Info } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

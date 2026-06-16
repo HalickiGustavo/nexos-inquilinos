@@ -620,12 +620,32 @@ export const simulateAsaasPayment = createServerFn({ method: "POST" })
         })
         .eq("id", inst.data.id);
 
+      const { recordAudit } = await import("./audit.server");
+      await recordAudit({
+        userId,
+        userEmail: context.claims?.email ?? null,
+        action: "asaas.payment.simulate",
+        entity: "installments",
+        entityId: inst.data.id,
+        metadata: { paymentId: inst.data.asaas_payment_id, value, landlordUserId },
+      });
+
       return { ok: true as const, value };
     } catch (e: any) {
       const mapped = mapAsaasError(e);
+      const { recordAudit } = await import("./audit.server");
+      await recordAudit({
+        userId,
+        userEmail: context.claims?.email ?? null,
+        action: "asaas.payment.simulate.error",
+        entity: "installments",
+        entityId: data.installmentId,
+        metadata: { error: mapped.message },
+      });
       return { ok: false as const, error: mapped.message };
     }
   });
+
 
 
 

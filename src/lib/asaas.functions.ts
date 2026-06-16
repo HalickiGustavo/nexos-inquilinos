@@ -61,14 +61,36 @@ function mapAsaasError(e: any): Error {
 export const getAsaasAccount = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { supabase } = context;
+    const { supabase, userId } = context;
     const { data, error } = await supabase
       .from("asaas_accounts")
       .select("id, user_id, asaas_account_id, wallet_id, status, onboarding_url, kyc_status, kyc_reference_id, bank_code, bank_agency, bank_account, bank_account_digit, bank_account_type, auto_transfer_enabled, created_at, updated_at")
       .maybeSingle();
     if (error) throw new Error(error.message);
+
+    // Sincroniza CRON_SECRET no Vault de forma idempotente quando um
+    // owner/manager autenticado acessa este endpoint. Mantém o cron job
+    // funcional sem expor a chave anônima como segredo de autenticação.
+    try {
+      const secret = process.env.CRON_SECRET;
+      if (secret) {
+        const [{ data: isManager }, { data: isOwner }] = await Promise.all([
+          supabase.rpc("has_role", { _user_id: userId, _role: "manager" as any }),
+          supabase.rpc("has_role", { _user_id: userId, _role: "owner" as any }),
+        ]);
+        if (isManager || isOwner) {
+          const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+          await (supabaseAdmin as any).rpc("sync_cron_secret", { _secret: secret });
+        }
+      }
+    } catch (e) {
+      console.warn("[cron-secret] sync skipped:", (e as any)?.message);
+    }
+
     return { account: data };
   });
+
+
 
 // ===== Create Asaas subaccount for the current owner =====
 const createSubaccountInput = z.object({

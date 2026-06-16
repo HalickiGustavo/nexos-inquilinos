@@ -444,7 +444,7 @@ export const simulateAsaasPayment = createServerFn({ method: "POST" })
 
     const inst = await supabase
       .from("installments")
-      .select("id, amount, extra_fees, late_charges, asaas_payment_id, due_date, status, contract:contracts(id, user_id, tenant:tenants(full_name, email, document, phone, postal_code))")
+      .select("id, amount, extra_fees, late_charges, asaas_payment_id, due_date, status, contract:contracts(id, user_id, tenant:tenants(full_name, email, document, phone))")
       .eq("id", data.installmentId)
       .maybeSingle();
     if (inst.error) throw new Error(inst.error.message);
@@ -498,7 +498,7 @@ export const simulateAsaasPayment = createServerFn({ method: "POST" })
 
       const cleanDoc = String(tenant.document).replace(/\D/g, "");
       const cleanPhone = tenant.phone ? String(tenant.phone).replace(/\D/g, "") : "11999999999";
-      const cleanCep = tenant.postal_code ? String(tenant.postal_code).replace(/\D/g, "") : "01001000";
+      const cleanCep = (tenant as any).postal_code ? String((tenant as any).postal_code).replace(/\D/g, "") : "01001000";
 
       const ccPayload = {
         creditCard: {

@@ -76,6 +76,10 @@ function FinancialsPage() {
         <p className="text-muted-foreground mt-1">Parcelas agrupadas por contrato. Clique para expandir.</p>
       </div>
 
+      <PainelRepasses />
+
+
+
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <SummaryCard icon={<Clock className="size-5" />} label="Pendente" value={formatBRL(totals.pending)} />
         <SummaryCard icon={<CheckCircle2 className="size-5 text-primary" />} label="Pago" value={formatBRL(totals.paid)} accent="text-primary" />

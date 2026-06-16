@@ -62,9 +62,15 @@ export function OnboardingTour({ tourKey, steps }: Props) {
     if (!open || !current) return;
     let raf = 0;
     const measure = () => {
-      const el = document.querySelector<HTMLElement>(
-        `[data-tour="${current.target}"]`,
+      const candidates = Array.from(
+        document.querySelectorAll<HTMLElement>(`[data-tour="${current.target}"]`),
       );
+      // Pick the first element that is actually visible (non-zero size)
+      const el =
+        candidates.find((c) => {
+          const r = c.getBoundingClientRect();
+          return r.width > 0 && r.height > 0;
+        }) ?? candidates[0];
       if (!el) {
         setRect(null);
         return;

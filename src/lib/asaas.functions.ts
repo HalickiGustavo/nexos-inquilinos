@@ -1069,7 +1069,7 @@ export async function runProcessScheduledInvoices(opts?: { horizonDays?: number;
 
   const results: Array<{ installmentId: string; ok: boolean; error?: string; paymentId?: string }> = [];
 
-  for (const inst of rows ?? []) {
+  for (const inst of ((rows as any[]) ?? [])) {
     try {
       const contract = (inst as any).contract;
       const tenant = contract?.tenant;

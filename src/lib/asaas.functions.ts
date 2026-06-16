@@ -442,6 +442,17 @@ export const simulateAsaasPayment = createServerFn({ method: "POST" })
     const { asaasFetch, getNexoFee } = await import("./asaas.server");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
+    // Authorização: apenas manager/owner (landlord) pode acionar simulação.
+    // Sem isso, qualquer inquilino autenticado poderia marcar a própria
+    // parcela como paga em ambiente sandbox do Asaas.
+    const [{ data: isManager }, { data: isOwner }] = await Promise.all([
+      supabase.rpc("has_role", { _user_id: userId, _role: "manager" as any }),
+      supabase.rpc("has_role", { _user_id: userId, _role: "owner" as any }),
+    ]);
+    if (!isManager && !isOwner) {
+      throw new Error("Forbidden: apenas proprietário/imobiliária pode simular pagamento.");
+    }
+
     const inst = await supabase
       .from("installments")
       .select("id, amount, extra_fees, late_charges, asaas_payment_id, due_date, status, contract:contracts(id, user_id, tenant:tenants(full_name, email, document, phone))")

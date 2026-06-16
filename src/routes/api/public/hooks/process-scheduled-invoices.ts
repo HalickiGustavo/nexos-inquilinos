@@ -2,15 +2,19 @@ import { createFileRoute } from "@tanstack/react-router";
 import { timingSafeEqual } from "node:crypto";
 
 // Cron-triggered hook: emite Just-In-Time as cobranças `agendado` cujo
-// vencimento está dentro do horizonte (default 15 dias). Autenticação via
-// header `apikey` com o anon key do projeto (mesmo padrão usado pelos demais
-// jobs pg_cron desta plataforma).
+// vencimento está dentro do horizonte (default 15 dias).
+//
+// Autenticação: exige `Authorization: Bearer <SUPABASE_SERVICE_ROLE_KEY>`.
+// O service role key é estritamente server-only (nunca é exposto ao bundle
+// do cliente como VITE_*), portanto serve como segredo compartilhado entre
+// o pg_cron (executado dentro do banco) e este endpoint público.
 export const Route = createFileRoute("/api/public/hooks/process-scheduled-invoices")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const expected = process.env.SUPABASE_ANON_KEY ?? process.env.SUPABASE_PUBLISHABLE_KEY;
-        const provided = request.headers.get("apikey") ?? request.headers.get("Apikey");
+        const expected = process.env.SUPABASE_SERVICE_ROLE_KEY;
+        const header = request.headers.get("authorization") ?? request.headers.get("Authorization") ?? "";
+        const provided = header.startsWith("Bearer ") ? header.slice(7) : "";
         const a = provided ? Buffer.from(provided) : null;
         const b = expected ? Buffer.from(expected) : null;
         const ok = !!a && !!b && a.length === b.length && timingSafeEqual(a, b);

@@ -587,9 +587,10 @@ export const simulateAsaasPayment = createServerFn({ method: "POST" })
         })
         .eq("id", inst.data.id);
 
-      return { ok: true, value };
+      return { ok: true as const, value };
     } catch (e: any) {
-      throw mapAsaasError(e);
+      const mapped = mapAsaasError(e);
+      return { ok: false as const, error: mapped.message };
     }
   });
 

@@ -8,24 +8,26 @@ import { useManagerAlerts } from "@/lib/alerts";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { OnboardingTour } from "@/components/OnboardingTour";
+import { managerTourSteps } from "@/lib/tour-steps";
 
 export const Route = createFileRoute("/_manager")({
   ssr: false,
   component: ManagerLayout,
 });
 
-const navItems: { to: string; label: string; icon: typeof LayoutDashboard; exact?: boolean }[] = [
-  { to: "/manager", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  { to: "/manager/carteira", label: "Carteira", icon: Briefcase },
-  { to: "/manager/financeiro", label: "Financeiro", icon: Wallet },
-  { to: "/manager/dimob", label: "DIMOB", icon: FileDigit },
-  { to: "/manager/equipe", label: "Equipe", icon: Users },
-  { to: "/manager/vistorias", label: "Vistorias", icon: ClipboardCheck },
-  { to: "/manager/alertas", label: "Alertas", icon: Bell },
-  { to: "/manager/crm", label: "CRM", icon: KanbanSquare },
-  { to: "/manager/integracao", label: "Saldo e Saque", icon: Coins },
-  { to: "/manager/portais", label: "Portais de Venda", icon: Globe },
-  { to: "/manager/migrar-dados", label: "Migrar Dados", icon: Database },
+const navItems: { to: string; label: string; icon: typeof LayoutDashboard; exact?: boolean; tour: string }[] = [
+  { to: "/manager", label: "Dashboard", icon: LayoutDashboard, exact: true, tour: "nav-manager" },
+  { to: "/manager/carteira", label: "Carteira", icon: Briefcase, tour: "nav-manager-carteira" },
+  { to: "/manager/financeiro", label: "Financeiro", icon: Wallet, tour: "nav-manager-financeiro" },
+  { to: "/manager/dimob", label: "DIMOB", icon: FileDigit, tour: "nav-manager-dimob" },
+  { to: "/manager/equipe", label: "Equipe", icon: Users, tour: "nav-manager-equipe" },
+  { to: "/manager/vistorias", label: "Vistorias", icon: ClipboardCheck, tour: "nav-manager-vistorias" },
+  { to: "/manager/alertas", label: "Alertas", icon: Bell, tour: "nav-manager-alertas" },
+  { to: "/manager/crm", label: "CRM", icon: KanbanSquare, tour: "nav-manager-crm" },
+  { to: "/manager/integracao", label: "Saldo e Saque", icon: Coins, tour: "nav-manager-integracao" },
+  { to: "/manager/portais", label: "Portais de Venda", icon: Globe, tour: "nav-manager-portais" },
+  { to: "/manager/migrar-dados", label: "Migrar Dados", icon: Database, tour: "nav-manager-migrar-dados" },
 ];
 
 
@@ -66,7 +68,7 @@ function ManagerLayout() {
             const Icon = item.icon;
             const showBadge = item.to === "/manager/alertas" && criticalCount > 0;
             return (
-              <Link key={item.to} to={item.to}
+              <Link key={item.to} to={item.to} data-tour={item.tour}
                 className={cn(
                   "flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors",
                   active
@@ -118,7 +120,7 @@ function ManagerLayout() {
             const active = item.exact ? pathname === item.to : pathname.startsWith(item.to);
             const Icon = item.icon;
             return (
-              <Link key={item.to} to={item.to}
+              <Link key={item.to} to={item.to} data-tour={item.tour}
                 className={cn("flex items-center gap-2 px-3 py-1.5 rounded-full text-xs whitespace-nowrap border transition-colors",
                   active
                     ? "bg-primary text-primary-foreground border-primary"
@@ -136,6 +138,7 @@ function ManagerLayout() {
         </nav>
         <main className="flex-1 overflow-y-auto"><Outlet /></main>
       </div>
+      <OnboardingTour tourKey="manager" steps={managerTourSteps} />
     </div>
   );
 }

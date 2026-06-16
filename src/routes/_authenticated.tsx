@@ -21,20 +21,22 @@ import { TenantShell } from "@/components/TenantShell";
 import { InstallPwaButton } from "@/components/InstallPwaButton";
 import nexoLogoAsset from "@/assets/nexo-logo.png.asset.json";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { OnboardingTour } from "@/components/OnboardingTour";
+import { ownerTourSteps } from "@/lib/tour-steps";
 
 export const Route = createFileRoute("/_authenticated")({
   component: AuthLayout,
 });
 
 const navItems = [
-  { to: "/dashboard", label: "Visão Geral", icon: LayoutDashboard },
-  { to: "/conta-corrente", label: "Conta Corrente", icon: Coins },
-  { to: "/properties", label: "Imóveis", icon: Building2 },
-  { to: "/tenants", label: "Inquilinos", icon: Users },
-  { to: "/contracts", label: "Contratos", icon: FileText },
-  { to: "/financials", label: "Finanças", icon: Wallet },
-  { to: "/maintenances", label: "Manutenções", icon: Wrench },
-  { to: "/integrations", label: "Saldo e Saque", icon: Plug },
+  { to: "/dashboard", label: "Visão Geral", icon: LayoutDashboard, tour: "nav-dashboard" },
+  { to: "/conta-corrente", label: "Conta Corrente", icon: Coins, tour: "nav-conta-corrente" },
+  { to: "/properties", label: "Imóveis", icon: Building2, tour: "nav-properties" },
+  { to: "/tenants", label: "Inquilinos", icon: Users, tour: "nav-tenants" },
+  { to: "/contracts", label: "Contratos", icon: FileText, tour: "nav-contracts" },
+  { to: "/financials", label: "Finanças", icon: Wallet, tour: "nav-financials" },
+  { to: "/maintenances", label: "Manutenções", icon: Wrench, tour: "nav-maintenances" },
+  { to: "/integrations", label: "Saldo e Saque", icon: Plug, tour: "nav-integrations" },
 ] as const;
 
 function AuthLayout() {
@@ -90,6 +92,7 @@ function AuthLayout() {
               <Link
                 key={item.to}
                 to={item.to}
+                data-tour={item.tour}
                 className={cn(
                   "flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors",
                   active
@@ -143,6 +146,7 @@ function AuthLayout() {
               <Link
                 key={item.to}
                 to={item.to}
+                data-tour={item.tour}
                 className={cn(
                   "flex items-center gap-2 px-3 py-1.5 rounded-md text-xs whitespace-nowrap",
                   active ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
@@ -169,6 +173,7 @@ function AuthLayout() {
           <Outlet />
         </main>
       </div>
+      <OnboardingTour tourKey="owner" steps={ownerTourSteps} />
     </div>
   );
 }

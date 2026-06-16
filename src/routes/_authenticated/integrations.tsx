@@ -18,7 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { maskCpfCnpj, maskPhone, maskCEP } from "@/lib/br-validators";
 
 export const Route = createFileRoute("/_authenticated/integrations")({
-  head: () => ({ meta: [{ title: "Integrações — Nexo" }] }),
+  head: () => ({ meta: [{ title: "Saldo e Saque — Nexo" }] }),
   component: IntegrationsPage,
 });
 

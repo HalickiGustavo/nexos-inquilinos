@@ -70,6 +70,7 @@ export function TenantShell() {
               <Link
                 key={item.to}
                 to={item.to as any}
+                data-tour={item.tour}
                 className={cn(
                   "flex flex-col items-center justify-center gap-1 py-2.5 text-[11px] transition-colors",
                   active ? "text-primary" : "text-muted-foreground hover:text-foreground",

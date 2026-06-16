@@ -888,6 +888,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      sync_cron_secret: { Args: { _secret: string }; Returns: undefined }
     }
     Enums: {
       app_role: "owner" | "tenant" | "manager"

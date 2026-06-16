@@ -90,6 +90,7 @@ function AuthLayout() {
               <Link
                 key={item.to}
                 to={item.to}
+                data-tour={item.tour}
                 className={cn(
                   "flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors",
                   active

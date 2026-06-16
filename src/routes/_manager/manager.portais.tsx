@@ -2,13 +2,24 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Copy, ExternalLink, Globe, ShieldCheck, RefreshCw, Loader2 } from "lucide-react";
+import { Copy, ExternalLink, Globe, ShieldCheck, RefreshCw, Loader2, KeyRound } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export const Route = createFileRoute("/_manager/manager/portais")({
   head: () => ({ meta: [{ title: "Integrações com Portais — NEXO" }] }),
@@ -58,6 +69,20 @@ function AdminIntegracoesPage() {
     refetch();
   }
 
+  async function regenerateToken() {
+    if (!user) return;
+    const newToken = crypto.randomUUID();
+    const { error } = await supabase
+      .from("profiles")
+      .update({ integration_token: newToken })
+      .eq("id", user.id);
+    if (error) return toast.error(error.message);
+    toast.success("Nova URL mestre gerada. A URL antiga foi invalidada.", {
+      className: "border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300",
+    });
+    refetch();
+  }
+
   const supabaseUrl = (import.meta as any).env?.VITE_SUPABASE_URL ?? "";
   const feedUrl = data?.token ? `${supabaseUrl}/functions/v1/portal-xml-feed?token=${data.token}` : "";
 
@@ -92,9 +117,36 @@ function AdminIntegracoesPage() {
           <FeedUrlTrack url={feedUrl} />
         )}
 
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <ShieldCheck className="size-3.5" />
-          O token é único, opaco e não exibe IDs internos. Compartilhe apenas com portais confiáveis.
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <ShieldCheck className="size-3.5" />
+            O token é único, opaco e não exibe IDs internos. Compartilhe apenas com portais confiáveis.
+          </div>
+          {!isLoading && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="ghost" size="sm" className="text-xs gap-1.5 h-8">
+                  <KeyRound className="size-3.5" />
+                  Gerar nova URL
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Alterar URL mestre?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Isso invalidará imediatamente a URL atual. Os portais que já usam o feed antigo
+                    pararão de receber atualizações até que você atualize a configuração deles.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                  <AlertDialogAction onClick={regenerateToken} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                    Sim, gerar nova URL
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
         </div>
       </Card>
 

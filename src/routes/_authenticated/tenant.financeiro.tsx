@@ -63,6 +63,10 @@ function TenantFinanceiro() {
     setPixLoading(true);
     try {
       const res: any = await ensurePix({ data: { installmentId: i.id } });
+      if (res?.ok === false) {
+        setPixError(res.error ?? "Não foi possível gerar o PIX no momento.");
+        return;
+      }
       setPixFor({
         ...i,
         pix_qrcode: res.pixQrCode,

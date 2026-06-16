@@ -862,7 +862,11 @@ export const ensureTenantPixCharge = createServerFn({ method: "POST" })
         boletoUrl: paymentInfo.bankSlipUrl ?? paymentInfo.invoiceUrl ?? null,
       };
     } catch (e: any) {
-      throw mapAsaasError(e);
+      // Erros de negócio do Asaas (ex.: limite de emissão atingido) são
+      // retornados como payload para que a UI mostre um aviso amigável,
+      // ao invés de propagar um runtime-error e gerar tela em branco.
+      const mapped = mapAsaasError(e);
+      return { ok: false as const, error: mapped.message };
     }
   });
 

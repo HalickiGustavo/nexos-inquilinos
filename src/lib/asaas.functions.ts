@@ -264,6 +264,22 @@ export const generateAsaasCharge = createServerFn({ method: "POST" })
         .maybeSingle();
 
       let customerId = customerRow.data?.asaas_customer_id ?? null;
+
+      // Valida customer cacheado — após reset de subconta o ID antigo
+      // não existe mais e o Asaas devolve "Customer inválido ou não informado".
+      if (customerId) {
+        try {
+          await asaasFetch<any>(`/customers/${customerId}`, { apiKey: landlord.apiKey });
+        } catch {
+          await supabaseAdmin
+            .from("asaas_customers")
+            .delete()
+            .eq("tenant_id", tenant.id)
+            .eq("user_id", userId);
+          customerId = null;
+        }
+      }
+
       if (!customerId) {
         if (!tenant.document) throw new Error("Inquilino sem CPF/CNPJ cadastrado");
         const customer = await asaasFetch<any>("/customers", {
@@ -278,11 +294,11 @@ export const generateAsaasCharge = createServerFn({ method: "POST" })
           }),
         });
         customerId = customer.id;
-        await supabaseAdmin.from("asaas_customers").insert({
+        await supabaseAdmin.from("asaas_customers").upsert({
           user_id: userId,
           tenant_id: tenant.id,
           asaas_customer_id: customerId as string,
-        });
+        }, { onConflict: "user_id,tenant_id" });
       }
 
       const { data: setting } = await (supabaseAdmin as any)

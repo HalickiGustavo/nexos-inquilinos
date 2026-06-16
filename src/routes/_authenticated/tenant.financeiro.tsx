@@ -147,13 +147,21 @@ function TenantFinanceiro() {
           const t = expensesTotals(exps);
           const totalDue = Number(i.amount) + t.tenant;
           return (
-            <Card key={i.id} className="overflow-hidden">
+            <Card
+              key={i.id}
+              className={cn(
+                "overflow-hidden transition",
+                s === "agendado" && "opacity-70 border-dashed bg-muted/40",
+              )}
+            >
               <button
                 className="w-full p-4 flex items-center justify-between text-left hover:bg-muted/40 transition"
                 onClick={() => setOpenId(open ? null : i.id)}
               >
                 <div>
-                  <p className="font-medium">{formatBRL(totalDue)}</p>
+                  <p className={cn("font-medium", s === "agendado" && "text-muted-foreground")}>
+                    {formatBRL(totalDue)}
+                  </p>
                   <p className="text-xs text-muted-foreground">
                     Vencimento {formatDate(i.due_date)}
                     {t.tenant > 0 && <span className="ml-2 text-amber-600">+ {formatBRL(t.tenant)} despesas</span>}
@@ -180,7 +188,11 @@ function TenantFinanceiro() {
                       <span>Total a pagar</span><span>{formatBRL(totalDue)}</span>
                     </div>
                   </div>
-                  {s === "pago" ? (
+                  {s === "agendado" ? (
+                    <p className="text-xs text-muted-foreground text-center py-2">
+                      Parcela agendada. O boleto e o PIX serão liberados automaticamente até 15 dias antes do vencimento.
+                    </p>
+                  ) : s === "pago" ? (
                     <>
                       <p className="text-sm text-muted-foreground">
                         Pago em {i.payment_date ? formatDate(i.payment_date) : "—"}
@@ -228,6 +240,7 @@ function TenantFinanceiro() {
                       )}
                     </>
                   )}
+
                 </div>
               )}
             </Card>

@@ -216,6 +216,31 @@ function Recebimentos() {
                                   <TableCell>{badge(i.status)}</TableCell>
                                   <TableCell className="text-right">
                                     <div className="flex justify-end gap-2 flex-wrap">
+                                      {i.status !== "pago" && !i.asaas_payment_id && (
+                                        <GenerateBoletoBtn installment={i} onDone={() => qc.invalidateQueries({ queryKey: ["mgr-receb"] })} />
+                                      )}
+                                      {i.status !== "pago" && i.asaas_payment_id && (
+                                        <UpdateBoletoBtn installment={i} onDone={() => qc.invalidateQueries({ queryKey: ["mgr-receb"] })} />
+                                      )}
+                                      {i.boleto_url && (
+                                        <Button size="sm" variant="outline" asChild>
+                                          <a href={i.boleto_url} target="_blank" rel="noreferrer">
+                                            <FileText className="size-4 mr-1" /> Boleto
+                                          </a>
+                                        </Button>
+                                      )}
+                                      {i.barcode && (
+                                        <Button
+                                          size="sm"
+                                          variant="ghost"
+                                          onClick={() => {
+                                            navigator.clipboard.writeText(i.barcode);
+                                            toast.success("Linha digitável copiada");
+                                          }}
+                                        >
+                                          <Copy className="size-4" />
+                                        </Button>
+                                      )}
                                       {i.status !== "pago" && (
                                         <Button
                                           size="sm"
@@ -224,6 +249,9 @@ function Recebimentos() {
                                         >
                                           <BadgeCheck className="size-4 mr-1" /> Pago
                                         </Button>
+                                      )}
+                                      {i.status !== "pago" && (
+                                        <SimulateBtn installment={i} onDone={() => qc.invalidateQueries({ queryKey: ["mgr-receb"] })} />
                                       )}
                                       <Button size="sm" variant="outline" onClick={() => setSplitFor(i)}>
                                         <Sparkles className="size-4 mr-1" /> Split

@@ -318,9 +318,13 @@ function SimulatePayButton({ installment }: { installment: any }) {
       onClick={async () => {
         setLoading(true);
         try {
-          await simulate({ data: { installmentId: installment.id } });
-          toast.success("Pagamento simulado no Asaas Sandbox");
-          invalidate(["installments"]);
+          const res: any = await simulate({ data: { installmentId: installment.id } });
+          if (res?.ok === false) {
+            toast.error(res.error ?? "Falha ao simular pagamento");
+          } else {
+            toast.success("Pagamento simulado no Asaas Sandbox");
+            invalidate(["installments"]);
+          }
         } catch (e: any) {
           toast.error(e?.message ?? "Falha ao simular pagamento");
         } finally {

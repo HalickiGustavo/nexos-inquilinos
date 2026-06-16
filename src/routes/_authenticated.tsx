@@ -173,6 +173,7 @@ function AuthLayout() {
           <Outlet />
         </main>
       </div>
+      <OnboardingTour tourKey="owner" steps={ownerTourSteps} />
     </div>
   );
 }

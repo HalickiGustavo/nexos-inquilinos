@@ -197,7 +197,7 @@ function KycUploadSection({ onChanged }: { onChanged?: () => Promise<unknown> | 
       <CardContent className="p-6">
         <div className="flex items-center gap-2 mb-1">
           <FileCheck2 className="size-4 text-primary" />
-          <h3 className="font-semibold">Verificação de Identidade (KYC)</h3>
+          <h3 className="font-semibold">Verificação de Identidade</h3>
         </div>
         <p className="text-sm text-muted-foreground mb-4">
           Os arquivos são transmitidos em memória diretamente para o Asaas. <strong>Nada é salvo</strong> em

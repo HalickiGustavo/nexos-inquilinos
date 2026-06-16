@@ -240,9 +240,20 @@ function GenerateBoletoButton({ installment }: { installment: any }) {
       onClick={async () => {
         setLoading(true);
         try {
-          await generate({ data: { installmentId: installment.id, billingType: "UNDEFINED" } });
-          toast.success("Boleto gerado!");
-          invalidate(["installments"]);
+          const res: any = await generate({ data: { installmentId: installment.id, billingType: "UNDEFINED" } });
+          if (res?.ok === false) {
+            const msg = String(res.error ?? "Falha ao gerar boleto");
+            const isLimit = /limite/i.test(msg);
+            toast.error(msg, {
+              description: isLimit
+                ? "Você ainda pode registrar este pagamento manualmente em 'Pago'."
+                : undefined,
+              duration: 8000,
+            });
+          } else {
+            toast.success("Boleto gerado!");
+            invalidate(["installments"]);
+          }
         } catch (e: any) {
           toast.error(e?.message ?? "Falha ao gerar boleto");
         } finally {

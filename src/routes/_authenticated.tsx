@@ -77,12 +77,12 @@ function AuthLayout() {
   return (
     <div className="min-h-screen flex bg-background">
       {/* Sidebar */}
-      <aside className="hidden md:flex w-64 flex-col bg-sidebar text-sidebar-foreground border-r border-sidebar-border">
+      <aside className="hidden md:fixed md:left-0 md:top-0 md:h-screen md:flex w-64 flex-col bg-sidebar text-sidebar-foreground border-r border-sidebar-border">
         <div className="p-5 flex items-center gap-3 border-b border-sidebar-border bg-card">
           <img src={nexoLogo} alt="Nexo" className="h-10 w-auto" />
         </div>
 
-        <nav className="flex-1 p-3 space-y-1">
+        <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
           {navItems.map((item) => {
             const active = pathname.startsWith(item.to);
             const Icon = item.icon;
@@ -122,7 +122,7 @@ function AuthLayout() {
       </aside>
 
       {/* Mobile top bar */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 md:ml-64">
         <header className="md:hidden flex items-center justify-between p-4 border-b bg-card">
           <div className="flex items-center gap-2">
             <img src={nexoLogo} alt="Nexo" className="h-7 w-auto" />

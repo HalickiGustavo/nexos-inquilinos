@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Fragment, useMemo, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -10,11 +11,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatBRL, formatDate } from "@/lib/format";
-import { CheckCircle2, Receipt, Sparkles, ChevronRight, BadgeCheck } from "lucide-react";
+import { CheckCircle2, Receipt, Sparkles, ChevronRight, BadgeCheck, FileText, Loader2, Wallet, Copy } from "lucide-react";
 import { toast } from "sonner";
 import { VariableExpensesDialog } from "@/components/VariableExpensesDialog";
 import { SplitBreakdownDialog, NEXO_FEE_PER_INSTALLMENT } from "@/components/SplitBreakdownDialog";
 import { parseExpenses, expensesTotals } from "@/lib/variable-expenses";
+import { generateAsaasCharge, updateAsaasChargeFee, simulateAsaasPayment } from "@/lib/asaas.functions";
 
 export const Route = createFileRoute("/_manager/manager/financeiro")({
   component: Financeiro,

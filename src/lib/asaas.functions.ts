@@ -984,3 +984,186 @@ export const uploadAsaasKycDocument = createServerFn({ method: "POST" })
 
     return { ok: true, referenceId };
   });
+
+// ===== Configure automatic daily payouts inside the landlord's subaccount =====
+// Modelo B: dispara a configuração de sweep diretamente na subconta do landlord
+// usando a sua própria api_key. Idempotente — pode ser chamada várias vezes.
+export const configureAutomaticPayout = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { userId } = context;
+    const { asaasFetch } = await import("./asaas.server");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const acc = await supabaseAdmin
+      .from("asaas_accounts")
+      .select("api_key, bank_code, bank_account")
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (acc.error) throw new Error(acc.error.message);
+    const apiKey = acc.data?.api_key;
+    if (!apiKey) {
+      throw new Error("Subconta Asaas ainda não foi criada. Conclua o onboarding primeiro.");
+    }
+    if (!acc.data?.bank_code || !acc.data?.bank_account) {
+      throw new Error("Cadastre uma conta bancária de liquidação antes de ativar os repasses automáticos.");
+    }
+
+    try {
+      await asaasFetch<any>("/accountConfiguration", {
+        method: "POST",
+        apiKey,
+        body: JSON.stringify({
+          // Payload conforme spec do produto (Modelo B):
+          transferConfiguration: { enabled: true, frequency: "DAILY" },
+          // Campos canônicos do gateway Asaas — mantidos por compatibilidade.
+          autoTransferEnabled: true,
+          autoTransferFrequency: "DAILY",
+        }),
+      });
+    } catch (e: any) {
+      throw mapAsaasError(e);
+    }
+
+    const upd = await supabaseAdmin
+      .from("asaas_accounts")
+      .update({ auto_transfer_enabled: true })
+      .eq("user_id", userId);
+    if (upd.error) throw new Error(upd.error.message);
+
+    return { ok: true };
+  });
+
+// ===== Hybrid Just-In-Time invoice generator =====
+// Para cada parcela `agendado` cujo vencimento está a <= 15 dias, emite a
+// cobrança DENTRO da subconta do landlord (Modelo B), aplica o split da taxa
+// NEXO para a wallet master e move o status para `em_aberto`.
+export async function runProcessScheduledInvoices(opts?: { horizonDays?: number; limit?: number }) {
+  const { asaasFetch, getNexoFee } = await import("./asaas.server");
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const horizon = opts?.horizonDays ?? 15;
+  const limit = opts?.limit ?? 200;
+
+  const horizonDate = new Date();
+  horizonDate.setUTCDate(horizonDate.getUTCDate() + horizon);
+  const horizonStr = horizonDate.toISOString().slice(0, 10);
+
+  const { data: rows, error } = await supabaseAdmin
+    .from("installments")
+    .select(
+      "id, user_id, contract_id, due_date, amount, extra_fees, status, asaas_payment_id, " +
+        "contract:contracts(id, user_id, tenant:tenants(id, full_name, email, document, phone), property:properties(nickname))",
+    )
+    .eq("status", "agendado")
+    .is("asaas_payment_id", null)
+    .lte("due_date", horizonStr)
+    .limit(limit);
+  if (error) throw new Error(error.message);
+
+  const { data: feeRow } = await (supabaseAdmin as any)
+    .from("platform_settings")
+    .select("value")
+    .eq("key", "nexo_boleto_fee")
+    .maybeSingle();
+  const nexoFee = feeRow?.value ? Number(feeRow.value) : getNexoFee();
+
+  const results: Array<{ installmentId: string; ok: boolean; error?: string; paymentId?: string }> = [];
+
+  for (const inst of rows ?? []) {
+    try {
+      const contract = (inst as any).contract;
+      const tenant = contract?.tenant;
+      const property = contract?.property;
+      if (!tenant) throw new Error("Contrato sem inquilino vinculado");
+
+      const landlordUserId: string = contract.user_id ?? inst.user_id;
+      const landlord = await getLandlordAsaasCredentials(supabaseAdmin, landlordUserId);
+      const masterWalletId = await getMasterPlatformWalletId(supabaseAdmin);
+
+      const customerRow = await supabaseAdmin
+        .from("asaas_customers")
+        .select("asaas_customer_id")
+        .eq("tenant_id", tenant.id)
+        .eq("user_id", landlordUserId)
+        .maybeSingle();
+      let customerId = customerRow.data?.asaas_customer_id ?? null;
+      if (!customerId) {
+        if (!tenant.document) throw new Error("Inquilino sem CPF/CNPJ cadastrado");
+        const customer = await asaasFetch<any>("/customers", {
+          method: "POST",
+          apiKey: landlord.apiKey,
+          body: JSON.stringify({
+            name: tenant.full_name,
+            cpfCnpj: String(tenant.document).replace(/\D/g, ""),
+            email: tenant.email ?? undefined,
+            mobilePhone: tenant.phone ? String(tenant.phone).replace(/\D/g, "") : undefined,
+            externalReference: tenant.id,
+          }),
+        });
+        customerId = customer.id;
+        await supabaseAdmin.from("asaas_customers").insert({
+          user_id: landlordUserId,
+          tenant_id: tenant.id,
+          asaas_customer_id: customerId as string,
+        });
+      }
+
+      const baseValue = Number(inst.amount) + Number((inst as any).extra_fees ?? 0);
+      const value = +(baseValue + nexoFee).toFixed(2);
+
+      const body: Record<string, unknown> = {
+        customer: customerId as string,
+        billingType: "UNDEFINED",
+        value,
+        dueDate: inst.due_date,
+        description: `Aluguel — ${property?.nickname ?? ""} — venc. ${inst.due_date} (inclui taxa NEXO de R$ ${nexoFee.toFixed(2)})`,
+        externalReference: inst.id,
+        externalMetadata: {
+          installmentId: inst.id,
+          contractId: contract?.id ?? null,
+          landlordUserId,
+        },
+      };
+      const split = buildPlatformSplit({ masterWalletId, nexoFee, totalValue: value });
+      if (split.length > 0) body.split = split;
+
+      const payment = await asaasFetch<any>("/payments", {
+        method: "POST",
+        apiKey: landlord.apiKey,
+        body: JSON.stringify(body),
+      });
+
+      const upd = await supabaseAdmin
+        .from("installments")
+        .update({
+          asaas_payment_id: payment.id,
+          boleto_url: payment.bankSlipUrl ?? payment.invoiceUrl ?? null,
+          barcode: payment.identificationField ?? null,
+          status: "em_aberto",
+        })
+        .eq("id", inst.id);
+      if (upd.error) throw new Error(upd.error.message);
+
+      results.push({ installmentId: inst.id, ok: true, paymentId: payment.id });
+    } catch (e: any) {
+      const msg = mapAsaasError(e).message;
+      console.error("[processScheduledInvoices] falha em", inst.id, msg);
+      results.push({ installmentId: inst.id, ok: false, error: msg });
+    }
+  }
+
+  return { processed: results.length, results };
+}
+
+export const processScheduledInvoices = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    const { data: isManager } = await supabase.rpc("has_role", {
+      _user_id: userId,
+      _role: "manager",
+    });
+    if (!isManager) throw new Error("Apenas managers podem disparar o ciclo de faturamento.");
+    return runProcessScheduledInvoices();
+  });
+

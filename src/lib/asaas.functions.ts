@@ -506,7 +506,10 @@ export const simulateAsaasPayment = createServerFn({ method: "POST" })
 
     if (!inst.data.asaas_payment_id) {
       try {
-        await generateAsaasCharge({ data: { installmentId: data.installmentId } });
+        const gen: any = await generateAsaasCharge({ data: { installmentId: data.installmentId } });
+        if (gen?.ok === false) {
+          return { ok: false as const, error: gen.error ?? "Falha ao gerar cobrança no Asaas." };
+        }
       } catch (e: any) {
         const mapped = mapAsaasError(e);
         return { ok: false as const, error: mapped.message };

@@ -117,9 +117,9 @@ function SignInForm() {
         <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
       </div>
 
-      <div className="flex justify-center pt-1 overflow-hidden">
-        <div className="rounded-md overflow-hidden ring-1 ring-border origin-top scale-[0.85] sm:scale-100">
-          <ClientOnly fallback={<div className="h-[78px] w-[304px]" />}>
+      <div className="flex justify-center pt-1 overflow-hidden w-full">
+        <div className="rounded-md overflow-hidden ring-1 ring-border origin-top scale-[0.78] sm:scale-100 max-w-full">
+          <ClientOnly fallback={<div className="h-[78px] w-[304px] max-w-full" />}>
             <ReCAPTCHA
               ref={captchaRef}
               sitekey={RECAPTCHA_SITE_KEY}

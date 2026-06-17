@@ -501,6 +501,7 @@ export type Database = {
       }
       maintenance_messages: {
         Row: {
+          attachment_urls: string[]
           content: string
           created_at: string
           id: string
@@ -508,6 +509,7 @@ export type Database = {
           sender_user_id: string
         }
         Insert: {
+          attachment_urls?: string[]
           content: string
           created_at?: string
           id?: string
@@ -515,6 +517,7 @@ export type Database = {
           sender_user_id: string
         }
         Update: {
+          attachment_urls?: string[]
           content?: string
           created_at?: string
           id?: string

@@ -126,53 +126,56 @@ function AuthLayout() {
 
       {/* Mobile top bar */}
       <div className="flex-1 flex flex-col min-w-0 md:ml-64">
-        <header className="md:hidden flex items-center justify-between p-4 border-b bg-card">
-          <div className="flex items-center gap-2">
-            <img src={nexoLogo} alt="Nexo" className="h-7 w-auto" />
-            <InstallPwaButton />
-          </div>
-          <div className="flex items-center gap-2">
-            <ThemeToggle size="icon" variant="ghost" />
-            <Button variant="ghost" size="sm" onClick={async () => { await signOut(); navigate({ to: "/login" }); }}>
-              <LogOut className="size-4" />
-            </Button>
-          </div>
-        </header>
-        <nav className="md:hidden flex overflow-x-auto gap-1 p-2 border-b bg-card">
-          {navItems.map((item) => {
-            const active = pathname.startsWith(item.to);
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.to}
-                to={item.to}
-                data-tour={item.tour}
-                className={cn(
-                  "flex items-center gap-2 px-3 py-1.5 rounded-md text-xs whitespace-nowrap",
-                  active ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
-                )}
-              >
-                <Icon className="size-3.5" />
-                {item.label}
-              </Link>
-            );
-          })}
-          <button
-            onClick={async () => {
-              await signOut();
-              await supabase.auth.signOut();
-              navigate({ to: "/login", replace: true });
-            }}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-md text-xs whitespace-nowrap bg-muted text-muted-foreground"
-          >
-            <LogOut className="size-3.5" />
-            Sair
-          </button>
-        </nav>
+        <div className="md:hidden sticky top-0 z-40 bg-card border-b shadow-sm">
+          <header className="flex items-center justify-between p-4">
+            <div className="flex items-center gap-2">
+              <img src={nexoLogo} alt="Nexo" className="h-7 w-auto" />
+              <InstallPwaButton />
+            </div>
+            <div className="flex items-center gap-2">
+              <ThemeToggle size="icon" variant="ghost" />
+              <Button variant="ghost" size="sm" onClick={async () => { await signOut(); navigate({ to: "/login" }); }}>
+                <LogOut className="size-4" />
+              </Button>
+            </div>
+          </header>
+          <nav className="flex overflow-x-auto gap-1 p-2 border-t">
+            {navItems.map((item) => {
+              const active = pathname.startsWith(item.to);
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  data-tour={item.tour}
+                  className={cn(
+                    "flex items-center gap-2 px-3 py-1.5 rounded-md text-xs whitespace-nowrap",
+                    active ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                  )}
+                >
+                  <Icon className="size-3.5" />
+                  {item.label}
+                </Link>
+              );
+            })}
+            <button
+              onClick={async () => {
+                await signOut();
+                await supabase.auth.signOut();
+                navigate({ to: "/login", replace: true });
+              }}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-md text-xs whitespace-nowrap bg-muted text-muted-foreground"
+            >
+              <LogOut className="size-3.5" />
+              Sair
+            </button>
+          </nav>
+        </div>
         <main className="flex-1 overflow-y-auto">
           <Outlet />
         </main>
       </div>
+
       <OnboardingTour tourKey="owner" steps={ownerTourSteps} />
     </div>
   );

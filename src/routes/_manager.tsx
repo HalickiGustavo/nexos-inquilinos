@@ -97,45 +97,48 @@ function ManagerLayout() {
       </aside>
 
       <div className="flex-1 flex flex-col min-w-0 md:ml-60 lg:ml-64">
-        <div className="md:hidden flex items-center justify-between px-4 py-3 bg-card border-b border-border">
-          <Link to="/manager" className="flex items-center">
-            <img src={nexoLogo.url} alt="NEXO" className="h-8 w-auto rounded-md bg-white p-1" />
-          </Link>
-          <div className="flex items-center gap-1">
-            <ThemeToggle size="icon" variant="ghost" />
-            <Link to="/manager/alertas" className="relative size-9 grid place-items-center rounded-full text-foreground hover:bg-muted">
-              <Bell className="size-5" strokeWidth={1.5} />
-              {criticalCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 inline-flex items-center justify-center min-w-4 h-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[9px] font-semibold">{criticalCount}</span>
-              )}
+        <div className="md:hidden sticky top-0 z-40 bg-card border-b border-border shadow-sm">
+          <div className="flex items-center justify-between px-4 py-3">
+            <Link to="/manager" className="flex items-center">
+              <img src={nexoLogo.url} alt="NEXO" className="h-8 w-auto rounded-md bg-white p-1" />
             </Link>
-            <Button variant="ghost" size="icon" className="text-foreground hover:bg-muted"
-              onClick={async () => { await signOut(); navigate({ to: "/login", replace: true }); }}>
-              <LogOut className="size-5" />
-            </Button>
-          </div>
-        </div>
-        <nav className="md:hidden flex overflow-x-auto gap-1 p-2 border-b border-border bg-card">
-          {navItems.map((item) => {
-            const active = item.exact ? pathname === item.to : pathname.startsWith(item.to);
-            const Icon = item.icon;
-            return (
-              <Link key={item.to} to={item.to} data-tour={item.tour}
-                className={cn("flex items-center gap-2 px-3 py-1.5 rounded-full text-xs whitespace-nowrap border transition-colors",
-                  active
-                    ? "bg-primary text-primary-foreground border-primary"
-                    : "bg-muted text-muted-foreground border-border hover:text-foreground")}>
-                <Icon className="size-3.5" />{item.label}
+            <div className="flex items-center gap-1">
+              <ThemeToggle size="icon" variant="ghost" />
+              <Link to="/manager/alertas" className="relative size-9 grid place-items-center rounded-full text-foreground hover:bg-muted">
+                <Bell className="size-5" strokeWidth={1.5} />
+                {criticalCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 inline-flex items-center justify-center min-w-4 h-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[9px] font-semibold">{criticalCount}</span>
+                )}
               </Link>
-            );
-          })}
-          <button
-            onClick={async () => { await signOut(); navigate({ to: "/login", replace: true }); }}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs whitespace-nowrap border bg-muted text-muted-foreground border-border hover:text-foreground transition-colors"
-          >
-            <LogOut className="size-3.5" />Sair
-          </button>
-        </nav>
+              <Button variant="ghost" size="icon" className="text-foreground hover:bg-muted"
+                onClick={async () => { await signOut(); navigate({ to: "/login", replace: true }); }}>
+                <LogOut className="size-5" />
+              </Button>
+            </div>
+          </div>
+          <nav className="flex overflow-x-auto gap-1 p-2 border-t border-border">
+            {navItems.map((item) => {
+              const active = item.exact ? pathname === item.to : pathname.startsWith(item.to);
+              const Icon = item.icon;
+              return (
+                <Link key={item.to} to={item.to} data-tour={item.tour}
+                  className={cn("flex items-center gap-2 px-3 py-1.5 rounded-full text-xs whitespace-nowrap border transition-colors",
+                    active
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-muted text-muted-foreground border-border hover:text-foreground")}>
+                  <Icon className="size-3.5" />{item.label}
+                </Link>
+              );
+            })}
+            <button
+              onClick={async () => { await signOut(); navigate({ to: "/login", replace: true }); }}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs whitespace-nowrap border bg-muted text-muted-foreground border-border hover:text-foreground transition-colors"
+            >
+              <LogOut className="size-3.5" />Sair
+            </button>
+          </nav>
+        </div>
+
         <main className="flex-1 overflow-y-auto"><Outlet /></main>
       </div>
       <OnboardingTour tourKey="manager" steps={managerTourSteps} />

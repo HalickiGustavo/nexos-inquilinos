@@ -1,0 +1,1 @@
+ALTER TABLE public.maintenance_messages ADD COLUMN IF NOT EXISTS attachment_urls text[] NOT NULL DEFAULT '{}';

@@ -118,6 +118,7 @@ export function TenantShell() {
         </div>
       </nav>
       <OnboardingTour tourKey="tenant" steps={tenantTourSteps} />
+      <InstallPwaButton bottomOffset={80} />
     </div>
   );
 }

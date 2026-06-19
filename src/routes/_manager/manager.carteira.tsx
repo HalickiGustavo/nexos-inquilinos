@@ -12,6 +12,7 @@ import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatBRL } from "@/lib/format";
 import { PropertyFormDialog } from "@/components/PropertyFormDialog";
+import { ContractPdfUploader } from "@/components/ContractPdfUploader";
 import { useInvalidate, type Property } from "@/lib/queries";
 
 export const Route = createFileRoute("/_manager/manager/carteira")({

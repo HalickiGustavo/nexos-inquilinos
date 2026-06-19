@@ -37,7 +37,7 @@ function Carteira() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("properties")
-        .select("*, contracts(id, active, rent_amount, tenant:tenants(full_name))")
+        .select("*, contracts(id, active, rent_amount, contract_pdf_path, tenant:tenants(full_name))")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data ?? [];

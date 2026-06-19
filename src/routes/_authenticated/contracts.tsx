@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
+import { ContractPdfUploader } from "@/components/ContractPdfUploader";
 import { useAuth } from "@/lib/auth";
 import { useContracts, useProperties, useTenants, useInvalidate } from "@/lib/queries";
 import { formatBRL, formatDate, parseNumber } from "@/lib/format";

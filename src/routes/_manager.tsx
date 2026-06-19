@@ -59,7 +59,7 @@ function ManagerLayout() {
       <aside className="hidden md:fixed md:left-0 md:top-0 md:h-screen md:flex w-60 lg:w-64 flex-col bg-sidebar text-sidebar-foreground border-r border-sidebar-border">
         <div className="p-5 border-b border-sidebar-border">
           <div className="flex items-center gap-3">
-            <img src={nexoLogo.url} alt="NEXO" className="h-9 w-auto rounded-md bg-white p-1.5" />
+            <NexoLogo className="h-9" alt="NEXO" />
             <div className="text-[10px] text-sidebar-foreground/60 uppercase tracking-wider">Imobiliária</div>
           </div>
         </div>

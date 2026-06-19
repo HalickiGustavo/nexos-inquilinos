@@ -143,6 +143,7 @@ function ManagerLayout() {
         <main className="flex-1 overflow-y-auto"><Outlet /></main>
       </div>
       <OnboardingTour tourKey="manager" steps={managerTourSteps} />
+      <InstallPwaButton bottomOffset={88} />
     </div>
   );
 }

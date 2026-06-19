@@ -71,7 +71,8 @@ function ContractsPage() {
                 <Info label="Reajuste" value={c.readjustment_index} />
                 <Info label="Caução" value={formatBRL(Number(c.security_deposit))} />
               </div>
-              <div className="mt-4 flex justify-end">
+              <div className="mt-4 flex justify-between items-center gap-2 flex-wrap border-t pt-4">
+                <ContractPdfUploader contractId={c.id} currentPath={c.contract_pdf_path} />
                 <Button variant="outline" size="sm" onClick={async () => {
                   if (!confirm("Tem certeza que deseja excluir este contrato? Todas as parcelas vinculadas serão perdidas.")) return;
                   const { error } = await supabase.from("contracts").delete().eq("id", c.id);

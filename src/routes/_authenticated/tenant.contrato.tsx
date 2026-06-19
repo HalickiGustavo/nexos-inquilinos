@@ -8,6 +8,7 @@ import { Progress } from "@/components/ui/progress";
 import { useTenantActiveContract } from "@/lib/tenant-queries";
 import { formatBRL, formatDate } from "@/lib/format";
 import { downloadPdf } from "@/lib/pdf";
+import { openContractPdf } from "@/components/ContractPdfUploader";
 import {
   COND_LABEL,
   KIND_LABEL,

@@ -101,7 +101,7 @@ function ManagerLayout() {
         <div className="md:hidden sticky top-0 z-40 bg-card border-b border-border shadow-sm">
           <div className="flex items-center justify-between px-4 py-3">
             <Link to="/manager" className="flex items-center">
-              <img src={nexoLogo.url} alt="NEXO" className="h-8 w-auto rounded-md bg-white p-1" />
+              <NexoLogo className="h-8" alt="NEXO" />
             </Link>
             <div className="flex items-center gap-1">
               <ThemeToggle size="icon" variant="ghost" />

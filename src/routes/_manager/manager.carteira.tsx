@@ -130,6 +130,12 @@ function Carteira() {
                   </Dialog>
                   <DeleteButton id={p.id} />
                 </div>
+                {active && (
+                  <div className="mt-3 pt-3 border-t">
+                    <p className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1.5">Contrato PDF</p>
+                    <ContractPdfUploader contractId={active.id} currentPath={active.contract_pdf_path} />
+                  </div>
+                )}
               </Card>
             );
           })}

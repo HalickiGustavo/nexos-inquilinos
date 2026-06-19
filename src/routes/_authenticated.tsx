@@ -19,7 +19,7 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { TenantShell } from "@/components/TenantShell";
 import { InstallPwaButton } from "@/components/InstallPwaButton";
-import nexoLogoAsset from "@/assets/nexo-logo.png.asset.json";
+import { NexoLogo } from "@/components/NexoLogo";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { OnboardingTour } from "@/components/OnboardingTour";
 import { ownerTourSteps } from "@/lib/tour-steps";

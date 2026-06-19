@@ -19,7 +19,7 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { TenantShell } from "@/components/TenantShell";
 import { InstallPwaButton } from "@/components/InstallPwaButton";
-import nexoLogoAsset from "@/assets/nexo-logo.png.asset.json";
+import { NexoLogo } from "@/components/NexoLogo";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { OnboardingTour } from "@/components/OnboardingTour";
 import { ownerTourSteps } from "@/lib/tour-steps";
@@ -40,7 +40,6 @@ const navItems = [
 ] as const;
 
 function AuthLayout() {
-  const nexoLogo = nexoLogoAsset.url;
   const { user, loading, signOut } = useAuth();
   const { role, loading: roleLoading } = useUserRole();
   const navigate = useNavigate();
@@ -81,7 +80,7 @@ function AuthLayout() {
       {/* Sidebar */}
       <aside className="hidden md:fixed md:left-0 md:top-0 md:h-screen md:flex w-64 flex-col bg-sidebar text-sidebar-foreground border-r border-sidebar-border">
         <div className="p-5 flex items-center gap-3 border-b border-sidebar-border bg-card">
-          <img src={nexoLogo} alt="Nexo" className="h-10 w-auto" />
+          <NexoLogo className="h-10" />
         </div>
 
         <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
@@ -129,8 +128,7 @@ function AuthLayout() {
         <div className="md:hidden sticky top-0 z-40 bg-card border-b shadow-sm">
           <header className="flex items-center justify-between p-4">
             <div className="flex items-center gap-2">
-              <img src={nexoLogo} alt="Nexo" className="h-7 w-auto" />
-              <InstallPwaButton />
+              <NexoLogo className="h-7" />
             </div>
             <div className="flex items-center gap-2">
               <ThemeToggle size="icon" variant="ghost" />
@@ -177,6 +175,7 @@ function AuthLayout() {
       </div>
 
       <OnboardingTour tourKey="owner" steps={ownerTourSteps} />
+      <InstallPwaButton bottomOffset={88} />
     </div>
   );
 }

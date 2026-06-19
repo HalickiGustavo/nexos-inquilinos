@@ -12,6 +12,7 @@ import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatBRL } from "@/lib/format";
 import { PropertyFormDialog } from "@/components/PropertyFormDialog";
+import { ContractPdfUploader } from "@/components/ContractPdfUploader";
 import { useInvalidate, type Property } from "@/lib/queries";
 
 export const Route = createFileRoute("/_manager/manager/carteira")({
@@ -36,7 +37,7 @@ function Carteira() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("properties")
-        .select("*, contracts(id, active, rent_amount, tenant:tenants(full_name))")
+        .select("*, contracts(id, active, rent_amount, contract_pdf_path, tenant:tenants(full_name))")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data ?? [];
@@ -129,6 +130,12 @@ function Carteira() {
                   </Dialog>
                   <DeleteButton id={p.id} />
                 </div>
+                {active && (
+                  <div className="mt-3 pt-3 border-t">
+                    <p className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1.5">Contrato PDF</p>
+                    <ContractPdfUploader contractId={active.id} currentPath={active.contract_pdf_path} />
+                  </div>
+                )}
               </Card>
             );
           })}

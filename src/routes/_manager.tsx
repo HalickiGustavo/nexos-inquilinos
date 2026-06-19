@@ -1,7 +1,8 @@
 import { createFileRoute, Outlet, useNavigate, useRouterState, Link } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { LayoutDashboard, Briefcase, Wallet, Users, KanbanSquare, ClipboardCheck, Bell, LogOut, Loader2, Plug, FileDigit, Database, Coins, Globe } from "lucide-react";
-import nexoLogo from "@/assets/nexo-logo.jpeg.asset.json";
+import { NexoLogo } from "@/components/NexoLogo";
+import { InstallPwaButton } from "@/components/InstallPwaButton";
 import { useAuth } from "@/lib/auth";
 import { useUserRole } from "@/lib/useUserRole";
 import { useManagerAlerts } from "@/lib/alerts";
@@ -58,7 +59,7 @@ function ManagerLayout() {
       <aside className="hidden md:fixed md:left-0 md:top-0 md:h-screen md:flex w-60 lg:w-64 flex-col bg-sidebar text-sidebar-foreground border-r border-sidebar-border">
         <div className="p-5 border-b border-sidebar-border">
           <div className="flex items-center gap-3">
-            <img src={nexoLogo.url} alt="NEXO" className="h-9 w-auto rounded-md bg-white p-1.5" />
+            <NexoLogo className="h-9" alt="NEXO" />
             <div className="text-[10px] text-sidebar-foreground/60 uppercase tracking-wider">Imobiliária</div>
           </div>
         </div>
@@ -100,7 +101,7 @@ function ManagerLayout() {
         <div className="md:hidden sticky top-0 z-40 bg-card border-b border-border shadow-sm">
           <div className="flex items-center justify-between px-4 py-3">
             <Link to="/manager" className="flex items-center">
-              <img src={nexoLogo.url} alt="NEXO" className="h-8 w-auto rounded-md bg-white p-1" />
+              <NexoLogo className="h-8" alt="NEXO" />
             </Link>
             <div className="flex items-center gap-1">
               <ThemeToggle size="icon" variant="ghost" />
@@ -142,6 +143,7 @@ function ManagerLayout() {
         <main className="flex-1 overflow-y-auto"><Outlet /></main>
       </div>
       <OnboardingTour tourKey="manager" steps={managerTourSteps} />
+      <InstallPwaButton bottomOffset={88} />
     </div>
   );
 }

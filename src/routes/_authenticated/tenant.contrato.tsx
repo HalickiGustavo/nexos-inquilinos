@@ -95,7 +95,15 @@ function TenantContrato() {
         <Button
           variant="outline"
           className="w-full"
-          onClick={() =>
+          onClick={async () => {
+            if (contract.contract_pdf_path) {
+              try {
+                await openContractPdf(contract.contract_pdf_path);
+              } catch (e: any) {
+                toast.error(e.message ?? "Falha ao abrir contrato");
+              }
+              return;
+            }
             downloadPdf(`contrato-${contract.id.slice(0, 8)}.pdf`, [
               "CONTRATO DE LOCAÇÃO RESIDENCIAL",
               "",
@@ -111,10 +119,11 @@ function TenantContrato() {
               contract.notes ?? "",
               "",
               "Este documento é uma cópia simplificada para conferência.",
-            ])
-          }
+            ]);
+          }}
         >
-          <Download className="size-4 mr-2" /> Baixar contrato (PDF)
+          <Download className="size-4 mr-2" />
+          {contract.contract_pdf_path ? "Baixar contrato anexado (PDF)" : "Baixar contrato (PDF)"}
         </Button>
       </Card>
 

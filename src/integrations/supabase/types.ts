@@ -143,6 +143,7 @@ export type Database = {
       contracts: {
         Row: {
           active: boolean
+          contract_pdf_path: string | null
           created_at: string
           daily_interest_percent: number
           due_day: number
@@ -162,6 +163,7 @@ export type Database = {
         }
         Insert: {
           active?: boolean
+          contract_pdf_path?: string | null
           created_at?: string
           daily_interest_percent?: number
           due_day: number
@@ -181,6 +183,7 @@ export type Database = {
         }
         Update: {
           active?: boolean
+          contract_pdf_path?: string | null
           created_at?: string
           daily_interest_percent?: number
           due_day?: number

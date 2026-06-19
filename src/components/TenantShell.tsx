@@ -18,7 +18,6 @@ const tenantNav: ReadonlyArray<{ to: string; label: string; icon: typeof Home; e
 ];
 
 export function TenantShell() {
-  const nexoLogo = nexoLogoAsset.url;
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -32,8 +31,7 @@ export function TenantShell() {
       <header className="sticky top-0 z-30 bg-card border-b">
         <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <img src={nexoLogo} alt="Nexo" className="h-7 w-auto" />
-            <InstallPwaButton />
+            <NexoLogo className="h-7" />
           </div>
           <div className="flex items-center gap-2">
             <span className="hidden sm:block text-xs text-muted-foreground truncate max-w-[180px]">

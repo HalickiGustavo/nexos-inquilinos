@@ -175,6 +175,7 @@ function AuthLayout() {
       </div>
 
       <OnboardingTour tourKey="owner" steps={ownerTourSteps} />
+      <InstallPwaButton bottomOffset={88} />
     </div>
   );
 }

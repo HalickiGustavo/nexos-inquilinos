@@ -40,7 +40,6 @@ const navItems = [
 ] as const;
 
 function AuthLayout() {
-  const nexoLogo = nexoLogoAsset.url;
   const { user, loading, signOut } = useAuth();
   const { role, loading: roleLoading } = useUserRole();
   const navigate = useNavigate();

@@ -4,7 +4,7 @@ import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { InstallPwaButton } from "@/components/InstallPwaButton";
-import nexoLogoAsset from "@/assets/nexo-logo.png.asset.json";
+import { NexoLogo } from "@/components/NexoLogo";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { OnboardingTour } from "@/components/OnboardingTour";
 import { tenantTourSteps } from "@/lib/tour-steps";

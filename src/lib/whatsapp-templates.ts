@@ -135,3 +135,20 @@ export function stageLabel(stage: ReminderStage): string {
   };
   return map[stage];
 }
+
+export function buildMaintenanceResponseReminder(params: {
+  ownerName: string;
+  tenantName: string;
+  maintenanceTitle: string;
+  propertyNickname?: string | null;
+  hoursWaiting: number;
+}): string {
+  const f = firstName(params.ownerName);
+  const local = params.propertyNickname ? ` (${params.propertyNickname})` : "";
+  return (
+    `Olá, *${f}*! 🛠️\n\n` +
+    `O inquilino *${params.tenantName}* enviou uma mensagem na solicitação ` +
+    `*"${params.maintenanceTitle}"*${local} há mais de *${params.hoursWaiting}h* e ainda aguarda retorno.\n\n` +
+    `Por favor, responda no painel da NEXO assim que possível para manter o atendimento em dia. 🙏`
+  );
+}

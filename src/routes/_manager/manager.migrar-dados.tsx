@@ -237,7 +237,7 @@ function MigrarDadosPage() {
           rent_amount: rent,
           readjustment_index: "IGP-M",
           security_deposit: 0,
-          active: true,
+          active: isActive,
         });
         if (eC) throw new Error(`contract: ${eC.message}`);
 

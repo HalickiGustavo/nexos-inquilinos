@@ -1,82 +1,75 @@
-# Plano de Auditoria em 3 Fases
+# Fluxo de Mensagens WhatsApp para Inquilinos
 
-Cada fase entregue separadamente. Você valida (testa as telas críticas) antes da próxima.
+Aproveita o `whatsapp.functions.ts` que já existe e os secrets `EVOLUTION_API_URL`, `EVOLUTION_API_INSTANCE`, `EVOLUTION_API_KEY` já cadastrados. A instância do Evolution está inativa no momento — o sistema vai logar a falha e seguir, sem quebrar nada. Quando reativarem, os disparos passam a sair automaticamente.
 
----
+## 1. Mensagem de boas-vindas (completar cadastro)
 
-## Fase 1 — Segurança (entrega primeiro)
+Já existe `sendWelcomeWhatsApp` enviado no cadastro de inquilino. Vou:
 
-**Objetivo:** fechar buracos sem mexer em UI nem em queries.
+- Reescrever o texto para focar em **completar o cadastro** (link de ativação + senha), não só "boas-vindas".
+- Garantir que é chamado no momento certo (após criar tenant + enviar magic link / invite).
+- Reenvio manual: botão "Reenviar WhatsApp" na tela de detalhes do inquilino, caso a primeira tentativa falhe (instância offline agora).
 
-1. **Route guards reforçados**
-   - Garantir que `_authenticated/route.tsx` e `_manager.tsx` redirecionam para `/login` quando `session === null` (não apenas `user`), evitando flash de conteúdo durante refresh.
-   - Adicionar verificação de role no `_manager` antes de montar — hoje já existe mas roda depois do render inicial; mover para `beforeLoad`-equivalente client-side.
+## 2. Lembretes de cobrança automáticos
 
-2. **Limpeza de `console.log` sensíveis**
-   - Varrer `src/` por `console.log/info/debug` que imprimam `session`, `user`, `error` cru de Supabase, tokens ou payloads do Asaas.
-   - Manter apenas `console.error` em catch blocks, sanitizando para não vazar email/CPF/tokens.
+Régua sobre a tabela `installments`:
 
-3. **Sanitização de inputs**
-   - Validar com Zod nos formulários que ainda gravam direto: CRM leads, manutenções (mensagens), notas internas. Limites de tamanho + `.trim()`.
-   - Conferir `dangerouslySetInnerHTML` (não deve existir; confirmar).
+| Gatilho | Quando | Tom |
+|---|---|---|
+| pre-10 | 10 dias antes do vencimento | aviso leve |
+| pre-5  | 5 dias antes | lembrete |
+| pre-2  | 2 dias antes | reforço |
+| pre-1  | 1 dia antes | última chance amigável |
+| post-1 | 1 dia após vencimento | cobrança cordial + link de pagamento |
+| post-2 | 2 dias após | cobrança |
+| post-3 | 3 dias após | cobrança firme |
+| post-5 | 5 dias após | aviso de juros/multa |
+| post-7 | 7 dias após | aviso de encaminhamento |
 
-4. **Storage**
-   - Auditar `localStorage`/`sessionStorage` fora do Supabase auth client. Remover qualquer gravação de dados de contrato/inquilino/CPF.
+Cada parcela recebe no máximo **uma mensagem por estágio** (controle por tabela de log, sem duplicar).
 
-5. **RLS lint**
-   - Rodar `supabase--linter` e corrigir findings críticos (tabelas sem RLS, policies abertas).
+## 3. Detalhes técnicos
 
-**Entrega:** relatório curto com itens corrigidos + arquivos tocados.
+**Migration** — nova tabela `installment_notifications`:
+- `installment_id` (fk), `stage` (text: `pre-10`, `pre-5`, ..., `post-7`), `sent_at`, `status` (`sent`/`failed`/`skipped`), `error` (text), `channel` (`whatsapp`).
+- Unique (`installment_id`, `stage`, `channel`) — impede duplicidade.
+- RLS: manager/owner do contrato lê; writes só via service_role.
 
----
+**Server route público de cron** — `src/routes/api/public/hooks/send-tenant-reminders.ts`:
+- Autenticado via header `apikey` (anon key — padrão Lovable).
+- Lê parcelas com status `pendente`/`atrasado` cujo `due_date` cai num dos 9 offsets.
+- Para cada parcela elegível sem log do estágio, monta a mensagem (nome do inquilino, valor BRL, vencimento, link Asaas se houver), chama Evolution API e grava o log (`sent` ou `failed` + mensagem do erro).
+- Falha em uma parcela não interrompe as outras.
 
-## Fase 2 — Performance
+**pg_cron** — agenda o hook 1x ao dia (ex.: 09:00 BRT = 12:00 UTC) via `supabase--insert`.
 
-**Objetivo:** acelerar carga inicial e reduzir re-renders. Sem mudar comportamento.
+**Helper compartilhado** — `src/lib/whatsapp.server.ts` com `sendEvolutionText({ phone, text })`, usado tanto pelo cron quanto pelo `sendWelcomeWhatsApp` (refator pequeno, sem mudar contrato).
 
-1. **Lazy loading de telas pesadas**
-   - `manager.migrar-dados` (papaparse), `manager.dimob` (gerador de TXT), `manager.financeiro` (charts), `manager.index` (recharts).
-   - Como TanStack Start já faz auto code-splitting de `component`, o ganho real vem de: (a) garantir que componentes não são `export`ados, (b) mover libs pesadas (papaparse, pdf-lib) para imports dinâmicos dentro de handlers, não no topo do módulo.
+**Templates** — `src/lib/whatsapp-templates.ts`: uma função por estágio, recebe `{ nome, valor, vencimento, linkPagamento? }` e devolve string. Centralizado pra editar copy depois.
 
-2. **Queries Supabase**
-   - Trocar `select('*')` por colunas específicas em:
-     - `useProperties` / `useTenants` / `useContracts` / `useInstallments` em `src/lib/queries.ts`
-     - `manager.crm.tsx`, `manager.equipe.tsx`, `tenant.financeiro.tsx`
-   - Adicionar `.limit()` razoável + ordenação server-side onde a tela já pagina visualmente.
-   - Aumentar `staleTime` no QueryClient global de 30s para 60s nas listas que mudam pouco (properties, tenants).
+**UI** — na tela do inquilino (owner e manager), pequena seção "Notificações enviadas" listando os logs (estágio + data + status). Permite ao gestor saber o que já saiu.
 
-3. **React.memo / useMemo / useCallback**
-   - Memoizar linhas das tabelas grandes (`manager.financeiro` parcelas agrupadas, `contracts`, `properties`).
-   - `useMemo` em agregações (somas de aluguel, totais do dashboard) que hoje recalculam a cada render.
+## 4. Comportamento com instância offline
 
-4. **CLS**
-   - Reservar `min-h` nos cards do dashboard que carregam dados assíncronos para evitar pulo de layout.
+- Toda chamada à Evolution já tem try/catch e retorna `{ ok: false, reason }`.
+- O cron grava `status: 'failed'` com o motivo — assim, quando a instância voltar, o gestor vê o histórico e pode disparar reenvio manual pelos botões da UI.
+- **Sem reenvio automático de mensagens antigas**: quando a instância voltar, parcelas que já passaram do estágio ficam marcadas como `failed` no log — a régua só dispara o próximo estágio futuro. Isso evita avalanche de mensagens atrasadas.
 
-**Entrega:** relatório com tela → técnica aplicada + medição visual (antes vs depois quando relevante).
+## 5. O que NÃO faço nesta entrega
 
----
+- Não mexo no design existente.
+- Não crio novos secrets (uso os 3 do Evolution já cadastrados).
+- Não toco em Asaas / cobranças em si — só leio `link_pagamento` da parcela se existir.
+- Sem opt-out por inquilino agora (posso adicionar depois se pedir).
 
-## Fase 3 — Cleanup
+## Arquivos a criar/editar
 
-1. Remover imports não usados (eslint --fix onde seguro).
-2. Apagar utilitários duplicados em `src/lib/` se houver.
-3. Padronizar formatação BRL/data via `src/lib/format.ts` em telas que ainda usam `toLocaleString` inline.
-4. Conferir que nenhum arquivo `*.functions.ts` importa `client.server` no topo (regra crítica do template).
+- `supabase/migrations/<timestamp>_installment_notifications.sql` (nova tabela + RLS + grants)
+- `src/lib/whatsapp.server.ts` (helper de envio)
+- `src/lib/whatsapp-templates.ts` (9 templates de cobrança + 1 boas-vindas)
+- `src/lib/whatsapp.functions.ts` (refator + nova fn `resendWelcomeWhatsApp`)
+- `src/routes/api/public/hooks/send-tenant-reminders.ts` (cron handler)
+- `src/routes/_authenticated/tenants.tsx` e `_manager/manager.carteira.tsx` (botão reenviar + histórico)
+- pg_cron schedule via `supabase--insert` (após deploy)
 
-**Entrega:** diff resumo + lista de arquivos removidos/consolidados.
-
----
-
-## Como vou trabalhar
-
-- Início imediato pela **Fase 1** assim que aprovar este plano.
-- Ao final de cada fase: paro, mostro o relatório, espero seu OK antes da próxima.
-- Design (fundo preto, neon roxo) intocado em todas as fases.
-- Nada de mudanças no schema do banco sem te avisar.
-
-## Detalhes técnicos
-
-- Stack: TanStack Start + Supabase (Lovable Cloud) + React Query + Tailwind v4.
-- Auto code-splitting já ativo via Vite plugin — refactor de lazy foca em **dynamic imports** dentro de handlers/effects, não em `React.lazy` manual.
-- RLS check via tool `supabase--linter`.
-- Sem alterações em `routeTree.gen.ts`, `client.ts`, `auth-middleware.ts`, `types.ts` (auto-gerados).
+Aprova pra eu começar?

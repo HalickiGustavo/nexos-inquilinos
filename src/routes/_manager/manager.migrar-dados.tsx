@@ -31,7 +31,14 @@ const TEMPLATE_HEADERS = [
   "imovel_endereco",
   "contrato_valor",
   "contrato_vencimento",
+  "contrato_ativo",
 ] as const;
+
+function parseBool(raw: string | undefined): boolean {
+  const s = (raw ?? "").trim().toLowerCase();
+  if (!s) return true; // default ativo
+  return ["1", "true", "sim", "s", "yes", "y", "ativo", "ativa"].includes(s);
+}
 
 type CsvRow = Record<(typeof TEMPLATE_HEADERS)[number], string>;
 

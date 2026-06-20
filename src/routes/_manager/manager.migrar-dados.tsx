@@ -127,7 +127,8 @@ function MigrarDadosPage() {
       skipEmptyLines: true,
       transformHeader: (h: string) => h.trim().toLowerCase().replace(/\s+/g, "_"),
       complete: (result: { data: CsvRow[]; meta: { fields?: string[] } }) => {
-        const missing = TEMPLATE_HEADERS.filter((h) => !result.meta.fields?.includes(h));
+        const required = TEMPLATE_HEADERS.filter((h) => h !== "contrato_ativo");
+        const missing = required.filter((h) => !result.meta.fields?.includes(h));
         if (missing.length > 0) {
           toast.error(`Cabeçalhos ausentes: ${missing.join(", ")}`);
           setRows([]);

@@ -359,11 +359,11 @@ function StatusBadge({ status }: { status: string }) {
 
 function SummaryCard({ icon, label, value, accent }: { icon: React.ReactNode; label: string; value: string; accent?: string }) {
   return (
-    <Card className="p-5 flex items-center gap-4 min-w-0">
-      <div className="p-2.5 rounded-lg bg-muted shrink-0">{icon}</div>
-      <div className="min-w-0 flex-1">
-        <div className="text-sm text-muted-foreground truncate">{label}</div>
-        <div className={`text-xl sm:text-2xl font-bold truncate ${accent ?? ""}`}>{value}</div>
+    <Card className="p-5 flex items-center gap-4">
+      <div className="p-2.5 rounded-lg bg-muted">{icon}</div>
+      <div>
+        <div className="text-sm text-muted-foreground">{label}</div>
+        <div className={`text-2xl font-bold ${accent ?? ""}`}>{value}</div>
       </div>
     </Card>
   );

@@ -40,35 +40,65 @@ function LoginPage() {
   }, [user, loading, navigate]);
 
   return (
-    <div className="min-h-screen grid lg:grid-cols-2">
-      <div className="hidden lg:flex flex-col justify-between p-12 bg-sidebar text-sidebar-foreground">
-        <div className="flex flex-col items-center gap-6 flex-1 justify-center">
-          <div className={isDark ? "rounded-xl py-4 mx-auto flex-col flex items-center justify-center px-[24px]" : "bg-white/95 rounded-xl py-4 mx-auto flex-col flex items-center justify-center px-[24px]"}>
-            <img src={nexoLogo} alt="Nexo" className="h-44 w-[26rem] max-w-full object-contain my-0" />
+    <div className="min-h-screen grid lg:grid-cols-[1.05fr_1fr]">
+      {/* Painel brand — sempre dark/violet, independente do tema escolhido pelo usuário */}
+      <div
+        className="hidden lg:flex relative flex-col justify-between p-12 text-white overflow-hidden"
+        style={{ background: "var(--gradient-hero)" }}
+      >
+        {/* Camadas decorativas */}
+        <div className="pointer-events-none absolute inset-0 opacity-60" aria-hidden>
+          <div className="absolute top-[-12%] left-[-8%] size-[520px] rounded-full bg-fuchsia-500/25 blur-[120px]" />
+          <div className="absolute bottom-[-15%] right-[-10%] size-[480px] rounded-full bg-violet-400/25 blur-[120px]" />
+        </div>
+        <div
+          className="pointer-events-none absolute inset-0 opacity-[0.07]"
+          aria-hidden
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)",
+            backgroundSize: "48px 48px",
+            maskImage: "radial-gradient(ellipse 80% 60% at 50% 40%, black 30%, transparent 75%)",
+          }}
+        />
+
+        <div className="relative flex items-center gap-3">
+          <span className="inline-flex size-9 items-center justify-center rounded-xl bg-white/10 ring-1 ring-white/15 backdrop-blur">
+            <span className="size-2 rounded-full bg-white shadow-[0_0_12px_rgba(255,255,255,0.9)]" />
+          </span>
+          <span className="text-sm font-medium tracking-wide opacity-80">Nexo · gestão imobiliária</span>
+        </div>
+
+        <div className="relative flex flex-col items-center gap-8 flex-1 justify-center">
+          <div className="flex items-center justify-center px-6">
+            <img src={nexoLogoDarkAsset.url} alt="Nexo" className="h-32 w-auto max-w-full object-contain drop-shadow-[0_8px_32px_rgba(139,92,246,0.45)]" />
           </div>
 
-          <div className="text-center">
-            <h1 className="text-4xl font-bold leading-tight">
+          <div className="text-center max-w-md">
+            <h1 className="text-4xl xl:text-5xl font-bold leading-[1.1] tracking-tight text-balance">
               Controle total dos seus<br />
-              <span className="text-primary">imóveis e aluguéis.</span>
+              <span className="bg-gradient-to-r from-violet-200 via-fuchsia-200 to-pink-200 bg-clip-text text-transparent">
+                imóveis e aluguéis.
+              </span>
             </h1>
-            <p className="mt-4 text-sidebar-foreground/70 max-w-md mx-auto">
-              Gerencie inquilinos, contratos, parcelas e manutenções em uma única plataforma moderna e segura.
+            <p className="mt-5 text-white/70 text-[15px] leading-relaxed">
+              Inquilinos, contratos, parcelas e manutenções em uma única plataforma moderna e segura.
             </p>
           </div>
         </div>
-        <p className="text-xs text-sidebar-foreground/50 text-center">© {new Date().getFullYear()} Nexo</p>
+
+        <p className="relative text-xs text-white/40 text-center">© {new Date().getFullYear()} Nexo</p>
       </div>
 
-      <div className="flex items-center justify-center p-6 lg:p-12">
-        <Card className="w-full max-w-md p-8 shadow-lg">
+      <div className="flex items-center justify-center p-6 lg:p-12 bg-background">
+        <Card className="w-full max-w-md p-8 border-border/60 shadow-card surface-1">
           <div className="lg:hidden flex justify-center items-center mb-6">
-            <img src={nexoLogo} alt="Nexo" className="h-16 w-auto" />
+            <img src={nexoLogo} alt="Nexo" className="h-14 w-auto" />
           </div>
 
-          <div className="text-center mb-6">
-            <h2 className="text-2xl font-semibold">Bem-vindo de volta</h2>
-            <p className="text-sm text-muted-foreground mt-1">Entre com sua conta para continuar</p>
+          <div className="text-center mb-7">
+            <h2 className="text-2xl font-semibold tracking-tight">Bem-vindo de volta</h2>
+            <p className="text-sm text-muted-foreground mt-1.5">Entre com sua conta para continuar</p>
           </div>
           <SignInForm />
         </Card>

@@ -80,7 +80,7 @@ function FinancialsPage() {
 
 
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         <SummaryCard icon={<Clock className="size-5" />} label="Pendente" value={formatBRL(totals.pending)} />
         <SummaryCard icon={<CheckCircle2 className="size-5 text-primary" />} label="Pago" value={formatBRL(totals.paid)} accent="text-primary" />
         <SummaryCard icon={<AlertCircle className="size-5 text-destructive" />} label="Atrasado" value={formatBRL(totals.overdue)} accent="text-destructive" />
@@ -359,11 +359,11 @@ function StatusBadge({ status }: { status: string }) {
 
 function SummaryCard({ icon, label, value, accent }: { icon: React.ReactNode; label: string; value: string; accent?: string }) {
   return (
-    <Card className="p-5 flex items-center gap-4">
-      <div className="p-2.5 rounded-lg bg-muted">{icon}</div>
-      <div>
-        <div className="text-sm text-muted-foreground">{label}</div>
-        <div className={`text-2xl font-bold ${accent ?? ""}`}>{value}</div>
+    <Card className="p-4 sm:p-5 flex items-center gap-3 sm:gap-4 min-w-0 overflow-hidden">
+      <div className="p-2.5 rounded-lg bg-muted shrink-0">{icon}</div>
+      <div className="min-w-0 flex-1">
+        <div className="text-sm text-muted-foreground truncate">{label}</div>
+        <div className={`text-xl sm:text-2xl font-bold tabular-nums break-words leading-tight ${accent ?? ""}`}>{value}</div>
       </div>
     </Card>
   );

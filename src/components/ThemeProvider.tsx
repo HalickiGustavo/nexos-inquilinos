@@ -10,7 +10,7 @@ interface ThemeContextValue {
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
-function getInitialTheme(): Theme {
+function readClientTheme(): Theme {
   if (typeof window === "undefined") return "dark";
   const stored = localStorage.getItem("nexo-theme") as Theme | null;
   if (stored === "light" || stored === "dark") return stored;
@@ -18,17 +18,35 @@ function getInitialTheme(): Theme {
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>(getInitialTheme);
+  // Start with "dark" on both server and first client render to avoid hydration mismatch.
+  const [theme, setThemeState] = useState<Theme>("dark");
+  const [mounted, setMounted] = useState(false);
+
+  // After hydration, sync with the user's actual preference (localStorage or system).
+  useEffect(() => {
+    setThemeState(readClientTheme());
+    setMounted(true);
+  }, []);
+
+  // Follow system preference changes when no explicit choice is stored.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mql = window.matchMedia("(prefers-color-scheme: dark)");
+    const handler = (e: MediaQueryListEvent) => {
+      const stored = localStorage.getItem("nexo-theme");
+      if (stored !== "light" && stored !== "dark") {
+        setThemeState(e.matches ? "dark" : "light");
+      }
+    };
+    mql.addEventListener("change", handler);
+    return () => mql.removeEventListener("change", handler);
+  }, []);
 
   useEffect(() => {
     const root = document.documentElement;
-    if (theme === "dark") {
-      root.classList.add("dark");
-    } else {
-      root.classList.remove("dark");
-    }
-    localStorage.setItem("nexo-theme", theme);
-  }, [theme]);
+    root.classList.toggle("dark", theme === "dark");
+    if (mounted) localStorage.setItem("nexo-theme", theme);
+  }, [theme, mounted]);
 
   const toggleTheme = () => setThemeState((t) => (t === "dark" ? "light" : "dark"));
   const setTheme = (t: Theme) => setThemeState(t);

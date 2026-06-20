@@ -213,7 +213,7 @@ function MigrarDadosPage() {
               nickname: address.slice(0, 60),
               address,
               type: "apartamento",
-              status: "alugado",
+              status: isActive ? "alugado" : "disponivel",
               rent_price: rent,
               owner_name: ownerName,
               // owner_doc é mantido no campo notes para preservar rastreabilidade

@@ -591,6 +591,54 @@ export type Database = {
           },
         ]
       }
+      maintenance_response_notifications: {
+        Row: {
+          channel: string
+          created_at: string
+          error: string | null
+          id: string
+          last_tenant_message_id: string
+          maintenance_id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          channel?: string
+          created_at?: string
+          error?: string | null
+          id?: string
+          last_tenant_message_id: string
+          maintenance_id: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          channel?: string
+          created_at?: string
+          error?: string | null
+          id?: string
+          last_tenant_message_id?: string
+          maintenance_id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "maintenance_response_notifications_last_tenant_message_id_fkey"
+            columns: ["last_tenant_message_id"]
+            isOneToOne: false
+            referencedRelation: "maintenance_messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "maintenance_response_notifications_maintenance_id_fkey"
+            columns: ["maintenance_id"]
+            isOneToOne: false
+            referencedRelation: "maintenances"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       maintenances: {
         Row: {
           budget_amount: number
@@ -746,6 +794,7 @@ export type Database = {
           integration_imovelweb_connected: boolean
           integration_token: string
           integration_zap_connected: boolean
+          phone: string | null
           updated_at: string
         }
         Insert: {
@@ -756,6 +805,7 @@ export type Database = {
           integration_imovelweb_connected?: boolean
           integration_token?: string
           integration_zap_connected?: boolean
+          phone?: string | null
           updated_at?: string
         }
         Update: {
@@ -766,6 +816,7 @@ export type Database = {
           integration_imovelweb_connected?: boolean
           integration_token?: string
           integration_zap_connected?: boolean
+          phone?: string | null
           updated_at?: string
         }
         Relationships: []

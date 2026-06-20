@@ -49,7 +49,8 @@ function ManagerPortaisPage() {
     value: boolean,
   ) {
     if (!user) return;
-    const { error } = await supabase.from("profiles").update({ [field]: value }).eq("id", user.id);
+    const patch = { [field]: value } as Record<string, boolean>;
+    const { error } = await supabase.from("profiles").update(patch as any).eq("id", user.id);
     if (error) return toast.error(error.message);
     toast.success(value ? "Portal conectado com sucesso!" : "Portal desconectado.");
     refetch();

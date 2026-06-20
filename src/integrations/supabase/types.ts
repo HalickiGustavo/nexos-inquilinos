@@ -785,6 +785,7 @@ export type Database = {
           manager_user_id: string
           member_user_id: string | null
           name: string
+          phone: string | null
           role_label: string
           status: string
           total_sales_count: number
@@ -800,6 +801,7 @@ export type Database = {
           manager_user_id: string
           member_user_id?: string | null
           name: string
+          phone?: string | null
           role_label?: string
           status?: string
           total_sales_count?: number
@@ -815,6 +817,7 @@ export type Database = {
           manager_user_id?: string
           member_user_id?: string | null
           name?: string
+          phone?: string | null
           role_label?: string
           status?: string
           total_sales_count?: number

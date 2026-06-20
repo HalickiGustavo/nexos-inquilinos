@@ -160,33 +160,35 @@ export const Route = createFileRoute("/api/public/webhooks/leads")({
           return jsonResp({ received: true, routed: false, error: "persist_failed" }, 500);
         }
 
-        // 5. Notify routed broker via WhatsApp (fire and forget)
+        // 5. Notify routed broker via WhatsApp (fire and forget) — prefers manager_members.phone, falls back to profiles.phone
         if (routedMemberId) {
           const { data: broker } = await supabaseAdmin
             .from("manager_members")
-            .select("name, email, member_user_id")
+            .select("name, email, phone, member_user_id")
             .eq("id", routedMemberId)
             .maybeSingle();
 
-          if (broker?.member_user_id) {
+          let phone: string | null = (broker as any)?.phone ?? null;
+          if (!phone && broker?.member_user_id) {
             const { data: profile } = await supabaseAdmin
               .from("profiles")
               .select("phone")
               .eq("id", broker.member_user_id)
               .maybeSingle();
-            const phone = (profile as any)?.phone;
-            if (phone && sanitizeBrPhone(phone)) {
-              const text =
-                `🔔 *Novo lead NEXO*\n` +
-                `Cliente: ${parsed.name}\n` +
-                (parsed.phone ? `Telefone: ${parsed.phone}\n` : "") +
-                (property?.nickname ? `Imóvel: ${property.nickname}${property.code ? ` (${property.code})` : ""}\n` : "") +
-                `Portal: ${parsed.portal}\n` +
-                `Critério: ${criteriaUsed}`;
-              sendEvolutionText({ phone, text }).catch((e) =>
-                console.warn("[webhook.leads] whatsapp send failed", e),
-              );
-            }
+            phone = (profile as any)?.phone ?? null;
+          }
+
+          if (phone && sanitizeBrPhone(phone)) {
+            const text =
+              `🔔 *Novo lead NEXO*\n` +
+              `Cliente: ${parsed.name}\n` +
+              (parsed.phone ? `Telefone: ${parsed.phone}\n` : "") +
+              (property?.nickname ? `Imóvel: ${property.nickname}${property.code ? ` (${property.code})` : ""}\n` : "") +
+              `Portal: ${parsed.portal}\n` +
+              `Critério: ${criteriaUsed}`;
+            sendEvolutionText({ phone, text }).catch((e) =>
+              console.warn("[webhook.leads] whatsapp send failed", e),
+            );
           }
         }
 

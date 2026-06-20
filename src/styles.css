@@ -142,7 +142,11 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
+
+  h1, h2, h3, h4 { letter-spacing: -0.015em; }
+  h1 { letter-spacing: -0.025em; }
 
   /* Global focus glow — neon violet */
   input:focus-visible,
@@ -152,9 +156,28 @@
   [role="combobox"]:focus-visible,
   button:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 2px rgba(167, 139, 250, 0.55), 0 0 18px -2px rgba(139, 92, 246, 0.55);
-    border-color: rgba(167, 139, 250, 0.55);
+    box-shadow: 0 0 0 2px color-mix(in oklab, var(--primary) 55%, transparent), 0 0 18px -2px color-mix(in oklab, var(--primary) 55%, transparent);
+    border-color: color-mix(in oklab, var(--primary) 55%, transparent);
   }
+}
+
+@utility brand-gradient { background-image: var(--gradient-brand); }
+@utility brand-gradient-text {
+  background-image: var(--gradient-brand);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+@utility shadow-elegant { box-shadow: var(--shadow-elegant); }
+@utility shadow-glow { box-shadow: var(--shadow-glow); }
+@utility shadow-card { box-shadow: var(--shadow-card); }
+@utility hover-lift {
+  transition: transform var(--transition-smooth), box-shadow var(--transition-smooth), border-color var(--transition-smooth);
+  &:hover { transform: translateY(-2px); box-shadow: var(--shadow-elegant); }
+}
+@utility surface-1 {
+  background: color-mix(in oklab, var(--card) 96%, transparent);
+  backdrop-filter: blur(12px);
 }
 
 /* Dark-mode overrides: remap legacy hardcoded light surfaces to the dark palette

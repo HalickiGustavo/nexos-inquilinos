@@ -978,6 +978,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_manager_invite: { Args: { _token: string }; Returns: string }
       current_manager_id: { Args: never; Returns: string }
       current_tenant_id: { Args: never; Returns: string }
       has_role: {

@@ -49,6 +49,8 @@ import { Route as ApiPublicHooksSendTenantRemindersRouteImport } from './routes/
 import { Route as ApiPublicHooksSendMaintenanceResponseRemindersRouteImport } from './routes/api/public/hooks/send-maintenance-response-reminders'
 import { Route as ApiPublicHooksProcessScheduledInvoicesRouteImport } from './routes/api/public/hooks/process-scheduled-invoices'
 import { Route as ManagerManagerConfiguracoesRoletaRouteImport } from './routes/_manager/manager.configuracoes.roleta'
+import { Route as ApiV1IntegrationsOrgSlugListingsDotxmlRouteImport } from './routes/api/v1/integrations/$orgSlug/listings[.]xml'
+import { Route as ApiV1IntegrationsOrgSlugLeadsRouteImport } from './routes/api/v1/integrations/$orgSlug/leads'
 
 const TenantSetupRoute = TenantSetupRouteImport.update({
   id: '/tenant-setup',
@@ -264,6 +266,18 @@ const ManagerManagerConfiguracoesRoletaRoute =
     path: '/manager/configuracoes/roleta',
     getParentRoute: () => ManagerRoute,
   } as any)
+const ApiV1IntegrationsOrgSlugListingsDotxmlRoute =
+  ApiV1IntegrationsOrgSlugListingsDotxmlRouteImport.update({
+    id: '/api/v1/integrations/$orgSlug/listings.xml',
+    path: '/api/v1/integrations/$orgSlug/listings.xml',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiV1IntegrationsOrgSlugLeadsRoute =
+  ApiV1IntegrationsOrgSlugLeadsRouteImport.update({
+    id: '/api/v1/integrations/$orgSlug/leads',
+    path: '/api/v1/integrations/$orgSlug/leads',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
@@ -304,6 +318,8 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/send-tenant-reminders': typeof ApiPublicHooksSendTenantRemindersRoute
   '/api/public/listings/xml': typeof ApiPublicListingsXmlRoute
   '/api/public/webhooks/leads': typeof ApiPublicWebhooksLeadsRoute
+  '/api/v1/integrations/$orgSlug/leads': typeof ApiV1IntegrationsOrgSlugLeadsRoute
+  '/api/v1/integrations/$orgSlug/listings.xml': typeof ApiV1IntegrationsOrgSlugListingsDotxmlRoute
 }
 export interface FileRoutesByTo {
   '/': typeof AuthenticatedIndexRoute
@@ -344,6 +360,8 @@ export interface FileRoutesByTo {
   '/api/public/hooks/send-tenant-reminders': typeof ApiPublicHooksSendTenantRemindersRoute
   '/api/public/listings/xml': typeof ApiPublicListingsXmlRoute
   '/api/public/webhooks/leads': typeof ApiPublicWebhooksLeadsRoute
+  '/api/v1/integrations/$orgSlug/leads': typeof ApiV1IntegrationsOrgSlugLeadsRoute
+  '/api/v1/integrations/$orgSlug/listings.xml': typeof ApiV1IntegrationsOrgSlugListingsDotxmlRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -387,6 +405,8 @@ export interface FileRoutesById {
   '/api/public/hooks/send-tenant-reminders': typeof ApiPublicHooksSendTenantRemindersRoute
   '/api/public/listings/xml': typeof ApiPublicListingsXmlRoute
   '/api/public/webhooks/leads': typeof ApiPublicWebhooksLeadsRoute
+  '/api/v1/integrations/$orgSlug/leads': typeof ApiV1IntegrationsOrgSlugLeadsRoute
+  '/api/v1/integrations/$orgSlug/listings.xml': typeof ApiV1IntegrationsOrgSlugListingsDotxmlRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -429,6 +449,8 @@ export interface FileRouteTypes {
     | '/api/public/hooks/send-tenant-reminders'
     | '/api/public/listings/xml'
     | '/api/public/webhooks/leads'
+    | '/api/v1/integrations/$orgSlug/leads'
+    | '/api/v1/integrations/$orgSlug/listings.xml'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -469,6 +491,8 @@ export interface FileRouteTypes {
     | '/api/public/hooks/send-tenant-reminders'
     | '/api/public/listings/xml'
     | '/api/public/webhooks/leads'
+    | '/api/v1/integrations/$orgSlug/leads'
+    | '/api/v1/integrations/$orgSlug/listings.xml'
   id:
     | '__root__'
     | '/_authenticated'
@@ -511,6 +535,8 @@ export interface FileRouteTypes {
     | '/api/public/hooks/send-tenant-reminders'
     | '/api/public/listings/xml'
     | '/api/public/webhooks/leads'
+    | '/api/v1/integrations/$orgSlug/leads'
+    | '/api/v1/integrations/$orgSlug/listings.xml'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -526,6 +552,8 @@ export interface RootRouteChildren {
   ApiPublicHooksSendTenantRemindersRoute: typeof ApiPublicHooksSendTenantRemindersRoute
   ApiPublicListingsXmlRoute: typeof ApiPublicListingsXmlRoute
   ApiPublicWebhooksLeadsRoute: typeof ApiPublicWebhooksLeadsRoute
+  ApiV1IntegrationsOrgSlugLeadsRoute: typeof ApiV1IntegrationsOrgSlugLeadsRoute
+  ApiV1IntegrationsOrgSlugListingsDotxmlRoute: typeof ApiV1IntegrationsOrgSlugListingsDotxmlRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -810,6 +838,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ManagerManagerConfiguracoesRoletaRouteImport
       parentRoute: typeof ManagerRoute
     }
+    '/api/v1/integrations/$orgSlug/listings.xml': {
+      id: '/api/v1/integrations/$orgSlug/listings.xml'
+      path: '/api/v1/integrations/$orgSlug/listings.xml'
+      fullPath: '/api/v1/integrations/$orgSlug/listings.xml'
+      preLoaderRoute: typeof ApiV1IntegrationsOrgSlugListingsDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/v1/integrations/$orgSlug/leads': {
+      id: '/api/v1/integrations/$orgSlug/leads'
+      path: '/api/v1/integrations/$orgSlug/leads'
+      fullPath: '/api/v1/integrations/$orgSlug/leads'
+      preLoaderRoute: typeof ApiV1IntegrationsOrgSlugLeadsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -905,6 +947,9 @@ const rootRouteChildren: RootRouteChildren = {
     ApiPublicHooksSendTenantRemindersRoute,
   ApiPublicListingsXmlRoute: ApiPublicListingsXmlRoute,
   ApiPublicWebhooksLeadsRoute: ApiPublicWebhooksLeadsRoute,
+  ApiV1IntegrationsOrgSlugLeadsRoute: ApiV1IntegrationsOrgSlugLeadsRoute,
+  ApiV1IntegrationsOrgSlugListingsDotxmlRoute:
+    ApiV1IntegrationsOrgSlugListingsDotxmlRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

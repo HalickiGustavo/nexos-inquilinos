@@ -245,3 +245,33 @@ function InviteTenantButton({ tenant }: { tenant: Tenant }) {
     </Button>
   );
 }
+
+function ResendWhatsAppButton({ tenant }: { tenant: Tenant }) {
+  const [loading, setLoading] = useState(false);
+  return (
+    <Button
+      variant="outline"
+      size="sm"
+      disabled={loading}
+      title="Reenviar mensagem de boas-vindas no WhatsApp"
+      onClick={async () => {
+        if (!tenant.phone || !tenant.email) return;
+        setLoading(true);
+        try {
+          const { sendWelcomeWhatsApp } = await import("@/lib/whatsapp.functions");
+          const r = await sendWelcomeWhatsApp({
+            data: { nome: tenant.full_name, telefone: tenant.phone, email: tenant.email },
+          });
+          if (r?.ok) toast.success("WhatsApp enviado");
+          else toast.warning("Não foi possível enviar agora (instância offline?)");
+        } catch (e: any) {
+          toast.error(e?.message ?? "Falha");
+        } finally {
+          setLoading(false);
+        }
+      }}
+    >
+      <MessageCircle className="size-3.5" />
+    </Button>
+  );
+}

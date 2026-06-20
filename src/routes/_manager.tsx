@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet, useNavigate, useRouterState, Link } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { LayoutDashboard, Briefcase, Wallet, Users, KanbanSquare, ClipboardCheck, Bell, LogOut, Loader2, Plug, FileDigit, Database, Coins, Globe } from "lucide-react";
+import { LayoutDashboard, Briefcase, Wallet, Users, KanbanSquare, ClipboardCheck, Bell, LogOut, Loader2, Plug, FileDigit, Database, Coins, Globe, Shuffle, Inbox } from "lucide-react";
 import { NexoLogo } from "@/components/NexoLogo";
 import { InstallPwaButton } from "@/components/InstallPwaButton";
 import { useAuth } from "@/lib/auth";
@@ -26,6 +26,8 @@ const navItems: { to: string; label: string; icon: typeof LayoutDashboard; exact
   { to: "/manager/vistorias", label: "Vistorias", icon: ClipboardCheck, tour: "nav-manager-vistorias" },
   { to: "/manager/alertas", label: "Alertas", icon: Bell, tour: "nav-manager-alertas" },
   { to: "/manager/crm", label: "CRM", icon: KanbanSquare, tour: "nav-manager-crm" },
+  { to: "/manager/leads", label: "Leads (Portais)", icon: Inbox, tour: "nav-manager-leads" },
+  { to: "/manager/configuracoes/roleta", label: "Roleta de Leads", icon: Shuffle, tour: "nav-manager-roleta" },
   { to: "/manager/integracao", label: "Saldo e Saque", icon: Coins, tour: "nav-manager-integracao" },
   { to: "/manager/portais", label: "Portais de Venda", icon: Globe, tour: "nav-manager-portais" },
   { to: "/manager/migrar-dados", label: "Migrar Dados", icon: Database, tour: "nav-manager-migrar-dados" },

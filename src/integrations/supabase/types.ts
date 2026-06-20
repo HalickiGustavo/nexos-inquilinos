@@ -14,6 +14,41 @@ export type Database = {
   }
   public: {
     Tables: {
+      agency_settings: {
+        Row: {
+          created_at: string
+          last_round_robin_member_id: string | null
+          lead_routing_strategy: string
+          manager_user_id: string
+          updated_at: string
+          webhook_token: string
+        }
+        Insert: {
+          created_at?: string
+          last_round_robin_member_id?: string | null
+          lead_routing_strategy?: string
+          manager_user_id: string
+          updated_at?: string
+          webhook_token?: string
+        }
+        Update: {
+          created_at?: string
+          last_round_robin_member_id?: string | null
+          lead_routing_strategy?: string
+          manager_user_id?: string
+          updated_at?: string
+          webhook_token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agency_settings_last_round_robin_member_id_fkey"
+            columns: ["last_round_robin_member_id"]
+            isOneToOne: false
+            referencedRelation: "manager_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       asaas_accounts: {
         Row: {
           api_key: string | null
@@ -262,6 +297,10 @@ export type Database = {
           name: string
           notes: string | null
           phone: string | null
+          portal_origin: string | null
+          routed_member_id: string | null
+          routing_criteria_used: string | null
+          source: string
           stage: string
           updated_at: string
         }
@@ -276,6 +315,10 @@ export type Database = {
           name: string
           notes?: string | null
           phone?: string | null
+          portal_origin?: string | null
+          routed_member_id?: string | null
+          routing_criteria_used?: string | null
+          source?: string
           stage?: string
           updated_at?: string
         }
@@ -290,10 +333,22 @@ export type Database = {
           name?: string
           notes?: string | null
           phone?: string | null
+          portal_origin?: string | null
+          routed_member_id?: string | null
+          routing_criteria_used?: string | null
+          source?: string
           stage?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "crm_leads_routed_member_id_fkey"
+            columns: ["routed_member_id"]
+            isOneToOne: false
+            referencedRelation: "manager_members"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       debt_agreements: {
         Row: {
@@ -723,37 +778,46 @@ export type Database = {
         Row: {
           created_at: string
           email: string
+          hire_date: string
           id: string
           invite_token: string | null
+          is_active: boolean
           manager_user_id: string
           member_user_id: string | null
           name: string
           role_label: string
           status: string
+          total_sales_count: number
           updated_at: string
         }
         Insert: {
           created_at?: string
           email: string
+          hire_date?: string
           id?: string
           invite_token?: string | null
+          is_active?: boolean
           manager_user_id: string
           member_user_id?: string | null
           name: string
           role_label?: string
           status?: string
+          total_sales_count?: number
           updated_at?: string
         }
         Update: {
           created_at?: string
           email?: string
+          hire_date?: string
           id?: string
           invite_token?: string | null
+          is_active?: boolean
           manager_user_id?: string
           member_user_id?: string | null
           name?: string
           role_label?: string
           status?: string
+          total_sales_count?: number
           updated_at?: string
         }
         Relationships: []
@@ -846,6 +910,7 @@ export type Database = {
           publish_imovelweb: boolean
           publish_zap: boolean
           rent_price: number
+          responsible_member_id: string | null
           state: string | null
           status: Database["public"]["Enums"]["property_status"]
           tipo_transacao: Database["public"]["Enums"]["transaction_type"]
@@ -880,6 +945,7 @@ export type Database = {
           publish_imovelweb?: boolean
           publish_zap?: boolean
           rent_price?: number
+          responsible_member_id?: string | null
           state?: string | null
           status?: Database["public"]["Enums"]["property_status"]
           tipo_transacao?: Database["public"]["Enums"]["transaction_type"]
@@ -914,6 +980,7 @@ export type Database = {
           publish_imovelweb?: boolean
           publish_zap?: boolean
           rent_price?: number
+          responsible_member_id?: string | null
           state?: string | null
           status?: Database["public"]["Enums"]["property_status"]
           tipo_transacao?: Database["public"]["Enums"]["transaction_type"]
@@ -924,7 +991,15 @@ export type Database = {
           valor_venda?: number | null
           zip_code?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "properties_responsible_member_id_fkey"
+            columns: ["responsible_member_id"]
+            isOneToOne: false
+            referencedRelation: "manager_members"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       property_photos: {
         Row: {

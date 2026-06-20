@@ -31,7 +31,14 @@ const TEMPLATE_HEADERS = [
   "imovel_endereco",
   "contrato_valor",
   "contrato_vencimento",
+  "contrato_ativo",
 ] as const;
+
+function parseBool(raw: string | undefined): boolean {
+  const s = (raw ?? "").trim().toLowerCase();
+  if (!s) return true; // default ativo
+  return ["1", "true", "sim", "s", "yes", "y", "ativo", "ativa"].includes(s);
+}
 
 type CsvRow = Record<(typeof TEMPLATE_HEADERS)[number], string>;
 
@@ -71,8 +78,8 @@ function addMonths(iso: string, months: number): string {
 function downloadTemplate() {
   const sample = [
     TEMPLATE_HEADERS.join(","),
-    "Maria Souza,123.456.789-09,João Pereira,987.654.321-00,Rua das Flores 123 - Centro,1500.00,2026-07-10",
-    "Carlos Lima,111.222.333-44,Ana Ribeiro,555.666.777-88,Av Brasil 4500 ap 302,2300.50,2026-08-05",
+    "Maria Souza,123.456.789-09,João Pereira,987.654.321-00,Rua das Flores 123 - Centro,1500.00,2026-07-10,sim",
+    "Carlos Lima,111.222.333-44,Ana Ribeiro,555.666.777-88,Av Brasil 4500 ap 302,2300.50,2026-08-05,não",
   ].join("\n");
   const blob = new Blob(["\uFEFF" + sample], { type: "text/csv;charset=utf-8" });
   const url = URL.createObjectURL(blob);
@@ -120,7 +127,8 @@ function MigrarDadosPage() {
       skipEmptyLines: true,
       transformHeader: (h: string) => h.trim().toLowerCase().replace(/\s+/g, "_"),
       complete: (result: { data: CsvRow[]; meta: { fields?: string[] } }) => {
-        const missing = TEMPLATE_HEADERS.filter((h) => !result.meta.fields?.includes(h));
+        const required = TEMPLATE_HEADERS.filter((h) => h !== "contrato_ativo");
+        const missing = required.filter((h) => !result.meta.fields?.includes(h));
         if (missing.length > 0) {
           toast.error(`Cabeçalhos ausentes: ${missing.join(", ")}`);
           setRows([]);
@@ -164,6 +172,7 @@ function MigrarDadosPage() {
         const address = (row.imovel_endereco ?? "").trim();
         const rent = parseMoney(row.contrato_valor);
         const dueIso = parseBRDate(row.contrato_vencimento);
+        const isActive = parseBool(row.contrato_ativo);
 
         if (!ownerName) throw new Error("proprietario_nome vazio");
         if (!tenantName) throw new Error("inquilino_nome vazio");
@@ -204,7 +213,7 @@ function MigrarDadosPage() {
               nickname: address.slice(0, 60),
               address,
               type: "apartamento",
-              status: "alugado",
+              status: isActive ? "alugado" : "disponivel",
               rent_price: rent,
               owner_name: ownerName,
               // owner_doc é mantido no campo notes para preservar rastreabilidade
@@ -228,7 +237,7 @@ function MigrarDadosPage() {
           rent_amount: rent,
           readjustment_index: "IGP-M",
           security_deposit: 0,
-          active: true,
+          active: isActive,
         });
         if (eC) throw new Error(`contract: ${eC.message}`);
 

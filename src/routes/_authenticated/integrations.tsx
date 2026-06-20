@@ -195,16 +195,16 @@ function IntegrationsPage() {
             <Field label="Agência (sem dígito)" required>
               <Input value={form.bankAgency} onChange={(e) => setForm({ ...form, bankAgency: e.target.value.replace(/\D/g, "") })} inputMode="numeric" maxLength={10} required />
             </Field>
-            <div className="grid grid-cols-[1fr_90px] gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-2">
               <Field label="Conta" required>
                 <Input value={form.bankAccount} onChange={(e) => setForm({ ...form, bankAccount: e.target.value.replace(/\D/g, "") })} inputMode="numeric" maxLength={20} required />
               </Field>
               <Field label="Dígito" required>
-                <Input value={form.bankAccountDigit} onChange={(e) => setForm({ ...form, bankAccountDigit: e.target.value.replace(/\D/g, "") })} inputMode="numeric" maxLength={2} required />
+                <Input className="sm:w-24" value={form.bankAccountDigit} onChange={(e) => setForm({ ...form, bankAccountDigit: e.target.value.replace(/\D/g, "") })} inputMode="numeric" maxLength={2} required />
               </Field>
             </div>
             <div className="sm:col-span-2 flex justify-end">
-              <Button type="submit" disabled={saving}>
+              <Button type="submit" disabled={saving} className="w-full sm:w-auto">
                 {saving && <Loader2 className="size-4 mr-2 animate-spin" />}
                 Conectar Asaas
               </Button>

@@ -122,9 +122,9 @@ function SignInForm() {
       </div>
 
       <div className="flex justify-center pt-1 w-full">
-        <div className="w-[237px] h-[61px] sm:w-[304px] sm:h-[78px] rounded-md overflow-hidden ring-1 ring-border">
+        <div className="w-[237px] h-[61px] sm:w-[304px] sm:h-[78px] max-w-full rounded-md overflow-hidden ring-1 ring-border">
           <ClientOnly fallback={<div className="w-[237px] h-[61px] sm:w-[304px] sm:h-[78px] bg-muted animate-pulse rounded-md" />}>
-            <div className="origin-top scale-[0.78] sm:scale-100 w-[304px] h-[78px]">
+            <div className="origin-top-left scale-[0.78] sm:scale-100 w-[304px] h-[78px]">
               <ReCAPTCHA
                 ref={captchaRef}
                 sitekey={RECAPTCHA_SITE_KEY}

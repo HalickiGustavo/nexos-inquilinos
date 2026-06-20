@@ -48,7 +48,7 @@ function TenantsPage() {
 
   return (
     <div className="p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
-      <div className="flex items-start justify-between">
+      <div className="flex items-start justify-between flex-wrap gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Inquilinos</h1>
           <p className="text-muted-foreground mt-1">Cadastro e gestão de locatários.</p>
@@ -102,7 +102,7 @@ function TenantsPage() {
                   <Handshake className="size-3.5 mr-1.5" /> Criar Acordo de Dívida
                 </Button>
               )}
-              <div className="mt-3 flex gap-2">
+              <div className="mt-3 flex flex-wrap gap-2">
                 <Dialog>
                   <DialogTrigger asChild>
                     <Button variant="outline" size="sm" className="flex-1" onClick={() => { setEditing(t); setOpen(true); }}>
@@ -206,7 +206,7 @@ function TenantDialog({ editing, onDone }: { editing: Tenant | null; onDone: () 
         }}
       >
         <div className="space-y-2"><Label>Nome completo *</Label><Input required value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} /></div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="space-y-2"><Label>CPF / CNPJ</Label><Input value={form.document ?? ""} onChange={(e) => setForm({ ...form, document: maskCpfCnpj(e.target.value) })} placeholder="000.000.000-00" inputMode="numeric" /></div>
           <div className="space-y-2"><Label>Telefone</Label><Input value={form.phone ?? ""} onChange={(e) => setForm({ ...form, phone: maskPhone(e.target.value) })} placeholder="(41) 99999-9999" inputMode="tel" /></div>
         </div>

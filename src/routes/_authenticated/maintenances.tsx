@@ -41,7 +41,7 @@ function MaintenancesPage() {
 
   return (
     <div className="p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
-      <div className="flex items-start justify-between">
+      <div className="flex items-start justify-between flex-wrap gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Manutenções</h1>
           <p className="text-muted-foreground mt-1">Acompanhe reparos e ordens de serviço por imóvel.</p>
@@ -55,7 +55,7 @@ function MaintenancesPage() {
       {isLoading ? (
         <p className="text-muted-foreground">Carregando...</p>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {COLUMNS.map((col) => {
             const colItems = items.filter((m: any) => m.status === col.key);
             return (

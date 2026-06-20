@@ -52,7 +52,7 @@ function CRM() {
 
   return (
     <div className="p-6 space-y-4">
-      <header className="flex items-end justify-between">
+      <header className="flex items-end justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold">CRM — Funil de Locação</h1>
           <p className="text-sm text-zinc-500">Arraste cards entre as etapas do funil</p>
@@ -63,11 +63,13 @@ function CRM() {
       </header>
 
       <DndContext sensors={sensors} onDragEnd={onDragEnd}>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {STAGES.map((stage) => {
-            const items = (q.data ?? []).filter((l: any) => l.stage === stage.id);
-            return <Column key={stage.id} stage={stage} items={items} onOpen={setEditing} />;
-          })}
+        <div className="overflow-x-auto -mx-6 px-6 pb-2">
+          <div className="grid grid-flow-col auto-cols-[minmax(260px,1fr)] sm:auto-cols-[minmax(280px,1fr)] lg:grid-flow-row lg:grid-cols-4 gap-4">
+            {STAGES.map((stage) => {
+              const items = (q.data ?? []).filter((l: any) => l.stage === stage.id);
+              return <Column key={stage.id} stage={stage} items={items} onOpen={setEditing} />;
+            })}
+          </div>
         </div>
       </DndContext>
 

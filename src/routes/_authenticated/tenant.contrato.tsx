@@ -72,7 +72,7 @@ function TenantContrato() {
           )}
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Stat label="Aluguel mensal" value={formatBRL(Number(contract.rent_amount))} />
           <Stat label="Dia de vencimento" value={`Todo dia ${contract.due_day}`} />
           <Stat label="Início" value={formatDate(contract.start_date)} />

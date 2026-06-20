@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Plus, Pencil, Trash2, Users, Mail, Phone, Send, Handshake } from "lucide-react";
+import { Plus, Pencil, Trash2, Users, Mail, Phone, Send, Handshake, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { Card } from "@/components/ui/card";
@@ -111,6 +111,7 @@ function TenantsPage() {
                   </DialogTrigger>
                 </Dialog>
                 {t.email && <InviteTenantButton tenant={t} />}
+                {t.phone && t.email && <ResendWhatsAppButton tenant={t} />}
                 <Button variant="outline" size="sm" onClick={async () => {
                   if (!confirm("Excluir este inquilino?")) return;
                   const { error } = await supabase.from("tenants").delete().eq("id", t.id);
@@ -241,6 +242,36 @@ function InviteTenantButton({ tenant }: { tenant: Tenant }) {
       }}
     >
       <Send className="size-3.5" />
+    </Button>
+  );
+}
+
+function ResendWhatsAppButton({ tenant }: { tenant: Tenant }) {
+  const [loading, setLoading] = useState(false);
+  return (
+    <Button
+      variant="outline"
+      size="sm"
+      disabled={loading}
+      title="Reenviar mensagem de boas-vindas no WhatsApp"
+      onClick={async () => {
+        if (!tenant.phone || !tenant.email) return;
+        setLoading(true);
+        try {
+          const { sendWelcomeWhatsApp } = await import("@/lib/whatsapp.functions");
+          const r = await sendWelcomeWhatsApp({
+            data: { nome: tenant.full_name, telefone: tenant.phone, email: tenant.email },
+          });
+          if (r?.ok) toast.success("WhatsApp enviado");
+          else toast.warning("Não foi possível enviar agora (instância offline?)");
+        } catch (e: any) {
+          toast.error(e?.message ?? "Falha");
+        } finally {
+          setLoading(false);
+        }
+      }}
+    >
+      <MessageCircle className="size-3.5" />
     </Button>
   );
 }

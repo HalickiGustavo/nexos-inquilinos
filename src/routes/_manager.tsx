@@ -39,7 +39,6 @@ function ManagerLayout() {
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { alerts } = useManagerAlerts();
-  const criticalCount = alerts.filter((a) => a.severity === "critico").length;
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/login", replace: true });

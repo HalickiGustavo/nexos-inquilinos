@@ -62,10 +62,14 @@ function Dashboard() {
 
   return (
     <div className="p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Visão Geral</h1>
-        <p className="text-muted-foreground mt-1">Resumo financeiro e operacional do mês.</p>
-      </div>
+      <header>
+        <div className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-primary/80 font-medium mb-2">
+          <span className="size-1.5 rounded-full bg-primary shadow-[0_0_8px_var(--primary)]" />
+          Visão geral
+        </div>
+        <h1 className="text-3xl lg:text-[2.25rem] font-bold tracking-tight">Bem-vindo de volta</h1>
+        <p className="text-muted-foreground mt-1.5">Resumo financeiro e operacional do mês.</p>
+      </header>
 
       {pendingApprovals.length > 0 && (
         <Link
@@ -214,14 +218,19 @@ function MetricCard({
   title, value, icon, accent, subtitle,
 }: { title: string; value: string; icon: React.ReactNode; accent?: string; subtitle?: string }) {
   return (
-    <Card className="p-5">
+    <Card className="p-5 hover-lift relative overflow-hidden group">
+      <div
+        className="absolute inset-x-0 top-0 h-px opacity-60 group-hover:opacity-100 transition-opacity"
+        style={{ background: "linear-gradient(90deg, transparent, color-mix(in oklab, var(--primary) 60%, transparent), transparent)" }}
+        aria-hidden
+      />
       <div className="flex items-start justify-between">
-        <div>
+        <div className="min-w-0">
           <p className="text-sm text-muted-foreground">{title}</p>
-          <p className={`text-2xl font-bold mt-1 ${accent ?? ""}`}>{value}</p>
+          <p className={`text-2xl font-bold mt-1.5 tabular-nums tracking-tight ${accent ?? ""}`}>{value}</p>
           {subtitle && <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>}
         </div>
-        <div className={`p-2 rounded-lg bg-muted ${accent ?? "text-muted-foreground"}`}>{icon}</div>
+        <div className={`p-2.5 rounded-xl bg-muted/60 ring-1 ring-border/60 shrink-0 ${accent ?? "text-muted-foreground"}`}>{icon}</div>
       </div>
     </Card>
   );

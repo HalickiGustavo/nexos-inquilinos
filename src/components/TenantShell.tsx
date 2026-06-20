@@ -28,12 +28,12 @@ export function TenantShell() {
   return (
     <div className="min-h-screen flex flex-col bg-muted/30">
       {/* Top header */}
-      <header className="sticky top-0 z-30 bg-card border-b">
-        <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <NexoLogo className="h-7" />
+      <header className="sticky top-0 z-30 backdrop-blur-xl bg-card/85 border-b border-border/60">
+        <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 min-w-0">
+            <NexoLogo className="h-7 shrink-0" />
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
             <span className="hidden sm:block text-xs text-muted-foreground truncate max-w-[180px]">
               {user?.email}
             </span>
@@ -41,6 +41,7 @@ export function TenantShell() {
             <Button
               variant="ghost"
               size="icon"
+              aria-label="Sair"
               onClick={async () => {
                 await signOut();
                 navigate({ to: "/login", replace: true });
@@ -52,14 +53,14 @@ export function TenantShell() {
         </div>
       </header>
 
-      <main className="flex-1 pb-20 md:pb-6">
-        <div className="max-w-3xl mx-auto px-4 py-4">
+      <main className="flex-1 pb-24 md:pb-6">
+        <div className="max-w-3xl mx-auto px-4 py-5">
           <Outlet />
         </div>
       </main>
 
       {/* Bottom nav (mobile + small tablet) */}
-      <nav className="fixed bottom-0 inset-x-0 z-30 bg-card border-t md:hidden">
+      <nav className="fixed bottom-0 inset-x-0 z-30 backdrop-blur-xl bg-card/90 border-t border-border/60 md:hidden pb-[env(safe-area-inset-bottom)]">
         <div className="grid" style={{ gridTemplateColumns: `repeat(${tenantNav.length + 1}, minmax(0, 1fr))` }}>
           {tenantNav.map((item) => {
             const active = isActive(item.to, item.exact);
@@ -70,12 +71,18 @@ export function TenantShell() {
                 to={item.to as any}
                 data-tour={item.tour}
                 className={cn(
-                  "flex flex-col items-center justify-center gap-1 py-2.5 text-[11px] transition-colors min-w-0",
+                  "relative flex flex-col items-center justify-center gap-1 py-2.5 text-[11px] transition-colors min-w-0",
                   active ? "text-primary" : "text-muted-foreground hover:text-foreground",
                 )}
               >
-                <Icon className="size-5 shrink-0" />
-                <span className="truncate max-w-full px-1">{item.label}</span>
+                {active && (
+                  <span
+                    className="absolute top-0 left-1/2 -translate-x-1/2 h-0.5 w-8 rounded-full bg-primary shadow-[0_0_10px_var(--primary)]"
+                    aria-hidden
+                  />
+                )}
+                <Icon className={cn("size-5 shrink-0 transition-transform", active && "scale-110")} />
+                <span className="truncate max-w-full px-1 font-medium">{item.label}</span>
               </Link>
             );
           })}
@@ -87,13 +94,13 @@ export function TenantShell() {
             className="flex flex-col items-center justify-center gap-1 py-2.5 text-[11px] transition-colors text-muted-foreground hover:text-foreground min-w-0"
           >
             <LogOut className="size-5 shrink-0" />
-            <span className="truncate">Sair</span>
+            <span className="truncate font-medium">Sair</span>
           </button>
         </div>
       </nav>
 
       {/* Desktop top tabs */}
-      <nav className="hidden md:flex border-b bg-card sticky top-14 left-0 right-0 z-20">
+      <nav className="hidden md:flex border-b border-border/60 backdrop-blur-xl bg-card/85 sticky top-14 left-0 right-0 z-20">
         <div className="max-w-3xl mx-auto px-4 flex gap-1 w-full overflow-x-auto">
           {tenantNav.map((item) => {
             const active = isActive(item.to, item.exact);
@@ -106,8 +113,8 @@ export function TenantShell() {
                 className={cn(
                   "flex items-center gap-2 px-4 py-3 text-sm border-b-2 transition-colors whitespace-nowrap",
                   active
-                    ? "border-primary text-primary font-medium"
-                    : "border-transparent text-muted-foreground hover:text-foreground",
+                    ? "border-primary text-primary font-semibold"
+                    : "border-transparent text-muted-foreground hover:text-foreground hover:border-border",
                 )}
               >
                 <Icon className="size-4" />

@@ -78,8 +78,8 @@ function addMonths(iso: string, months: number): string {
 function downloadTemplate() {
   const sample = [
     TEMPLATE_HEADERS.join(","),
-    "Maria Souza,123.456.789-09,João Pereira,987.654.321-00,Rua das Flores 123 - Centro,1500.00,2026-07-10",
-    "Carlos Lima,111.222.333-44,Ana Ribeiro,555.666.777-88,Av Brasil 4500 ap 302,2300.50,2026-08-05",
+    "Maria Souza,123.456.789-09,João Pereira,987.654.321-00,Rua das Flores 123 - Centro,1500.00,2026-07-10,sim",
+    "Carlos Lima,111.222.333-44,Ana Ribeiro,555.666.777-88,Av Brasil 4500 ap 302,2300.50,2026-08-05,não",
   ].join("\n");
   const blob = new Blob(["\uFEFF" + sample], { type: "text/csv;charset=utf-8" });
   const url = URL.createObjectURL(blob);

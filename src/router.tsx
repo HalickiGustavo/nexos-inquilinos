@@ -26,6 +26,10 @@ export const getRouter = () => {
   return createRouter({
     routeTree,
     scrollRestoration: true,
+    // Prefetch route chunks on hover/focus for instant transitions
+    defaultPreload: "intent",
+    defaultPreloadDelay: 50,
+    // Let React Query own data freshness; router only caches preloaded chunks
     defaultPreloadStaleTime: 0,
     defaultErrorComponent: DefaultErrorComponent,
   });

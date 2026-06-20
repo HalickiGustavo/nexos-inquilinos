@@ -17,8 +17,12 @@ interface Props {
 }
 
 const PADDING = 8;
-const BUBBLE_W = 320;
+const BUBBLE_W_MAX = 320;
 const BUBBLE_GAP = 14;
+function getBubbleWidth() {
+  if (typeof window === "undefined") return BUBBLE_W_MAX;
+  return Math.min(BUBBLE_W_MAX, window.innerWidth - 32);
+}
 
 function storageKey(userId: string | undefined, tourKey: string) {
   return `nexo-tour-done:${tourKey}:${userId ?? "anon"}`;
@@ -108,6 +112,7 @@ export function OnboardingTour({ tourKey, steps }: Props) {
 
   // Bubble position
   const bubbleStyle = useMemo<React.CSSProperties>(() => {
+    const BUBBLE_W = getBubbleWidth();
     if (!rect) {
       return {
         top: "50%",
@@ -135,13 +140,13 @@ export function OnboardingTour({ tourKey, steps }: Props) {
     if (spaceBelow > 200) {
       return {
         top: rect.bottom + BUBBLE_GAP,
-        left: Math.min(Math.max(rect.left, 12), vw - BUBBLE_W - 12),
+        left: Math.min(Math.max(rect.left, 12), Math.max(12, vw - BUBBLE_W - 12)),
         width: BUBBLE_W,
       };
     }
     return {
       top: Math.max(rect.top - 220, 12),
-      left: Math.min(Math.max(rect.left, 12), vw - BUBBLE_W - 12),
+      left: Math.min(Math.max(rect.left, 12), Math.max(12, vw - BUBBLE_W - 12)),
       width: BUBBLE_W,
     };
   }, [rect]);

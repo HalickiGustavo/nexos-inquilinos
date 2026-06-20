@@ -182,7 +182,7 @@ function ContaCorrente() {
                   <TableRow key={property.id}>
                     <TableCell>
                       <div className="font-medium">{property.nickname}</div>
-                      <div className="text-xs text-muted-foreground truncate max-w-[280px]">
+                      <div className="text-xs text-muted-foreground truncate max-w-[40vw] md:max-w-[280px]">
                         {property.address}
                       </div>
                     </TableCell>

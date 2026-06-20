@@ -256,7 +256,7 @@ function AttachmentPreview({ path, mine }: { path: string; mine: boolean }) {
   if (kind === "image") {
     return (
       <a href={url} target="_blank" rel="noopener noreferrer" className="block">
-        <img src={url} alt={name} className="rounded-md max-h-56 w-auto object-cover" />
+        <img src={url} alt={name} className="rounded-md max-h-56 max-w-full h-auto object-cover" />
       </a>
     );
   }

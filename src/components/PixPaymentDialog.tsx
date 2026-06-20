@@ -81,7 +81,7 @@ export function PixPaymentDialog({
             <>
               <div className="flex justify-center">
                 <div className="p-3 bg-white rounded-lg border shadow-sm">
-                  <img src={qrSrc} alt="QR Code Pix" className="w-52 h-52" />
+                  <img src={qrSrc} alt="QR Code Pix" className="w-full max-w-[208px] h-auto aspect-square" />
                 </div>
               </div>
 

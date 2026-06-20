@@ -27,7 +27,7 @@ function ContractsPage() {
 
   return (
     <div className="p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
-      <div className="flex items-start justify-between">
+      <div className="flex items-start justify-between flex-wrap gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Contratos</h1>
           <p className="text-muted-foreground mt-1">Vincule imóveis a inquilinos e gere as parcelas automaticamente.</p>

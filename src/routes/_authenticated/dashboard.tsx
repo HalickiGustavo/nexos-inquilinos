@@ -218,14 +218,19 @@ function MetricCard({
   title, value, icon, accent, subtitle,
 }: { title: string; value: string; icon: React.ReactNode; accent?: string; subtitle?: string }) {
   return (
-    <Card className="p-5">
+    <Card className="p-5 hover-lift relative overflow-hidden group">
+      <div
+        className="absolute inset-x-0 top-0 h-px opacity-60 group-hover:opacity-100 transition-opacity"
+        style={{ background: "linear-gradient(90deg, transparent, color-mix(in oklab, var(--primary) 60%, transparent), transparent)" }}
+        aria-hidden
+      />
       <div className="flex items-start justify-between">
-        <div>
+        <div className="min-w-0">
           <p className="text-sm text-muted-foreground">{title}</p>
-          <p className={`text-2xl font-bold mt-1 ${accent ?? ""}`}>{value}</p>
+          <p className={`text-2xl font-bold mt-1.5 tabular-nums tracking-tight ${accent ?? ""}`}>{value}</p>
           {subtitle && <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>}
         </div>
-        <div className={`p-2 rounded-lg bg-muted ${accent ?? "text-muted-foreground"}`}>{icon}</div>
+        <div className={`p-2.5 rounded-xl bg-muted/60 ring-1 ring-border/60 shrink-0 ${accent ?? "text-muted-foreground"}`}>{icon}</div>
       </div>
     </Card>
   );

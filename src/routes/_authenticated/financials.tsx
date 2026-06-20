@@ -80,7 +80,7 @@ function FinancialsPage() {
 
 
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         <SummaryCard icon={<Clock className="size-5" />} label="Pendente" value={formatBRL(totals.pending)} />
         <SummaryCard icon={<CheckCircle2 className="size-5 text-primary" />} label="Pago" value={formatBRL(totals.paid)} accent="text-primary" />
         <SummaryCard icon={<AlertCircle className="size-5 text-destructive" />} label="Atrasado" value={formatBRL(totals.overdue)} accent="text-destructive" />

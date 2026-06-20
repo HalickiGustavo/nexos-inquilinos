@@ -409,6 +409,60 @@ export type Database = {
         }
         Relationships: []
       }
+      installment_notifications: {
+        Row: {
+          channel: string
+          contract_id: string
+          created_at: string
+          error: string | null
+          id: string
+          installment_id: string
+          sent_at: string
+          stage: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          channel?: string
+          contract_id: string
+          created_at?: string
+          error?: string | null
+          id?: string
+          installment_id: string
+          sent_at?: string
+          stage: string
+          status: string
+          user_id: string
+        }
+        Update: {
+          channel?: string
+          contract_id?: string
+          created_at?: string
+          error?: string | null
+          id?: string
+          installment_id?: string
+          sent_at?: string
+          stage?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "installment_notifications_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "installment_notifications_installment_id_fkey"
+            columns: ["installment_id"]
+            isOneToOne: false
+            referencedRelation: "installments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       installments: {
         Row: {
           amount: number

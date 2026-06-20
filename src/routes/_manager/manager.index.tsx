@@ -323,13 +323,18 @@ function MetricCard({
   label, value, loading,
 }: { label: string; value: number | undefined; loading?: boolean }) {
   return (
-    <div className="rounded-2xl border border-border bg-card p-4 sm:p-5 backdrop-blur-sm shadow-sm">
-      <div className="text-[11px] sm:text-xs text-muted-foreground leading-tight min-h-[28px]">{label}</div>
+    <div className="group relative rounded-2xl border border-border bg-card p-4 sm:p-5 shadow-card overflow-hidden transition-all hover:border-primary/40 hover:shadow-elegant">
+      <div
+        className="absolute inset-x-0 top-0 h-px opacity-50 group-hover:opacity-100 transition-opacity"
+        style={{ background: "linear-gradient(90deg, transparent, color-mix(in oklab, var(--primary) 70%, transparent), transparent)" }}
+        aria-hidden
+      />
+      <div className="text-[11px] sm:text-xs text-muted-foreground leading-tight min-h-[28px] uppercase tracking-wide font-medium">{label}</div>
       <div className="mt-2 flex items-baseline gap-2">
         {loading || value === undefined ? (
           <span className="inline-block h-7 w-12 rounded-md bg-muted animate-pulse" aria-label="Carregando" />
         ) : (
-          <span className="text-3xl sm:text-4xl font-bold text-foreground tabular-nums">{value}</span>
+          <span className="text-3xl sm:text-4xl font-bold text-foreground tabular-nums tracking-tight">{value}</span>
         )}
       </div>
     </div>
@@ -340,11 +345,16 @@ function Shortcut({
   to, icon: Icon, label, search,
 }: { to: string; icon: any; label: string; search?: Record<string, string> }) {
   return (
-    <Link to={to} search={search as any} className="flex flex-col items-center gap-2 group">
-      <div className="size-14 sm:size-16 rounded-2xl border border-border bg-card grid place-items-center group-active:scale-95 group-hover:border-primary/50 transition shadow-sm">
-        <Icon className="size-5 sm:size-6 text-foreground" strokeWidth={1.5} />
+    <Link to={to} search={search as any} className="flex flex-col items-center gap-2.5 group">
+      <div className="relative size-14 sm:size-16 rounded-2xl border border-border bg-card grid place-items-center shadow-card transition-all group-hover:-translate-y-0.5 group-hover:border-primary/50 group-hover:shadow-elegant group-active:scale-95 overflow-hidden">
+        <div
+          className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
+          style={{ background: "var(--gradient-brand-soft)" }}
+          aria-hidden
+        />
+        <Icon className="relative size-5 sm:size-6 text-foreground group-hover:text-primary transition-colors" strokeWidth={1.6} />
       </div>
-      <span className="text-[11px] sm:text-xs text-muted-foreground text-center leading-tight">{label}</span>
+      <span className="text-[11px] sm:text-xs text-muted-foreground group-hover:text-foreground text-center leading-tight transition-colors">{label}</span>
     </Link>
   );
 }

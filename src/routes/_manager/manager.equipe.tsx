@@ -10,9 +10,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { UserPlus, Copy, Users as UsersIcon, Briefcase, TrendingUp } from "lucide-react";
+import { UserPlus, Copy, Users as UsersIcon, Briefcase, TrendingUp, Phone } from "lucide-react";
 import { toast } from "sonner";
 import { formatBRL } from "@/lib/format";
+import { maskPhone } from "@/lib/br-validators";
 
 export const Route = createFileRoute("/_manager/manager/equipe")({
   component: Equipe,
@@ -85,6 +86,7 @@ function Equipe() {
           <TableHeader><TableRow>
             <TableHead>Nome</TableHead>
             <TableHead>Email</TableHead>
+            <TableHead>Telefone</TableHead>
             <TableHead>Função</TableHead>
             <TableHead>Status</TableHead>
             <TableHead className="text-right">Locações</TableHead>
@@ -92,11 +94,16 @@ function Equipe() {
             <TableHead></TableHead>
           </TableRow></TableHeader>
           <TableBody>
-            {(q.data ?? []).length === 0 && <TableRow><TableCell colSpan={7} className="text-center py-8 text-zinc-500">Nenhum membro cadastrado</TableCell></TableRow>}
+            {(q.data ?? []).length === 0 && <TableRow><TableCell colSpan={8} className="text-center py-8 text-zinc-500">Nenhum membro cadastrado</TableCell></TableRow>}
             {(q.data ?? []).map((m: any) => (
               <TableRow key={m.id}>
                 <TableCell className="font-medium">{m.name}</TableCell>
                 <TableCell className="text-sm">{m.email}</TableCell>
+                <TableCell className="text-sm text-muted-foreground">
+                  {m.phone ? (
+                    <span className="inline-flex items-center gap-1"><Phone className="size-3" />{m.phone}</span>
+                  ) : <span className="opacity-50">—</span>}
+                </TableCell>
                 <TableCell>{roleBadge(m.role_label)}</TableCell>
                 <TableCell>
                   <Badge variant={m.status === "ativo" ? "default" : "secondary"}>{m.status}</Badge>
@@ -135,7 +142,7 @@ function Equipe() {
 }
 
 function ConvidarDialog({ open, onOpenChange, onSaved }: { open: boolean; onOpenChange: (v: boolean) => void; onSaved: (link: string) => void }) {
-  const [form, setForm] = useState({ name: "", email: "", role_label: "corretor" });
+  const [form, setForm] = useState({ name: "", email: "", phone: "", role_label: "corretor" });
   const [busy, setBusy] = useState(false);
 
   const save = async () => {
@@ -143,13 +150,13 @@ function ConvidarDialog({ open, onOpenChange, onSaved }: { open: boolean; onOpen
     const { data: u } = await supabase.auth.getUser();
     const { data, error } = await supabase.from("manager_members").insert({
       manager_user_id: u.user!.id,
-      name: form.name, email: form.email, role_label: form.role_label, status: "pendente",
+      name: form.name, email: form.email, phone: form.phone || null, role_label: form.role_label, status: "pendente",
     }).select().single();
     setBusy(false);
     if (error) { toast.error(error.message); return; }
     const link = `${window.location.origin}/manager-invite?token=${(data as any).invite_token}`;
     onOpenChange(false);
-    setForm({ name: "", email: "", role_label: "corretor" });
+    setForm({ name: "", email: "", phone: "", role_label: "corretor" });
     onSaved(link);
   };
 
@@ -160,6 +167,16 @@ function ConvidarDialog({ open, onOpenChange, onSaved }: { open: boolean; onOpen
         <div className="space-y-3">
           <div><Label>Nome</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
           <div><Label>Email</Label><Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></div>
+          <div>
+            <Label>Telefone (WhatsApp)</Label>
+            <Input
+              value={form.phone}
+              onChange={(e) => setForm({ ...form, phone: maskPhone(e.target.value) })}
+              placeholder="(41) 99999-9999"
+              inputMode="tel"
+            />
+            <p className="text-[11px] text-muted-foreground mt-1">Usado para receber leads dos portais em tempo real via WhatsApp.</p>
+          </div>
           <div><Label>Função</Label>
             <Select value={form.role_label} onValueChange={(v) => setForm({ ...form, role_label: v })}>
               <SelectTrigger><SelectValue /></SelectTrigger>

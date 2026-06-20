@@ -18,6 +18,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import nexoLogoAsset from "@/assets/nexo-logo.png.asset.json";
+import nexoLogoDarkAsset from "@/assets/nexo-logo-dark.png.asset.json";
+import { useTheme } from "@/components/ThemeProvider";
 
 const RECAPTCHA_SITE_KEY = "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI";
 
@@ -27,7 +29,9 @@ export const Route = createFileRoute("/login")({
 });
 
 function LoginPage() {
-  const nexoLogo = nexoLogoAsset.url;
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+  const nexoLogo = isDark ? nexoLogoDarkAsset.url : nexoLogoAsset.url;
   const navigate = useNavigate();
   const { user, loading } = useAuth();
 
@@ -39,8 +43,8 @@ function LoginPage() {
     <div className="min-h-screen grid lg:grid-cols-2">
       <div className="hidden lg:flex flex-col justify-between p-12 bg-sidebar text-sidebar-foreground">
         <div className="flex flex-col items-center gap-6 flex-1 justify-center">
-          <div className="bg-white/95 rounded-xl py-4 mx-auto flex-col flex items-center justify-center px-[24px]">
-            <img src={nexoLogo} alt="Nexo" className="h-28 w-80 object-contain my-0" />
+          <div className={isDark ? "rounded-xl py-4 mx-auto flex-col flex items-center justify-center px-[24px]" : "bg-white/95 rounded-xl py-4 mx-auto flex-col flex items-center justify-center px-[24px]"}>
+            <img src={nexoLogo} alt="Nexo" className="h-44 w-[26rem] max-w-full object-contain my-0" />
           </div>
 
           <div className="text-center">
@@ -59,7 +63,7 @@ function LoginPage() {
       <div className="flex items-center justify-center p-6 lg:p-12">
         <Card className="w-full max-w-md p-8 shadow-lg">
           <div className="lg:hidden flex justify-center items-center mb-6">
-            <img src={nexoLogo} alt="Nexo" className="h-10 w-auto" />
+            <img src={nexoLogo} alt="Nexo" className="h-16 w-auto" />
           </div>
 
           <div className="text-center mb-6">

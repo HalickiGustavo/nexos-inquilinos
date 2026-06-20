@@ -172,6 +172,7 @@ function MigrarDadosPage() {
         const address = (row.imovel_endereco ?? "").trim();
         const rent = parseMoney(row.contrato_valor);
         const dueIso = parseBRDate(row.contrato_vencimento);
+        const isActive = parseBool(row.contrato_ativo);
 
         if (!ownerName) throw new Error("proprietario_nome vazio");
         if (!tenantName) throw new Error("inquilino_nome vazio");

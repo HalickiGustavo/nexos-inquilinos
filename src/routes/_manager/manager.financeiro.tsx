@@ -143,6 +143,7 @@ function Recebimentos() {
         </CardContent>
       </Card>
       <Card><CardContent className="p-0">
+        <div className="overflow-x-auto">
         <Table>
           <TableHeader><TableRow>
             <TableHead className="w-8"></TableHead>
@@ -184,6 +185,7 @@ function Recebimentos() {
                   {isOpen && (
                     <TableRow key={g.contractId + "-exp"}>
                       <TableCell colSpan={8} className="bg-muted/30 p-0">
+                        <div className="overflow-x-auto">
                         <Table>
                           <TableHeader><TableRow>
                             <TableHead>Vencimento</TableHead>

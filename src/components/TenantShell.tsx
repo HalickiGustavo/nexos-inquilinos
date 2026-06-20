@@ -58,9 +58,9 @@ export function TenantShell() {
         </div>
       </main>
 
-      {/* Bottom nav (mobile) + sidebar-like row (desktop) */}
-      <nav className="fixed bottom-0 inset-x-0 z-30 md:static md:max-w-3xl md:mx-auto bg-card border-t md:border-0 md:hidden">
-        <div className="grid grid-cols-6">
+      {/* Bottom nav (mobile + small tablet) */}
+      <nav className="fixed bottom-0 inset-x-0 z-30 bg-card border-t md:hidden">
+        <div className="grid" style={{ gridTemplateColumns: `repeat(${tenantNav.length + 1}, minmax(0, 1fr))` }}>
           {tenantNav.map((item) => {
             const active = isActive(item.to, item.exact);
             const Icon = item.icon;
@@ -70,12 +70,12 @@ export function TenantShell() {
                 to={item.to as any}
                 data-tour={item.tour}
                 className={cn(
-                  "flex flex-col items-center justify-center gap-1 py-2.5 text-[11px] transition-colors",
+                  "flex flex-col items-center justify-center gap-1 py-2.5 text-[11px] transition-colors min-w-0",
                   active ? "text-primary" : "text-muted-foreground hover:text-foreground",
                 )}
               >
-                <Icon className="size-5" />
-                {item.label}
+                <Icon className="size-5 shrink-0" />
+                <span className="truncate max-w-full px-1">{item.label}</span>
               </Link>
             );
           })}
@@ -84,17 +84,17 @@ export function TenantShell() {
               await signOut();
               navigate({ to: "/login", replace: true });
             }}
-            className="flex flex-col items-center justify-center gap-1 py-2.5 text-[11px] transition-colors text-muted-foreground hover:text-foreground"
+            className="flex flex-col items-center justify-center gap-1 py-2.5 text-[11px] transition-colors text-muted-foreground hover:text-foreground min-w-0"
           >
-            <LogOut className="size-5" />
-            Sair
+            <LogOut className="size-5 shrink-0" />
+            <span className="truncate">Sair</span>
           </button>
         </div>
       </nav>
 
       {/* Desktop top tabs */}
-      <nav className="hidden md:flex border-b bg-card -order-1 md:order-none fixed md:sticky top-14 left-0 right-0 z-20">
-        <div className="max-w-3xl mx-auto px-4 flex gap-1 w-full">
+      <nav className="hidden md:flex border-b bg-card sticky top-14 left-0 right-0 z-20">
+        <div className="max-w-3xl mx-auto px-4 flex gap-1 w-full overflow-x-auto">
           {tenantNav.map((item) => {
             const active = isActive(item.to, item.exact);
             const Icon = item.icon;
@@ -104,7 +104,7 @@ export function TenantShell() {
                 to={item.to as any}
                 data-tour={item.tour}
                 className={cn(
-                  "flex items-center gap-2 px-4 py-3 text-sm border-b-2 transition-colors",
+                  "flex items-center gap-2 px-4 py-3 text-sm border-b-2 transition-colors whitespace-nowrap",
                   active
                     ? "border-primary text-primary font-medium"
                     : "border-transparent text-muted-foreground hover:text-foreground",

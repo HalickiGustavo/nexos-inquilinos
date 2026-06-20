@@ -186,26 +186,28 @@ function FinancialsPage() {
                                 })()}
                               </td>
                               <td className="p-2"><StatusBadge status={s} /></td>
-                              <td className="p-2 text-right whitespace-nowrap space-x-1">
-                                {i.status !== "pago" && !i.asaas_payment_id && <GenerateBoletoButton installment={i} />}
-                                {i.asaas_payment_id && i.status !== "pago" && <UpdateBoletoButton installment={i} />}
-                                {i.boleto_url && (
-                                  <Button size="sm" variant="outline" asChild>
-                                    <a href={i.boleto_url} target="_blank" rel="noreferrer">
-                                      <FileText className="size-3.5 mr-1" /> Boleto
-                                    </a>
+                              <td className="p-2 text-right">
+                                <div className="flex justify-end flex-wrap gap-1">
+                                  {i.status !== "pago" && !i.asaas_payment_id && <GenerateBoletoButton installment={i} />}
+                                  {i.asaas_payment_id && i.status !== "pago" && <UpdateBoletoButton installment={i} />}
+                                  {i.boleto_url && (
+                                    <Button size="sm" variant="outline" asChild>
+                                      <a href={i.boleto_url} target="_blank" rel="noreferrer">
+                                        <FileText className="size-3.5 mr-1" /> Boleto
+                                      </a>
+                                    </Button>
+                                  )}
+                                  {i.barcode && (
+                                    <Button size="sm" variant="ghost" onClick={() => { navigator.clipboard.writeText(i.barcode); toast.success("Linha digitável copiada"); }}>
+                                      <Copy className="size-3.5" />
+                                    </Button>
+                                  )}
+                                  {i.status !== "pago" && <MarkPaidButton installment={i} />}
+                                  {i.status !== "pago" && <SimulatePayButton installment={i} />}
+                                  <Button size="sm" variant="outline" onClick={() => setExtraDlg(i)}>
+                                    <Plus className="size-3.5 mr-1" />Taxa
                                   </Button>
-                                )}
-                                {i.barcode && (
-                                  <Button size="sm" variant="ghost" onClick={() => { navigator.clipboard.writeText(i.barcode); toast.success("Linha digitável copiada"); }}>
-                                    <Copy className="size-3.5" />
-                                  </Button>
-                                )}
-                                {i.status !== "pago" && <MarkPaidButton installment={i} />}
-                                {i.status !== "pago" && <SimulatePayButton installment={i} />}
-                                <Button size="sm" variant="outline" onClick={() => setExtraDlg(i)}>
-                                  <Plus className="size-3.5 mr-1" />Taxa
-                                </Button>
+                                </div>
                               </td>
                             </tr>
                           );

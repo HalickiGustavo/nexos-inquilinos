@@ -58,17 +58,19 @@ function ManagerLayout() {
   return (
     <div className="min-h-screen flex bg-background text-foreground">
       <aside className="hidden md:fixed md:left-0 md:top-0 md:h-screen md:flex w-60 lg:w-64 flex-col bg-sidebar text-sidebar-foreground border-r border-sidebar-border">
-        <div className="p-5 border-b border-sidebar-border">
-          <div className="flex items-center gap-3">
-            <NexoLogo className="h-9" alt="NEXO" />
-            <div className="text-[10px] text-sidebar-foreground/60 uppercase tracking-wider">Imobiliária</div>
+        <div className="p-4 border-b border-sidebar-border">
+          <div className="flex items-center justify-between gap-2">
+            <Link to="/manager" className="flex items-center gap-2 min-w-0">
+              <NexoLogo className="h-9" alt="NEXO" />
+              <div className="text-[10px] text-sidebar-foreground/60 uppercase tracking-wider hidden lg:block">Imobiliária</div>
+            </Link>
+            <AlertsBell alerts={alerts} seeAllHref="/manager/alertas" />
           </div>
         </div>
         <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
           {navItems.map((item) => {
             const active = item.exact ? pathname === item.to : pathname.startsWith(item.to);
             const Icon = item.icon;
-            const showBadge = item.to === "/manager/alertas" && criticalCount > 0;
             return (
               <Link key={item.to} to={item.to} data-tour={item.tour}
                 className={cn(
@@ -79,15 +81,11 @@ function ManagerLayout() {
                 )}>
                 <Icon className="size-4" />
                 <span className="flex-1">{item.label}</span>
-                {showBadge && (
-                  <span className="ml-auto inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-destructive text-destructive-foreground text-[10px] font-semibold">
-                    {criticalCount}
-                  </span>
-                )}
               </Link>
             );
           })}
         </nav>
+
         <div className="p-3 border-t border-sidebar-border space-y-1">
           <div className="px-3 py-2 text-xs text-sidebar-foreground/60 truncate">{user.email}</div>
           <ThemeToggle />

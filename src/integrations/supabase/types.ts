@@ -20,6 +20,7 @@ export type Database = {
           last_round_robin_member_id: string | null
           lead_routing_strategy: string
           manager_user_id: string
+          org_slug: string | null
           updated_at: string
           webhook_token: string
         }
@@ -28,6 +29,7 @@ export type Database = {
           last_round_robin_member_id?: string | null
           lead_routing_strategy?: string
           manager_user_id: string
+          org_slug?: string | null
           updated_at?: string
           webhook_token?: string
         }
@@ -36,6 +38,7 @@ export type Database = {
           last_round_robin_member_id?: string | null
           lead_routing_strategy?: string
           manager_user_id?: string
+          org_slug?: string | null
           updated_at?: string
           webhook_token?: string
         }
@@ -1110,6 +1113,7 @@ export type Database = {
       accept_manager_invite: { Args: { _token: string }; Returns: string }
       current_manager_id: { Args: never; Returns: string }
       current_tenant_id: { Args: never; Returns: string }
+      generate_org_slug: { Args: { _manager_user_id: string }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

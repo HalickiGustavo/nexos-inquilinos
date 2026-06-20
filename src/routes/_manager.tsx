@@ -1,6 +1,7 @@
 import { createFileRoute, Outlet, useNavigate, useRouterState, Link } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { LayoutDashboard, Briefcase, Wallet, Users, KanbanSquare, ClipboardCheck, Bell, LogOut, Loader2, Plug, FileDigit, Database, Coins, Globe, Shuffle, Inbox } from "lucide-react";
+import { LayoutDashboard, Briefcase, Wallet, Users, ClipboardCheck, LogOut, Loader2, FileDigit, Database, Coins, Globe, Shuffle, Inbox } from "lucide-react";
+import { AlertsBell } from "@/components/AlertsBell";
 import { NexoLogo } from "@/components/NexoLogo";
 import { InstallPwaButton } from "@/components/InstallPwaButton";
 import { useAuth } from "@/lib/auth";
@@ -24,8 +25,6 @@ const navItems: { to: string; label: string; icon: typeof LayoutDashboard; exact
   { to: "/manager/dimob", label: "DIMOB", icon: FileDigit, tour: "nav-manager-dimob" },
   { to: "/manager/equipe", label: "Equipe", icon: Users, tour: "nav-manager-equipe" },
   { to: "/manager/vistorias", label: "Vistorias", icon: ClipboardCheck, tour: "nav-manager-vistorias" },
-  { to: "/manager/alertas", label: "Alertas", icon: Bell, tour: "nav-manager-alertas" },
-  { to: "/manager/crm", label: "CRM", icon: KanbanSquare, tour: "nav-manager-crm" },
   { to: "/manager/leads", label: "Leads (Portais)", icon: Inbox, tour: "nav-manager-leads" },
   { to: "/manager/configuracoes/roleta", label: "Roleta de Leads", icon: Shuffle, tour: "nav-manager-roleta" },
   { to: "/manager/integracao", label: "Saldo e Saque", icon: Coins, tour: "nav-manager-integracao" },
@@ -40,7 +39,6 @@ function ManagerLayout() {
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { alerts } = useManagerAlerts();
-  const criticalCount = alerts.filter((a) => a.severity === "critico").length;
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/login", replace: true });
@@ -59,17 +57,19 @@ function ManagerLayout() {
   return (
     <div className="min-h-screen flex bg-background text-foreground">
       <aside className="hidden md:fixed md:left-0 md:top-0 md:h-screen md:flex w-60 lg:w-64 flex-col bg-sidebar text-sidebar-foreground border-r border-sidebar-border">
-        <div className="p-5 border-b border-sidebar-border">
-          <div className="flex items-center gap-3">
-            <NexoLogo className="h-9" alt="NEXO" />
-            <div className="text-[10px] text-sidebar-foreground/60 uppercase tracking-wider">Imobiliária</div>
+        <div className="p-4 border-b border-sidebar-border">
+          <div className="flex items-center justify-between gap-2">
+            <Link to="/manager" className="flex items-center gap-2 min-w-0">
+              <NexoLogo className="h-9" alt="NEXO" />
+              <div className="text-[10px] text-sidebar-foreground/60 uppercase tracking-wider hidden lg:block">Imobiliária</div>
+            </Link>
+            <AlertsBell alerts={alerts} seeAllHref="/manager/alertas" />
           </div>
         </div>
         <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
           {navItems.map((item) => {
             const active = item.exact ? pathname === item.to : pathname.startsWith(item.to);
             const Icon = item.icon;
-            const showBadge = item.to === "/manager/alertas" && criticalCount > 0;
             return (
               <Link key={item.to} to={item.to} data-tour={item.tour}
                 className={cn(
@@ -80,15 +80,11 @@ function ManagerLayout() {
                 )}>
                 <Icon className="size-4" />
                 <span className="flex-1">{item.label}</span>
-                {showBadge && (
-                  <span className="ml-auto inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-destructive text-destructive-foreground text-[10px] font-semibold">
-                    {criticalCount}
-                  </span>
-                )}
               </Link>
             );
           })}
         </nav>
+
         <div className="p-3 border-t border-sidebar-border space-y-1">
           <div className="px-3 py-2 text-xs text-sidebar-foreground/60 truncate">{user.email}</div>
           <ThemeToggle />
@@ -106,19 +102,15 @@ function ManagerLayout() {
               <NexoLogo className="h-8" alt="NEXO" />
             </Link>
             <div className="flex items-center gap-1">
+              <AlertsBell alerts={alerts} seeAllHref="/manager/alertas" />
               <ThemeToggle size="icon" variant="ghost" />
-              <Link to="/manager/alertas" className="relative size-9 grid place-items-center rounded-full text-foreground hover:bg-muted">
-                <Bell className="size-5" strokeWidth={1.5} />
-                {criticalCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 inline-flex items-center justify-center min-w-4 h-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[9px] font-semibold">{criticalCount}</span>
-                )}
-              </Link>
               <Button variant="ghost" size="icon" className="text-foreground hover:bg-muted"
                 onClick={async () => { await signOut(); navigate({ to: "/login", replace: true }); }}>
                 <LogOut className="size-5" />
               </Button>
             </div>
           </div>
+
           <nav className="flex overflow-x-auto gap-1 p-2 border-t border-border">
             {navItems.map((item) => {
               const active = item.exact ? pathname === item.to : pathname.startsWith(item.to);

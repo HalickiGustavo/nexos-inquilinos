@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Plus, Pencil, Trash2, Users, Mail, Phone, Send, Handshake } from "lucide-react";
+import { Plus, Pencil, Trash2, Users, Mail, Phone, Send, Handshake, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { Card } from "@/components/ui/card";
@@ -111,6 +111,7 @@ function TenantsPage() {
                   </DialogTrigger>
                 </Dialog>
                 {t.email && <InviteTenantButton tenant={t} />}
+                {t.phone && t.email && <ResendWhatsAppButton tenant={t} />}
                 <Button variant="outline" size="sm" onClick={async () => {
                   if (!confirm("Excluir este inquilino?")) return;
                   const { error } = await supabase.from("tenants").delete().eq("id", t.id);

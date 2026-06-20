@@ -268,6 +268,7 @@ function Recebimentos() {
                             })}
                           </TableBody>
                         </Table>
+                        </div>
                       </TableCell>
                     </TableRow>
                   )}
@@ -276,6 +277,7 @@ function Recebimentos() {
             })}
           </TableBody>
         </Table>
+        </div>
       </CardContent></Card>
 
       {expensesFor && (

@@ -110,13 +110,8 @@ function ManagerLayout() {
                 <LogOut className="size-5" />
               </Button>
             </div>
-
-              <Button variant="ghost" size="icon" className="text-foreground hover:bg-muted"
-                onClick={async () => { await signOut(); navigate({ to: "/login", replace: true }); }}>
-                <LogOut className="size-5" />
-              </Button>
-            </div>
           </div>
+
           <nav className="flex overflow-x-auto gap-1 p-2 border-t border-border">
             {navItems.map((item) => {
               const active = item.exact ? pathname === item.to : pathname.startsWith(item.to);

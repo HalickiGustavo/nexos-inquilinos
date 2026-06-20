@@ -30,6 +30,7 @@ import { Route as ApiPublicAsaasWebhookRouteImport } from './routes/api/public/a
 import { Route as ManagerManagerVistoriasRouteImport } from './routes/_manager/manager.vistorias'
 import { Route as ManagerManagerPortaisRouteImport } from './routes/_manager/manager.portais'
 import { Route as ManagerManagerMigrarDadosRouteImport } from './routes/_manager/manager.migrar-dados'
+import { Route as ManagerManagerLeadsRouteImport } from './routes/_manager/manager.leads'
 import { Route as ManagerManagerIntegracaoRouteImport } from './routes/_manager/manager.integracao'
 import { Route as ManagerManagerFinanceiroRouteImport } from './routes/_manager/manager.financeiro'
 import { Route as ManagerManagerEquipeRouteImport } from './routes/_manager/manager.equipe'
@@ -42,10 +43,12 @@ import { Route as AuthenticatedTenantFinanceiroRouteImport } from './routes/_aut
 import { Route as AuthenticatedTenantContratoRouteImport } from './routes/_authenticated/tenant.contrato'
 import { Route as AuthenticatedTenantAlertasRouteImport } from './routes/_authenticated/tenant.alertas'
 import { Route as AuthenticatedAdminIntegracoesRouteImport } from './routes/_authenticated/admin.integracoes'
+import { Route as ApiPublicWebhooksLeadsRouteImport } from './routes/api/public/webhooks/leads'
 import { Route as ApiPublicListingsXmlRouteImport } from './routes/api/public/listings.xml'
 import { Route as ApiPublicHooksSendTenantRemindersRouteImport } from './routes/api/public/hooks/send-tenant-reminders'
 import { Route as ApiPublicHooksSendMaintenanceResponseRemindersRouteImport } from './routes/api/public/hooks/send-maintenance-response-reminders'
 import { Route as ApiPublicHooksProcessScheduledInvoicesRouteImport } from './routes/api/public/hooks/process-scheduled-invoices'
+import { Route as ManagerManagerConfiguracoesRoletaRouteImport } from './routes/_manager/manager.configuracoes.roleta'
 
 const TenantSetupRoute = TenantSetupRouteImport.update({
   id: '/tenant-setup',
@@ -155,6 +158,11 @@ const ManagerManagerMigrarDadosRoute =
     path: '/manager/migrar-dados',
     getParentRoute: () => ManagerRoute,
   } as any)
+const ManagerManagerLeadsRoute = ManagerManagerLeadsRouteImport.update({
+  id: '/manager/leads',
+  path: '/manager/leads',
+  getParentRoute: () => ManagerRoute,
+} as any)
 const ManagerManagerIntegracaoRoute =
   ManagerManagerIntegracaoRouteImport.update({
     id: '/manager/integracao',
@@ -222,6 +230,11 @@ const AuthenticatedAdminIntegracoesRoute =
     path: '/admin/integracoes',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const ApiPublicWebhooksLeadsRoute = ApiPublicWebhooksLeadsRouteImport.update({
+  id: '/api/public/webhooks/leads',
+  path: '/api/public/webhooks/leads',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicListingsXmlRoute = ApiPublicListingsXmlRouteImport.update({
   id: '/api/public/listings/xml',
   path: '/api/public/listings/xml',
@@ -244,6 +257,12 @@ const ApiPublicHooksProcessScheduledInvoicesRoute =
     id: '/api/public/hooks/process-scheduled-invoices',
     path: '/api/public/hooks/process-scheduled-invoices',
     getParentRoute: () => rootRouteImport,
+  } as any)
+const ManagerManagerConfiguracoesRoletaRoute =
+  ManagerManagerConfiguracoesRoletaRouteImport.update({
+    id: '/manager/configuracoes/roleta',
+    path: '/manager/configuracoes/roleta',
+    getParentRoute: () => ManagerRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -272,16 +291,19 @@ export interface FileRoutesByFullPath {
   '/manager/equipe': typeof ManagerManagerEquipeRoute
   '/manager/financeiro': typeof ManagerManagerFinanceiroRoute
   '/manager/integracao': typeof ManagerManagerIntegracaoRoute
+  '/manager/leads': typeof ManagerManagerLeadsRoute
   '/manager/migrar-dados': typeof ManagerManagerMigrarDadosRoute
   '/manager/portais': typeof ManagerManagerPortaisRoute
   '/manager/vistorias': typeof ManagerManagerVistoriasRoute
   '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
   '/tenant/': typeof AuthenticatedTenantIndexRoute
   '/manager/': typeof ManagerManagerIndexRoute
+  '/manager/configuracoes/roleta': typeof ManagerManagerConfiguracoesRoletaRoute
   '/api/public/hooks/process-scheduled-invoices': typeof ApiPublicHooksProcessScheduledInvoicesRoute
   '/api/public/hooks/send-maintenance-response-reminders': typeof ApiPublicHooksSendMaintenanceResponseRemindersRoute
   '/api/public/hooks/send-tenant-reminders': typeof ApiPublicHooksSendTenantRemindersRoute
   '/api/public/listings/xml': typeof ApiPublicListingsXmlRoute
+  '/api/public/webhooks/leads': typeof ApiPublicWebhooksLeadsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof AuthenticatedIndexRoute
@@ -309,16 +331,19 @@ export interface FileRoutesByTo {
   '/manager/equipe': typeof ManagerManagerEquipeRoute
   '/manager/financeiro': typeof ManagerManagerFinanceiroRoute
   '/manager/integracao': typeof ManagerManagerIntegracaoRoute
+  '/manager/leads': typeof ManagerManagerLeadsRoute
   '/manager/migrar-dados': typeof ManagerManagerMigrarDadosRoute
   '/manager/portais': typeof ManagerManagerPortaisRoute
   '/manager/vistorias': typeof ManagerManagerVistoriasRoute
   '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
   '/tenant': typeof AuthenticatedTenantIndexRoute
   '/manager': typeof ManagerManagerIndexRoute
+  '/manager/configuracoes/roleta': typeof ManagerManagerConfiguracoesRoletaRoute
   '/api/public/hooks/process-scheduled-invoices': typeof ApiPublicHooksProcessScheduledInvoicesRoute
   '/api/public/hooks/send-maintenance-response-reminders': typeof ApiPublicHooksSendMaintenanceResponseRemindersRoute
   '/api/public/hooks/send-tenant-reminders': typeof ApiPublicHooksSendTenantRemindersRoute
   '/api/public/listings/xml': typeof ApiPublicListingsXmlRoute
+  '/api/public/webhooks/leads': typeof ApiPublicWebhooksLeadsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -349,16 +374,19 @@ export interface FileRoutesById {
   '/_manager/manager/equipe': typeof ManagerManagerEquipeRoute
   '/_manager/manager/financeiro': typeof ManagerManagerFinanceiroRoute
   '/_manager/manager/integracao': typeof ManagerManagerIntegracaoRoute
+  '/_manager/manager/leads': typeof ManagerManagerLeadsRoute
   '/_manager/manager/migrar-dados': typeof ManagerManagerMigrarDadosRoute
   '/_manager/manager/portais': typeof ManagerManagerPortaisRoute
   '/_manager/manager/vistorias': typeof ManagerManagerVistoriasRoute
   '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
   '/_authenticated/tenant/': typeof AuthenticatedTenantIndexRoute
   '/_manager/manager/': typeof ManagerManagerIndexRoute
+  '/_manager/manager/configuracoes/roleta': typeof ManagerManagerConfiguracoesRoletaRoute
   '/api/public/hooks/process-scheduled-invoices': typeof ApiPublicHooksProcessScheduledInvoicesRoute
   '/api/public/hooks/send-maintenance-response-reminders': typeof ApiPublicHooksSendMaintenanceResponseRemindersRoute
   '/api/public/hooks/send-tenant-reminders': typeof ApiPublicHooksSendTenantRemindersRoute
   '/api/public/listings/xml': typeof ApiPublicListingsXmlRoute
+  '/api/public/webhooks/leads': typeof ApiPublicWebhooksLeadsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -388,16 +416,19 @@ export interface FileRouteTypes {
     | '/manager/equipe'
     | '/manager/financeiro'
     | '/manager/integracao'
+    | '/manager/leads'
     | '/manager/migrar-dados'
     | '/manager/portais'
     | '/manager/vistorias'
     | '/api/public/asaas-webhook'
     | '/tenant/'
     | '/manager/'
+    | '/manager/configuracoes/roleta'
     | '/api/public/hooks/process-scheduled-invoices'
     | '/api/public/hooks/send-maintenance-response-reminders'
     | '/api/public/hooks/send-tenant-reminders'
     | '/api/public/listings/xml'
+    | '/api/public/webhooks/leads'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -425,16 +456,19 @@ export interface FileRouteTypes {
     | '/manager/equipe'
     | '/manager/financeiro'
     | '/manager/integracao'
+    | '/manager/leads'
     | '/manager/migrar-dados'
     | '/manager/portais'
     | '/manager/vistorias'
     | '/api/public/asaas-webhook'
     | '/tenant'
     | '/manager'
+    | '/manager/configuracoes/roleta'
     | '/api/public/hooks/process-scheduled-invoices'
     | '/api/public/hooks/send-maintenance-response-reminders'
     | '/api/public/hooks/send-tenant-reminders'
     | '/api/public/listings/xml'
+    | '/api/public/webhooks/leads'
   id:
     | '__root__'
     | '/_authenticated'
@@ -464,16 +498,19 @@ export interface FileRouteTypes {
     | '/_manager/manager/equipe'
     | '/_manager/manager/financeiro'
     | '/_manager/manager/integracao'
+    | '/_manager/manager/leads'
     | '/_manager/manager/migrar-dados'
     | '/_manager/manager/portais'
     | '/_manager/manager/vistorias'
     | '/api/public/asaas-webhook'
     | '/_authenticated/tenant/'
     | '/_manager/manager/'
+    | '/_manager/manager/configuracoes/roleta'
     | '/api/public/hooks/process-scheduled-invoices'
     | '/api/public/hooks/send-maintenance-response-reminders'
     | '/api/public/hooks/send-tenant-reminders'
     | '/api/public/listings/xml'
+    | '/api/public/webhooks/leads'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -488,6 +525,7 @@ export interface RootRouteChildren {
   ApiPublicHooksSendMaintenanceResponseRemindersRoute: typeof ApiPublicHooksSendMaintenanceResponseRemindersRoute
   ApiPublicHooksSendTenantRemindersRoute: typeof ApiPublicHooksSendTenantRemindersRoute
   ApiPublicListingsXmlRoute: typeof ApiPublicListingsXmlRoute
+  ApiPublicWebhooksLeadsRoute: typeof ApiPublicWebhooksLeadsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -639,6 +677,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ManagerManagerMigrarDadosRouteImport
       parentRoute: typeof ManagerRoute
     }
+    '/_manager/manager/leads': {
+      id: '/_manager/manager/leads'
+      path: '/manager/leads'
+      fullPath: '/manager/leads'
+      preLoaderRoute: typeof ManagerManagerLeadsRouteImport
+      parentRoute: typeof ManagerRoute
+    }
     '/_manager/manager/integracao': {
       id: '/_manager/manager/integracao'
       path: '/manager/integracao'
@@ -723,6 +768,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminIntegracoesRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/api/public/webhooks/leads': {
+      id: '/api/public/webhooks/leads'
+      path: '/api/public/webhooks/leads'
+      fullPath: '/api/public/webhooks/leads'
+      preLoaderRoute: typeof ApiPublicWebhooksLeadsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/listings/xml': {
       id: '/api/public/listings/xml'
       path: '/api/public/listings/xml'
@@ -750,6 +802,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/public/hooks/process-scheduled-invoices'
       preLoaderRoute: typeof ApiPublicHooksProcessScheduledInvoicesRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_manager/manager/configuracoes/roleta': {
+      id: '/_manager/manager/configuracoes/roleta'
+      path: '/manager/configuracoes/roleta'
+      fullPath: '/manager/configuracoes/roleta'
+      preLoaderRoute: typeof ManagerManagerConfiguracoesRoletaRouteImport
+      parentRoute: typeof ManagerRoute
     }
   }
 }
@@ -802,10 +861,12 @@ interface ManagerRouteChildren {
   ManagerManagerEquipeRoute: typeof ManagerManagerEquipeRoute
   ManagerManagerFinanceiroRoute: typeof ManagerManagerFinanceiroRoute
   ManagerManagerIntegracaoRoute: typeof ManagerManagerIntegracaoRoute
+  ManagerManagerLeadsRoute: typeof ManagerManagerLeadsRoute
   ManagerManagerMigrarDadosRoute: typeof ManagerManagerMigrarDadosRoute
   ManagerManagerPortaisRoute: typeof ManagerManagerPortaisRoute
   ManagerManagerVistoriasRoute: typeof ManagerManagerVistoriasRoute
   ManagerManagerIndexRoute: typeof ManagerManagerIndexRoute
+  ManagerManagerConfiguracoesRoletaRoute: typeof ManagerManagerConfiguracoesRoletaRoute
 }
 
 const ManagerRouteChildren: ManagerRouteChildren = {
@@ -816,10 +877,13 @@ const ManagerRouteChildren: ManagerRouteChildren = {
   ManagerManagerEquipeRoute: ManagerManagerEquipeRoute,
   ManagerManagerFinanceiroRoute: ManagerManagerFinanceiroRoute,
   ManagerManagerIntegracaoRoute: ManagerManagerIntegracaoRoute,
+  ManagerManagerLeadsRoute: ManagerManagerLeadsRoute,
   ManagerManagerMigrarDadosRoute: ManagerManagerMigrarDadosRoute,
   ManagerManagerPortaisRoute: ManagerManagerPortaisRoute,
   ManagerManagerVistoriasRoute: ManagerManagerVistoriasRoute,
   ManagerManagerIndexRoute: ManagerManagerIndexRoute,
+  ManagerManagerConfiguracoesRoletaRoute:
+    ManagerManagerConfiguracoesRoletaRoute,
 }
 
 const ManagerRouteWithChildren =
@@ -840,6 +904,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksSendTenantRemindersRoute:
     ApiPublicHooksSendTenantRemindersRoute,
   ApiPublicListingsXmlRoute: ApiPublicListingsXmlRoute,
+  ApiPublicWebhooksLeadsRoute: ApiPublicWebhooksLeadsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

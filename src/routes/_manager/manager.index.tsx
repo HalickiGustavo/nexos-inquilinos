@@ -307,7 +307,7 @@ function ManagerDashboard() {
 
         <section className="pb-8">
           <h2 className="text-base sm:text-lg font-medium text-foreground/90 mb-4">Atalhos rápidos</h2>
-          <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-8 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
             <Shortcut to="/manager/carteira" search={{ novo: "contrato" } as any} icon={FilePlus} label="Novo contrato" />
             <Shortcut to="/manager/vistorias" search={{ novo: "1" } as any} icon={FileSearch} label="Nova vistoria" />
             <Shortcut to="/maintenances" search={{ novo: "1" } as any} icon={Home} label="Novo chamado" />

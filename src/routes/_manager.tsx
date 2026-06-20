@@ -25,8 +25,6 @@ const navItems: { to: string; label: string; icon: typeof LayoutDashboard; exact
   { to: "/manager/dimob", label: "DIMOB", icon: FileDigit, tour: "nav-manager-dimob" },
   { to: "/manager/equipe", label: "Equipe", icon: Users, tour: "nav-manager-equipe" },
   { to: "/manager/vistorias", label: "Vistorias", icon: ClipboardCheck, tour: "nav-manager-vistorias" },
-  { to: "/manager/alertas", label: "Alertas", icon: Bell, tour: "nav-manager-alertas" },
-  { to: "/manager/crm", label: "CRM", icon: KanbanSquare, tour: "nav-manager-crm" },
   { to: "/manager/leads", label: "Leads (Portais)", icon: Inbox, tour: "nav-manager-leads" },
   { to: "/manager/configuracoes/roleta", label: "Roleta de Leads", icon: Shuffle, tour: "nav-manager-roleta" },
   { to: "/manager/integracao", label: "Saldo e Saque", icon: Coins, tour: "nav-manager-integracao" },

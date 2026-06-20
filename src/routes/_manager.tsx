@@ -103,13 +103,14 @@ function ManagerLayout() {
               <NexoLogo className="h-8" alt="NEXO" />
             </Link>
             <div className="flex items-center gap-1">
+              <AlertsBell alerts={alerts} seeAllHref="/manager/alertas" />
               <ThemeToggle size="icon" variant="ghost" />
-              <Link to="/manager/alertas" className="relative size-9 grid place-items-center rounded-full text-foreground hover:bg-muted">
-                <Bell className="size-5" strokeWidth={1.5} />
-                {criticalCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 inline-flex items-center justify-center min-w-4 h-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[9px] font-semibold">{criticalCount}</span>
-                )}
-              </Link>
+              <Button variant="ghost" size="icon" className="text-foreground hover:bg-muted"
+                onClick={async () => { await signOut(); navigate({ to: "/login", replace: true }); }}>
+                <LogOut className="size-5" />
+              </Button>
+            </div>
+
               <Button variant="ghost" size="icon" className="text-foreground hover:bg-muted"
                 onClick={async () => { await signOut(); navigate({ to: "/login", replace: true }); }}>
                 <LogOut className="size-5" />

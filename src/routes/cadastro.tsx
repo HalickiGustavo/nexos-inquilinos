@@ -64,15 +64,23 @@ export const Route = createFileRoute("/cadastro")({
 });
 
 function CadastroPage() {
-  const { role: roleParam } = useSearch({ from: "/cadastro" });
+  const { role: roleParam, invite } = useSearch({ from: "/cadastro" });
   const navigate = useNavigate();
-  const [role, setRole] = useState<Role | null>((roleParam as Role) ?? null);
+  const [role, setRole] = useState<Role | null>((roleParam as Role) ?? (invite ? "proprietario" : null));
 
   useEffect(() => {
     if (roleParam && ALLOWED_ROLES.includes(roleParam as Role)) {
       setRole(roleParam as Role);
     }
   }, [roleParam]);
+
+  // Persiste o token do convite para que login.tsx possa consumi-lo após o login.
+  useEffect(() => {
+    if (invite && typeof window !== "undefined") {
+      window.localStorage.setItem("landlord_invite_token", invite);
+    }
+  }, [invite]);
+
 
   return (
     <div className="min-h-screen bg-background text-foreground relative overflow-hidden">

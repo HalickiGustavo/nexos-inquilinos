@@ -47,28 +47,40 @@ type Role = "imobiliaria" | "proprietario";
 
 const ALLOWED_ROLES: Role[] = ["imobiliaria", "proprietario"];
 
-type Search = { role?: string };
+type Search = { role?: string; invite?: string };
 
 export const Route = createFileRoute("/cadastro")({
   ssr: false,
   validateSearch: (search: Record<string, unknown>): Search => {
     const raw = typeof search.role === "string" ? search.role.toLowerCase().replace(/[^a-z]/g, "") : undefined;
-    return { role: raw && (ALLOWED_ROLES as string[]).includes(raw) ? raw : undefined };
+    const invite = typeof search.invite === "string" && /^[a-f0-9]{16,}$/i.test(search.invite) ? search.invite : undefined;
+    return {
+      role: raw && (ALLOWED_ROLES as string[]).includes(raw) ? raw : undefined,
+      invite,
+    };
   },
   head: () => ({ meta: [{ title: "Criar conta — Nexo" }] }),
   component: CadastroPage,
 });
 
 function CadastroPage() {
-  const { role: roleParam } = useSearch({ from: "/cadastro" });
+  const { role: roleParam, invite } = useSearch({ from: "/cadastro" });
   const navigate = useNavigate();
-  const [role, setRole] = useState<Role | null>((roleParam as Role) ?? null);
+  const [role, setRole] = useState<Role | null>((roleParam as Role) ?? (invite ? "proprietario" : null));
 
   useEffect(() => {
     if (roleParam && ALLOWED_ROLES.includes(roleParam as Role)) {
       setRole(roleParam as Role);
     }
   }, [roleParam]);
+
+  // Persiste o token do convite para que login.tsx possa consumi-lo após o login.
+  useEffect(() => {
+    if (invite && typeof window !== "undefined") {
+      window.localStorage.setItem("landlord_invite_token", invite);
+    }
+  }, [invite]);
+
 
   return (
     <div className="min-h-screen bg-background text-foreground relative overflow-hidden">

@@ -36,7 +36,16 @@ function LoginPage() {
   const { user, loading } = useAuth();
 
   useEffect(() => {
-    if (!loading && user) navigate({ to: "/dashboard", replace: true });
+    if (loading || !user) return;
+    (async () => {
+      const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", user.id);
+      const r = (roles ?? []).map((x: any) => x.role);
+      const target = r.includes("manager") ? "/manager"
+        : r.includes("landlord") ? "/landlord"
+        : r.includes("tenant") ? "/tenant"
+        : "/dashboard";
+      navigate({ to: target, replace: true });
+    })();
   }, [user, loading, navigate]);
 
   return (
@@ -151,13 +160,44 @@ function SignInForm() {
           password,
           options: { captchaToken },
         });
-        setBusy(false);
         if (error) {
+          setBusy(false);
           captchaRef.current?.reset();
           setCaptchaToken(null);
           return toast.error(error.message);
         }
+        // Aceita convite de proprietário pendente (se houver)
+        const pendingInvite = typeof window !== "undefined"
+          ? window.localStorage.getItem("landlord_invite_token")
+          : null;
+        let landed: "landlord" | null = null;
+        if (pendingInvite) {
+          try {
+            const { error: rpcErr } = await supabase.rpc("accept_landlord_invite", { _token: pendingInvite });
+            if (!rpcErr) {
+              landed = "landlord";
+              toast.success("Convite aceito! Você agora é Proprietário na NEXO.");
+            } else {
+              toast.error("Convite inválido ou já utilizado.");
+            }
+          } catch { /* silencioso */ }
+          window.localStorage.removeItem("landlord_invite_token");
+        }
+        setBusy(false);
         toast.success("Bem-vindo de volta!");
+        // Descobre a melhor home com base em roles atuais
+        const { data: { user: u } } = await supabase.auth.getUser();
+        if (u) {
+          const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", u.id);
+          const r = (roles ?? []).map((x: any) => x.role);
+          const target = landed === "landlord" || r.includes("landlord")
+            ? "/landlord"
+            : r.includes("manager") ? "/manager"
+            : r.includes("tenant") ? "/tenant"
+            : "/dashboard";
+          navigate({ to: target, replace: true });
+          return;
+        }
         navigate({ to: "/dashboard", replace: true });
       }}
     >

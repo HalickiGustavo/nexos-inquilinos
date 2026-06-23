@@ -1,0 +1,214 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
+import { UserPlus, Copy, Mail, Loader2, CheckCircle2, X, Users } from "lucide-react";
+import { toast } from "sonner";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import {
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+} from "@/components/ui/table";
+import { formatDate } from "@/lib/format";
+import { onlyDigits } from "@/lib/br-validators";
+
+export const Route = createFileRoute("/_manager/manager/proprietarios")({
+  head: () => ({ meta: [{ title: "Proprietários — NEXO" }] }),
+  component: ManagerProprietariosPage,
+});
+
+function ManagerProprietariosPage() {
+  const { user } = useAuth();
+  const qc = useQueryClient();
+  const [open, setOpen] = useState(false);
+  const [email, setEmail] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [document, setDocument] = useState("");
+
+  const { data: invites = [], isLoading } = useQuery({
+    queryKey: ["landlord-invites", user?.id],
+    enabled: !!user?.id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("landlord_invites").select("*")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const createInvite = useMutation({
+    mutationFn: async () => {
+      if (!user?.id) throw new Error("Sessão expirada.");
+      if (!email.trim()) throw new Error("Informe o e-mail.");
+      const { data, error } = await supabase.from("landlord_invites")
+        .insert({
+          manager_user_id: user.id,
+          email: email.trim().toLowerCase(),
+          full_name: fullName.trim() || null,
+          document: document ? onlyDigits(document) : null,
+        })
+        .select("*").single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      toast.success("Convite criado! Copie o link abaixo e envie ao proprietário.");
+      qc.invalidateQueries({ queryKey: ["landlord-invites"] });
+      setOpen(false); setEmail(""); setFullName(""); setDocument("");
+    },
+    onError: (err: any) => toast.error(err?.message || "Erro ao criar convite."),
+  });
+
+  const cancelInvite = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("landlord_invites")
+        .update({ status: "cancelado" }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Convite cancelado.");
+      qc.invalidateQueries({ queryKey: ["landlord-invites"] });
+    },
+    onError: (err: any) => toast.error(err?.message),
+  });
+
+  function copyLink(token: string) {
+    const url = `${window.location.origin}/cadastro?role=proprietario&invite=${token}`;
+    navigator.clipboard.writeText(url);
+    toast.success("Link copiado!");
+  }
+
+  return (
+    <div className="p-6 lg:p-8 max-w-6xl mx-auto space-y-6">
+      <header className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <div className="inline-flex items-center gap-2 text-xs uppercase tracking-wider text-violet-400 mb-2">
+            <Users className="size-3.5" /> Carteira
+          </div>
+          <h1 className="text-3xl font-bold tracking-tight">Proprietários</h1>
+          <p className="text-muted-foreground mt-1">
+            Convide os donos dos imóveis para acompanharem painel, finanças e saldo direto na NEXO.
+          </p>
+        </div>
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogTrigger asChild>
+            <Button className="bg-violet-500 hover:bg-violet-400 text-white">
+              <UserPlus className="size-4 mr-2" /> Novo convite
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Convidar proprietário</DialogTitle>
+              <DialogDescription>
+                Geramos um link único. O CPF/CNPJ liga automaticamente os imóveis dele.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-3">
+              <div>
+                <Label>E-mail *</Label>
+                <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
+                  placeholder="proprietario@exemplo.com" />
+              </div>
+              <div>
+                <Label>Nome completo</Label>
+                <Input value={fullName} onChange={(e) => setFullName(e.target.value)}
+                  placeholder="Maria Souza" />
+              </div>
+              <div>
+                <Label>CPF ou CNPJ (recomendado)</Label>
+                <Input value={document} onChange={(e) => setDocument(e.target.value)}
+                  placeholder="000.000.000-00" />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Quando informado, os imóveis cujo CPF/CNPJ do proprietário bate com este são vinculados no aceite.
+                </p>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="ghost" onClick={() => setOpen(false)}>Cancelar</Button>
+              <Button onClick={() => createInvite.mutate()} disabled={createInvite.isPending}
+                className="bg-violet-500 hover:bg-violet-400 text-white">
+                {createInvite.isPending ? <Loader2 className="size-4 mr-2 animate-spin" /> : <Mail className="size-4 mr-2" />}
+                Criar convite
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </header>
+
+      <Card className="p-5">
+        {isLoading ? (
+          <p className="text-sm text-muted-foreground py-8 text-center">Carregando…</p>
+        ) : invites.length === 0 ? (
+          <div className="py-10 text-center">
+            <Users className="size-10 mx-auto text-muted-foreground mb-3" />
+            <p className="font-medium">Nenhum convite ainda</p>
+            <p className="text-sm text-muted-foreground mt-1">Clique em "Novo convite" para começar.</p>
+          </div>
+        ) : (
+          <div className="rounded-md border border-border overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>E-mail</TableHead>
+                  <TableHead>Nome</TableHead>
+                  <TableHead>CPF/CNPJ</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Criado em</TableHead>
+                  <TableHead className="text-right">Ações</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {(invites as any[]).map((inv) => (
+                  <TableRow key={inv.id}>
+                    <TableCell className="max-w-[220px] truncate">{inv.email}</TableCell>
+                    <TableCell>{inv.full_name || "—"}</TableCell>
+                    <TableCell className="font-mono text-xs">{inv.document || "—"}</TableCell>
+                    <TableCell><InviteStatus status={inv.status} /></TableCell>
+                    <TableCell>{formatDate(inv.created_at)}</TableCell>
+                    <TableCell className="text-right space-x-1">
+                      {inv.status === "pendente" && (
+                        <>
+                          <Button size="sm" variant="outline" onClick={() => copyLink(inv.invite_token)}>
+                            <Copy className="size-3.5 mr-1" /> Copiar link
+                          </Button>
+                          <Button size="sm" variant="ghost"
+                            onClick={() => cancelInvite.mutate(inv.id)}
+                            disabled={cancelInvite.isPending}>
+                            <X className="size-3.5" />
+                          </Button>
+                        </>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        )}
+      </Card>
+    </div>
+  );
+}
+
+function InviteStatus({ status }: { status: string }) {
+  const map: Record<string, { label: string; cn: string; icon: React.ReactNode }> = {
+    pendente: { label: "Pendente", cn: "border-violet-500/40 text-violet-300", icon: null },
+    aceito: { label: "Aceito", cn: "border-emerald-500/40 text-emerald-300", icon: <CheckCircle2 className="size-3" /> },
+    cancelado: { label: "Cancelado", cn: "border-zinc-700 text-zinc-400", icon: null },
+    expirado: { label: "Expirado", cn: "border-rose-500/40 text-rose-300", icon: null },
+  };
+  const cfg = map[status] ?? { label: status, cn: "border-zinc-700 text-zinc-300", icon: null };
+  return (
+    <Badge variant="outline" className={`inline-flex items-center gap-1 ${cfg.cn}`}>
+      {cfg.icon}{cfg.label}
+    </Badge>
+  );
+}

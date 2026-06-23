@@ -16,7 +16,7 @@ import { toast } from "sonner";
 import { VariableExpensesDialog } from "@/components/VariableExpensesDialog";
 import { SplitBreakdownDialog, NEXO_FEE_PER_INSTALLMENT } from "@/components/SplitBreakdownDialog";
 import { parseExpenses, expensesTotals } from "@/lib/variable-expenses";
-import { generateAsaasCharge, updateAsaasChargeFee, simulateAsaasPayment } from "@/lib/asaas.functions";
+import { generateAsaasCharge, updateAsaasChargeFee } from "@/lib/asaas.functions";
 
 export const Route = createFileRoute("/_manager/manager/financeiro")({
   component: Financeiro,
@@ -252,9 +252,6 @@ function Recebimentos() {
                                           <BadgeCheck className="size-4 mr-1" /> Pago
                                         </Button>
                                       )}
-                                      {i.status !== "pago" && (
-                                        <SimulateBtn installment={i} onDone={() => qc.invalidateQueries({ queryKey: ["mgr-receb"] })} />
-                                      )}
                                       <Button size="sm" variant="outline" onClick={() => setSplitFor(i)}>
                                         <Sparkles className="size-4 mr-1" /> Split
                                       </Button>
@@ -436,35 +433,3 @@ function UpdateBoletoBtn({ installment, onDone }: { installment: any; onDone: ()
   );
 }
 
-function SimulateBtn({ installment, onDone }: { installment: any; onDone: () => void }) {
-  const simulate = useServerFn(simulateAsaasPayment);
-  const [loading, setLoading] = useState(false);
-  return (
-    <Button
-      size="sm"
-      variant="outline"
-      disabled={loading}
-      title="Simular pagamento no sandbox Asaas"
-      className="border-amber-500/40 text-amber-600 hover:bg-amber-500/10"
-      onClick={async () => {
-        setLoading(true);
-        try {
-          const res: any = await simulate({ data: { installmentId: installment.id } });
-          if (res?.ok === false) {
-            toast.error(res.error ?? "Falha ao simular pagamento");
-          } else {
-            toast.success("Pagamento simulado no Asaas Sandbox");
-            onDone();
-          }
-        } catch (e: any) {
-          toast.error(e?.message ?? "Falha ao simular pagamento");
-        } finally {
-          setLoading(false);
-        }
-      }}
-    >
-      {loading ? <Loader2 className="size-4 mr-1 animate-spin" /> : <Sparkles className="size-4 mr-1" />}
-      Simular
-    </Button>
-  );
-}

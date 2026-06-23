@@ -675,7 +675,6 @@ export const inviteTenantUser = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
 
-    // Validate redirect origin against allowlist (open-redirect defense).
     let safeRedirect: string;
     try {
       const parsed = new URL(data.redirectUrl);
@@ -683,8 +682,6 @@ export const inviteTenantUser = createServerFn({ method: "POST" })
       if (!allowed.includes(parsed.origin)) {
         throw new Error(`redirectUrl origin não permitido: ${parsed.origin}`);
       }
-      // Force the path to /tenant-setup regardless of what the client sent —
-      // we only trust the origin, never the full path.
       parsed.pathname = "/tenant-setup";
       parsed.search = "";
       parsed.hash = "";
@@ -695,30 +692,111 @@ export const inviteTenantUser = createServerFn({ method: "POST" })
 
     const tenant = await supabase
       .from("tenants")
-      .select("id, full_name, email")
+      .select("id, full_name, email, phone")
       .eq("id", data.tenantId)
       .eq("user_id", userId)
       .maybeSingle();
     if (tenant.error) throw new Error(tenant.error.message);
     if (!tenant.data) throw new Error("Inquilino não encontrado");
+    if (!tenant.data.phone) throw new Error("Inquilino sem telefone (necessário para enviar o convite por WhatsApp)");
     if (!tenant.data.email) throw new Error("Inquilino sem e-mail cadastrado");
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { error } = await supabaseAdmin.auth.admin.inviteUserByEmail(tenant.data.email, {
+
+    let actionLink: string | null = null;
+    const invited = await supabaseAdmin.auth.admin.inviteUserByEmail(tenant.data.email, {
       redirectTo: safeRedirect,
       data: { full_name: tenant.data.full_name, tenant_invite: true },
     });
-    if (error) {
-      // If user already exists, send a magic link instead
+    if (invited.error) {
       const link = await supabaseAdmin.auth.admin.generateLink({
         type: "magiclink",
         email: tenant.data.email,
         options: { redirectTo: safeRedirect },
       });
       if (link.error) throw new Error(link.error.message);
+      actionLink = (link.data as any)?.properties?.action_link ?? null;
+    } else {
+      const link = await supabaseAdmin.auth.admin.generateLink({
+        type: "magiclink",
+        email: tenant.data.email,
+        options: { redirectTo: safeRedirect },
+      });
+      actionLink = (link.data as any)?.properties?.action_link ?? null;
     }
-    return { ok: true };
+
+    try {
+      const { sendEvolutionText } = await import("./whatsapp.server");
+      const firstName = (tenant.data.full_name ?? "").split(" ")[0] || "olá";
+      const text = actionLink
+        ? `Olá, ${firstName}! 👋\n\nVocê foi convidado para acessar o *Portal do Inquilino da Nexo*.\n\nAcesse o link abaixo para configurar sua senha e finalizar o cadastro:\n\n${actionLink}\n\nQualquer dúvida, fale com a sua imobiliária.`
+        : `Olá, ${firstName}! Você foi convidado para o Portal do Inquilino da Nexo. Verifique o e-mail ${tenant.data.email} para o link de acesso.`;
+      const res = await sendEvolutionText({ phone: tenant.data.phone, text });
+      if (!res.ok) {
+        console.warn("[invite.tenant] whatsapp falhou:", res.reason);
+        return { ok: true, whatsapp: false, reason: res.reason };
+      }
+    } catch (err: any) {
+      console.warn("[invite.tenant] whatsapp erro:", err?.message);
+      return { ok: true, whatsapp: false, reason: err?.message };
+    }
+    return { ok: true, whatsapp: true };
   });
+
+// ===== Complete tenant onboarding (called from /tenant-setup after auth) =====
+const completeTenantInput = z.object({
+  fullName: z.string().trim().min(3).max(200),
+  document: z.string().trim().min(11).max(20),
+  email: z.string().email().max(255),
+  phone: z.string().trim().min(8).max(40),
+  acceptTerms: z.literal(true),
+  acceptNexoFee: z.literal(true),
+});
+
+export const completeTenantSetup = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => completeTenantInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const { userId } = context;
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: userRes, error: userErr } = await supabaseAdmin.auth.admin.getUserById(userId);
+    if (userErr) throw new Error(userErr.message);
+    const authEmail = userRes.user?.email?.toLowerCase();
+    if (!authEmail) throw new Error("Usuário sem e-mail");
+
+    const { data: matched, error: mErr } = await supabaseAdmin
+      .from("tenants")
+      .select("id")
+      .ilike("email", authEmail);
+    if (mErr) throw new Error(mErr.message);
+    if (!matched || matched.length === 0) {
+      return { ok: false, reason: "no_match" as const };
+    }
+
+    const ids = matched.map((t) => t.id);
+    const { error: updErr } = await supabaseAdmin
+      .from("tenants")
+      .update({
+        user_id_link: userId,
+        full_name: data.fullName,
+        document: data.document,
+        email: data.email,
+        phone: data.phone,
+        notes: `Termos aceitos em ${new Date().toISOString()}; Taxa Nexo aceita.`,
+      })
+      .in("id", ids);
+    if (updErr) throw new Error(updErr.message);
+
+    await supabaseAdmin.from("user_roles").delete().eq("user_id", userId);
+    const { error: roleErr } = await supabaseAdmin
+      .from("user_roles")
+      .insert({ user_id: userId, role: "tenant" });
+    if (roleErr && !roleErr.message.includes("duplicate")) throw new Error(roleErr.message);
+
+    return { ok: true as const, linked: ids.length };
+  });
+
 
 
 // ===== Link an authenticated user to a tenant record (called from /tenant-setup) =====

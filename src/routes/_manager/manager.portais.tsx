@@ -1,32 +1,31 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
-import { Globe, RefreshCw, Loader2, Bell, Send } from "lucide-react";
+import { Globe, RefreshCw, Loader2, Bell, Send, RotateCcw } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { CentralConexoesPanel } from "@/components/CentralConexoesPanel";
-import { sendTestLeadNotification, listTeamMembersForTest } from "@/lib/lead-test.functions";
-
-const SAMPLE_LEAD_MESSAGE = `🔔 *Novo lead NEXO* (TESTE)
-Cliente: João da Silva
-Telefone: (41) 99999-0000
-Imóvel: Apto Teste — Corretor Gustavpo (IM-TESTE)
-Portal: ZapImóveis
-Critério: Corretor do Imóvel
-
-_Esta é uma mensagem de teste enviada pelo painel NEXO._`;
+import {
+  sendTestLeadNotification,
+  listTeamMembersForTest,
+  listTestPresets,
+} from "@/lib/lead-test.functions";
 
 export const Route = createFileRoute("/_manager/manager/portais")({
   head: () => ({ meta: [{ title: "Integrações com Portais — NEXO" }] }),
@@ -125,7 +124,10 @@ function ManagerPortaisPage() {
 function TestLeadNotificationCard() {
   const send = useServerFn(sendTestLeadNotification);
   const fetchMembers = useServerFn(listTeamMembersForTest);
+  const fetchPresets = useServerFn(listTestPresets);
   const [memberId, setMemberId] = useState<string>("");
+  const [presetId, setPresetId] = useState<string>("lead-novo");
+  const [text, setText] = useState<string>("");
   const [loading, setLoading] = useState(false);
 
   const { data: members = [], isLoading: loadingMembers } = useQuery({
@@ -133,19 +135,55 @@ function TestLeadNotificationCard() {
     queryFn: () => fetchMembers(),
   });
 
+  const { data: presets = [], isLoading: loadingPresets } = useQuery({
+    queryKey: ["test-lead-presets"],
+    queryFn: () => fetchPresets(),
+  });
+
+  const selectedPreset = useMemo(
+    () => presets.find((p: any) => p.id === presetId),
+    [presets, presetId],
+  );
+
+  // Preenche o texto quando o preset muda (ou carrega).
+  useEffect(() => {
+    if (selectedPreset) setText(selectedPreset.sample);
+  }, [selectedPreset]);
+
+  const grouped = useMemo(() => {
+    const map = new Map<string, any[]>();
+    for (const p of presets as any[]) {
+      const arr = map.get(p.group) ?? [];
+      arr.push(p);
+      map.set(p.group, arr);
+    }
+    return Array.from(map.entries());
+  }, [presets]);
+
   async function handleSend() {
     if (!memberId) {
       toast.error("Selecione um membro da equipe.");
       return;
     }
+    if (!text.trim()) {
+      toast.error("A mensagem está vazia.");
+      return;
+    }
     setLoading(true);
     try {
-      const res = await send({ data: { memberId } });
+      const res = await send({ data: { memberId, presetId, text } });
       toast.success(`Mensagem de teste enviada para ${res.memberName ?? res.phone}`);
     } catch (e: any) {
       toast.error(e?.message ?? "Falha ao enviar mensagem de teste");
     } finally {
       setLoading(false);
+    }
+  }
+
+  function resetToPreset() {
+    if (selectedPreset) {
+      setText(selectedPreset.sample);
+      toast.success("Texto restaurado para o padrão do template.");
     }
   }
 
@@ -156,42 +194,90 @@ function TestLeadNotificationCard() {
           <Bell className="size-5 text-primary" />
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className="font-semibold">Testar notificação de lead</h3>
+          <h3 className="font-semibold">Testar mensagens automáticas</h3>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Simula a mensagem que o corretor recebe no WhatsApp quando um lead chega de um portal.
+            Escolha qual mensagem automática deseja simular, edite o texto se quiser,
+            e envie para um membro da equipe via WhatsApp.
           </p>
         </div>
       </div>
 
-      <pre className="text-xs bg-muted/50 rounded-md p-3 whitespace-pre-wrap font-mono leading-relaxed">
-{SAMPLE_LEAD_MESSAGE}
-      </pre>
-
-      <div className="flex flex-col sm:flex-row gap-2">
-        <Select value={memberId} onValueChange={setMemberId} disabled={loadingMembers}>
-          <SelectTrigger className="flex-1">
-            <SelectValue
-              placeholder={
-                loadingMembers
-                  ? "Carregando equipe…"
-                  : members.length === 0
-                    ? "Nenhum membro com telefone cadastrado"
-                    : "Selecione um membro da equipe"
-              }
-            />
+      <div className="space-y-2">
+        <Label className="text-xs">Template</Label>
+        <Select value={presetId} onValueChange={setPresetId} disabled={loadingPresets}>
+          <SelectTrigger>
+            <SelectValue placeholder={loadingPresets ? "Carregando templates…" : "Selecione um template"} />
           </SelectTrigger>
           <SelectContent>
-            {members.map((m: any) => (
-              <SelectItem key={m.id} value={m.id}>
-                {m.name} {m.role_label ? `— ${m.role_label}` : ""} ({m.phone})
-              </SelectItem>
+            {grouped.map(([group, items]) => (
+              <SelectGroup key={group}>
+                <SelectLabel>{group}</SelectLabel>
+                {items.map((p: any) => (
+                  <SelectItem key={p.id} value={p.id}>
+                    {p.label}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
             ))}
           </SelectContent>
         </Select>
-        <Button onClick={handleSend} disabled={loading || !memberId}>
-          {loading ? <Loader2 className="size-4 mr-2 animate-spin" /> : <Send className="size-4 mr-2" />}
-          Enviar teste
-        </Button>
+        {selectedPreset?.description ? (
+          <p className="text-[11px] text-muted-foreground">{selectedPreset.description}</p>
+        ) : null}
+      </div>
+
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <Label className="text-xs">Mensagem (editável)</Label>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-7 text-xs"
+            onClick={resetToPreset}
+            disabled={!selectedPreset}
+          >
+            <RotateCcw className="size-3 mr-1" />
+            Restaurar padrão
+          </Button>
+        </div>
+        <Textarea
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          rows={10}
+          className="font-mono text-xs leading-relaxed"
+          placeholder="Conteúdo da mensagem que será enviada via WhatsApp"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label className="text-xs">Destinatário</Label>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <Select value={memberId} onValueChange={setMemberId} disabled={loadingMembers}>
+            <SelectTrigger className="flex-1">
+              <SelectValue
+                placeholder={
+                  loadingMembers
+                    ? "Carregando equipe…"
+                    : members.length === 0
+                      ? "Nenhum membro com telefone cadastrado"
+                      : "Selecione um membro da equipe"
+                }
+              />
+            </SelectTrigger>
+            <SelectContent>
+              {members.map((m: any) => (
+                <SelectItem key={m.id} value={m.id}>
+                  {m.name} {m.role_label ? `— ${m.role_label}` : ""} ({m.phone})
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button onClick={handleSend} disabled={loading || !memberId || !text.trim()}>
+            {loading ? <Loader2 className="size-4 mr-2 animate-spin" /> : <Send className="size-4 mr-2" />}
+            Enviar teste
+          </Button>
+        </div>
       </div>
     </Card>
   );

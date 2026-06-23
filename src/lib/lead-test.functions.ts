@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { TEST_PRESETS, getPresetById } from "@/lib/whatsapp-test-presets";
 
 export const listTeamMembersForTest = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -13,10 +14,20 @@ export const listTeamMembersForTest = createServerFn({ method: "GET" })
     return (data ?? []).filter((m: any) => m.phone && m.phone.trim().length > 0);
   });
 
+export const listTestPresets = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async () => TEST_PRESETS);
+
 export const sendTestLeadNotification = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { memberId?: string }) =>
-    z.object({ memberId: z.string().uuid().optional() }).parse(input),
+  .inputValidator((input: { memberId?: string; presetId?: string; text?: string }) =>
+    z
+      .object({
+        memberId: z.string().uuid().optional(),
+        presetId: z.string().min(1).optional(),
+        text: z.string().min(1).max(4000).optional(),
+      })
+      .parse(input),
   )
   .handler(async ({ data, context }) => {
     const { sendEvolutionText, sanitizeBrPhone } = await import("@/lib/whatsapp.server");
@@ -47,14 +58,16 @@ export const sendTestLeadNotification = createServerFn({ method: "POST" })
       throw new Error("Telefone inválido. O membro selecionado não possui telefone cadastrado.");
     }
 
-    const text =
-      `🔔 *Novo lead NEXO* (TESTE)\n` +
-      `Cliente: João da Silva\n` +
-      `Telefone: (41) 99999-0000\n` +
-      `Imóvel: Imóvel Teste — Gustavpo (IM-TESTE)\n` +
-      `Portal: ZapImóveis\n` +
-      `Critério: Corretor do Imóvel\n\n` +
-      `_Esta é uma mensagem de teste enviada pelo painel NEXO${memberName ? ` para ${memberName}` : ""}._`;
+    // Texto final: prioriza texto editado pelo usuário, depois o preset, depois fallback.
+    let text = (data.text ?? "").trim();
+    if (!text && data.presetId) {
+      text = getPresetById(data.presetId)?.sample ?? "";
+    }
+    if (!text) {
+      text =
+        `🔔 *Mensagem de teste NEXO*\n\n` +
+        `Esta é uma mensagem de teste enviada pelo painel${memberName ? ` para ${memberName}` : ""}.`;
+    }
 
     const res = await sendEvolutionText({ phone, text });
     if (!res.ok) {

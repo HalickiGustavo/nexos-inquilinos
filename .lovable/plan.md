@@ -1,49 +1,67 @@
-## Auditoria de Segurança e Banco de Dados
+# Estudo: Assinatura Eletrônica de Contratos no NEXO
 
-Análise completa via scanner de segurança, linter do Postgres, inspeção de policies/grants/índices e pg_stat_statements. Abaixo o que foi encontrado e o que proponho corrigir. **Nada será alterado até sua aprovação.**
+> Pesquisa apenas — nada será implementado sem sua aprovação explícita.
 
----
+## Contexto atual
+Hoje o módulo `ContractPdfUploader` permite anexar o PDF do contrato, mas **não há fluxo de assinatura**. Inquilino e locador precisam imprimir, assinar e reenviar — fricção alta para um app moderno.
 
-### Achados por criticidade
+## Três caminhos possíveis
 
-**ALTO — Storage `property-images` aberto a qualquer autenticado**
-Policy `property-images authenticated read` é apenas `bucket_id = 'property-images'`. Qualquer usuário logado (inclusive inquilinos de outras imobiliárias) consegue baixar fotos de qualquer imóvel.
+### Caminho A — Assinador GOV.BR (oficial, gratuito)
+A Plataforma de Assinatura GOV.BR usa a conta gov.br do cidadão (CPF + selo prata/ouro) e gera assinatura avançada com validade jurídica equivalente à manuscrita (MP 2.200-2/2001 + Lei 14.063/2020).
 
-**ALTO — INSERT no Storage sem filtro de bucket**
-Policies `property-images owner insert` e `auth upload maintenance-evidence` têm `WITH CHECK = NULL`. Permitem upload em **qualquer bucket**, não só o pretendido.
+Duas formas de usar:
 
-**MÉDIO — `invite_token` exposto em `manager_members`**
-Membros conseguem ler o `invite_token` de outros convites (policy SELECT atual devolve a linha inteira). Token deveria ser visível apenas no fluxo de aceitar convite.
+**A1. API oficial (`assinatura-api.staging.iti.br` / produção)**
+- Fluxo OAuth2 + POST do PDF → assinante autentica no gov.br → API devolve PDF assinado (PAdES).
+- **Bloqueio crítico:** as credenciais só são liberadas a **órgãos públicos** ("Gestor Público" precisa abrir solicitação no Serviço de Integração ID). Empresa privada não consegue habilitar.
+- Veredito: **inviável para o NEXO como integração direta.**
 
-**BAIXO — 3 SECURITY DEFINER executáveis por autenticados**
-`has_role`, `current_tenant_id`, `current_manager_id`. Necessárias para RLS, mas o linter alerta. Vou restringir o `search_path` (já está) e revogar `EXECUTE` de `public`/`anon` mantendo `authenticated` (RLS depende delas). Risco real é mínimo — apenas calam o linter.
+**A2. Redirect para `assinador.iti.br`**
+- Usuário baixa o PDF gerado pelo NEXO, abre `https://assinador.iti.br`, faz upload, assina com gov.br, devolve no NEXO via upload.
+- Zero custo, validade plena, mas **3 cliques manuais** e nenhuma rastreabilidade automática (precisamos confiar no upload final).
+- Veredito: **viável como opção gratuita/fallback**, não como fluxo principal.
 
-**Performance — falta de índices em FKs muito usadas**
-`pg_stat_statements` mostra a query de `installments + contracts + properties + tenants` no topo. Faltam índices em: `installments.contract_id`, `installments.user_id`, `contracts.property_id`, `contracts.tenant_id`, `contracts.user_id`, `properties.user_id`, `maintenances.property_id`, `maintenances.user_id`, `maintenances.tenant_id`, `manager_members.member_user_id`, `manager_members.manager_user_id`.
+### Caminho B — API de terceiro (recomendado)
+Plataformas brasileiras com API REST, webhooks e fluxo embutido por e-mail/WhatsApp. Validade jurídica equivalente (assinatura eletrônica avançada, com trilha de auditoria, IP, geolocalização, hash do documento). Suportam também ICP-Brasil (qualificada) quando o signatário tem certificado A1/A3.
 
----
+Comparativo das principais opções (preços públicos, 2026):
 
-### Correções propostas (uma migration única)
+| Plataforma     | Preço entrada                | API/Webhooks | WhatsApp nativo | Diferencial |
+|----------------|-------------------------------|--------------|-----------------|-------------|
+| **ZapSign**    | R$ 49/mês (50 docs)           | Sim, REST    | Sim             | Melhor custo-benefício, UX moderna, docs em PT |
+| **Clicksign**  | R$ 99/mês                     | Sim, v3 Envelope | Sim         | Mais tradicional no jurídico, robusta |
+| **D4Sign**     | R$ 59/mês                     | Sim          | Sim (add-on)    | Forte em ICP-Brasil |
+| **Autentique** | Plano grátis (5 docs/mês)     | Sim, GraphQL | Não             | Bom para volume baixo |
 
-1. **Storage `property-images`** — substituir policy de SELECT por: dono do imóvel **OU** inquilino com contrato ativo nesse imóvel **OU** membro do manager dono. Feed XML dos portais continua via `service_role` (não afetado).
-2. **Storage INSERT** — adicionar `WITH CHECK (bucket_id = '<nome>' AND ...)` em `property-images` e `maintenance-evidence`, exigindo dono ou contexto válido.
-3. **`manager_members.invite_token`** — `REVOKE SELECT (invite_token) ... FROM authenticated`. Criar função `accept_manager_invite(_token)` SECURITY DEFINER para o fluxo de aceitar convite (única forma de “casar” token sem expô-lo).
-4. **SECURITY DEFINER** — `REVOKE EXECUTE ... FROM PUBLIC, anon` em `has_role`, `current_tenant_id`, `current_manager_id`; manter para `authenticated`.
-5. **Índices** (todos `CREATE INDEX IF NOT EXISTS`, não-CONCURRENTLY pois rodam em migration):
-   - `installments(contract_id)`, `installments(user_id)`
-   - `contracts(property_id)`, `contracts(tenant_id)`, `contracts(user_id)`
-   - `properties(user_id)`
-   - `maintenances(property_id)`, `maintenances(user_id)`, `maintenances(tenant_id)`
-   - `manager_members(member_user_id)`, `manager_members(manager_user_id)`
+Fluxo típico (qualquer um dos quatro):
+1. NEXO gera PDF do contrato → POST para a API com signatários (locador, locatário, fiador).
+2. Plataforma envia link por e-mail/WhatsApp.
+3. Cada signatário assina (e-mail+token, selfie, ou certificado).
+4. Webhook avisa o NEXO → atualizamos `contracts.signed_at`, baixamos o PDF assinado e arquivamos em Storage.
 
----
+### Caminho C — Assinatura própria dentro do NEXO
+Implementar canvas de desenho + e-mail+token + hash SHA-256 + trilha de auditoria (IP, user-agent, timestamp, geolocalização). Anexar página de assinaturas ao PDF.
 
-### O que NÃO vou mexer
+- **Validade jurídica:** sim, como **assinatura eletrônica simples** (Lei 14.063/2020 art. 4º I), aceita para contratos privados entre partes, mas **menor força probatória** em disputa do que avançada/qualificada.
+- Custo zero por documento, mas precisamos manter a infra de evidências.
+- Veredito: **viável como MVP gratuito**, recomendado combinar com Caminho B para clientes que querem validade reforçada.
 
-- Esquema de roles/`has_role`/RLS de tabelas — já está correto e auditado por `verify_security_invariants`.
-- Webhook do Asaas — já usa `timingSafeEqual` e token.
-- Endpoints `/api/public/hooks/*` — já validam `CRON_SECRET`.
-- Validação de inputs Zod, reCAPTCHA, attacher de auth — ok.
-- Frontend / design / regras de negócio — fora do escopo.
+## Recomendação para discussão
 
-Aprovar para eu rodar a migration?
+**Arquitetura híbrida em 2 camadas:**
+
+1. **Padrão (incluso no plano)** — Assinatura própria (Caminho C) com trilha de auditoria. Cobre 90% dos contratos de locação residencial sem custo variável.
+2. **Premium (add-on)** — Integração **ZapSign** (Caminho B) como primeira escolha pelo custo e API limpa, com webhook nos contratos. Liga-se via tela de Integrações.
+3. **Sempre disponível** — Botão "Assinar no gov.br" que baixa o PDF e abre `assinador.iti.br` (Caminho A2) para quem prefere a via oficial gratuita.
+
+Descartar Caminho A1 (API oficial) — bloqueio regulatório para empresas privadas.
+
+## Perguntas para você decidir
+
+1. Quer começar pela **assinatura própria** (sem custo, sem dependência externa) ou já partir direto para **ZapSign/Clicksign**?
+2. Quem paga a assinatura paga: **a imobiliária** (fica no plano) ou **repassamos por contrato assinado** (modelo SaaS revenda)?
+3. Vamos exigir signatários além de locador/locatário (fiador, testemunhas, cônjuge)?
+4. WhatsApp como canal principal de envio do link de assinatura, e-mail, ou os dois?
+
+Aguardo seu OK antes de planejar qualquer implementação.

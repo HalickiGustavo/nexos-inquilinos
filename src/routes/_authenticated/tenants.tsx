@@ -227,7 +227,7 @@ function InviteTenantButton({ tenant }: { tenant: Tenant }) {
       variant="outline"
       size="sm"
       disabled={loading}
-      title="Reenviar convite por e-mail"
+      title="Reenviar convite por WhatsApp"
       onClick={async () => {
         setLoading(true);
         try {

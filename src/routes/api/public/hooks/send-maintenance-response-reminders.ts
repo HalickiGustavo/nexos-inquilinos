@@ -86,17 +86,62 @@ export const Route = createFileRoute(
               .maybeSingle();
             if (existing) continue;
 
-            // Telefone do owner/manager (dono da manutenção)
+            // Destinatários: corretor responsável (se houver) + dono da manutenção
+            const brokerMemberId: string | null =
+              m.property?.responsible_member_id ?? null;
+
+            const recipients: { userId: string; name: string; phone: string | null; role: "broker" | "owner" }[] = [];
+
+            if (brokerMemberId) {
+              const { data: broker } = await supabaseAdmin
+                .from("manager_members")
+                .select("member_user_id, name, phone")
+                .eq("id", brokerMemberId)
+                .maybeSingle();
+              const brokerUserId = broker?.member_user_id ?? null;
+              let brokerPhone: string | null = broker?.phone ?? null;
+              if (!brokerPhone && brokerUserId) {
+                const { data: bp } = await supabaseAdmin
+                  .from("profiles")
+                  .select("phone")
+                  .eq("id", brokerUserId)
+                  .maybeSingle();
+                brokerPhone = bp?.phone ?? null;
+              }
+              if (broker) {
+                recipients.push({
+                  userId: brokerUserId ?? m.user_id,
+                  name: broker.name ?? "corretor",
+                  phone: brokerPhone,
+                  role: "broker",
+                });
+              }
+            }
+
             const { data: ownerProfile } = await supabaseAdmin
               .from("profiles")
               .select("full_name, phone")
               .eq("id", m.user_id)
               .maybeSingle();
+            recipients.push({
+              userId: m.user_id,
+              name: ownerProfile?.full_name ?? "responsável",
+              phone: ownerProfile?.phone ?? null,
+              role: "owner",
+            });
 
-            const ownerPhone: string | null = ownerProfile?.phone ?? null;
-            const ownerName: string = ownerProfile?.full_name ?? "responsável";
+            const hoursWaiting = Math.floor(
+              (Date.now() - new Date(lastMsg.created_at).getTime()) /
+                (60 * 60 * 1000),
+            );
 
-            if (!ownerPhone) {
+            // Garante idempotência: ainda gravamos uma única linha por
+            // (maintenance, mensagem, channel). Status agregado.
+            let anySent = false;
+            let lastError: string | null = null;
+
+            const withPhone = recipients.filter((r) => r.phone);
+            if (withPhone.length === 0) {
               await supabaseAdmin
                 .from("maintenance_response_notifications")
                 .insert({
@@ -105,26 +150,24 @@ export const Route = createFileRoute(
                   user_id: m.user_id,
                   channel: "whatsapp",
                   status: "skipped",
-                  error: "owner sem telefone",
+                  error: "nenhum destinatário com telefone",
                 });
               skipped++;
               continue;
             }
 
-            const hoursWaiting = Math.floor(
-              (Date.now() - new Date(lastMsg.created_at).getTime()) /
-                (60 * 60 * 1000),
-            );
-
-            const text = buildMaintenanceResponseReminder({
-              ownerName,
-              tenantName: m.tenant?.full_name ?? "Inquilino",
-              maintenanceTitle: m.title,
-              propertyNickname: m.property?.nickname ?? null,
-              hoursWaiting,
-            });
-
-            const res = await sendEvolutionText({ phone: ownerPhone, text });
+            for (const rcp of withPhone) {
+              const text = buildMaintenanceResponseReminder({
+                ownerName: rcp.name,
+                tenantName: m.tenant?.full_name ?? "Inquilino",
+                maintenanceTitle: m.title,
+                propertyNickname: m.property?.nickname ?? null,
+                hoursWaiting,
+              });
+              const res = await sendEvolutionText({ phone: rcp.phone!, text });
+              if (res.ok) anySent = true;
+              else lastError = res.reason;
+            }
 
             await supabaseAdmin
               .from("maintenance_response_notifications")
@@ -133,11 +176,11 @@ export const Route = createFileRoute(
                 last_tenant_message_id: lastMsg.id,
                 user_id: m.user_id,
                 channel: "whatsapp",
-                status: res.ok ? "sent" : "failed",
-                error: res.ok ? null : res.reason.slice(0, 500),
+                status: anySent ? "sent" : "failed",
+                error: anySent ? null : (lastError ?? "").slice(0, 500),
               });
 
-            if (res.ok) sent++;
+            if (anySent) sent++;
             else failed++;
           }
 

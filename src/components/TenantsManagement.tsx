@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
-import { Plus, Pencil, Trash2, Users, Mail, Phone, Send, Handshake, MessageCircle } from "lucide-react";
+import { Plus, Pencil, Trash2, Users, Mail, Phone, Handshake, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
-import { useServerFn } from "@tanstack/react-start";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,10 +11,16 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useTenants, useInstallments, useInvalidate, type Tenant } from "@/lib/queries";
-import { inviteTenantUser } from "@/lib/asaas.functions";
 import { DebtAgreementDialog } from "@/components/DebtAgreementDialog";
 import { today } from "@/lib/format";
 import { maskCpfCnpj, maskPhone } from "@/lib/br-validators";
+
+function waLink(phone: string, message?: string) {
+  const digits = phone.replace(/\D/g, "");
+  const withCountry = digits.startsWith("55") ? digits : `55${digits}`;
+  const text = message ? `?text=${encodeURIComponent(message)}` : "";
+  return `https://wa.me/${withCountry}${text}`;
+}
 
 export function TenantsManagement() {
   const { data: tenants = [], isLoading } = useTenants();
@@ -103,8 +108,7 @@ export function TenantsManagement() {
                     </Button>
                   </DialogTrigger>
                 </Dialog>
-                {t.email && <InviteTenantButton tenant={t} />}
-                {t.phone && t.email && <ResendWhatsAppButton tenant={t} />}
+                {t.phone && <WhatsAppLinkButton tenant={t} />}
                 <Button variant="outline" size="sm" onClick={async () => {
                   if (!confirm("Excluir este inquilino?")) return;
                   const { error } = await supabase.from("tenants").delete().eq("id", t.id);
@@ -162,37 +166,12 @@ function TenantDialog({ editing, onDone }: { editing: Tenant | null; onDone: () 
             emergency_contact: form.emergency_contact || null,
             notes: form.notes || null,
           };
-          const isNew = !editing;
-          const { data: saved, error } = editing
+          const { error } = editing
             ? await supabase.from("tenants").update(payload).eq("id", editing.id).select().single()
             : await supabase.from("tenants").insert(payload).select().single();
           if (error) return toast.error(error.message);
           toast.success(editing ? "Inquilino atualizado" : "Inquilino cadastrado");
           invalidate(["tenants"]);
-
-          if (isNew && saved?.email && saved?.id) {
-            try {
-              const { inviteTenantUser: invite } = await import("@/lib/asaas.functions");
-              const redirectUrl = `${window.location.origin}/tenant-setup`;
-              await invite({ data: { tenantId: saved.id, redirectUrl } });
-              toast.success("Convite enviado por WhatsApp");
-            } catch (err: any) {
-              toast.warning(`Inquilino salvo, mas falhou o convite: ${err?.message ?? "erro"}`);
-            }
-          }
-
-          if (isNew && saved?.phone && saved?.email && saved?.full_name) {
-            try {
-              const { sendWelcomeWhatsApp } = await import("@/lib/whatsapp.functions");
-              sendWelcomeWhatsApp({
-                data: { nome: saved.full_name, telefone: saved.phone, email: saved.email },
-              })
-                .then((r) => {
-                  if (r?.ok) toast.success("Mensagem de boas-vindas enviada no WhatsApp");
-                })
-                .catch(() => {/* silent */});
-            } catch {/* silent */}
-          }
           onDone();
         }}
       >
@@ -210,60 +189,14 @@ function TenantDialog({ editing, onDone }: { editing: Tenant | null; onDone: () 
   );
 }
 
-function InviteTenantButton({ tenant }: { tenant: Tenant }) {
-  const invite = useServerFn(inviteTenantUser);
-  const [loading, setLoading] = useState(false);
+function WhatsAppLinkButton({ tenant }: { tenant: Tenant }) {
+  if (!tenant.phone) return null;
+  const msg = `Olá, ${tenant.full_name}! Sou da imobiliária e gostaria de falar com você.`;
   return (
-    <Button
-      variant="outline"
-      size="sm"
-      disabled={loading}
-      title="Reenviar convite por WhatsApp"
-      onClick={async () => {
-        setLoading(true);
-        try {
-          const redirectUrl = `${window.location.origin}/tenant-setup`;
-          const res: any = await invite({ data: { tenantId: tenant.id, redirectUrl } });
-          if (res?.whatsapp === false) toast.warning("Convite gerado, mas WhatsApp falhou (instância offline?)");
-          else toast.success("Convite enviado por WhatsApp para " + (tenant.phone ?? tenant.email));
-        } catch (e: any) {
-          toast.error(e?.message ?? "Falha ao enviar convite");
-        } finally {
-          setLoading(false);
-        }
-      }}
-    >
-      <Send className="size-3.5" />
-    </Button>
-  );
-}
-
-function ResendWhatsAppButton({ tenant }: { tenant: Tenant }) {
-  const [loading, setLoading] = useState(false);
-  return (
-    <Button
-      variant="outline"
-      size="sm"
-      disabled={loading}
-      title="Reenviar mensagem de boas-vindas no WhatsApp"
-      onClick={async () => {
-        if (!tenant.phone || !tenant.email) return;
-        setLoading(true);
-        try {
-          const { sendWelcomeWhatsApp } = await import("@/lib/whatsapp.functions");
-          const r = await sendWelcomeWhatsApp({
-            data: { nome: tenant.full_name, telefone: tenant.phone, email: tenant.email },
-          });
-          if (r?.ok) toast.success("WhatsApp enviado");
-          else toast.warning("Não foi possível enviar agora (instância offline?)");
-        } catch (e: any) {
-          toast.error(e?.message ?? "Falha");
-        } finally {
-          setLoading(false);
-        }
-      }}
-    >
-      <MessageCircle className="size-3.5" />
+    <Button asChild variant="outline" size="sm" title={`Abrir WhatsApp de ${tenant.full_name}`}>
+      <a href={waLink(tenant.phone, msg)} target="_blank" rel="noopener noreferrer">
+        <MessageCircle className="size-3.5" />
+      </a>
     </Button>
   );
 }

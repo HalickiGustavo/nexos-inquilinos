@@ -15,8 +15,10 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { onlyDigits } from "@/lib/br-validators";
+
 
 export const Route = createFileRoute("/_manager/manager/migrar-dados")({
   head: () => ({ meta: [{ title: "Migrar Dados — NEXO" }] }),

@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as TenantSetupRouteImport } from './routes/tenant-setup'
 import { Route as ManagerSetupRouteImport } from './routes/manager-setup'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as LandlordSetupRouteImport } from './routes/landlord-setup'
 import { Route as CadastroRouteImport } from './routes/cadastro'
 import { Route as ManagerRouteImport } from './routes/_manager'
 import { Route as LandlordRouteImport } from './routes/_landlord'
@@ -55,6 +56,7 @@ import { Route as ApiPublicListingsXmlRouteImport } from './routes/api/public/li
 import { Route as ApiPublicHooksSendTenantRemindersRouteImport } from './routes/api/public/hooks/send-tenant-reminders'
 import { Route as ApiPublicHooksSendMaintenanceResponseRemindersRouteImport } from './routes/api/public/hooks/send-maintenance-response-reminders'
 import { Route as ApiPublicHooksProcessScheduledInvoicesRouteImport } from './routes/api/public/hooks/process-scheduled-invoices'
+import { Route as ApiPublicHooksProcessLandlordPayoutsRouteImport } from './routes/api/public/hooks/process-landlord-payouts'
 import { Route as ManagerManagerConfiguracoesRoletaRouteImport } from './routes/_manager/manager.configuracoes.roleta'
 import { Route as ApiV1IntegrationsOrgSlugListingsDotxmlRouteImport } from './routes/api/v1/integrations/$orgSlug/listings[.]xml'
 import { Route as ApiV1IntegrationsOrgSlugLeadsRouteImport } from './routes/api/v1/integrations/$orgSlug/leads'
@@ -72,6 +74,11 @@ const ManagerSetupRoute = ManagerSetupRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LandlordSetupRoute = LandlordSetupRouteImport.update({
+  id: '/landlord-setup',
+  path: '/landlord-setup',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CadastroRoute = CadastroRouteImport.update({
@@ -305,6 +312,12 @@ const ApiPublicHooksProcessScheduledInvoicesRoute =
     path: '/api/public/hooks/process-scheduled-invoices',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksProcessLandlordPayoutsRoute =
+  ApiPublicHooksProcessLandlordPayoutsRouteImport.update({
+    id: '/api/public/hooks/process-landlord-payouts',
+    path: '/api/public/hooks/process-landlord-payouts',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ManagerManagerConfiguracoesRoletaRoute =
   ManagerManagerConfiguracoesRoletaRouteImport.update({
     id: '/manager/configuracoes/roleta',
@@ -327,6 +340,7 @@ const ApiV1IntegrationsOrgSlugLeadsRoute =
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/cadastro': typeof CadastroRoute
+  '/landlord-setup': typeof LandlordSetupRoute
   '/login': typeof LoginRoute
   '/manager-setup': typeof ManagerSetupRoute
   '/tenant-setup': typeof TenantSetupRoute
@@ -364,6 +378,7 @@ export interface FileRoutesByFullPath {
   '/landlord/': typeof LandlordLandlordIndexRoute
   '/manager/': typeof ManagerManagerIndexRoute
   '/manager/configuracoes/roleta': typeof ManagerManagerConfiguracoesRoletaRoute
+  '/api/public/hooks/process-landlord-payouts': typeof ApiPublicHooksProcessLandlordPayoutsRoute
   '/api/public/hooks/process-scheduled-invoices': typeof ApiPublicHooksProcessScheduledInvoicesRoute
   '/api/public/hooks/send-maintenance-response-reminders': typeof ApiPublicHooksSendMaintenanceResponseRemindersRoute
   '/api/public/hooks/send-tenant-reminders': typeof ApiPublicHooksSendTenantRemindersRoute
@@ -375,6 +390,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof AuthenticatedIndexRoute
   '/cadastro': typeof CadastroRoute
+  '/landlord-setup': typeof LandlordSetupRoute
   '/login': typeof LoginRoute
   '/manager-setup': typeof ManagerSetupRoute
   '/tenant-setup': typeof TenantSetupRoute
@@ -412,6 +428,7 @@ export interface FileRoutesByTo {
   '/landlord': typeof LandlordLandlordIndexRoute
   '/manager': typeof ManagerManagerIndexRoute
   '/manager/configuracoes/roleta': typeof ManagerManagerConfiguracoesRoletaRoute
+  '/api/public/hooks/process-landlord-payouts': typeof ApiPublicHooksProcessLandlordPayoutsRoute
   '/api/public/hooks/process-scheduled-invoices': typeof ApiPublicHooksProcessScheduledInvoicesRoute
   '/api/public/hooks/send-maintenance-response-reminders': typeof ApiPublicHooksSendMaintenanceResponseRemindersRoute
   '/api/public/hooks/send-tenant-reminders': typeof ApiPublicHooksSendTenantRemindersRoute
@@ -426,6 +443,7 @@ export interface FileRoutesById {
   '/_landlord': typeof LandlordRouteWithChildren
   '/_manager': typeof ManagerRouteWithChildren
   '/cadastro': typeof CadastroRoute
+  '/landlord-setup': typeof LandlordSetupRoute
   '/login': typeof LoginRoute
   '/manager-setup': typeof ManagerSetupRoute
   '/tenant-setup': typeof TenantSetupRoute
@@ -464,6 +482,7 @@ export interface FileRoutesById {
   '/_landlord/landlord/': typeof LandlordLandlordIndexRoute
   '/_manager/manager/': typeof ManagerManagerIndexRoute
   '/_manager/manager/configuracoes/roleta': typeof ManagerManagerConfiguracoesRoletaRoute
+  '/api/public/hooks/process-landlord-payouts': typeof ApiPublicHooksProcessLandlordPayoutsRoute
   '/api/public/hooks/process-scheduled-invoices': typeof ApiPublicHooksProcessScheduledInvoicesRoute
   '/api/public/hooks/send-maintenance-response-reminders': typeof ApiPublicHooksSendMaintenanceResponseRemindersRoute
   '/api/public/hooks/send-tenant-reminders': typeof ApiPublicHooksSendTenantRemindersRoute
@@ -477,6 +496,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/cadastro'
+    | '/landlord-setup'
     | '/login'
     | '/manager-setup'
     | '/tenant-setup'
@@ -514,6 +534,7 @@ export interface FileRouteTypes {
     | '/landlord/'
     | '/manager/'
     | '/manager/configuracoes/roleta'
+    | '/api/public/hooks/process-landlord-payouts'
     | '/api/public/hooks/process-scheduled-invoices'
     | '/api/public/hooks/send-maintenance-response-reminders'
     | '/api/public/hooks/send-tenant-reminders'
@@ -525,6 +546,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/cadastro'
+    | '/landlord-setup'
     | '/login'
     | '/manager-setup'
     | '/tenant-setup'
@@ -562,6 +584,7 @@ export interface FileRouteTypes {
     | '/landlord'
     | '/manager'
     | '/manager/configuracoes/roleta'
+    | '/api/public/hooks/process-landlord-payouts'
     | '/api/public/hooks/process-scheduled-invoices'
     | '/api/public/hooks/send-maintenance-response-reminders'
     | '/api/public/hooks/send-tenant-reminders'
@@ -575,6 +598,7 @@ export interface FileRouteTypes {
     | '/_landlord'
     | '/_manager'
     | '/cadastro'
+    | '/landlord-setup'
     | '/login'
     | '/manager-setup'
     | '/tenant-setup'
@@ -613,6 +637,7 @@ export interface FileRouteTypes {
     | '/_landlord/landlord/'
     | '/_manager/manager/'
     | '/_manager/manager/configuracoes/roleta'
+    | '/api/public/hooks/process-landlord-payouts'
     | '/api/public/hooks/process-scheduled-invoices'
     | '/api/public/hooks/send-maintenance-response-reminders'
     | '/api/public/hooks/send-tenant-reminders'
@@ -627,10 +652,12 @@ export interface RootRouteChildren {
   LandlordRoute: typeof LandlordRouteWithChildren
   ManagerRoute: typeof ManagerRouteWithChildren
   CadastroRoute: typeof CadastroRoute
+  LandlordSetupRoute: typeof LandlordSetupRoute
   LoginRoute: typeof LoginRoute
   ManagerSetupRoute: typeof ManagerSetupRoute
   TenantSetupRoute: typeof TenantSetupRoute
   ApiPublicAsaasWebhookRoute: typeof ApiPublicAsaasWebhookRoute
+  ApiPublicHooksProcessLandlordPayoutsRoute: typeof ApiPublicHooksProcessLandlordPayoutsRoute
   ApiPublicHooksProcessScheduledInvoicesRoute: typeof ApiPublicHooksProcessScheduledInvoicesRoute
   ApiPublicHooksSendMaintenanceResponseRemindersRoute: typeof ApiPublicHooksSendMaintenanceResponseRemindersRoute
   ApiPublicHooksSendTenantRemindersRoute: typeof ApiPublicHooksSendTenantRemindersRoute
@@ -661,6 +688,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/landlord-setup': {
+      id: '/landlord-setup'
+      path: '/landlord-setup'
+      fullPath: '/landlord-setup'
+      preLoaderRoute: typeof LandlordSetupRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cadastro': {
@@ -964,6 +998,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksProcessScheduledInvoicesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/process-landlord-payouts': {
+      id: '/api/public/hooks/process-landlord-payouts'
+      path: '/api/public/hooks/process-landlord-payouts'
+      fullPath: '/api/public/hooks/process-landlord-payouts'
+      preLoaderRoute: typeof ApiPublicHooksProcessLandlordPayoutsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_manager/manager/configuracoes/roleta': {
       id: '/_manager/manager/configuracoes/roleta'
       path: '/manager/configuracoes/roleta'
@@ -1091,10 +1132,13 @@ const rootRouteChildren: RootRouteChildren = {
   LandlordRoute: LandlordRouteWithChildren,
   ManagerRoute: ManagerRouteWithChildren,
   CadastroRoute: CadastroRoute,
+  LandlordSetupRoute: LandlordSetupRoute,
   LoginRoute: LoginRoute,
   ManagerSetupRoute: ManagerSetupRoute,
   TenantSetupRoute: TenantSetupRoute,
   ApiPublicAsaasWebhookRoute: ApiPublicAsaasWebhookRoute,
+  ApiPublicHooksProcessLandlordPayoutsRoute:
+    ApiPublicHooksProcessLandlordPayoutsRoute,
   ApiPublicHooksProcessScheduledInvoicesRoute:
     ApiPublicHooksProcessScheduledInvoicesRoute,
   ApiPublicHooksSendMaintenanceResponseRemindersRoute:
@@ -1110,13 +1154,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

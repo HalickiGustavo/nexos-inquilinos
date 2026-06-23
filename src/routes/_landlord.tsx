@@ -1,5 +1,6 @@
 import { createFileRoute, Outlet, useNavigate, useRouterState, Link } from "@tanstack/react-router";
 import { useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { LayoutDashboard, Wallet, Wrench, Coins, LogOut, Loader2 } from "lucide-react";
 import { NexoLogo } from "@/components/NexoLogo";
 import { InstallPwaButton } from "@/components/InstallPwaButton";
@@ -8,6 +9,7 @@ import { useUserRole, roleHomePath } from "@/lib/useUserRole";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_landlord")({
   ssr: false,
@@ -37,7 +39,27 @@ function LandlordLayout() {
     }
   }, [role, roleLoading, navigate]);
 
-  if (loading || !user || roleLoading || role !== "landlord") {
+  const { data: profile, isLoading: profileLoading } = useQuery({
+    queryKey: ["landlord-gate-profile", user?.id],
+    enabled: !!user && role === "landlord",
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("document, pix_key")
+        .eq("id", user!.id)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  useEffect(() => {
+    if (role !== "landlord" || profileLoading || !profile) return;
+    const incomplete = !profile.document || !profile.pix_key;
+    if (incomplete) navigate({ to: "/landlord-setup", replace: true });
+  }, [role, profile, profileLoading, navigate]);
+
+  if (loading || !user || roleLoading || role !== "landlord" || profileLoading) {
     return (
       <div className="min-h-screen grid place-items-center bg-background">
         <Loader2 className="size-6 animate-spin text-primary" />

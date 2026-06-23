@@ -150,6 +150,7 @@ function TenantsPage() {
 function TenantDialog({ editing, onDone }: { editing: Tenant | null; onDone: () => void }) {
   const { user } = useAuth();
   const invalidate = useInvalidate();
+  const generate = useServerFn(generateTenantInviteLink);
   const [form, setForm] = useState({
     full_name: editing?.full_name ?? "",
     document: editing?.document ?? "",
@@ -184,7 +185,22 @@ function TenantDialog({ editing, onDone }: { editing: Tenant | null; onDone: () 
           toast.success(editing ? "Inquilino atualizado" : "Inquilino cadastrado");
           invalidate(["tenants"]);
 
-          // Convites e mensagens devem ser enviados manualmente pelo botão de WhatsApp do card.
+          // Ao cadastrar um novo inquilino com e-mail, já gera e copia o link de convite.
+          if (isNew && saved?.id && saved?.email) {
+            try {
+              const res = await generate({ data: { tenantId: saved.id, redirectUrl: window.location.origin } });
+              await navigator.clipboard.writeText(res.actionLink).catch(() => {});
+              toast.success("Link de convite copiado", { description: res.actionLink });
+              if (saved.phone) {
+                const msg = `Olá, ${saved.full_name}! Acesse o Portal do Inquilino da Nexo: ${res.actionLink}`;
+                window.open(waLink(saved.phone, msg), "_blank", "noopener,noreferrer");
+              }
+            } catch (err: any) {
+              toast.error(err?.message ?? "Não foi possível gerar o link de convite agora. Use o botão 🔗 no card.");
+            }
+          } else if (isNew && !saved?.email) {
+            toast.info("Cadastre um e-mail para gerar o link de convite do inquilino.");
+          }
           onDone();
         }}
       >

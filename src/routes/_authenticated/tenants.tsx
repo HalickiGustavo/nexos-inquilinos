@@ -183,7 +183,7 @@ function TenantDialog({ editing, onDone }: { editing: Tenant | null; onDone: () 
               const { inviteTenantUser: invite } = await import("@/lib/asaas.functions");
               const redirectUrl = `${window.location.origin}/tenant-setup`;
               await invite({ data: { tenantId: saved.id, redirectUrl } });
-              toast.success("Convite de acesso enviado por e-mail");
+              toast.success("Convite enviado por WhatsApp");
             } catch (err: any) {
               toast.warning(`Inquilino salvo, mas falhou o convite: ${err?.message ?? "erro"}`);
             }
@@ -227,13 +227,15 @@ function InviteTenantButton({ tenant }: { tenant: Tenant }) {
       variant="outline"
       size="sm"
       disabled={loading}
-      title="Reenviar convite por e-mail"
+      title="Reenviar convite por WhatsApp"
       onClick={async () => {
         setLoading(true);
         try {
           const redirectUrl = `${window.location.origin}/tenant-setup`;
-          await invite({ data: { tenantId: tenant.id, redirectUrl } });
-          toast.success("Convite enviado para " + tenant.email);
+          const res: any = await invite({ data: { tenantId: tenant.id, redirectUrl } });
+          if (res?.whatsapp === false) toast.warning("Convite gerado, mas WhatsApp falhou (instância offline?)");
+          else toast.success("Convite enviado por WhatsApp para " + (tenant.phone ?? tenant.email));
+
         } catch (e: any) {
           toast.error(e?.message ?? "Falha ao enviar convite");
         } finally {

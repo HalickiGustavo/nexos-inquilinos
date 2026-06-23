@@ -34,8 +34,10 @@ const SAMPLE_REMINDER = {
   nome: "Maria Souza",
   valor: 2350,
   vencimento: "2026-07-10",
-  linkPagamento: "https://nexo.app/pagar/abc123",
+  linkPagamento: "https://www.asaas.com/i/abc123xyz",
 };
+
+const APP_ORIGIN = "https://dashboard.usenexoapp.com";
 
 function sampleLeadMessage(): string {
   return (
@@ -51,7 +53,7 @@ function sampleLeadMessage(): string {
 
 function sampleTenantInvite(): string {
   const first = SAMPLE_TENANT.nome.split(" ")[0];
-  const link = "https://nexo.app/auth/aceitar-convite?token=teste";
+  const link = `${APP_ORIGIN}/tenant-setup`;
   return (
     `Olá, ${first}! 👋\n\n` +
     `Você foi convidado para acessar o *Portal do Inquilino da Nexo*.\n\n` +
@@ -62,7 +64,7 @@ function sampleTenantInvite(): string {
 
 function sampleOwnerInvite(): string {
   const first = SAMPLE_OWNER.nome.split(" ")[0];
-  const link = "https://nexo.app/auth/aceitar-convite?token=teste";
+  const link = `${APP_ORIGIN}/auth`;
   return (
     `Olá, ${first}! 👋\n\n` +
     `Você foi convidado para acessar o *Portal do Proprietário da Nexo*.\n\n` +

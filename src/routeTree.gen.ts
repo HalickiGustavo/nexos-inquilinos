@@ -56,6 +56,7 @@ import { Route as ApiPublicListingsXmlRouteImport } from './routes/api/public/li
 import { Route as ApiPublicHooksSendTenantRemindersRouteImport } from './routes/api/public/hooks/send-tenant-reminders'
 import { Route as ApiPublicHooksSendMaintenanceResponseRemindersRouteImport } from './routes/api/public/hooks/send-maintenance-response-reminders'
 import { Route as ApiPublicHooksProcessScheduledInvoicesRouteImport } from './routes/api/public/hooks/process-scheduled-invoices'
+import { Route as ApiPublicHooksProcessLandlordPayoutsRouteImport } from './routes/api/public/hooks/process-landlord-payouts'
 import { Route as ManagerManagerConfiguracoesRoletaRouteImport } from './routes/_manager/manager.configuracoes.roleta'
 import { Route as ApiV1IntegrationsOrgSlugListingsDotxmlRouteImport } from './routes/api/v1/integrations/$orgSlug/listings[.]xml'
 import { Route as ApiV1IntegrationsOrgSlugLeadsRouteImport } from './routes/api/v1/integrations/$orgSlug/leads'
@@ -311,6 +312,12 @@ const ApiPublicHooksProcessScheduledInvoicesRoute =
     path: '/api/public/hooks/process-scheduled-invoices',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksProcessLandlordPayoutsRoute =
+  ApiPublicHooksProcessLandlordPayoutsRouteImport.update({
+    id: '/api/public/hooks/process-landlord-payouts',
+    path: '/api/public/hooks/process-landlord-payouts',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ManagerManagerConfiguracoesRoletaRoute =
   ManagerManagerConfiguracoesRoletaRouteImport.update({
     id: '/manager/configuracoes/roleta',
@@ -371,6 +378,7 @@ export interface FileRoutesByFullPath {
   '/landlord/': typeof LandlordLandlordIndexRoute
   '/manager/': typeof ManagerManagerIndexRoute
   '/manager/configuracoes/roleta': typeof ManagerManagerConfiguracoesRoletaRoute
+  '/api/public/hooks/process-landlord-payouts': typeof ApiPublicHooksProcessLandlordPayoutsRoute
   '/api/public/hooks/process-scheduled-invoices': typeof ApiPublicHooksProcessScheduledInvoicesRoute
   '/api/public/hooks/send-maintenance-response-reminders': typeof ApiPublicHooksSendMaintenanceResponseRemindersRoute
   '/api/public/hooks/send-tenant-reminders': typeof ApiPublicHooksSendTenantRemindersRoute
@@ -420,6 +428,7 @@ export interface FileRoutesByTo {
   '/landlord': typeof LandlordLandlordIndexRoute
   '/manager': typeof ManagerManagerIndexRoute
   '/manager/configuracoes/roleta': typeof ManagerManagerConfiguracoesRoletaRoute
+  '/api/public/hooks/process-landlord-payouts': typeof ApiPublicHooksProcessLandlordPayoutsRoute
   '/api/public/hooks/process-scheduled-invoices': typeof ApiPublicHooksProcessScheduledInvoicesRoute
   '/api/public/hooks/send-maintenance-response-reminders': typeof ApiPublicHooksSendMaintenanceResponseRemindersRoute
   '/api/public/hooks/send-tenant-reminders': typeof ApiPublicHooksSendTenantRemindersRoute
@@ -473,6 +482,7 @@ export interface FileRoutesById {
   '/_landlord/landlord/': typeof LandlordLandlordIndexRoute
   '/_manager/manager/': typeof ManagerManagerIndexRoute
   '/_manager/manager/configuracoes/roleta': typeof ManagerManagerConfiguracoesRoletaRoute
+  '/api/public/hooks/process-landlord-payouts': typeof ApiPublicHooksProcessLandlordPayoutsRoute
   '/api/public/hooks/process-scheduled-invoices': typeof ApiPublicHooksProcessScheduledInvoicesRoute
   '/api/public/hooks/send-maintenance-response-reminders': typeof ApiPublicHooksSendMaintenanceResponseRemindersRoute
   '/api/public/hooks/send-tenant-reminders': typeof ApiPublicHooksSendTenantRemindersRoute
@@ -524,6 +534,7 @@ export interface FileRouteTypes {
     | '/landlord/'
     | '/manager/'
     | '/manager/configuracoes/roleta'
+    | '/api/public/hooks/process-landlord-payouts'
     | '/api/public/hooks/process-scheduled-invoices'
     | '/api/public/hooks/send-maintenance-response-reminders'
     | '/api/public/hooks/send-tenant-reminders'
@@ -573,6 +584,7 @@ export interface FileRouteTypes {
     | '/landlord'
     | '/manager'
     | '/manager/configuracoes/roleta'
+    | '/api/public/hooks/process-landlord-payouts'
     | '/api/public/hooks/process-scheduled-invoices'
     | '/api/public/hooks/send-maintenance-response-reminders'
     | '/api/public/hooks/send-tenant-reminders'
@@ -625,6 +637,7 @@ export interface FileRouteTypes {
     | '/_landlord/landlord/'
     | '/_manager/manager/'
     | '/_manager/manager/configuracoes/roleta'
+    | '/api/public/hooks/process-landlord-payouts'
     | '/api/public/hooks/process-scheduled-invoices'
     | '/api/public/hooks/send-maintenance-response-reminders'
     | '/api/public/hooks/send-tenant-reminders'
@@ -644,6 +657,7 @@ export interface RootRouteChildren {
   ManagerSetupRoute: typeof ManagerSetupRoute
   TenantSetupRoute: typeof TenantSetupRoute
   ApiPublicAsaasWebhookRoute: typeof ApiPublicAsaasWebhookRoute
+  ApiPublicHooksProcessLandlordPayoutsRoute: typeof ApiPublicHooksProcessLandlordPayoutsRoute
   ApiPublicHooksProcessScheduledInvoicesRoute: typeof ApiPublicHooksProcessScheduledInvoicesRoute
   ApiPublicHooksSendMaintenanceResponseRemindersRoute: typeof ApiPublicHooksSendMaintenanceResponseRemindersRoute
   ApiPublicHooksSendTenantRemindersRoute: typeof ApiPublicHooksSendTenantRemindersRoute
@@ -984,6 +998,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksProcessScheduledInvoicesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/process-landlord-payouts': {
+      id: '/api/public/hooks/process-landlord-payouts'
+      path: '/api/public/hooks/process-landlord-payouts'
+      fullPath: '/api/public/hooks/process-landlord-payouts'
+      preLoaderRoute: typeof ApiPublicHooksProcessLandlordPayoutsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_manager/manager/configuracoes/roleta': {
       id: '/_manager/manager/configuracoes/roleta'
       path: '/manager/configuracoes/roleta'
@@ -1116,6 +1137,8 @@ const rootRouteChildren: RootRouteChildren = {
   ManagerSetupRoute: ManagerSetupRoute,
   TenantSetupRoute: TenantSetupRoute,
   ApiPublicAsaasWebhookRoute: ApiPublicAsaasWebhookRoute,
+  ApiPublicHooksProcessLandlordPayoutsRoute:
+    ApiPublicHooksProcessLandlordPayoutsRoute,
   ApiPublicHooksProcessScheduledInvoicesRoute:
     ApiPublicHooksProcessScheduledInvoicesRoute,
   ApiPublicHooksSendMaintenanceResponseRemindersRoute:

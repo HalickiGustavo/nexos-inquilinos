@@ -36,13 +36,7 @@ function LoginPage() {
   const nexoLogo = isDark ? nexoLogoDarkAsset.url : nexoLogoAsset.url;
   const navigate = useNavigate();
   const { user, loading } = useAuth();
-  const fetchSiteKey = useServerFn(getRecaptchaSiteKey);
-  const { data: siteKeyData } = useQuery({
-    queryKey: ["recaptcha-site-key"],
-    queryFn: () => fetchSiteKey(),
-    staleTime: Infinity,
-  });
-  const recaptchaSiteKey = siteKeyData?.siteKey;
+
 
 
   useEffect(() => {

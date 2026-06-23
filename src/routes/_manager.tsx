@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet, useNavigate, useRouterState, Link } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { LayoutDashboard, Briefcase, Wallet, Users, ClipboardCheck, LogOut, Loader2, FileDigit, Database, Coins, Globe, Shuffle, Inbox, Home } from "lucide-react";
+import { LayoutDashboard, Briefcase, Wallet, Users, ClipboardCheck, LogOut, Loader2, FileDigit, Database, Coins, Globe, Shuffle, Inbox, Home, KeyRound } from "lucide-react";
 import { AlertsBell } from "@/components/AlertsBell";
 import { NexoLogo } from "@/components/NexoLogo";
 import { InstallPwaButton } from "@/components/InstallPwaButton";
@@ -25,6 +25,7 @@ const navItems: { to: string; label: string; icon: typeof LayoutDashboard; exact
   { to: "/manager/dimob", label: "DIMOB", icon: FileDigit, tour: "nav-manager-dimob" },
   { to: "/manager/equipe", label: "Equipe", icon: Users, tour: "nav-manager-equipe" },
   { to: "/manager/proprietarios", label: "Proprietários", icon: Home, tour: "nav-manager-proprietarios" },
+  { to: "/manager/inquilinos", label: "Inquilinos", icon: KeyRound, tour: "nav-manager-inquilinos" },
   { to: "/manager/vistorias", label: "Vistorias", icon: ClipboardCheck, tour: "nav-manager-vistorias" },
   { to: "/manager/leads", label: "Leads (Portais)", icon: Inbox, tour: "nav-manager-leads" },
   { to: "/manager/configuracoes/roleta", label: "Roleta de Leads", icon: Shuffle, tour: "nav-manager-roleta" },

@@ -59,6 +59,38 @@ export function PropertyFormDialog({
   const imwConnected = !!integ?.imw;
   const zapConnected = !!integ?.zap;
 
+  // Proprietários cadastrados (landlords que aceitaram o convite desta imobiliária)
+  const { data: landlords = [] } = useQuery({
+    queryKey: ["manager-landlords", user?.id],
+    enabled: !!user && mode === "manager",
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("landlord_invites")
+        .select("id, full_name, email, document, accepted_user_id")
+        .eq("manager_user_id", user!.id)
+        .eq("status", "aceito")
+        .order("full_name", { ascending: true });
+      if (error) throw error;
+      return (data ?? []).filter((l) => l.accepted_user_id);
+    },
+  });
+
+  // Corretores (membros ativos da equipe)
+  const { data: brokers = [] } = useQuery({
+    queryKey: ["manager-brokers", user?.id],
+    enabled: !!user && mode === "manager",
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("manager_members")
+        .select("id, name, email, role_label, is_active, status")
+        .eq("manager_user_id", user!.id)
+        .eq("is_active", true)
+        .order("name", { ascending: true });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
   const e: any = editing ?? {};
   const [form, setForm] = useState({
     nickname: e.nickname ?? "",
@@ -81,8 +113,8 @@ export function PropertyFormDialog({
     bathrooms: String(e.bathrooms ?? 0),
     garages: String(e.garages ?? 0),
     area_total: e.area_total != null ? String(e.area_total) : "",
-    owner_name: e.owner_name ?? "",
-    owner_commission_percent: e.owner_commission_percent != null ? String(e.owner_commission_percent) : "10",
+    landlord_id: (e.landlord_id as string | null) ?? "",
+    responsible_member_id: (e.responsible_member_id as string | null) ?? "",
   });
 
   const indisponivel = form.status === "alugado" || form.status === "manutencao";
@@ -132,8 +164,10 @@ export function PropertyFormDialog({
           };
           if (mode === "manager") {
             payload.manager_id = user.id;
-            payload.owner_name = form.owner_name || null;
-            payload.owner_commission_percent = Number(form.owner_commission_percent) || 10;
+            const selectedLandlord = landlords.find((l) => l.accepted_user_id === form.landlord_id);
+            payload.landlord_id = form.landlord_id || null;
+            payload.owner_name = selectedLandlord?.full_name || selectedLandlord?.email || null;
+            payload.responsible_member_id = form.responsible_member_id || null;
           }
           const { error } = editing
             ? await supabase.from("properties").update(payload).eq("id", editing.id)
@@ -220,12 +254,53 @@ export function PropertyFormDialog({
         {mode === "manager" && (
           <>
             <div className="space-y-2">
-              <Label>Nome do Proprietário</Label>
-              <Input value={form.owner_name} onChange={(ev) => setForm({ ...form, owner_name: ev.target.value })} />
+              <Label>Proprietário</Label>
+              <Select
+                value={form.landlord_id || "__none__"}
+                onValueChange={(v) => setForm({ ...form, landlord_id: v === "__none__" ? "" : v })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione um proprietário cadastrado" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">Sem proprietário vinculado</SelectItem>
+                  {landlords.map((l) => (
+                    <SelectItem key={l.id} value={l.accepted_user_id as string}>
+                      {l.full_name || l.email}{l.document ? ` — ${l.document}` : ""}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {landlords.length === 0 && (
+                <p className="text-xs text-muted-foreground">
+                  Nenhum proprietário aceitou convite ainda.{" "}
+                  <Link to="/manager/proprietarios" className="underline">
+                    Convidar proprietário
+                  </Link>
+                </p>
+              )}
             </div>
             <div className="space-y-2">
-              <Label>Comissão Proprietário (%)</Label>
-              <Input type="number" step="0.01" value={form.owner_commission_percent} onChange={(ev) => setForm({ ...form, owner_commission_percent: ev.target.value })} />
+              <Label>Corretor responsável</Label>
+              <Select
+                value={form.responsible_member_id || "__none__"}
+                onValueChange={(v) => setForm({ ...form, responsible_member_id: v === "__none__" ? "" : v })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione um corretor da equipe" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">Sem corretor responsável</SelectItem>
+                  {brokers.map((b) => (
+                    <SelectItem key={b.id} value={b.id}>
+                      {b.name} {b.role_label ? `· ${b.role_label}` : ""}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-[11px] text-muted-foreground">
+                Receberá as notificações de mensagens de manutenção deste imóvel.
+              </p>
             </div>
           </>
         )}

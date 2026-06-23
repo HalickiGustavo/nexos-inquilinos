@@ -56,6 +56,12 @@ export const sendTestLeadNotification = createServerFn({ method: "POST" })
       `Critério: Corretor do Imóvel\n\n` +
       `_Esta é uma mensagem de teste enviada pelo painel NEXO${memberName ? ` para ${memberName}` : ""}._`;
 
-    await sendEvolutionText({ phone, text });
+    const res = await sendEvolutionText({ phone, text });
+    if (!res.ok) {
+      console.error("[sendTestLeadNotification] falha Evolution:", res);
+      throw new Error(
+        `Falha ao enviar via Evolution (${res.reason}${res.status ? ` • HTTP ${res.status}` : ""})`,
+      );
+    }
     return { ok: true, phone, memberName };
   });

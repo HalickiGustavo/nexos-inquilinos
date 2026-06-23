@@ -97,6 +97,7 @@ function KycStatusBadge({ status }: { status: string }) {
 function BankSection({ account, onChanged }: { account: Account; onChanged?: () => Promise<unknown> | void }) {
   const link = useServerFn(linkAsaasBankAccount);
   const [saving, setSaving] = useState(false);
+  const isLocked = !!(account.bank_code && account.bank_account && account.bank_agency);
   const [form, setForm] = useState({
     ownerCpfCnpj: "",
     bankCode: account.bank_code ?? "",
@@ -113,7 +114,21 @@ function BankSection({ account, onChanged }: { account: Account; onChanged?: () 
         <div className="flex items-center gap-2 mb-4">
           <Landmark className="size-4 text-primary" />
           <h3 className="font-semibold">Conta Bancária de Liquidação</h3>
+          {isLocked && (
+            <Badge variant="outline" className="ml-auto border-emerald-500/40 text-emerald-600 dark:text-emerald-400 inline-flex items-center gap-1">
+              <CheckCircle2 className="size-3" /> Validada
+            </Badge>
+          )}
         </div>
+        {isLocked && (
+          <Alert className="mb-4 border-emerald-500/30 bg-emerald-500/5">
+            <CheckCircle2 className="size-4 text-emerald-600" />
+            <AlertTitle>Dados bancários confirmados</AlertTitle>
+            <AlertDescription>
+              Por segurança, os dados bancários não podem ser editados após validação. Para alterar a conta, entre em contato com o suporte.
+            </AlertDescription>
+          </Alert>
+        )}
         <form
           className="grid sm:grid-cols-2 gap-4"
           onSubmit={async (e) => {

@@ -1129,6 +1129,15 @@ export const linkAsaasBankAccount = createServerFn({ method: "POST" })
     // GET /accounts/{id} com a master key.
     let ownerName: string | undefined;
     const ownerCpfCnpj = data.ownerCpfCnpj.replace(/\D/g, "");
+    const agency = data.agency.replace(/\D/g, "");
+    const accountNumber = data.account.replace(/\D/g, "");
+    const accountDigit = data.accountDigit.replace(/\D/g, "");
+    if (![11, 14].includes(ownerCpfCnpj.length)) {
+      throw new Error("Informe o CPF/CNPJ do titular da conta bancária.");
+    }
+    if (!data.bankCode || !agency || !accountNumber || !accountDigit || !data.accountType) {
+      throw new Error("Preencha todos os dados bancários antes de salvar.");
+    }
     const pickOwner = (src: any) => {
       if (!src || typeof src !== "object") return;
       ownerName = ownerName ?? src.name ?? src.companyName ?? src.fullName ?? undefined;
@@ -1167,11 +1176,12 @@ export const linkAsaasBankAccount = createServerFn({ method: "POST" })
       apiKey,
       body: JSON.stringify({
         bank: { code: data.bankCode },
-        agency: data.agency.replace(/\D/g, ""),
-        account: data.account.replace(/\D/g, ""),
-        accountDigit: data.accountDigit.replace(/\D/g, ""),
+        agency,
+        account: accountNumber,
+        accountDigit,
         bankAccountType: data.accountType,
         ownerName,
+        cpfCnpj: ownerCpfCnpj,
         ownerCpfCnpj,
       }),
     });
@@ -1197,9 +1207,9 @@ export const linkAsaasBankAccount = createServerFn({ method: "POST" })
       .from("asaas_accounts")
       .update({
         bank_code: data.bankCode,
-        bank_agency: data.agency,
-        bank_account: data.account,
-        bank_account_digit: data.accountDigit,
+        bank_agency: agency,
+        bank_account: accountNumber,
+        bank_account_digit: accountDigit,
         bank_account_type: data.accountType,
         auto_transfer_enabled: data.enableAutoTransfer,
       })

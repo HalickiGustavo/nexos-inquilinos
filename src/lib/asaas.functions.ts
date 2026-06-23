@@ -1128,6 +1128,17 @@ export const linkAsaasBankAccount = createServerFn({ method: "POST" })
     if (!apiKey) throw new Error("Subconta Asaas ainda não foi criada. Conclua o onboarding primeiro.");
 
     // 1) Vincular conta bancária de liquidação
+    // O Asaas exige ownerName/ownerCpfCnpj — buscamos do cadastro da própria subconta.
+    let ownerName: string | undefined;
+    let ownerCpfCnpj: string | undefined;
+    try {
+      const me = await asaasFetch<any>("/myAccount", { apiKey });
+      ownerName = me?.name ?? me?.companyName ?? undefined;
+      ownerCpfCnpj = me?.cpfCnpj ? String(me.cpfCnpj).replace(/\D/g, "") : undefined;
+    } catch (e: any) {
+      console.warn("[Asaas] /myAccount falhou ao buscar titular:", e?.message);
+    }
+
     await asaasFetch<any>("/bankAccounts", {
       method: "POST",
       apiKey,
@@ -1137,6 +1148,8 @@ export const linkAsaasBankAccount = createServerFn({ method: "POST" })
         account: data.account.replace(/\D/g, ""),
         accountDigit: data.accountDigit.replace(/\D/g, ""),
         bankAccountType: data.accountType,
+        ...(ownerName ? { ownerName } : {}),
+        ...(ownerCpfCnpj ? { ownerCpfCnpj } : {}),
       }),
     });
 

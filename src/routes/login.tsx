@@ -40,7 +40,26 @@ function LoginPage() {
   }, [user, loading, navigate]);
 
   return (
-    <div className="min-h-screen grid lg:grid-cols-[1.05fr_1fr]">
+    <div className="relative min-h-screen grid lg:grid-cols-[1.05fr_1fr]">
+      {/* Fundo violeta com grade — visível em mobile/tablet */}
+      <div
+        className="lg:hidden pointer-events-none absolute inset-0 -z-10"
+        aria-hidden
+        style={{ background: "var(--gradient-hero)" }}
+      >
+        <div className="absolute top-[-12%] left-[-8%] size-[420px] rounded-full bg-fuchsia-500/25 blur-[120px]" />
+        <div className="absolute bottom-[-15%] right-[-10%] size-[380px] rounded-full bg-violet-400/25 blur-[120px]" />
+        <div
+          className="absolute inset-0 opacity-[0.07]"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)",
+            backgroundSize: "48px 48px",
+            maskImage: "radial-gradient(ellipse 80% 60% at 50% 40%, black 30%, transparent 75%)",
+          }}
+        />
+      </div>
+
       {/* Painel brand — sempre dark/violet, independente do tema escolhido pelo usuário */}
       <div
         className="hidden lg:flex relative flex-col justify-between p-12 text-white overflow-hidden"

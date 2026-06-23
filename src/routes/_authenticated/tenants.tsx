@@ -183,7 +183,7 @@ function TenantDialog({ editing, onDone }: { editing: Tenant | null; onDone: () 
               const { inviteTenantUser: invite } = await import("@/lib/asaas.functions");
               const redirectUrl = `${window.location.origin}/tenant-setup`;
               await invite({ data: { tenantId: saved.id, redirectUrl } });
-              toast.success("Convite de acesso enviado por e-mail");
+              toast.success("Convite enviado por WhatsApp");
             } catch (err: any) {
               toast.warning(`Inquilino salvo, mas falhou o convite: ${err?.message ?? "erro"}`);
             }

@@ -119,7 +119,7 @@ export const createAsaasSubaccount = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => createSubaccountInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
+    const { userId } = context;
     const { asaasFetch } = await import("./asaas.server");
 
     // Sem verificação de subconta existente: o login do app e a subconta Asaas

@@ -533,6 +533,11 @@ export type Database = {
           due_date: string
           extra_fees: number
           id: string
+          landlord_payout_amount: number | null
+          landlord_payout_asaas_id: string | null
+          landlord_payout_date: string | null
+          landlord_payout_error: string | null
+          landlord_payout_status: string
           late_charges: number
           management_fee_percent: number
           notes: string | null
@@ -558,6 +563,11 @@ export type Database = {
           due_date: string
           extra_fees?: number
           id?: string
+          landlord_payout_amount?: number | null
+          landlord_payout_asaas_id?: string | null
+          landlord_payout_date?: string | null
+          landlord_payout_error?: string | null
+          landlord_payout_status?: string
           late_charges?: number
           management_fee_percent?: number
           notes?: string | null
@@ -583,6 +593,11 @@ export type Database = {
           due_date?: string
           extra_fees?: number
           id?: string
+          landlord_payout_amount?: number | null
+          landlord_payout_asaas_id?: string | null
+          landlord_payout_date?: string | null
+          landlord_payout_error?: string | null
+          landlord_payout_status?: string
           late_charges?: number
           management_fee_percent?: number
           notes?: string | null
@@ -948,6 +963,8 @@ export type Database = {
       profiles: {
         Row: {
           created_at: string
+          document: string | null
+          document_type: string | null
           email: string | null
           full_name: string | null
           id: string
@@ -961,6 +978,8 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          document?: string | null
+          document_type?: string | null
           email?: string | null
           full_name?: string | null
           id: string
@@ -974,6 +993,8 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          document?: string | null
+          document_type?: string | null
           email?: string | null
           full_name?: string | null
           id?: string

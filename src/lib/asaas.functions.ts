@@ -158,19 +158,29 @@ export const createAsaasSubaccount = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     // Vincula conta bancária + auto-transfer (best-effort).
-    // Se falhar, mantemos a subconta e devolvemos warning para refazer pelo painel.
+    // No modelo wallet-lite os dados bancários são OPCIONAIS no onboarding.
+    // Se não vierem, a subconta já fica apta a receber split; o usuário
+    // completa os dados bancários depois no painel "Conta bancária e KYC"
+    // quando quiser sacar o saldo acumulado.
     let bankWarning: string | null = null;
+    const hasBankData = !!(
+      data.bankCode &&
+      data.bankAgency &&
+      data.bankAccount &&
+      data.bankAccountDigit &&
+      data.bankAccountType
+    );
     const newApiKey: string | null = account.apiKey ?? null;
-    if (newApiKey) {
+    if (newApiKey && hasBankData) {
       try {
         await asaasFetch<any>("/bankAccounts", {
           method: "POST",
           apiKey: newApiKey,
           body: JSON.stringify({
             bank: { code: data.bankCode },
-            agency: data.bankAgency.replace(/\D/g, ""),
-            account: data.bankAccount.replace(/\D/g, ""),
-            accountDigit: data.bankAccountDigit.replace(/\D/g, ""),
+            agency: data.bankAgency!.replace(/\D/g, ""),
+            account: data.bankAccount!.replace(/\D/g, ""),
+            accountDigit: data.bankAccountDigit!.replace(/\D/g, ""),
             bankAccountType: data.bankAccountType,
           }),
         });
@@ -188,6 +198,7 @@ export const createAsaasSubaccount = createServerFn({ method: "POST" })
       }
     }
 
+    const persistBank = hasBankData && !bankWarning;
     const { error } = await supabaseAdmin
       .from("asaas_accounts")
       .upsert(
@@ -198,12 +209,12 @@ export const createAsaasSubaccount = createServerFn({ method: "POST" })
           api_key: newApiKey,
           status: account.id ? "active" : "pending",
           onboarding_url: account.onboardingUrl ?? null,
-          bank_code: bankWarning ? null : data.bankCode,
-          bank_agency: bankWarning ? null : data.bankAgency,
-          bank_account: bankWarning ? null : data.bankAccount,
-          bank_account_digit: bankWarning ? null : data.bankAccountDigit,
-          bank_account_type: bankWarning ? null : data.bankAccountType,
-          auto_transfer_enabled: bankWarning ? false : true,
+          bank_code: persistBank ? data.bankCode : null,
+          bank_agency: persistBank ? data.bankAgency : null,
+          bank_account: persistBank ? data.bankAccount : null,
+          bank_account_digit: persistBank ? data.bankAccountDigit : null,
+          bank_account_type: persistBank ? data.bankAccountType : null,
+          auto_transfer_enabled: persistBank,
         },
         { onConflict: "user_id" },
       );

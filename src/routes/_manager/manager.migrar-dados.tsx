@@ -483,89 +483,159 @@ function MigrarDadosPage() {
         </p>
       </header>
 
-      {/* Card guia */}
-      <Card className="p-5 border-violet-500/30 bg-gradient-to-br from-violet-500/[0.06] to-fuchsia-500/[0.04]">
-        <div className="flex items-start gap-3">
-          <div className="size-11 rounded-xl grid place-items-center ring-1 bg-violet-500/10 text-violet-300 ring-violet-500/40">
-            <Sparkles className="size-5" />
-          </div>
-          <div className="flex-1">
-            <h2 className="text-lg font-semibold">Planilha única — fácil de preencher</h2>
-            <p className="text-sm text-muted-foreground mt-1">
-              Baixe o modelo, preencha no Excel/Google Sheets e arraste o arquivo aqui.
-              O sistema deduplica proprietários pelo CPF/CNPJ e imóveis pelo código automaticamente.
-            </p>
-            <div className="mt-3 grid sm:grid-cols-4 gap-2 text-[11px]">
-              <Hint label="Proprietário" cols="cpf_cnpj, nome, email, telefone" tone="violet" />
-              <Hint label="Imóvel" cols="codigo, endereco, tipo, valor_aluguel, status" tone="fuchsia" />
-              <Hint label="Inquilino" cols="cpf, nome, email, telefone" tone="cyan" />
-              <Hint label="Contrato" cols="valor, vencimento, duracao_meses, ativo" tone="emerald" />
-            </div>
-          </div>
-          <Button
-            variant="outline" size="sm" onClick={downloadTemplate}
-            className="border-violet-500/40 text-violet-300 hover:bg-violet-500/10 shrink-0"
-          >
-            <Download className="size-3.5 mr-1.5" />
-            Baixar modelo
-          </Button>
-        </div>
-      </Card>
+      <Tabs defaultValue="unica" className="w-full">
+        <TabsList className="grid grid-cols-2 w-full max-w-md">
+          <TabsTrigger value="unica">Planilha única</TabsTrigger>
+          <TabsTrigger value="separadas">3 planilhas separadas</TabsTrigger>
+        </TabsList>
 
-      {/* Dropzone */}
-      <Card className="p-5">
-        <div
-          onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-          onDragLeave={() => setDragOver(false)}
-          onDrop={(e) => { e.preventDefault(); setDragOver(false); handleFiles(e.dataTransfer.files); }}
-          onClick={() => !running && inputRef.current?.click()}
-          className={cn(
-            "rounded-xl border-2 border-dashed transition-all cursor-pointer bg-zinc-950/40 py-14 px-4 text-center",
-            dragOver
-              ? "border-violet-500/40 shadow-[0_0_30px_-10px_rgba(139,92,246,0.5)]"
-              : "border-zinc-800 hover:border-zinc-700",
-            running && "opacity-50 cursor-not-allowed",
-          )}
-        >
-          <input
-            ref={inputRef} type="file" accept=".csv,text/csv" className="hidden"
-            onChange={(e) => handleFiles(e.target.files)}
-          />
-          {file ? (
-            <div className="flex flex-col items-center gap-1">
-              <FileUp className="size-8 text-violet-300" />
-              <p className="font-medium text-zinc-100">{file.name}</p>
-              <p className="text-sm text-muted-foreground">
-                {rows.length} linha(s) detectada(s)
-              </p>
+        <TabsContent value="unica" className="space-y-6 mt-4">
+          {/* Card guia */}
+          <Card className="p-5 border-violet-500/30 bg-gradient-to-br from-violet-500/[0.06] to-fuchsia-500/[0.04]">
+            <div className="flex items-start gap-3">
+              <div className="size-11 rounded-xl grid place-items-center ring-1 bg-violet-500/10 text-violet-300 ring-violet-500/40">
+                <Sparkles className="size-5" />
+              </div>
+              <div className="flex-1">
+                <h2 className="text-lg font-semibold">Planilha única — fácil de preencher</h2>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Baixe o modelo, preencha no Excel/Google Sheets e arraste o arquivo aqui.
+                  O sistema deduplica proprietários pelo CPF/CNPJ e imóveis pelo código automaticamente.
+                </p>
+                <div className="mt-3 grid sm:grid-cols-4 gap-2 text-[11px]">
+                  <Hint label="Proprietário" cols="cpf_cnpj, nome, email, telefone" tone="violet" />
+                  <Hint label="Imóvel" cols="codigo, endereco, tipo, valor_aluguel, status" tone="fuchsia" />
+                  <Hint label="Inquilino" cols="cpf, nome, email, telefone" tone="cyan" />
+                  <Hint label="Contrato" cols="valor, vencimento, duracao_meses, ativo" tone="emerald" />
+                </div>
+              </div>
               <Button
-                variant="ghost" size="sm"
-                onClick={(e) => { e.stopPropagation(); reset(); }}
-                disabled={running}
-                className="mt-2 h-7 text-xs text-muted-foreground hover:text-rose-400"
+                variant="outline" size="sm" onClick={downloadTemplate}
+                className="border-violet-500/40 text-violet-300 hover:bg-violet-500/10 shrink-0"
               >
-                Remover arquivo
+                <Download className="size-3.5 mr-1.5" />
+                Baixar modelo
               </Button>
             </div>
-          ) : (
-            <div className="flex flex-col items-center gap-2">
-              <FileSpreadsheet className="size-10 text-zinc-500" />
-              <p className="text-zinc-200 font-medium">Arraste seu CSV ou clique para selecionar</p>
-              <p className="text-xs text-muted-foreground">Apenas .csv (UTF-8)</p>
-            </div>
-          )}
-        </div>
+          </Card>
 
-        {running && (
-          <div className="mt-4 space-y-1.5">
-            <Progress
-              value={progress}
-              className="h-1.5 bg-zinc-900 [&>div]:bg-gradient-to-r [&>div]:from-violet-500 [&>div]:to-fuchsia-500"
-            />
-            <p className="text-xs text-muted-foreground text-right">{progress}%</p>
+          {/* Dropzone */}
+          <Card className="p-5">
+            <div
+              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={(e) => { e.preventDefault(); setDragOver(false); handleFiles(e.dataTransfer.files); }}
+              onClick={() => !running && inputRef.current?.click()}
+              className={cn(
+                "rounded-xl border-2 border-dashed transition-all cursor-pointer bg-zinc-950/40 py-14 px-4 text-center",
+                dragOver
+                  ? "border-violet-500/40 shadow-[0_0_30px_-10px_rgba(139,92,246,0.5)]"
+                  : "border-zinc-800 hover:border-zinc-700",
+                running && "opacity-50 cursor-not-allowed",
+              )}
+            >
+              <input
+                ref={inputRef} type="file" accept=".csv,text/csv" className="hidden"
+                onChange={(e) => handleFiles(e.target.files)}
+              />
+              {file ? (
+                <div className="flex flex-col items-center gap-1">
+                  <FileUp className="size-8 text-violet-300" />
+                  <p className="font-medium text-zinc-100">{file.name}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {rows.length} linha(s) detectada(s)
+                  </p>
+                  <Button
+                    variant="ghost" size="sm"
+                    onClick={(e) => { e.stopPropagation(); reset(); }}
+                    disabled={running}
+                    className="mt-2 h-7 text-xs text-muted-foreground hover:text-rose-400"
+                  >
+                    Remover arquivo
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center gap-2">
+                  <FileSpreadsheet className="size-10 text-zinc-500" />
+                  <p className="text-zinc-200 font-medium">Arraste seu CSV ou clique para selecionar</p>
+                  <p className="text-xs text-muted-foreground">Apenas .csv (UTF-8)</p>
+                </div>
+              )}
+            </div>
+
+            {running && (
+              <div className="mt-4 space-y-1.5">
+                <Progress
+                  value={progress}
+                  className="h-1.5 bg-zinc-900 [&>div]:bg-gradient-to-r [&>div]:from-violet-500 [&>div]:to-fuchsia-500"
+                />
+                <p className="text-xs text-muted-foreground text-right">{progress}%</p>
+              </div>
+            )}
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="separadas" className="space-y-4 mt-4">
+          <Card className="p-5 border-cyan-500/30 bg-gradient-to-br from-cyan-500/[0.06] to-violet-500/[0.04]">
+            <h2 className="text-lg font-semibold">3 planilhas separadas</h2>
+            <p className="text-sm text-muted-foreground mt-1">
+              Suba uma planilha por entidade. As ligações são feitas por <code className="text-cyan-300">proprietario_cpf_cnpj</code> e <code className="text-cyan-300">imovel_codigo</code>.
+              Você pode subir só uma, duas ou as três — clique em <strong className="text-zinc-200">Juntar e preparar</strong> para consolidar antes de importar.
+            </p>
+          </Card>
+
+          <SeparateDropzone
+            tone="violet"
+            title="1. Proprietários"
+            description="cpf_cnpj, nome, email, telefone"
+            file={ownersFile}
+            rowCount={ownersRows.length}
+            onDownload={downloadTemplateOwners}
+            onFile={(f) => { setOwnersFile(f); parseCsvFile(f, setOwnersRows); }}
+            onClear={() => { setOwnersFile(null); setOwnersRows([]); }}
+            disabled={running}
+          />
+          <SeparateDropzone
+            tone="fuchsia"
+            title="2. Imóveis"
+            description="codigo, cpf_cnpj do proprietário, endereco, tipo, valor, status"
+            file={propsFile}
+            rowCount={propsRows.length}
+            onDownload={downloadTemplateProperties}
+            onFile={(f) => { setPropsFile(f); parseCsvFile(f, setPropsRows); }}
+            onClear={() => { setPropsFile(null); setPropsRows([]); }}
+            disabled={running}
+          />
+          <SeparateDropzone
+            tone="emerald"
+            title="3. Contratos / Inquilinos"
+            description="imovel_codigo, cpf, nome, email, telefone, valor, vencimento, duracao, ativo"
+            file={contractsFile}
+            rowCount={contractsRows.length}
+            onDownload={downloadTemplateContracts}
+            onFile={(f) => { setContractsFile(f); parseCsvFile(f, setContractsRows); }}
+            onClear={() => { setContractsFile(null); setContractsRows([]); }}
+            disabled={running}
+          />
+
+          <div className="flex items-center justify-between gap-3 pt-2">
+            <p className="text-sm text-muted-foreground">
+              {ownersRows.length + propsRows.length + contractsRows.length > 0 && (
+                <>Carregadas: <strong className="text-zinc-200">{ownersRows.length}</strong> proprietário(s), <strong className="text-zinc-200">{propsRows.length}</strong> imóvel(eis), <strong className="text-zinc-200">{contractsRows.length}</strong> contrato(s).</>
+              )}
+            </p>
+            <Button
+              variant="outline"
+              onClick={mergeAndPrepare}
+              disabled={running}
+              className="border-cyan-500/40 text-cyan-300 hover:bg-cyan-500/10"
+            >
+              <Sparkles className="size-4 mr-1.5" />
+              Juntar e preparar
+            </Button>
           </div>
-        )}
-      </Card>
+        </TabsContent>
+      </Tabs>
 
       {/* Ação principal */}
       <div className="flex flex-wrap items-center justify-between gap-3">

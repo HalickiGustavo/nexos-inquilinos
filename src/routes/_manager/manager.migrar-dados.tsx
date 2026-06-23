@@ -15,8 +15,10 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { onlyDigits } from "@/lib/br-validators";
+
 
 export const Route = createFileRoute("/_manager/manager/migrar-dados")({
   head: () => ({ meta: [{ title: "Migrar Dados — NEXO" }] }),
@@ -124,7 +126,130 @@ function downloadTemplate() {
   ]);
 }
 
+// ---------------- Modelos separados (3 planilhas) ----------------
+
+const OWNERS_HEADERS = [
+  "proprietario_cpf_cnpj", "proprietario_nome", "proprietario_email", "proprietario_telefone",
+] as const;
+const PROPS_HEADERS = [
+  "imovel_codigo", "proprietario_cpf_cnpj",
+  "imovel_endereco", "imovel_tipo", "imovel_valor_aluguel", "imovel_status",
+] as const;
+const CONTRACTS_HEADERS = [
+  "imovel_codigo", "inquilino_cpf", "inquilino_nome", "inquilino_email", "inquilino_telefone",
+  "contrato_valor", "contrato_vencimento", "contrato_duracao_meses", "contrato_ativo",
+] as const;
+
+function downloadTemplateOwners() {
+  downloadCsv("nexo_proprietarios.csv", OWNERS_HEADERS, [
+    ["123.456.789-09", "Maria Souza", "maria@exemplo.com", "(11) 98888-7777"],
+    ["555.444.333-22", "Carlos Lima", "carlos@exemplo.com", "(21) 97777-5555"],
+  ]);
+}
+function downloadTemplateProperties() {
+  downloadCsv("nexo_imoveis.csv", PROPS_HEADERS, [
+    ["AP-001", "123.456.789-09", "Rua das Flores 123 - Centro", "apartamento", "1500.00", "alugado"],
+    ["AP-003", "555.444.333-22", "Rua Verde 88", "apartamento", "1800.00", "disponivel"],
+  ]);
+}
+function downloadTemplateContracts() {
+  downloadCsv("nexo_contratos.csv", CONTRACTS_HEADERS, [
+    ["AP-001", "987.654.321-00", "João Pereira", "joao@exemplo.com", "(11) 97777-6666",
+     "1500.00", "10/07/2026", "12", "sim"],
+  ]);
+}
+
+// Junta as 3 planilhas em linhas unificadas (formato Row) — assim reaproveitamos
+// o pipeline da planilha única.
+function mergeSeparateSheets(
+  owners: Record<string, string>[],
+  props: Record<string, string>[],
+  contracts: Record<string, string>[],
+): Row[] {
+  const ownerByDoc = new Map<string, Record<string, string>>();
+  for (const o of owners) {
+    const k = onlyDigits(o.proprietario_cpf_cnpj ?? "");
+    if (k) ownerByDoc.set(k, o);
+  }
+  const propByCode = new Map<string, Record<string, string>>();
+  for (const p of props) {
+    const k = (p.imovel_codigo ?? "").trim();
+    if (k) propByCode.set(k, p);
+  }
+
+  const out: Row[] = [];
+  const usedPropCodes = new Set<string>();
+
+  // Uma linha por contrato (carrega imóvel + proprietário)
+  for (const c of contracts) {
+    const code = (c.imovel_codigo ?? "").trim();
+    const p = code ? propByCode.get(code) : undefined;
+    const ownerDoc = onlyDigits(p?.proprietario_cpf_cnpj ?? "");
+    const o = ownerDoc ? ownerByDoc.get(ownerDoc) : undefined;
+    if (code) usedPropCodes.add(code);
+    out.push({
+      proprietario_cpf_cnpj: o?.proprietario_cpf_cnpj ?? p?.proprietario_cpf_cnpj ?? "",
+      proprietario_nome: o?.proprietario_nome ?? "",
+      proprietario_email: o?.proprietario_email ?? "",
+      proprietario_telefone: o?.proprietario_telefone ?? "",
+      imovel_codigo: code,
+      imovel_endereco: p?.imovel_endereco ?? "",
+      imovel_tipo: p?.imovel_tipo ?? "",
+      imovel_valor_aluguel: p?.imovel_valor_aluguel ?? "",
+      imovel_status: p?.imovel_status ?? "",
+      inquilino_cpf: c.inquilino_cpf ?? "",
+      inquilino_nome: c.inquilino_nome ?? "",
+      inquilino_email: c.inquilino_email ?? "",
+      inquilino_telefone: c.inquilino_telefone ?? "",
+      contrato_valor: c.contrato_valor ?? "",
+      contrato_vencimento: c.contrato_vencimento ?? "",
+      contrato_duracao_meses: c.contrato_duracao_meses ?? "",
+      contrato_ativo: c.contrato_ativo ?? "",
+    });
+  }
+
+  // Imóveis sem contrato — também criamos (carregando o proprietário)
+  for (const [code, p] of propByCode) {
+    if (usedPropCodes.has(code)) continue;
+    const ownerDoc = onlyDigits(p.proprietario_cpf_cnpj ?? "");
+    const o = ownerDoc ? ownerByDoc.get(ownerDoc) : undefined;
+    out.push({
+      proprietario_cpf_cnpj: o?.proprietario_cpf_cnpj ?? p.proprietario_cpf_cnpj ?? "",
+      proprietario_nome: o?.proprietario_nome ?? "",
+      proprietario_email: o?.proprietario_email ?? "",
+      proprietario_telefone: o?.proprietario_telefone ?? "",
+      imovel_codigo: code,
+      imovel_endereco: p.imovel_endereco ?? "",
+      imovel_tipo: p.imovel_tipo ?? "",
+      imovel_valor_aluguel: p.imovel_valor_aluguel ?? "",
+      imovel_status: p.imovel_status ?? "",
+      inquilino_cpf: "", inquilino_nome: "", inquilino_email: "", inquilino_telefone: "",
+      contrato_valor: "", contrato_vencimento: "", contrato_duracao_meses: "", contrato_ativo: "",
+    });
+  }
+
+  // Proprietários sem imóvel — uma linha só com o proprietário
+  for (const [doc, o] of ownerByDoc) {
+    const hasProp = [...propByCode.values()].some(
+      (p) => onlyDigits(p.proprietario_cpf_cnpj ?? "") === doc,
+    );
+    if (hasProp) continue;
+    out.push({
+      proprietario_cpf_cnpj: o.proprietario_cpf_cnpj ?? "",
+      proprietario_nome: o.proprietario_nome ?? "",
+      proprietario_email: o.proprietario_email ?? "",
+      proprietario_telefone: o.proprietario_telefone ?? "",
+      imovel_codigo: "", imovel_endereco: "", imovel_tipo: "", imovel_valor_aluguel: "", imovel_status: "",
+      inquilino_cpf: "", inquilino_nome: "", inquilino_email: "", inquilino_telefone: "",
+      contrato_valor: "", contrato_vencimento: "", contrato_duracao_meses: "", contrato_ativo: "",
+    });
+  }
+
+  return out;
+}
+
 // ---------------- Componente ----------------
+
 
 function MigrarDadosPage() {
   const navigate = useNavigate();
@@ -141,10 +266,49 @@ function MigrarDadosPage() {
     owners: 0, properties: 0, tenants: 0, contracts: 0,
   });
 
+  // Estado das 3 planilhas separadas
+  const [ownersFile, setOwnersFile] = useState<File | null>(null);
+  const [ownersRows, setOwnersRows] = useState<Record<string, string>[]>([]);
+  const [propsFile, setPropsFile] = useState<File | null>(null);
+  const [propsRows, setPropsRows] = useState<Record<string, string>[]>([]);
+  const [contractsFile, setContractsFile] = useState<File | null>(null);
+  const [contractsRows, setContractsRows] = useState<Record<string, string>[]>([]);
+
   function reset() {
     setFile(null); setRows([]); setErrors([]); setFinished(false);
     setRunning(false); setProgress(0);
     setCounts({ owners: 0, properties: 0, tenants: 0, contracts: 0 });
+    setOwnersFile(null); setOwnersRows([]);
+    setPropsFile(null); setPropsRows([]);
+    setContractsFile(null); setContractsRows([]);
+  }
+
+  async function parseCsvFile<T extends Record<string, string>>(
+    f: File,
+    onDone: (rows: T[]) => void,
+  ) {
+    if (!/\.csv$/i.test(f.name)) { toast.error("Selecione um arquivo .csv válido."); return; }
+    const { default: Papa } = await import("papaparse");
+    Papa.parse<T>(f, {
+      header: true,
+      skipEmptyLines: true,
+      transformHeader: (h: string) => h.trim().toLowerCase().replace(/\s+/g, "_"),
+      complete: (result) => {
+        onDone(result.data);
+        toast.success(`${f.name}: ${result.data.length} linha(s) lida(s).`);
+      },
+      error: (err) => toast.error(`Erro ao ler ${f.name}: ${err.message}`),
+    });
+  }
+
+  function mergeAndPrepare() {
+    if (!ownersRows.length && !propsRows.length && !contractsRows.length) {
+      toast.error("Carregue pelo menos uma das 3 planilhas.");
+      return;
+    }
+    const merged = mergeSeparateSheets(ownersRows, propsRows, contractsRows);
+    setRows(merged);
+    toast.success(`${merged.length} linha(s) prontas para importar.`);
   }
 
   const handleFiles = useCallback(async (files: FileList | null) => {
@@ -319,89 +483,159 @@ function MigrarDadosPage() {
         </p>
       </header>
 
-      {/* Card guia */}
-      <Card className="p-5 border-violet-500/30 bg-gradient-to-br from-violet-500/[0.06] to-fuchsia-500/[0.04]">
-        <div className="flex items-start gap-3">
-          <div className="size-11 rounded-xl grid place-items-center ring-1 bg-violet-500/10 text-violet-300 ring-violet-500/40">
-            <Sparkles className="size-5" />
-          </div>
-          <div className="flex-1">
-            <h2 className="text-lg font-semibold">Planilha única — fácil de preencher</h2>
-            <p className="text-sm text-muted-foreground mt-1">
-              Baixe o modelo, preencha no Excel/Google Sheets e arraste o arquivo aqui.
-              O sistema deduplica proprietários pelo CPF/CNPJ e imóveis pelo código automaticamente.
-            </p>
-            <div className="mt-3 grid sm:grid-cols-4 gap-2 text-[11px]">
-              <Hint label="Proprietário" cols="cpf_cnpj, nome, email, telefone" tone="violet" />
-              <Hint label="Imóvel" cols="codigo, endereco, tipo, valor_aluguel, status" tone="fuchsia" />
-              <Hint label="Inquilino" cols="cpf, nome, email, telefone" tone="cyan" />
-              <Hint label="Contrato" cols="valor, vencimento, duracao_meses, ativo" tone="emerald" />
-            </div>
-          </div>
-          <Button
-            variant="outline" size="sm" onClick={downloadTemplate}
-            className="border-violet-500/40 text-violet-300 hover:bg-violet-500/10 shrink-0"
-          >
-            <Download className="size-3.5 mr-1.5" />
-            Baixar modelo
-          </Button>
-        </div>
-      </Card>
+      <Tabs defaultValue="unica" className="w-full">
+        <TabsList className="grid grid-cols-2 w-full max-w-md">
+          <TabsTrigger value="unica">Planilha única</TabsTrigger>
+          <TabsTrigger value="separadas">3 planilhas separadas</TabsTrigger>
+        </TabsList>
 
-      {/* Dropzone */}
-      <Card className="p-5">
-        <div
-          onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-          onDragLeave={() => setDragOver(false)}
-          onDrop={(e) => { e.preventDefault(); setDragOver(false); handleFiles(e.dataTransfer.files); }}
-          onClick={() => !running && inputRef.current?.click()}
-          className={cn(
-            "rounded-xl border-2 border-dashed transition-all cursor-pointer bg-zinc-950/40 py-14 px-4 text-center",
-            dragOver
-              ? "border-violet-500/40 shadow-[0_0_30px_-10px_rgba(139,92,246,0.5)]"
-              : "border-zinc-800 hover:border-zinc-700",
-            running && "opacity-50 cursor-not-allowed",
-          )}
-        >
-          <input
-            ref={inputRef} type="file" accept=".csv,text/csv" className="hidden"
-            onChange={(e) => handleFiles(e.target.files)}
-          />
-          {file ? (
-            <div className="flex flex-col items-center gap-1">
-              <FileUp className="size-8 text-violet-300" />
-              <p className="font-medium text-zinc-100">{file.name}</p>
-              <p className="text-sm text-muted-foreground">
-                {rows.length} linha(s) detectada(s)
-              </p>
+        <TabsContent value="unica" className="space-y-6 mt-4">
+          {/* Card guia */}
+          <Card className="p-5 border-violet-500/30 bg-gradient-to-br from-violet-500/[0.06] to-fuchsia-500/[0.04]">
+            <div className="flex items-start gap-3">
+              <div className="size-11 rounded-xl grid place-items-center ring-1 bg-violet-500/10 text-violet-300 ring-violet-500/40">
+                <Sparkles className="size-5" />
+              </div>
+              <div className="flex-1">
+                <h2 className="text-lg font-semibold">Planilha única — fácil de preencher</h2>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Baixe o modelo, preencha no Excel/Google Sheets e arraste o arquivo aqui.
+                  O sistema deduplica proprietários pelo CPF/CNPJ e imóveis pelo código automaticamente.
+                </p>
+                <div className="mt-3 grid sm:grid-cols-4 gap-2 text-[11px]">
+                  <Hint label="Proprietário" cols="cpf_cnpj, nome, email, telefone" tone="violet" />
+                  <Hint label="Imóvel" cols="codigo, endereco, tipo, valor_aluguel, status" tone="fuchsia" />
+                  <Hint label="Inquilino" cols="cpf, nome, email, telefone" tone="cyan" />
+                  <Hint label="Contrato" cols="valor, vencimento, duracao_meses, ativo" tone="emerald" />
+                </div>
+              </div>
               <Button
-                variant="ghost" size="sm"
-                onClick={(e) => { e.stopPropagation(); reset(); }}
-                disabled={running}
-                className="mt-2 h-7 text-xs text-muted-foreground hover:text-rose-400"
+                variant="outline" size="sm" onClick={downloadTemplate}
+                className="border-violet-500/40 text-violet-300 hover:bg-violet-500/10 shrink-0"
               >
-                Remover arquivo
+                <Download className="size-3.5 mr-1.5" />
+                Baixar modelo
               </Button>
             </div>
-          ) : (
-            <div className="flex flex-col items-center gap-2">
-              <FileSpreadsheet className="size-10 text-zinc-500" />
-              <p className="text-zinc-200 font-medium">Arraste seu CSV ou clique para selecionar</p>
-              <p className="text-xs text-muted-foreground">Apenas .csv (UTF-8)</p>
-            </div>
-          )}
-        </div>
+          </Card>
 
-        {running && (
-          <div className="mt-4 space-y-1.5">
-            <Progress
-              value={progress}
-              className="h-1.5 bg-zinc-900 [&>div]:bg-gradient-to-r [&>div]:from-violet-500 [&>div]:to-fuchsia-500"
-            />
-            <p className="text-xs text-muted-foreground text-right">{progress}%</p>
+          {/* Dropzone */}
+          <Card className="p-5">
+            <div
+              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={(e) => { e.preventDefault(); setDragOver(false); handleFiles(e.dataTransfer.files); }}
+              onClick={() => !running && inputRef.current?.click()}
+              className={cn(
+                "rounded-xl border-2 border-dashed transition-all cursor-pointer bg-zinc-950/40 py-14 px-4 text-center",
+                dragOver
+                  ? "border-violet-500/40 shadow-[0_0_30px_-10px_rgba(139,92,246,0.5)]"
+                  : "border-zinc-800 hover:border-zinc-700",
+                running && "opacity-50 cursor-not-allowed",
+              )}
+            >
+              <input
+                ref={inputRef} type="file" accept=".csv,text/csv" className="hidden"
+                onChange={(e) => handleFiles(e.target.files)}
+              />
+              {file ? (
+                <div className="flex flex-col items-center gap-1">
+                  <FileUp className="size-8 text-violet-300" />
+                  <p className="font-medium text-zinc-100">{file.name}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {rows.length} linha(s) detectada(s)
+                  </p>
+                  <Button
+                    variant="ghost" size="sm"
+                    onClick={(e) => { e.stopPropagation(); reset(); }}
+                    disabled={running}
+                    className="mt-2 h-7 text-xs text-muted-foreground hover:text-rose-400"
+                  >
+                    Remover arquivo
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center gap-2">
+                  <FileSpreadsheet className="size-10 text-zinc-500" />
+                  <p className="text-zinc-200 font-medium">Arraste seu CSV ou clique para selecionar</p>
+                  <p className="text-xs text-muted-foreground">Apenas .csv (UTF-8)</p>
+                </div>
+              )}
+            </div>
+
+            {running && (
+              <div className="mt-4 space-y-1.5">
+                <Progress
+                  value={progress}
+                  className="h-1.5 bg-zinc-900 [&>div]:bg-gradient-to-r [&>div]:from-violet-500 [&>div]:to-fuchsia-500"
+                />
+                <p className="text-xs text-muted-foreground text-right">{progress}%</p>
+              </div>
+            )}
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="separadas" className="space-y-4 mt-4">
+          <Card className="p-5 border-cyan-500/30 bg-gradient-to-br from-cyan-500/[0.06] to-violet-500/[0.04]">
+            <h2 className="text-lg font-semibold">3 planilhas separadas</h2>
+            <p className="text-sm text-muted-foreground mt-1">
+              Suba uma planilha por entidade. As ligações são feitas por <code className="text-cyan-300">proprietario_cpf_cnpj</code> e <code className="text-cyan-300">imovel_codigo</code>.
+              Você pode subir só uma, duas ou as três — clique em <strong className="text-zinc-200">Juntar e preparar</strong> para consolidar antes de importar.
+            </p>
+          </Card>
+
+          <SeparateDropzone
+            tone="violet"
+            title="1. Proprietários"
+            description="cpf_cnpj, nome, email, telefone"
+            file={ownersFile}
+            rowCount={ownersRows.length}
+            onDownload={downloadTemplateOwners}
+            onFile={(f) => { setOwnersFile(f); parseCsvFile(f, setOwnersRows); }}
+            onClear={() => { setOwnersFile(null); setOwnersRows([]); }}
+            disabled={running}
+          />
+          <SeparateDropzone
+            tone="fuchsia"
+            title="2. Imóveis"
+            description="codigo, cpf_cnpj do proprietário, endereco, tipo, valor, status"
+            file={propsFile}
+            rowCount={propsRows.length}
+            onDownload={downloadTemplateProperties}
+            onFile={(f) => { setPropsFile(f); parseCsvFile(f, setPropsRows); }}
+            onClear={() => { setPropsFile(null); setPropsRows([]); }}
+            disabled={running}
+          />
+          <SeparateDropzone
+            tone="emerald"
+            title="3. Contratos / Inquilinos"
+            description="imovel_codigo, cpf, nome, email, telefone, valor, vencimento, duracao, ativo"
+            file={contractsFile}
+            rowCount={contractsRows.length}
+            onDownload={downloadTemplateContracts}
+            onFile={(f) => { setContractsFile(f); parseCsvFile(f, setContractsRows); }}
+            onClear={() => { setContractsFile(null); setContractsRows([]); }}
+            disabled={running}
+          />
+
+          <div className="flex items-center justify-between gap-3 pt-2">
+            <p className="text-sm text-muted-foreground">
+              {ownersRows.length + propsRows.length + contractsRows.length > 0 && (
+                <>Carregadas: <strong className="text-zinc-200">{ownersRows.length}</strong> proprietário(s), <strong className="text-zinc-200">{propsRows.length}</strong> imóvel(eis), <strong className="text-zinc-200">{contractsRows.length}</strong> contrato(s).</>
+              )}
+            </p>
+            <Button
+              variant="outline"
+              onClick={mergeAndPrepare}
+              disabled={running}
+              className="border-cyan-500/40 text-cyan-300 hover:bg-cyan-500/10"
+            >
+              <Sparkles className="size-4 mr-1.5" />
+              Juntar e preparar
+            </Button>
           </div>
-        )}
-      </Card>
+        </TabsContent>
+      </Tabs>
 
       {/* Ação principal */}
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -510,3 +744,71 @@ function Stat({ label, value, tone }: { label: string; value: number; tone: keyo
     </div>
   );
 }
+
+function SeparateDropzone({
+  tone, title, description, file, rowCount,
+  onDownload, onFile, onClear, disabled,
+}: {
+  tone: keyof typeof TONE_MAP;
+  title: string;
+  description: string;
+  file: File | null;
+  rowCount: number;
+  onDownload: () => void;
+  onFile: (f: File) => void;
+  onClear: () => void;
+  disabled?: boolean;
+}) {
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const [over, setOver] = useState(false);
+  return (
+    <Card className={cn("p-4 border", TONE_MAP[tone])}>
+      <div className="flex items-start justify-between gap-3 mb-3">
+        <div>
+          <h3 className="text-sm font-semibold text-zinc-100">{title}</h3>
+          <p className="text-[11px] text-muted-foreground font-mono mt-0.5">{description}</p>
+        </div>
+        <Button variant="ghost" size="sm" onClick={onDownload} className="h-7 text-xs">
+          <Download className="size-3 mr-1" /> Modelo
+        </Button>
+      </div>
+      <div
+        onDragOver={(e) => { e.preventDefault(); setOver(true); }}
+        onDragLeave={() => setOver(false)}
+        onDrop={(e) => {
+          e.preventDefault(); setOver(false);
+          const f = e.dataTransfer.files?.[0]; if (f) onFile(f);
+        }}
+        onClick={() => !disabled && inputRef.current?.click()}
+        className={cn(
+          "rounded-lg border-2 border-dashed bg-zinc-950/40 py-6 px-4 text-center cursor-pointer transition-all",
+          over ? "border-zinc-500" : "border-zinc-800 hover:border-zinc-700",
+          disabled && "opacity-50 cursor-not-allowed",
+        )}
+      >
+        <input
+          ref={inputRef} type="file" accept=".csv,text/csv" className="hidden"
+          onChange={(e) => { const f = e.target.files?.[0]; if (f) onFile(f); }}
+        />
+        {file ? (
+          <div className="flex items-center justify-center gap-3 text-sm">
+            <FileUp className="size-4" />
+            <span className="font-medium text-zinc-100">{file.name}</span>
+            <Badge variant="outline">{rowCount} linha(s)</Badge>
+            <Button
+              variant="ghost" size="sm"
+              onClick={(e) => { e.stopPropagation(); onClear(); }}
+              className="h-6 text-xs text-muted-foreground hover:text-rose-400"
+            >Remover</Button>
+          </div>
+        ) : (
+          <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+            <FileSpreadsheet className="size-4" />
+            Arraste o CSV ou clique para selecionar
+          </div>
+        )}
+      </div>
+    </Card>
+  );
+}
+

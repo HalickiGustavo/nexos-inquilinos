@@ -126,7 +126,130 @@ function downloadTemplate() {
   ]);
 }
 
+// ---------------- Modelos separados (3 planilhas) ----------------
+
+const OWNERS_HEADERS = [
+  "proprietario_cpf_cnpj", "proprietario_nome", "proprietario_email", "proprietario_telefone",
+] as const;
+const PROPS_HEADERS = [
+  "imovel_codigo", "proprietario_cpf_cnpj",
+  "imovel_endereco", "imovel_tipo", "imovel_valor_aluguel", "imovel_status",
+] as const;
+const CONTRACTS_HEADERS = [
+  "imovel_codigo", "inquilino_cpf", "inquilino_nome", "inquilino_email", "inquilino_telefone",
+  "contrato_valor", "contrato_vencimento", "contrato_duracao_meses", "contrato_ativo",
+] as const;
+
+function downloadTemplateOwners() {
+  downloadCsv("nexo_proprietarios.csv", OWNERS_HEADERS, [
+    ["123.456.789-09", "Maria Souza", "maria@exemplo.com", "(11) 98888-7777"],
+    ["555.444.333-22", "Carlos Lima", "carlos@exemplo.com", "(21) 97777-5555"],
+  ]);
+}
+function downloadTemplateProperties() {
+  downloadCsv("nexo_imoveis.csv", PROPS_HEADERS, [
+    ["AP-001", "123.456.789-09", "Rua das Flores 123 - Centro", "apartamento", "1500.00", "alugado"],
+    ["AP-003", "555.444.333-22", "Rua Verde 88", "apartamento", "1800.00", "disponivel"],
+  ]);
+}
+function downloadTemplateContracts() {
+  downloadCsv("nexo_contratos.csv", CONTRACTS_HEADERS, [
+    ["AP-001", "987.654.321-00", "João Pereira", "joao@exemplo.com", "(11) 97777-6666",
+     "1500.00", "10/07/2026", "12", "sim"],
+  ]);
+}
+
+// Junta as 3 planilhas em linhas unificadas (formato Row) — assim reaproveitamos
+// o pipeline da planilha única.
+function mergeSeparateSheets(
+  owners: Record<string, string>[],
+  props: Record<string, string>[],
+  contracts: Record<string, string>[],
+): Row[] {
+  const ownerByDoc = new Map<string, Record<string, string>>();
+  for (const o of owners) {
+    const k = onlyDigits(o.proprietario_cpf_cnpj ?? "");
+    if (k) ownerByDoc.set(k, o);
+  }
+  const propByCode = new Map<string, Record<string, string>>();
+  for (const p of props) {
+    const k = (p.imovel_codigo ?? "").trim();
+    if (k) propByCode.set(k, p);
+  }
+
+  const out: Row[] = [];
+  const usedPropCodes = new Set<string>();
+
+  // Uma linha por contrato (carrega imóvel + proprietário)
+  for (const c of contracts) {
+    const code = (c.imovel_codigo ?? "").trim();
+    const p = code ? propByCode.get(code) : undefined;
+    const ownerDoc = onlyDigits(p?.proprietario_cpf_cnpj ?? "");
+    const o = ownerDoc ? ownerByDoc.get(ownerDoc) : undefined;
+    if (code) usedPropCodes.add(code);
+    out.push({
+      proprietario_cpf_cnpj: o?.proprietario_cpf_cnpj ?? p?.proprietario_cpf_cnpj ?? "",
+      proprietario_nome: o?.proprietario_nome ?? "",
+      proprietario_email: o?.proprietario_email ?? "",
+      proprietario_telefone: o?.proprietario_telefone ?? "",
+      imovel_codigo: code,
+      imovel_endereco: p?.imovel_endereco ?? "",
+      imovel_tipo: p?.imovel_tipo ?? "",
+      imovel_valor_aluguel: p?.imovel_valor_aluguel ?? "",
+      imovel_status: p?.imovel_status ?? "",
+      inquilino_cpf: c.inquilino_cpf ?? "",
+      inquilino_nome: c.inquilino_nome ?? "",
+      inquilino_email: c.inquilino_email ?? "",
+      inquilino_telefone: c.inquilino_telefone ?? "",
+      contrato_valor: c.contrato_valor ?? "",
+      contrato_vencimento: c.contrato_vencimento ?? "",
+      contrato_duracao_meses: c.contrato_duracao_meses ?? "",
+      contrato_ativo: c.contrato_ativo ?? "",
+    });
+  }
+
+  // Imóveis sem contrato — também criamos (carregando o proprietário)
+  for (const [code, p] of propByCode) {
+    if (usedPropCodes.has(code)) continue;
+    const ownerDoc = onlyDigits(p.proprietario_cpf_cnpj ?? "");
+    const o = ownerDoc ? ownerByDoc.get(ownerDoc) : undefined;
+    out.push({
+      proprietario_cpf_cnpj: o?.proprietario_cpf_cnpj ?? p.proprietario_cpf_cnpj ?? "",
+      proprietario_nome: o?.proprietario_nome ?? "",
+      proprietario_email: o?.proprietario_email ?? "",
+      proprietario_telefone: o?.proprietario_telefone ?? "",
+      imovel_codigo: code,
+      imovel_endereco: p.imovel_endereco ?? "",
+      imovel_tipo: p.imovel_tipo ?? "",
+      imovel_valor_aluguel: p.imovel_valor_aluguel ?? "",
+      imovel_status: p.imovel_status ?? "",
+      inquilino_cpf: "", inquilino_nome: "", inquilino_email: "", inquilino_telefone: "",
+      contrato_valor: "", contrato_vencimento: "", contrato_duracao_meses: "", contrato_ativo: "",
+    });
+  }
+
+  // Proprietários sem imóvel — uma linha só com o proprietário
+  for (const [doc, o] of ownerByDoc) {
+    const hasProp = [...propByCode.values()].some(
+      (p) => onlyDigits(p.proprietario_cpf_cnpj ?? "") === doc,
+    );
+    if (hasProp) continue;
+    out.push({
+      proprietario_cpf_cnpj: o.proprietario_cpf_cnpj ?? "",
+      proprietario_nome: o.proprietario_nome ?? "",
+      proprietario_email: o.proprietario_email ?? "",
+      proprietario_telefone: o.proprietario_telefone ?? "",
+      imovel_codigo: "", imovel_endereco: "", imovel_tipo: "", imovel_valor_aluguel: "", imovel_status: "",
+      inquilino_cpf: "", inquilino_nome: "", inquilino_email: "", inquilino_telefone: "",
+      contrato_valor: "", contrato_vencimento: "", contrato_duracao_meses: "", contrato_ativo: "",
+    });
+  }
+
+  return out;
+}
+
 // ---------------- Componente ----------------
+
 
 function MigrarDadosPage() {
   const navigate = useNavigate();

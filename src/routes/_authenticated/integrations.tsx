@@ -146,6 +146,18 @@ function IntegrationsPage() {
             className="mt-6 grid sm:grid-cols-2 gap-4"
             onSubmit={async (e) => {
               e.preventDefault();
+              const requiredBank = [
+                form.bankCode,
+                form.bankOwnerCpfCnpj,
+                form.bankAgency,
+                form.bankAccount,
+                form.bankAccountDigit,
+                form.bankAccountType,
+              ];
+              if (requiredBank.some((value) => !String(value).trim())) {
+                toast.error("Preencha todos os dados bancários antes de conectar.");
+                return;
+              }
               setSaving(true);
               try {
                 const payload: any = { ...form };
@@ -212,13 +224,12 @@ function IntegrationsPage() {
               <Input value={form.addressNumber} onChange={(e) => setForm({ ...form, addressNumber: e.target.value })} required />
             </Field>
             <div className="sm:col-span-2 mt-2 pt-4 border-t">
-              <h3 className="font-semibold mb-1">Conta bancária para recebimento <span className="text-xs font-normal text-muted-foreground">(opcional)</span></h3>
+              <h3 className="font-semibold mb-1">Conta bancária para recebimento</h3>
               <p className="text-xs text-muted-foreground mb-3">
-                Você já pode receber via split sem cadastrar conta agora. Para <strong>sacar</strong> o saldo acumulado,
-                preencha estes dados aqui ou depois no painel "Conta bancária e KYC". Saques são feitos automaticamente todo dia útil quando configurados.
+                Para evitar cadastro parcial no Asaas, todos os dados bancários abaixo são obrigatórios.
               </p>
             </div>
-            <Field label="Banco">
+            <Field label="Banco" required>
               <Select value={form.bankCode} onValueChange={(v) => setForm({ ...form, bankCode: v })}>
                 <SelectTrigger><SelectValue placeholder="Selecione o banco" /></SelectTrigger>
                 <SelectContent>
@@ -228,10 +239,10 @@ function IntegrationsPage() {
                 </SelectContent>
               </Select>
             </Field>
-            <Field label="CPF/CNPJ do titular da conta">
-              <Input value={form.bankOwnerCpfCnpj} onChange={(e) => setForm({ ...form, bankOwnerCpfCnpj: maskCpfCnpj(e.target.value) })} placeholder="000.000.000-00" inputMode="numeric" maxLength={20} />
+            <Field label="CPF/CNPJ do titular da conta" required>
+              <Input value={form.bankOwnerCpfCnpj} onChange={(e) => setForm({ ...form, bankOwnerCpfCnpj: maskCpfCnpj(e.target.value) })} placeholder="000.000.000-00" inputMode="numeric" maxLength={20} required />
             </Field>
-            <Field label="Tipo de conta">
+            <Field label="Tipo de conta" required>
               <Select value={form.bankAccountType} onValueChange={(v) => setForm({ ...form, bankAccountType: v as any })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -240,15 +251,15 @@ function IntegrationsPage() {
                 </SelectContent>
               </Select>
             </Field>
-            <Field label="Agência (sem dígito)">
-              <Input value={form.bankAgency} onChange={(e) => setForm({ ...form, bankAgency: e.target.value.replace(/\D/g, "") })} inputMode="numeric" maxLength={10} />
+            <Field label="Agência (sem dígito)" required>
+              <Input value={form.bankAgency} onChange={(e) => setForm({ ...form, bankAgency: e.target.value.replace(/\D/g, "") })} inputMode="numeric" maxLength={10} required />
             </Field>
             <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-2">
-              <Field label="Conta">
-                <Input value={form.bankAccount} onChange={(e) => setForm({ ...form, bankAccount: e.target.value.replace(/\D/g, "") })} inputMode="numeric" maxLength={20} />
+              <Field label="Conta" required>
+                <Input value={form.bankAccount} onChange={(e) => setForm({ ...form, bankAccount: e.target.value.replace(/\D/g, "") })} inputMode="numeric" maxLength={20} required />
               </Field>
-              <Field label="Dígito">
-                <Input className="sm:w-24" value={form.bankAccountDigit} onChange={(e) => setForm({ ...form, bankAccountDigit: e.target.value.replace(/\D/g, "") })} inputMode="numeric" maxLength={2} />
+              <Field label="Dígito" required>
+                <Input className="sm:w-24" value={form.bankAccountDigit} onChange={(e) => setForm({ ...form, bankAccountDigit: e.target.value.replace(/\D/g, "") })} inputMode="numeric" maxLength={2} required />
               </Field>
             </div>
             <div className="sm:col-span-2 flex justify-end">

@@ -1,13 +1,26 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { useState } from "react";
 import { toast } from "sonner";
-import { Globe, RefreshCw, Loader2 } from "lucide-react";
+import { Globe, RefreshCw, Loader2, Bell, Send } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { CentralConexoesPanel } from "@/components/CentralConexoesPanel";
+import { sendTestLeadNotification } from "@/lib/lead-test.functions";
+
+const SAMPLE_LEAD_MESSAGE = `🔔 *Novo lead NEXO* (TESTE)
+Cliente: João da Silva
+Telefone: (41) 99999-0000
+Imóvel: Apto Teste — Corretor Gustavpo (IM-TESTE)
+Portal: ZapImóveis
+Critério: Corretor do Imóvel
+
+_Esta é uma mensagem de teste enviada pelo painel NEXO._`;
 
 export const Route = createFileRoute("/_manager/manager/portais")({
   head: () => ({ meta: [{ title: "Integrações com Portais — NEXO" }] }),

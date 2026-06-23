@@ -232,8 +232,10 @@ function InviteTenantButton({ tenant }: { tenant: Tenant }) {
         setLoading(true);
         try {
           const redirectUrl = `${window.location.origin}/tenant-setup`;
-          await invite({ data: { tenantId: tenant.id, redirectUrl } });
-          toast.success("Convite enviado para " + tenant.email);
+          const res: any = await invite({ data: { tenantId: tenant.id, redirectUrl } });
+          if (res?.whatsapp === false) toast.warning("Convite gerado, mas WhatsApp falhou (instância offline?)");
+          else toast.success("Convite enviado por WhatsApp para " + (tenant.phone ?? tenant.email));
+
         } catch (e: any) {
           toast.error(e?.message ?? "Falha ao enviar convite");
         } finally {

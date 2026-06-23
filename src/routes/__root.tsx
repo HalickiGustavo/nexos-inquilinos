@@ -31,6 +31,8 @@ export const Route = createRootRoute({
       { property: "og:type", content: "website" },
     ],
     links: [
+      { rel: "icon", type: "image/png", href: "/__l5e/assets-v1/7968f272-7dbe-4a4f-a051-c97ce34eb6d2/nexo-logo.png" },
+      { rel: "apple-touch-icon", href: "/__l5e/assets-v1/7968f272-7dbe-4a4f-a051-c97ce34eb6d2/nexo-logo.png" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" },

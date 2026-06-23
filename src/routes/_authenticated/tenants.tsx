@@ -181,31 +181,7 @@ function TenantDialog({ editing, onDone }: { editing: Tenant | null; onDone: () 
           toast.success(editing ? "Inquilino atualizado" : "Inquilino cadastrado");
           invalidate(["tenants"]);
 
-          // Auto-invite new tenants that have an email
-          if (isNew && saved?.email && saved?.id) {
-            try {
-              const { inviteTenantUser: invite } = await import("@/lib/asaas.functions");
-              const redirectUrl = `${window.location.origin}/tenant-setup`;
-              await invite({ data: { tenantId: saved.id, redirectUrl } });
-              toast.success("Convite enviado por WhatsApp");
-            } catch (err: any) {
-              toast.warning(`Inquilino salvo, mas falhou o convite: ${err?.message ?? "erro"}`);
-            }
-          }
-
-          // Fire-and-forget WhatsApp welcome — never blocks UI
-          if (isNew && saved?.phone && saved?.email && saved?.full_name) {
-            try {
-              const { sendWelcomeWhatsApp } = await import("@/lib/whatsapp.functions");
-              sendWelcomeWhatsApp({
-                data: { nome: saved.full_name, telefone: saved.phone, email: saved.email },
-              })
-                .then((r) => {
-                  if (r?.ok) toast.success("Mensagem de boas-vindas enviada no WhatsApp");
-                })
-                .catch(() => {/* silent */});
-            } catch {/* silent */}
-          }
+          // Convites e mensagens devem ser enviados manualmente pelo botão de WhatsApp do card.
           onDone();
         }}
       >

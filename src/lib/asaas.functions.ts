@@ -1357,6 +1357,7 @@ export const processScheduledInvoices = createServerFn({ method: "POST" })
       _role: "manager",
     });
     if (!isManager) throw new Error("Apenas managers podem disparar o ciclo de faturamento.");
-    return runProcessScheduledInvoices();
+    // Escopo por agência: só processa parcelas da própria imobiliária do manager autenticado.
+    return runProcessScheduledInvoices({ managerUserId: userId });
   });
 

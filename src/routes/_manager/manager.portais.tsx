@@ -116,7 +116,7 @@ function ManagerPortaisPage() {
         </Button>
       </Card>
 
-      <TestLeadNotificationCard />
+      
     </div>
   );
 }

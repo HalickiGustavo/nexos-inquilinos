@@ -216,16 +216,7 @@ function IntegrationsPage() {
       <AsaasBankAndKycPanel account={account as any} onChanged={() => refetch()} />
 
 
-      <Card className="p-6 bg-muted/30">
-        <h3 className="font-semibold mb-2">Configuração do Webhook</h3>
-        <p className="text-sm text-muted-foreground mb-3">
-          No painel Asaas → Configurações → Notificações → Webhooks, cadastre a URL abaixo
-          e cole o token salvo nos secrets (ASAAS_WEBHOOK_TOKEN) no campo Token.
-        </p>
-        <code className="block text-xs bg-background p-3 rounded border break-all">
-          {typeof window !== "undefined" ? window.location.origin : ""}/api/public/asaas-webhook
-        </code>
-      </Card>
+
     </div>
   );
 }

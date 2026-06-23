@@ -61,7 +61,7 @@ export const managerTourSteps: TourStep[] = [
     target: "nav-manager-carteira",
     title: "Carteira",
     description:
-      "Gerencie todos os imóveis e proprietários sob sua administração em um só lugar.",
+      "Gerencie todos os imóveis sob sua administração em um só lugar.",
   },
   {
     target: "nav-manager-financeiro",
@@ -82,22 +82,34 @@ export const managerTourSteps: TourStep[] = [
       "Convide e gerencie corretores e funcionários, com permissões adequadas para cada um.",
   },
   {
+    target: "nav-manager-proprietarios",
+    title: "Proprietários",
+    description:
+      "Cadastro e acompanhamento dos proprietários atendidos pela imobiliária.",
+  },
+  {
+    target: "nav-manager-inquilinos",
+    title: "Inquilinos",
+    description:
+      "Cadastro e gestão dos inquilinos vinculados aos contratos administrados.",
+  },
+  {
     target: "nav-manager-vistorias",
     title: "Vistorias",
     description:
       "Agende e registre vistorias de entrada e saída, com fotos e checklist por ambiente.",
   },
   {
-    target: "nav-manager-alertas",
-    title: "Alertas",
+    target: "nav-manager-leads",
+    title: "Leads (Portais)",
     description:
-      "Avisos importantes que precisam da sua atenção: vencimentos, atrasos, documentos pendentes.",
+      "Receba e organize os leads vindos dos portais imobiliários integrados.",
   },
   {
-    target: "nav-manager-crm",
-    title: "CRM",
+    target: "nav-manager-roleta",
+    title: "Roleta de Leads",
     description:
-      "Funil de captação e atendimento: organize leads, propostas e visitas em um quadro estilo Kanban.",
+      "Configure a distribuição automática dos leads entre os corretores da equipe.",
   },
   {
     target: "nav-manager-integracao",

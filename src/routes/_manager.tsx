@@ -47,7 +47,7 @@ function ManagerLayout() {
 
   useEffect(() => {
     if (!roleLoading && role && role !== "manager") {
-      navigate({ to: role === "tenant" ? "/tenant" : "/dashboard", replace: true });
+      navigate({ to: roleHomePath(role), replace: true });
     }
   }, [role, roleLoading, navigate]);
 

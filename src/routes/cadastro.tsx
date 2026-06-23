@@ -441,15 +441,20 @@ function StepCredentials({
       <div className="flex justify-center pt-2">
         <div className="w-[237px] h-[61px] sm:w-[304px] sm:h-[78px] max-w-full rounded-md overflow-hidden ring-1 ring-zinc-800">
           <div className="origin-top-left scale-[0.78] sm:scale-100 w-[304px] h-[78px]">
-            <ReCAPTCHA
-              ref={captchaRef}
-              sitekey={RECAPTCHA_SITE_KEY}
-              theme="dark"
-              onChange={(token) => update("captchaToken", token)}
-              onExpired={() => update("captchaToken", null)}
-              onErrored={() => update("captchaToken", null)}
-            />
+            {recaptchaSiteKey ? (
+              <ReCAPTCHA
+                ref={captchaRef}
+                sitekey={recaptchaSiteKey}
+                theme="dark"
+                onChange={(token) => update("captchaToken", token)}
+                onExpired={() => update("captchaToken", null)}
+                onErrored={() => update("captchaToken", null)}
+              />
+            ) : (
+              <div className="w-[304px] h-[78px] bg-muted animate-pulse rounded-md" />
+            )}
           </div>
+
         </div>
       </div>
 

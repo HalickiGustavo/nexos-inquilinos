@@ -65,22 +65,41 @@ export function OnboardingTour({ tourKey, steps }: Props) {
   useLayoutEffect(() => {
     if (!open || !current) return;
     let raf = 0;
-    const measure = () => {
+    let didInitialScroll = false;
+    const findEl = () => {
       const candidates = Array.from(
         document.querySelectorAll<HTMLElement>(`[data-tour="${current.target}"]`),
       );
-      // Pick the first element that is actually visible (non-zero size)
-      const el =
+      return (
         candidates.find((c) => {
           const r = c.getBoundingClientRect();
           return r.width > 0 && r.height > 0;
-        }) ?? candidates[0];
+        }) ?? candidates[0] ?? null
+      );
+    };
+    const measure = () => {
+      const el = findEl();
       if (!el) {
         setRect(null);
         return;
       }
-      el.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "smooth" });
-      setRect(el.getBoundingClientRect());
+      if (!didInitialScroll) {
+        didInitialScroll = true;
+        el.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "auto" });
+      }
+      const next = el.getBoundingClientRect();
+      setRect((prev) => {
+        if (
+          prev &&
+          Math.abs(prev.top - next.top) < 0.5 &&
+          Math.abs(prev.left - next.left) < 0.5 &&
+          Math.abs(prev.width - next.width) < 0.5 &&
+          Math.abs(prev.height - next.height) < 0.5
+        ) {
+          return prev;
+        }
+        return next;
+      });
     };
     measure();
     const onChange = () => {
@@ -89,7 +108,7 @@ export function OnboardingTour({ tourKey, steps }: Props) {
     };
     window.addEventListener("resize", onChange);
     window.addEventListener("scroll", onChange, true);
-    const interval = setInterval(measure, 400); // catch async layout shifts
+    const interval = setInterval(measure, 800); // catch async layout shifts
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener("resize", onChange);

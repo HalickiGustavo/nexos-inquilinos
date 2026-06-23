@@ -18,10 +18,11 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Nexo — Controle de Aluguéis" },
+      { title: "Nexo" },
       { name: "description", content: "Sistema completo para controle de imóveis, inquilinos, contratos e finanças." },
-      { property: "og:title", content: "Nexo — Controle de Aluguéis" },
-      { name: "twitter:title", content: "Nexo — Controle de Aluguéis" },
+      { property: "og:title", content: "Nexo" },
+      { name: "twitter:title", content: "Nexo" },
+
       { property: "og:description", content: "Sistema completo para controle de imóveis, inquilinos, contratos e finanças." },
       { name: "twitter:description", content: "Sistema completo para controle de imóveis, inquilinos, contratos e finanças." },
       { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/f53b926a-f7b7-4515-9f45-fd9a93697ea7/id-preview-071a7f55--231b8419-e2f6-4a97-8769-d585255d26c4.lovable.app-1780178461559.png" },

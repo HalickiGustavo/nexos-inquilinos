@@ -665,9 +665,13 @@ function getAllowedRedirectOrigins(): string[] {
     process.env.APP_ORIGIN,
     process.env.VITE_APP_ORIGIN,
     "https://nexos-inquilinos.lovable.app",
+    "https://dashboard.usenexoapp.com",
+    "https://usenexoapp.com",
+    "https://www.usenexoapp.com",
   ].filter(Boolean) as string[];
   return Array.from(new Set(raw));
 }
+
 
 export const inviteTenantUser = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

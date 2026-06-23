@@ -1,10 +1,11 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEffect, useMemo } from "react";
 import { Building2, Wallet, TrendingUp, AlertCircle, CheckCircle2, Home, Bell, ArrowRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useProperties, useInstallments, useMaintenances } from "@/lib/queries";
+import { useUserRole, roleHomePath } from "@/lib/useUserRole";
 import { formatBRL, monthRange } from "@/lib/format";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Cell } from "recharts";
 
@@ -14,6 +15,12 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 });
 
 function Dashboard() {
+  const navigate = useNavigate();
+  const { role } = useUserRole();
+  useEffect(() => {
+    if (role && role !== "owner") navigate({ to: roleHomePath(role), replace: true });
+  }, [role, navigate]);
+
   const { data: properties = [] } = useProperties();
   const { data: installments = [] } = useInstallments();
   const { data: maintenances = [] } = useMaintenances();

@@ -105,12 +105,14 @@ const createSubaccountInput = z.object({
   province: z.string().min(2).max(120),
   postalCode: z.string().min(8).max(15),
   incomeValue: z.coerce.number().positive(),
-  // Conta bancária de liquidação — obrigatória já no onboarding
-  bankCode: z.string().min(1).max(10),
-  bankAgency: z.string().min(1).max(10),
-  bankAccount: z.string().min(1).max(20),
-  bankAccountDigit: z.string().min(1).max(3),
-  bankAccountType: z.enum(["CONTA_CORRENTE", "CONTA_POUPANCA"]),
+  // Conta bancária de liquidação — OPCIONAL no onboarding (modelo wallet-lite).
+  // Pode ser cadastrada depois, pelo painel "Conta bancária e KYC", apenas quando
+  // o usuário for sacar o saldo acumulado via split.
+  bankCode: z.string().max(10).optional().or(z.literal("")),
+  bankAgency: z.string().max(10).optional().or(z.literal("")),
+  bankAccount: z.string().max(20).optional().or(z.literal("")),
+  bankAccountDigit: z.string().max(3).optional().or(z.literal("")),
+  bankAccountType: z.enum(["CONTA_CORRENTE", "CONTA_POUPANCA"]).optional(),
 });
 
 export const createAsaasSubaccount = createServerFn({ method: "POST" })

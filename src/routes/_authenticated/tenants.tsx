@@ -115,8 +115,7 @@ function TenantsPage() {
                     </Button>
                   </DialogTrigger>
                 </Dialog>
-                {t.email && <InviteTenantButton tenant={t} />}
-                {t.phone && t.email && <ResendWhatsAppButton tenant={t} />}
+                {t.phone && <WhatsAppLinkButton tenant={t} />}
                 <Button variant="outline" size="sm" onClick={async () => {
                   if (!confirm("Excluir este inquilino?")) return;
                   const { error } = await supabase.from("tenants").delete().eq("id", t.id);

@@ -110,7 +110,60 @@ function ManagerPortaisPage() {
           Atualizar status
         </Button>
       </Card>
+
+      <TestLeadNotificationCard />
     </div>
+  );
+}
+
+function TestLeadNotificationCard() {
+  const send = useServerFn(sendTestLeadNotification);
+  const [phone, setPhone] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  async function handleSend() {
+    setLoading(true);
+    try {
+      const res = await send({ data: { phone: phone.trim() || undefined } });
+      toast.success(`Mensagem de teste enviada para ${res.phone}`);
+    } catch (e: any) {
+      toast.error(e?.message ?? "Falha ao enviar mensagem de teste");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <Card className="p-5 space-y-4 border-dashed">
+      <div className="flex items-start gap-3">
+        <div className="p-2 rounded-lg bg-primary/10">
+          <Bell className="size-5 text-primary" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <h3 className="font-semibold">Testar notificação de lead</h3>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Simula a mensagem que o corretor recebe no WhatsApp quando um lead chega de um portal.
+          </p>
+        </div>
+      </div>
+
+      <pre className="text-xs bg-muted/50 rounded-md p-3 whitespace-pre-wrap font-mono leading-relaxed">
+{SAMPLE_LEAD_MESSAGE}
+      </pre>
+
+      <div className="flex flex-col sm:flex-row gap-2">
+        <Input
+          placeholder="Telefone (opcional) — usa o do seu perfil se vazio"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          className="flex-1"
+        />
+        <Button onClick={handleSend} disabled={loading}>
+          {loading ? <Loader2 className="size-4 mr-2 animate-spin" /> : <Send className="size-4 mr-2" />}
+          Enviar teste
+        </Button>
+      </div>
+    </Card>
   );
 }
 

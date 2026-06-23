@@ -97,6 +97,7 @@ function KycStatusBadge({ status }: { status: string }) {
 function BankSection({ account, onChanged }: { account: Account; onChanged?: () => Promise<unknown> | void }) {
   const link = useServerFn(linkAsaasBankAccount);
   const [saving, setSaving] = useState(false);
+  const isLocked = !!(account.bank_code && account.bank_account && account.bank_agency);
   const [form, setForm] = useState({
     ownerCpfCnpj: "",
     bankCode: account.bank_code ?? "",
@@ -113,7 +114,21 @@ function BankSection({ account, onChanged }: { account: Account; onChanged?: () 
         <div className="flex items-center gap-2 mb-4">
           <Landmark className="size-4 text-primary" />
           <h3 className="font-semibold">Conta Bancária de Liquidação</h3>
+          {isLocked && (
+            <Badge variant="outline" className="ml-auto border-emerald-500/40 text-emerald-600 dark:text-emerald-400 inline-flex items-center gap-1">
+              <CheckCircle2 className="size-3" /> Validada
+            </Badge>
+          )}
         </div>
+        {isLocked && (
+          <Alert className="mb-4 border-emerald-500/30 bg-emerald-500/5">
+            <CheckCircle2 className="size-4 text-emerald-600" />
+            <AlertTitle>Dados bancários confirmados</AlertTitle>
+            <AlertDescription>
+              Por segurança, os dados bancários não podem ser editados após validação. Para alterar a conta, entre em contato com o suporte.
+            </AlertDescription>
+          </Alert>
+        )}
         <form
           className="grid sm:grid-cols-2 gap-4"
           onSubmit={async (e) => {
@@ -144,6 +159,7 @@ function BankSection({ account, onChanged }: { account: Account; onChanged?: () 
             }
           }}
         >
+          <fieldset disabled={isLocked} className="contents">
           <div className="space-y-2 sm:col-span-2">
             <Label>CPF/CNPJ do titular da conta</Label>
             <Input
@@ -153,11 +169,12 @@ function BankSection({ account, onChanged }: { account: Account; onChanged?: () 
               maxLength={20}
               placeholder="000.000.000-00"
               inputMode="numeric"
+              disabled={isLocked}
             />
           </div>
           <div className="space-y-2 sm:col-span-2">
             <Label>Banco</Label>
-            <Select value={form.bankCode} onValueChange={(v) => setForm({ ...form, bankCode: v })}>
+            <Select value={form.bankCode} onValueChange={(v) => setForm({ ...form, bankCode: v })} disabled={isLocked}>
               <SelectTrigger className="focus-visible:ring-primary focus-visible:ring-2"><SelectValue placeholder="Selecione o banco" /></SelectTrigger>
               <SelectContent>
                 {BANKS.map((b) => <SelectItem key={b.code} value={b.code}>{b.label}</SelectItem>)}
@@ -166,11 +183,11 @@ function BankSection({ account, onChanged }: { account: Account; onChanged?: () 
           </div>
           <div className="space-y-2">
             <Label>Agência</Label>
-            <Input value={form.agency} onChange={(e) => setForm({ ...form, agency: e.target.value })} required maxLength={10} inputMode="numeric" />
+            <Input value={form.agency} onChange={(e) => setForm({ ...form, agency: e.target.value })} required maxLength={10} inputMode="numeric" disabled={isLocked} />
           </div>
           <div className="space-y-2">
             <Label>Tipo de Conta</Label>
-            <Select value={form.accountType} onValueChange={(v) => setForm({ ...form, accountType: v as any })}>
+            <Select value={form.accountType} onValueChange={(v) => setForm({ ...form, accountType: v as any })} disabled={isLocked}>
               <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="CONTA_CORRENTE">Conta Corrente</SelectItem>
@@ -180,25 +197,28 @@ function BankSection({ account, onChanged }: { account: Account; onChanged?: () 
           </div>
           <div className="space-y-2">
             <Label>Conta</Label>
-            <Input value={form.account} onChange={(e) => setForm({ ...form, account: e.target.value })} required maxLength={20} inputMode="numeric" />
+            <Input value={form.account} onChange={(e) => setForm({ ...form, account: e.target.value })} required maxLength={20} inputMode="numeric" disabled={isLocked} />
           </div>
           <div className="space-y-2">
             <Label>Dígito</Label>
-            <Input value={form.accountDigit} onChange={(e) => setForm({ ...form, accountDigit: e.target.value })} required maxLength={3} inputMode="numeric" />
+            <Input value={form.accountDigit} onChange={(e) => setForm({ ...form, accountDigit: e.target.value })} required maxLength={3} inputMode="numeric" disabled={isLocked} />
           </div>
           <div className="sm:col-span-2 flex items-center justify-between rounded-md border p-3">
             <div>
               <p className="text-sm font-medium">Transferência automática diária</p>
               <p className="text-xs text-muted-foreground">Fundos liberados são enviados automaticamente para sua conta bancária.</p>
             </div>
-            <Switch checked={form.enableAutoTransfer} onCheckedChange={(v) => setForm({ ...form, enableAutoTransfer: v })} />
+            <Switch checked={form.enableAutoTransfer} onCheckedChange={(v) => setForm({ ...form, enableAutoTransfer: v })} disabled={isLocked} />
           </div>
-          <div className="sm:col-span-2 flex justify-end">
-            <Button type="submit" disabled={saving} className="focus-visible:ring-primary focus-visible:ring-2">
-              {saving && <Loader2 className="size-4 mr-2 animate-spin" />}
-              Salvar dados bancários
-            </Button>
-          </div>
+          {!isLocked && (
+            <div className="sm:col-span-2 flex justify-end">
+              <Button type="submit" disabled={saving} className="focus-visible:ring-primary focus-visible:ring-2">
+                {saving && <Loader2 className="size-4 mr-2 animate-spin" />}
+                Salvar dados bancários
+              </Button>
+            </div>
+          )}
+          </fieldset>
         </form>
       </CardContent>
     </Card>

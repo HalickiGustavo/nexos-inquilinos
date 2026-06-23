@@ -36,7 +36,16 @@ function LoginPage() {
   const { user, loading } = useAuth();
 
   useEffect(() => {
-    if (!loading && user) navigate({ to: "/dashboard", replace: true });
+    if (loading || !user) return;
+    (async () => {
+      const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", user.id);
+      const r = (roles ?? []).map((x: any) => x.role);
+      const target = r.includes("manager") ? "/manager"
+        : r.includes("landlord") ? "/landlord"
+        : r.includes("tenant") ? "/tenant"
+        : "/dashboard";
+      navigate({ to: target, replace: true });
+    })();
   }, [user, loading, navigate]);
 
   return (

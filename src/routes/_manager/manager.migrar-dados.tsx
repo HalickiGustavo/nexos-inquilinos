@@ -249,14 +249,20 @@ function MigrarDadosPage() {
           if (existing?.id) {
             propertyId = existing.id;
           } else {
+            const allowedTypes = ["apartamento", "casa", "comercial", "terreno", "outro"] as const;
+            const allowedStatus = ["disponivel", "alugado", "manutencao"] as const;
+            const safeType = (allowedTypes as readonly string[]).includes(tipo)
+              ? (tipo as typeof allowedTypes[number]) : "apartamento";
+            const safeStatus = (allowedStatus as readonly string[]).includes(status)
+              ? (status as typeof allowedStatus[number]) : "disponivel";
             const { data: insP, error: eP } = await supabase
               .from("properties").insert({
                 user_id: userId,
                 code,
                 nickname: address.slice(0, 60),
                 address,
-                type: tipo,
-                status,
+                type: safeType,
+                status: safeStatus,
                 rent_price: Number.isFinite(rent) ? rent : 0,
                 owner_name: owner?.name ?? null,
                 notes: ownerDoc ? `CPF/CNPJ proprietário: ${ownerDoc}` : null,

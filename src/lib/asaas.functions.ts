@@ -1228,17 +1228,18 @@ export const configureAutomaticPayout = createServerFn({ method: "POST" })
 // Para cada parcela `agendado` cujo vencimento está a <= 15 dias, emite a
 // cobrança DENTRO da subconta do landlord (Modelo B), aplica o split da taxa
 // NEXO para a wallet master e move o status para `em_aberto`.
-export async function runProcessScheduledInvoices(opts?: { horizonDays?: number; limit?: number }) {
+export async function runProcessScheduledInvoices(opts?: { horizonDays?: number; limit?: number; managerUserId?: string }) {
   const { asaasFetch, getNexoFee } = await import("./asaas.server");
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const horizon = opts?.horizonDays ?? 15;
   const limit = opts?.limit ?? 200;
+  const managerUserId = opts?.managerUserId;
 
   const horizonDate = new Date();
   horizonDate.setUTCDate(horizonDate.getUTCDate() + horizon);
   const horizonStr = horizonDate.toISOString().slice(0, 10);
 
-  const { data: rows, error } = await supabaseAdmin
+  let query = supabaseAdmin
     .from("installments")
     .select(
       "id, user_id, contract_id, due_date, amount, extra_fees, status, asaas_payment_id, " +
@@ -1248,6 +1249,8 @@ export async function runProcessScheduledInvoices(opts?: { horizonDays?: number;
     .is("asaas_payment_id", null)
     .lte("due_date", horizonStr)
     .limit(limit);
+  if (managerUserId) query = query.eq("user_id", managerUserId);
+  const { data: rows, error } = await query;
   if (error) throw new Error(error.message);
 
   const { data: feeRow } = await (supabaseAdmin as any)

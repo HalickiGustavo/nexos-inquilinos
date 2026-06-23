@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as TenantSetupRouteImport } from './routes/tenant-setup'
 import { Route as ManagerSetupRouteImport } from './routes/manager-setup'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as LandlordSetupRouteImport } from './routes/landlord-setup'
 import { Route as CadastroRouteImport } from './routes/cadastro'
 import { Route as ManagerRouteImport } from './routes/_manager'
 import { Route as LandlordRouteImport } from './routes/_landlord'
@@ -72,6 +73,11 @@ const ManagerSetupRoute = ManagerSetupRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LandlordSetupRoute = LandlordSetupRouteImport.update({
+  id: '/landlord-setup',
+  path: '/landlord-setup',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CadastroRoute = CadastroRouteImport.update({
@@ -327,6 +333,7 @@ const ApiV1IntegrationsOrgSlugLeadsRoute =
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/cadastro': typeof CadastroRoute
+  '/landlord-setup': typeof LandlordSetupRoute
   '/login': typeof LoginRoute
   '/manager-setup': typeof ManagerSetupRoute
   '/tenant-setup': typeof TenantSetupRoute
@@ -375,6 +382,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof AuthenticatedIndexRoute
   '/cadastro': typeof CadastroRoute
+  '/landlord-setup': typeof LandlordSetupRoute
   '/login': typeof LoginRoute
   '/manager-setup': typeof ManagerSetupRoute
   '/tenant-setup': typeof TenantSetupRoute
@@ -426,6 +434,7 @@ export interface FileRoutesById {
   '/_landlord': typeof LandlordRouteWithChildren
   '/_manager': typeof ManagerRouteWithChildren
   '/cadastro': typeof CadastroRoute
+  '/landlord-setup': typeof LandlordSetupRoute
   '/login': typeof LoginRoute
   '/manager-setup': typeof ManagerSetupRoute
   '/tenant-setup': typeof TenantSetupRoute
@@ -477,6 +486,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/cadastro'
+    | '/landlord-setup'
     | '/login'
     | '/manager-setup'
     | '/tenant-setup'
@@ -525,6 +535,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/cadastro'
+    | '/landlord-setup'
     | '/login'
     | '/manager-setup'
     | '/tenant-setup'
@@ -575,6 +586,7 @@ export interface FileRouteTypes {
     | '/_landlord'
     | '/_manager'
     | '/cadastro'
+    | '/landlord-setup'
     | '/login'
     | '/manager-setup'
     | '/tenant-setup'
@@ -627,6 +639,7 @@ export interface RootRouteChildren {
   LandlordRoute: typeof LandlordRouteWithChildren
   ManagerRoute: typeof ManagerRouteWithChildren
   CadastroRoute: typeof CadastroRoute
+  LandlordSetupRoute: typeof LandlordSetupRoute
   LoginRoute: typeof LoginRoute
   ManagerSetupRoute: typeof ManagerSetupRoute
   TenantSetupRoute: typeof TenantSetupRoute
@@ -661,6 +674,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/landlord-setup': {
+      id: '/landlord-setup'
+      path: '/landlord-setup'
+      fullPath: '/landlord-setup'
+      preLoaderRoute: typeof LandlordSetupRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cadastro': {
@@ -1091,6 +1111,7 @@ const rootRouteChildren: RootRouteChildren = {
   LandlordRoute: LandlordRouteWithChildren,
   ManagerRoute: ManagerRouteWithChildren,
   CadastroRoute: CadastroRoute,
+  LandlordSetupRoute: LandlordSetupRoute,
   LoginRoute: LoginRoute,
   ManagerSetupRoute: ManagerSetupRoute,
   TenantSetupRoute: TenantSetupRoute,

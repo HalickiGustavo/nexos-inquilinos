@@ -115,6 +115,7 @@ export function PropertyFormDialog({
     area_total: e.area_total != null ? String(e.area_total) : "",
     landlord_id: (e.landlord_id as string | null) ?? "",
     responsible_member_id: (e.responsible_member_id as string | null) ?? "",
+    default_management_fee_percent: e.default_management_fee_percent != null ? String(e.default_management_fee_percent) : "10",
   });
 
   const indisponivel = form.status === "alugado" || form.status === "manutencao";

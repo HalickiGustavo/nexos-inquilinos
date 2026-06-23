@@ -1,13 +1,26 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { useState } from "react";
 import { toast } from "sonner";
-import { Globe, RefreshCw, Loader2 } from "lucide-react";
+import { Globe, RefreshCw, Loader2, Bell, Send } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { CentralConexoesPanel } from "@/components/CentralConexoesPanel";
+import { sendTestLeadNotification } from "@/lib/lead-test.functions";
+
+const SAMPLE_LEAD_MESSAGE = `🔔 *Novo lead NEXO* (TESTE)
+Cliente: João da Silva
+Telefone: (41) 99999-0000
+Imóvel: Apto Teste — Corretor Gustavpo (IM-TESTE)
+Portal: ZapImóveis
+Critério: Corretor do Imóvel
+
+_Esta é uma mensagem de teste enviada pelo painel NEXO._`;
 
 export const Route = createFileRoute("/_manager/manager/portais")({
   head: () => ({ meta: [{ title: "Integrações com Portais — NEXO" }] }),
@@ -97,7 +110,60 @@ function ManagerPortaisPage() {
           Atualizar status
         </Button>
       </Card>
+
+      <TestLeadNotificationCard />
     </div>
+  );
+}
+
+function TestLeadNotificationCard() {
+  const send = useServerFn(sendTestLeadNotification);
+  const [phone, setPhone] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  async function handleSend() {
+    setLoading(true);
+    try {
+      const res = await send({ data: { phone: phone.trim() || undefined } });
+      toast.success(`Mensagem de teste enviada para ${res.phone}`);
+    } catch (e: any) {
+      toast.error(e?.message ?? "Falha ao enviar mensagem de teste");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <Card className="p-5 space-y-4 border-dashed">
+      <div className="flex items-start gap-3">
+        <div className="p-2 rounded-lg bg-primary/10">
+          <Bell className="size-5 text-primary" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <h3 className="font-semibold">Testar notificação de lead</h3>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Simula a mensagem que o corretor recebe no WhatsApp quando um lead chega de um portal.
+          </p>
+        </div>
+      </div>
+
+      <pre className="text-xs bg-muted/50 rounded-md p-3 whitespace-pre-wrap font-mono leading-relaxed">
+{SAMPLE_LEAD_MESSAGE}
+      </pre>
+
+      <div className="flex flex-col sm:flex-row gap-2">
+        <Input
+          placeholder="Telefone (opcional) — usa o do seu perfil se vazio"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          className="flex-1"
+        />
+        <Button onClick={handleSend} disabled={loading}>
+          {loading ? <Loader2 className="size-4 mr-2 animate-spin" /> : <Send className="size-4 mr-2" />}
+          Enviar teste
+        </Button>
+      </div>
+    </Card>
   );
 }
 

@@ -181,8 +181,15 @@ function IntegrationsPage() {
                 preencha estes dados aqui ou depois no painel "Conta bancária e KYC". Saques são feitos automaticamente todo dia útil quando configurados.
               </p>
             </div>
-            <Field label="Código do banco (Febraban)">
-              <Input value={form.bankCode} onChange={(e) => setForm({ ...form, bankCode: e.target.value.replace(/\D/g, "") })} placeholder="Ex.: 341 (Itaú), 001 (BB)" inputMode="numeric" maxLength={4} />
+            <Field label="Banco">
+              <Select value={form.bankCode} onValueChange={(v) => setForm({ ...form, bankCode: v })}>
+                <SelectTrigger><SelectValue placeholder="Selecione o banco" /></SelectTrigger>
+                <SelectContent>
+                  {BR_BANKS.map((b) => (
+                    <SelectItem key={b.code} value={b.code}>{b.code} — {b.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </Field>
             <Field label="Tipo de conta">
               <Select value={form.bankAccountType} onValueChange={(v) => setForm({ ...form, bankAccountType: v as any })}>

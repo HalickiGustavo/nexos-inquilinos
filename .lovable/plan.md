@@ -1,67 +1,73 @@
-# Estudo: Assinatura Eletrônica de Contratos no NEXO
+## Objetivo
 
-> Pesquisa apenas — nada será implementado sem sua aprovação explícita.
+Reestruturar a tela **Migrar Dados** (`src/routes/_manager/manager.migrar-dados.tsx`) para deixar de usar uma única planilha "tudo-em-um" e passar a aceitar **3 planilhas CSV separadas**, uma para cada entidade do domínio imobiliário:
 
-## Contexto atual
-Hoje o módulo `ContractPdfUploader` permite anexar o PDF do contrato, mas **não há fluxo de assinatura**. Inquilino e locador precisam imprimir, assinar e reenviar — fricção alta para um app moderno.
+1. **Proprietários** (`proprietarios.csv`)
+2. **Imóveis** (`imoveis.csv`) — referencia o proprietário pelo CPF/CNPJ
+3. **Contratos / Inquilinos** (`contratos.csv`) — referencia o imóvel por um código interno e cria o inquilino junto
 
-## Três caminhos possíveis
+Hoje o arquivo único mistura 8 colunas de 4 entidades e gera confusão (ex.: "qual CPF é do proprietário?", "e se o mesmo proprietário tem 10 imóveis?"). A separação resolve isso e ainda permite importar em etapas (primeiro a base de proprietários, depois imóveis, depois contratos).
 
-### Caminho A — Assinador GOV.BR (oficial, gratuito)
-A Plataforma de Assinatura GOV.BR usa a conta gov.br do cidadão (CPF + selo prata/ouro) e gera assinatura avançada com validade jurídica equivalente à manuscrita (MP 2.200-2/2001 + Lei 14.063/2020).
+## Nova estrutura das planilhas
 
-Duas formas de usar:
+### 1. `proprietarios.csv`
+```
+proprietario_cpf_cnpj,proprietario_nome,proprietario_email,proprietario_telefone
+123.456.789-09,Maria Souza,maria@exemplo.com,(11) 98888-7777
+```
+- Chave única: `proprietario_cpf_cnpj` (deduplicação no upsert).
+- `email` e `telefone` opcionais.
 
-**A1. API oficial (`assinatura-api.staging.iti.br` / produção)**
-- Fluxo OAuth2 + POST do PDF → assinante autentica no gov.br → API devolve PDF assinado (PAdES).
-- **Bloqueio crítico:** as credenciais só são liberadas a **órgãos públicos** ("Gestor Público" precisa abrir solicitação no Serviço de Integração ID). Empresa privada não consegue habilitar.
-- Veredito: **inviável para o NEXO como integração direta.**
+### 2. `imoveis.csv`
+```
+imovel_codigo,proprietario_cpf_cnpj,imovel_endereco,imovel_tipo,imovel_valor_aluguel,imovel_status
+IM-001,123.456.789-09,Rua das Flores 123 - Centro,apartamento,1500.00,disponivel
+```
+- `imovel_codigo`: identificador interno do cliente (livre, ex.: "AP-302"); usado depois pelo CSV de contratos.
+- `proprietario_cpf_cnpj`: liga o imóvel a um proprietário já importado.
+- `imovel_status`: `disponivel` | `alugado` | `manutencao` (default `disponivel`).
 
-**A2. Redirect para `assinador.iti.br`**
-- Usuário baixa o PDF gerado pelo NEXO, abre `https://assinador.iti.br`, faz upload, assina com gov.br, devolve no NEXO via upload.
-- Zero custo, validade plena, mas **3 cliques manuais** e nenhuma rastreabilidade automática (precisamos confiar no upload final).
-- Veredito: **viável como opção gratuita/fallback**, não como fluxo principal.
+### 3. `contratos.csv`
+```
+imovel_codigo,inquilino_cpf,inquilino_nome,inquilino_email,inquilino_telefone,contrato_valor,contrato_vencimento,contrato_duracao_meses,contrato_ativo
+IM-001,987.654.321-00,João Pereira,joao@exemplo.com,(11) 97777-6666,1500.00,2026-07-10,12,sim
+```
+- `imovel_codigo`: precisa existir (importado no passo 2 **ou** já cadastrado na conta).
+- Cria/atualiza o inquilino por CPF e gera o contrato + parcelas (trigger atual cuida das parcelas).
 
-### Caminho B — API de terceiro (recomendado)
-Plataformas brasileiras com API REST, webhooks e fluxo embutido por e-mail/WhatsApp. Validade jurídica equivalente (assinatura eletrônica avançada, com trilha de auditoria, IP, geolocalização, hash do documento). Suportam também ICP-Brasil (qualificada) quando o signatário tem certificado A1/A3.
+## Mudanças no UI da página
 
-Comparativo das principais opções (preços públicos, 2026):
+Layout em **3 cards de upload empilhados**, cada um com:
+- Ícone próprio (Users / Home / FileText) e cor do tema (violet/fuchsia/cyan).
+- Botão "Baixar modelo" individual (gera o CSV daquele passo).
+- Dropzone próprio com contador de linhas válidas.
+- Selo de status: `Pendente` → `Pronto` → `Importado ✓` (com contagem de sucessos/erros).
 
-| Plataforma     | Preço entrada                | API/Webhooks | WhatsApp nativo | Diferencial |
-|----------------|-------------------------------|--------------|-----------------|-------------|
-| **ZapSign**    | R$ 49/mês (50 docs)           | Sim, REST    | Sim             | Melhor custo-benefício, UX moderna, docs em PT |
-| **Clicksign**  | R$ 99/mês                     | Sim, v3 Envelope | Sim         | Mais tradicional no jurídico, robusta |
-| **D4Sign**     | R$ 59/mês                     | Sim          | Sim (add-on)    | Forte em ICP-Brasil |
-| **Autentique** | Plano grátis (5 docs/mês)     | Sim, GraphQL | Não             | Bom para volume baixo |
+Abaixo dos três cards, um único botão **"Iniciar importação completa"** que:
+1. Processa `proprietarios` (upsert por CPF/CNPJ).
+2. Processa `imoveis` (resolve `proprietario_cpf_cnpj` → `owner_id`/`owner_name`; deduplica por `imovel_codigo` salvo em `properties.code` ou `notes`).
+3. Processa `contratos` (resolve `imovel_codigo` → `property_id`; upsert do inquilino por CPF; insere contrato).
 
-Fluxo típico (qualquer um dos quatro):
-1. NEXO gera PDF do contrato → POST para a API com signatários (locador, locatário, fiador).
-2. Plataforma envia link por e-mail/WhatsApp.
-3. Cada signatário assina (e-mail+token, selfie, ou certificado).
-4. Webhook avisa o NEXO → atualizamos `contracts.signed_at`, baixamos o PDF assinado e arquivamos em Storage.
+Cada etapa só roda se a planilha correspondente estiver carregada **ou** se a etapa anterior puder satisfazer as referências sozinha (ex.: posso importar só `contratos.csv` se os imóveis já existem na conta).
 
-### Caminho C — Assinatura própria dentro do NEXO
-Implementar canvas de desenho + e-mail+token + hash SHA-256 + trilha de auditoria (IP, user-agent, timestamp, geolocalização). Anexar página de assinaturas ao PDF.
+Painel de progresso atualizado mostra 3 barras (uma por entidade) em vez de uma só, mais a lista consolidada de erros com a coluna "Origem" (`proprietarios` / `imoveis` / `contratos`).
 
-- **Validade jurídica:** sim, como **assinatura eletrônica simples** (Lei 14.063/2020 art. 4º I), aceita para contratos privados entre partes, mas **menor força probatória** em disputa do que avançada/qualificada.
-- Custo zero por documento, mas precisamos manter a infra de evidências.
-- Veredito: **viável como MVP gratuito**, recomendado combinar com Caminho B para clientes que querem validade reforçada.
+## Mudanças técnicas (resumo para revisão)
 
-## Recomendação para discussão
+- Refatorar `MigrarDadosPage` para manter 3 estados independentes (`rowsOwners`, `rowsProps`, `rowsContracts`) em vez de um único `rows`.
+- Extrair as funções de parse/validação para um util local `migracao-helpers.ts` (mesma pasta) — `parseBRDate`, `parseMoney`, `parseBool`, `onlyDigits`, validação de headers por entidade.
+- 3 funções `downloadTemplateOwners()`, `downloadTemplateProperties()`, `downloadTemplateContracts()` com headers e linhas-exemplo próprias.
+- `processImport()` vira um pipeline sequencial com 3 etapas; cada etapa devolve `{ ok, errors }` e alimenta um único array consolidado de erros com `origem`.
+- Aproveitar `properties.code` (já existe, gerado por trigger) como chave de ligação — quando o usuário fornece `imovel_codigo`, sobrescrevemos o valor padrão; quando não fornece, geramos um automático e exibimos no relatório final para ele anotar.
+- Nenhuma mudança de schema no Supabase; nenhuma alteração em rotas/sidebar.
 
-**Arquitetura híbrida em 2 camadas:**
+## Fora do escopo
 
-1. **Padrão (incluso no plano)** — Assinatura própria (Caminho C) com trilha de auditoria. Cobre 90% dos contratos de locação residencial sem custo variável.
-2. **Premium (add-on)** — Integração **ZapSign** (Caminho B) como primeira escolha pelo custo e API limpa, com webhook nos contratos. Liga-se via tela de Integrações.
-3. **Sempre disponível** — Botão "Assinar no gov.br" que baixa o PDF e abre `assinador.iti.br` (Caminho A2) para quem prefere a via oficial gratuita.
+- Importação de XLSX (continua só CSV).
+- Importação de fotos/anexos de imóveis.
+- Re-design da sidebar / outras telas.
+- Mudanças no fluxo de criação manual de proprietário/imóvel/contrato.
 
-Descartar Caminho A1 (API oficial) — bloqueio regulatório para empresas privadas.
+## Pergunta antes de executar
 
-## Perguntas para você decidir
-
-1. Quer começar pela **assinatura própria** (sem custo, sem dependência externa) ou já partir direto para **ZapSign/Clicksign**?
-2. Quem paga a assinatura paga: **a imobiliária** (fica no plano) ou **repassamos por contrato assinado** (modelo SaaS revenda)?
-3. Vamos exigir signatários além de locador/locatário (fiador, testemunhas, cônjuge)?
-4. WhatsApp como canal principal de envio do link de assinatura, e-mail, ou os dois?
-
-Aguardo seu OK antes de planejar qualquer implementação.
+Confirma esse formato de 3 planilhas separadas, ou prefere 2 planilhas (juntando `imoveis` + `contratos`, já que normalmente vêm juntos do sistema antigo)?

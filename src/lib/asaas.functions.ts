@@ -119,17 +119,14 @@ export const createAsaasSubaccount = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => createSubaccountInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
+    const { userId } = context;
     const { asaasFetch } = await import("./asaas.server");
 
-    const existing = await supabase
-      .from("asaas_accounts")
-      .select("id, asaas_account_id")
-      .eq("user_id", userId)
-      .maybeSingle();
-    if (existing.data?.asaas_account_id) {
-      throw new Error("Já existe uma subconta Asaas para este usuário.");
-    }
+    // Sem verificação de subconta existente: o login do app e a subconta Asaas
+    // são entidades independentes — o mesmo usuário pode recriar/sobrescrever
+    // sua subconta livremente (o upsert por user_id resolve duplicidade).
+
+
 
     const digits = data.mobilePhone.replace(/\D/g, "");
     if (digits.length < 10 || digits.length > 11 || (digits.length === 11 && digits[2] !== "9")) {

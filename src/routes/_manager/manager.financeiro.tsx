@@ -252,9 +252,6 @@ function Recebimentos() {
                                           <BadgeCheck className="size-4 mr-1" /> Pago
                                         </Button>
                                       )}
-                                      {i.status !== "pago" && (
-                                        <SimulateBtn installment={i} onDone={() => qc.invalidateQueries({ queryKey: ["mgr-receb"] })} />
-                                      )}
                                       <Button size="sm" variant="outline" onClick={() => setSplitFor(i)}>
                                         <Sparkles className="size-4 mr-1" /> Split
                                       </Button>

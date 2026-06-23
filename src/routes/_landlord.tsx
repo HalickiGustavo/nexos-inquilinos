@@ -14,12 +14,12 @@ export const Route = createFileRoute("/_landlord")({
   component: LandlordLayout,
 });
 
-const navItems = [
+const navItems: ReadonlyArray<{ to: string; label: string; icon: typeof LayoutDashboard; exact?: boolean }> = [
   { to: "/landlord", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/landlord/financeiro", label: "Finanças", icon: Wallet },
   { to: "/landlord/manutencoes", label: "Manutenções", icon: Wrench },
   { to: "/landlord/saldo", label: "Saldo e Saque", icon: Coins },
-] as const;
+];
 
 function LandlordLayout() {
   const { user, loading, signOut } = useAuth();

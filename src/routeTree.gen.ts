@@ -14,6 +14,7 @@ import { Route as ManagerSetupRouteImport } from './routes/manager-setup'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as CadastroRouteImport } from './routes/cadastro'
 import { Route as ManagerRouteImport } from './routes/_manager'
+import { Route as LandlordRouteImport } from './routes/_landlord'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedTenantsRouteImport } from './routes/_authenticated/tenants'
@@ -25,9 +26,11 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedContractsRouteImport } from './routes/_authenticated/contracts'
 import { Route as AuthenticatedContaCorrenteRouteImport } from './routes/_authenticated/conta-corrente'
 import { Route as ManagerManagerIndexRouteImport } from './routes/_manager/manager.index'
+import { Route as LandlordLandlordIndexRouteImport } from './routes/_landlord/landlord.index'
 import { Route as AuthenticatedTenantIndexRouteImport } from './routes/_authenticated/tenant.index'
 import { Route as ApiPublicAsaasWebhookRouteImport } from './routes/api/public/asaas-webhook'
 import { Route as ManagerManagerVistoriasRouteImport } from './routes/_manager/manager.vistorias'
+import { Route as ManagerManagerProprietariosRouteImport } from './routes/_manager/manager.proprietarios'
 import { Route as ManagerManagerPortaisRouteImport } from './routes/_manager/manager.portais'
 import { Route as ManagerManagerMigrarDadosRouteImport } from './routes/_manager/manager.migrar-dados'
 import { Route as ManagerManagerLeadsRouteImport } from './routes/_manager/manager.leads'
@@ -38,6 +41,9 @@ import { Route as ManagerManagerDimobRouteImport } from './routes/_manager/manag
 import { Route as ManagerManagerCrmRouteImport } from './routes/_manager/manager.crm'
 import { Route as ManagerManagerCarteiraRouteImport } from './routes/_manager/manager.carteira'
 import { Route as ManagerManagerAlertasRouteImport } from './routes/_manager/manager.alertas'
+import { Route as LandlordLandlordSaldoRouteImport } from './routes/_landlord/landlord.saldo'
+import { Route as LandlordLandlordManutencoesRouteImport } from './routes/_landlord/landlord.manutencoes'
+import { Route as LandlordLandlordFinanceiroRouteImport } from './routes/_landlord/landlord.financeiro'
 import { Route as AuthenticatedTenantManutencoesRouteImport } from './routes/_authenticated/tenant.manutencoes'
 import { Route as AuthenticatedTenantFinanceiroRouteImport } from './routes/_authenticated/tenant.financeiro'
 import { Route as AuthenticatedTenantContratoRouteImport } from './routes/_authenticated/tenant.contrato'
@@ -74,6 +80,10 @@ const CadastroRoute = CadastroRouteImport.update({
 } as any)
 const ManagerRoute = ManagerRouteImport.update({
   id: '/_manager',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LandlordRoute = LandlordRouteImport.update({
+  id: '/_landlord',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
@@ -133,6 +143,11 @@ const ManagerManagerIndexRoute = ManagerManagerIndexRouteImport.update({
   path: '/manager/',
   getParentRoute: () => ManagerRoute,
 } as any)
+const LandlordLandlordIndexRoute = LandlordLandlordIndexRouteImport.update({
+  id: '/landlord/',
+  path: '/landlord/',
+  getParentRoute: () => LandlordRoute,
+} as any)
 const AuthenticatedTenantIndexRoute =
   AuthenticatedTenantIndexRouteImport.update({
     id: '/tenant/',
@@ -149,6 +164,12 @@ const ManagerManagerVistoriasRoute = ManagerManagerVistoriasRouteImport.update({
   path: '/manager/vistorias',
   getParentRoute: () => ManagerRoute,
 } as any)
+const ManagerManagerProprietariosRoute =
+  ManagerManagerProprietariosRouteImport.update({
+    id: '/manager/proprietarios',
+    path: '/manager/proprietarios',
+    getParentRoute: () => ManagerRoute,
+  } as any)
 const ManagerManagerPortaisRoute = ManagerManagerPortaisRouteImport.update({
   id: '/manager/portais',
   path: '/manager/portais',
@@ -202,6 +223,23 @@ const ManagerManagerAlertasRoute = ManagerManagerAlertasRouteImport.update({
   path: '/manager/alertas',
   getParentRoute: () => ManagerRoute,
 } as any)
+const LandlordLandlordSaldoRoute = LandlordLandlordSaldoRouteImport.update({
+  id: '/landlord/saldo',
+  path: '/landlord/saldo',
+  getParentRoute: () => LandlordRoute,
+} as any)
+const LandlordLandlordManutencoesRoute =
+  LandlordLandlordManutencoesRouteImport.update({
+    id: '/landlord/manutencoes',
+    path: '/landlord/manutencoes',
+    getParentRoute: () => LandlordRoute,
+  } as any)
+const LandlordLandlordFinanceiroRoute =
+  LandlordLandlordFinanceiroRouteImport.update({
+    id: '/landlord/financeiro',
+    path: '/landlord/financeiro',
+    getParentRoute: () => LandlordRoute,
+  } as any)
 const AuthenticatedTenantManutencoesRoute =
   AuthenticatedTenantManutencoesRouteImport.update({
     id: '/tenant/manutencoes',
@@ -298,6 +336,9 @@ export interface FileRoutesByFullPath {
   '/tenant/contrato': typeof AuthenticatedTenantContratoRoute
   '/tenant/financeiro': typeof AuthenticatedTenantFinanceiroRoute
   '/tenant/manutencoes': typeof AuthenticatedTenantManutencoesRoute
+  '/landlord/financeiro': typeof LandlordLandlordFinanceiroRoute
+  '/landlord/manutencoes': typeof LandlordLandlordManutencoesRoute
+  '/landlord/saldo': typeof LandlordLandlordSaldoRoute
   '/manager/alertas': typeof ManagerManagerAlertasRoute
   '/manager/carteira': typeof ManagerManagerCarteiraRoute
   '/manager/crm': typeof ManagerManagerCrmRoute
@@ -308,9 +349,11 @@ export interface FileRoutesByFullPath {
   '/manager/leads': typeof ManagerManagerLeadsRoute
   '/manager/migrar-dados': typeof ManagerManagerMigrarDadosRoute
   '/manager/portais': typeof ManagerManagerPortaisRoute
+  '/manager/proprietarios': typeof ManagerManagerProprietariosRoute
   '/manager/vistorias': typeof ManagerManagerVistoriasRoute
   '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
   '/tenant/': typeof AuthenticatedTenantIndexRoute
+  '/landlord/': typeof LandlordLandlordIndexRoute
   '/manager/': typeof ManagerManagerIndexRoute
   '/manager/configuracoes/roleta': typeof ManagerManagerConfiguracoesRoletaRoute
   '/api/public/hooks/process-scheduled-invoices': typeof ApiPublicHooksProcessScheduledInvoicesRoute
@@ -340,6 +383,9 @@ export interface FileRoutesByTo {
   '/tenant/contrato': typeof AuthenticatedTenantContratoRoute
   '/tenant/financeiro': typeof AuthenticatedTenantFinanceiroRoute
   '/tenant/manutencoes': typeof AuthenticatedTenantManutencoesRoute
+  '/landlord/financeiro': typeof LandlordLandlordFinanceiroRoute
+  '/landlord/manutencoes': typeof LandlordLandlordManutencoesRoute
+  '/landlord/saldo': typeof LandlordLandlordSaldoRoute
   '/manager/alertas': typeof ManagerManagerAlertasRoute
   '/manager/carteira': typeof ManagerManagerCarteiraRoute
   '/manager/crm': typeof ManagerManagerCrmRoute
@@ -350,9 +396,11 @@ export interface FileRoutesByTo {
   '/manager/leads': typeof ManagerManagerLeadsRoute
   '/manager/migrar-dados': typeof ManagerManagerMigrarDadosRoute
   '/manager/portais': typeof ManagerManagerPortaisRoute
+  '/manager/proprietarios': typeof ManagerManagerProprietariosRoute
   '/manager/vistorias': typeof ManagerManagerVistoriasRoute
   '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
   '/tenant': typeof AuthenticatedTenantIndexRoute
+  '/landlord': typeof LandlordLandlordIndexRoute
   '/manager': typeof ManagerManagerIndexRoute
   '/manager/configuracoes/roleta': typeof ManagerManagerConfiguracoesRoletaRoute
   '/api/public/hooks/process-scheduled-invoices': typeof ApiPublicHooksProcessScheduledInvoicesRoute
@@ -366,6 +414,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/_landlord': typeof LandlordRouteWithChildren
   '/_manager': typeof ManagerRouteWithChildren
   '/cadastro': typeof CadastroRoute
   '/login': typeof LoginRoute
@@ -385,6 +434,9 @@ export interface FileRoutesById {
   '/_authenticated/tenant/contrato': typeof AuthenticatedTenantContratoRoute
   '/_authenticated/tenant/financeiro': typeof AuthenticatedTenantFinanceiroRoute
   '/_authenticated/tenant/manutencoes': typeof AuthenticatedTenantManutencoesRoute
+  '/_landlord/landlord/financeiro': typeof LandlordLandlordFinanceiroRoute
+  '/_landlord/landlord/manutencoes': typeof LandlordLandlordManutencoesRoute
+  '/_landlord/landlord/saldo': typeof LandlordLandlordSaldoRoute
   '/_manager/manager/alertas': typeof ManagerManagerAlertasRoute
   '/_manager/manager/carteira': typeof ManagerManagerCarteiraRoute
   '/_manager/manager/crm': typeof ManagerManagerCrmRoute
@@ -395,9 +447,11 @@ export interface FileRoutesById {
   '/_manager/manager/leads': typeof ManagerManagerLeadsRoute
   '/_manager/manager/migrar-dados': typeof ManagerManagerMigrarDadosRoute
   '/_manager/manager/portais': typeof ManagerManagerPortaisRoute
+  '/_manager/manager/proprietarios': typeof ManagerManagerProprietariosRoute
   '/_manager/manager/vistorias': typeof ManagerManagerVistoriasRoute
   '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
   '/_authenticated/tenant/': typeof AuthenticatedTenantIndexRoute
+  '/_landlord/landlord/': typeof LandlordLandlordIndexRoute
   '/_manager/manager/': typeof ManagerManagerIndexRoute
   '/_manager/manager/configuracoes/roleta': typeof ManagerManagerConfiguracoesRoletaRoute
   '/api/public/hooks/process-scheduled-invoices': typeof ApiPublicHooksProcessScheduledInvoicesRoute
@@ -429,6 +483,9 @@ export interface FileRouteTypes {
     | '/tenant/contrato'
     | '/tenant/financeiro'
     | '/tenant/manutencoes'
+    | '/landlord/financeiro'
+    | '/landlord/manutencoes'
+    | '/landlord/saldo'
     | '/manager/alertas'
     | '/manager/carteira'
     | '/manager/crm'
@@ -439,9 +496,11 @@ export interface FileRouteTypes {
     | '/manager/leads'
     | '/manager/migrar-dados'
     | '/manager/portais'
+    | '/manager/proprietarios'
     | '/manager/vistorias'
     | '/api/public/asaas-webhook'
     | '/tenant/'
+    | '/landlord/'
     | '/manager/'
     | '/manager/configuracoes/roleta'
     | '/api/public/hooks/process-scheduled-invoices'
@@ -471,6 +530,9 @@ export interface FileRouteTypes {
     | '/tenant/contrato'
     | '/tenant/financeiro'
     | '/tenant/manutencoes'
+    | '/landlord/financeiro'
+    | '/landlord/manutencoes'
+    | '/landlord/saldo'
     | '/manager/alertas'
     | '/manager/carteira'
     | '/manager/crm'
@@ -481,9 +543,11 @@ export interface FileRouteTypes {
     | '/manager/leads'
     | '/manager/migrar-dados'
     | '/manager/portais'
+    | '/manager/proprietarios'
     | '/manager/vistorias'
     | '/api/public/asaas-webhook'
     | '/tenant'
+    | '/landlord'
     | '/manager'
     | '/manager/configuracoes/roleta'
     | '/api/public/hooks/process-scheduled-invoices'
@@ -496,6 +560,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/_authenticated'
+    | '/_landlord'
     | '/_manager'
     | '/cadastro'
     | '/login'
@@ -515,6 +580,9 @@ export interface FileRouteTypes {
     | '/_authenticated/tenant/contrato'
     | '/_authenticated/tenant/financeiro'
     | '/_authenticated/tenant/manutencoes'
+    | '/_landlord/landlord/financeiro'
+    | '/_landlord/landlord/manutencoes'
+    | '/_landlord/landlord/saldo'
     | '/_manager/manager/alertas'
     | '/_manager/manager/carteira'
     | '/_manager/manager/crm'
@@ -525,9 +593,11 @@ export interface FileRouteTypes {
     | '/_manager/manager/leads'
     | '/_manager/manager/migrar-dados'
     | '/_manager/manager/portais'
+    | '/_manager/manager/proprietarios'
     | '/_manager/manager/vistorias'
     | '/api/public/asaas-webhook'
     | '/_authenticated/tenant/'
+    | '/_landlord/landlord/'
     | '/_manager/manager/'
     | '/_manager/manager/configuracoes/roleta'
     | '/api/public/hooks/process-scheduled-invoices'
@@ -541,6 +611,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  LandlordRoute: typeof LandlordRouteWithChildren
   ManagerRoute: typeof ManagerRouteWithChildren
   CadastroRoute: typeof CadastroRoute
   LoginRoute: typeof LoginRoute
@@ -591,6 +662,13 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof ManagerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_landlord': {
+      id: '/_landlord'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof LandlordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -670,6 +748,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ManagerManagerIndexRouteImport
       parentRoute: typeof ManagerRoute
     }
+    '/_landlord/landlord/': {
+      id: '/_landlord/landlord/'
+      path: '/landlord'
+      fullPath: '/landlord/'
+      preLoaderRoute: typeof LandlordLandlordIndexRouteImport
+      parentRoute: typeof LandlordRoute
+    }
     '/_authenticated/tenant/': {
       id: '/_authenticated/tenant/'
       path: '/tenant'
@@ -689,6 +774,13 @@ declare module '@tanstack/react-router' {
       path: '/manager/vistorias'
       fullPath: '/manager/vistorias'
       preLoaderRoute: typeof ManagerManagerVistoriasRouteImport
+      parentRoute: typeof ManagerRoute
+    }
+    '/_manager/manager/proprietarios': {
+      id: '/_manager/manager/proprietarios'
+      path: '/manager/proprietarios'
+      fullPath: '/manager/proprietarios'
+      preLoaderRoute: typeof ManagerManagerProprietariosRouteImport
       parentRoute: typeof ManagerRoute
     }
     '/_manager/manager/portais': {
@@ -760,6 +852,27 @@ declare module '@tanstack/react-router' {
       fullPath: '/manager/alertas'
       preLoaderRoute: typeof ManagerManagerAlertasRouteImport
       parentRoute: typeof ManagerRoute
+    }
+    '/_landlord/landlord/saldo': {
+      id: '/_landlord/landlord/saldo'
+      path: '/landlord/saldo'
+      fullPath: '/landlord/saldo'
+      preLoaderRoute: typeof LandlordLandlordSaldoRouteImport
+      parentRoute: typeof LandlordRoute
+    }
+    '/_landlord/landlord/manutencoes': {
+      id: '/_landlord/landlord/manutencoes'
+      path: '/landlord/manutencoes'
+      fullPath: '/landlord/manutencoes'
+      preLoaderRoute: typeof LandlordLandlordManutencoesRouteImport
+      parentRoute: typeof LandlordRoute
+    }
+    '/_landlord/landlord/financeiro': {
+      id: '/_landlord/landlord/financeiro'
+      path: '/landlord/financeiro'
+      fullPath: '/landlord/financeiro'
+      preLoaderRoute: typeof LandlordLandlordFinanceiroRouteImport
+      parentRoute: typeof LandlordRoute
     }
     '/_authenticated/tenant/manutencoes': {
       id: '/_authenticated/tenant/manutencoes'
@@ -895,6 +1008,24 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
   AuthenticatedRouteChildren,
 )
 
+interface LandlordRouteChildren {
+  LandlordLandlordFinanceiroRoute: typeof LandlordLandlordFinanceiroRoute
+  LandlordLandlordManutencoesRoute: typeof LandlordLandlordManutencoesRoute
+  LandlordLandlordSaldoRoute: typeof LandlordLandlordSaldoRoute
+  LandlordLandlordIndexRoute: typeof LandlordLandlordIndexRoute
+}
+
+const LandlordRouteChildren: LandlordRouteChildren = {
+  LandlordLandlordFinanceiroRoute: LandlordLandlordFinanceiroRoute,
+  LandlordLandlordManutencoesRoute: LandlordLandlordManutencoesRoute,
+  LandlordLandlordSaldoRoute: LandlordLandlordSaldoRoute,
+  LandlordLandlordIndexRoute: LandlordLandlordIndexRoute,
+}
+
+const LandlordRouteWithChildren = LandlordRoute._addFileChildren(
+  LandlordRouteChildren,
+)
+
 interface ManagerRouteChildren {
   ManagerManagerAlertasRoute: typeof ManagerManagerAlertasRoute
   ManagerManagerCarteiraRoute: typeof ManagerManagerCarteiraRoute
@@ -906,6 +1037,7 @@ interface ManagerRouteChildren {
   ManagerManagerLeadsRoute: typeof ManagerManagerLeadsRoute
   ManagerManagerMigrarDadosRoute: typeof ManagerManagerMigrarDadosRoute
   ManagerManagerPortaisRoute: typeof ManagerManagerPortaisRoute
+  ManagerManagerProprietariosRoute: typeof ManagerManagerProprietariosRoute
   ManagerManagerVistoriasRoute: typeof ManagerManagerVistoriasRoute
   ManagerManagerIndexRoute: typeof ManagerManagerIndexRoute
   ManagerManagerConfiguracoesRoletaRoute: typeof ManagerManagerConfiguracoesRoletaRoute
@@ -922,6 +1054,7 @@ const ManagerRouteChildren: ManagerRouteChildren = {
   ManagerManagerLeadsRoute: ManagerManagerLeadsRoute,
   ManagerManagerMigrarDadosRoute: ManagerManagerMigrarDadosRoute,
   ManagerManagerPortaisRoute: ManagerManagerPortaisRoute,
+  ManagerManagerProprietariosRoute: ManagerManagerProprietariosRoute,
   ManagerManagerVistoriasRoute: ManagerManagerVistoriasRoute,
   ManagerManagerIndexRoute: ManagerManagerIndexRoute,
   ManagerManagerConfiguracoesRoletaRoute:
@@ -933,6 +1066,7 @@ const ManagerRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  LandlordRoute: LandlordRouteWithChildren,
   ManagerRoute: ManagerRouteWithChildren,
   CadastroRoute: CadastroRoute,
   LoginRoute: LoginRoute,

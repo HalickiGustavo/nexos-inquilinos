@@ -7,11 +7,17 @@ import { Globe, RefreshCw, Loader2, Bell, Send } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { CentralConexoesPanel } from "@/components/CentralConexoesPanel";
-import { sendTestLeadNotification } from "@/lib/lead-test.functions";
+import { sendTestLeadNotification, listTeamMembersForTest } from "@/lib/lead-test.functions";
 
 const SAMPLE_LEAD_MESSAGE = `🔔 *Novo lead NEXO* (TESTE)
 Cliente: João da Silva

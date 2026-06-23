@@ -1127,18 +1127,48 @@ export const linkAsaasBankAccount = createServerFn({ method: "POST" })
       .maybeSingle();
     if (acc.error) throw new Error(acc.error.message);
     const apiKey = acc.data?.api_key;
+    const subaccountId = acc.data?.asaas_account_id;
     if (!apiKey) throw new Error("Subconta Asaas ainda não foi criada. Conclua o onboarding primeiro.");
 
     // 1) Vincular conta bancária de liquidação
     // O Asaas exige ownerName/ownerCpfCnpj — buscamos do cadastro da própria subconta.
+    // Tentamos múltiplas fontes: /myAccount (com api_key da subconta) e, como fallback,
+    // GET /accounts/{id} com a master key.
     let ownerName: string | undefined;
     let ownerCpfCnpj: string | undefined;
+    const pickOwner = (src: any) => {
+      if (!src || typeof src !== "object") return;
+      ownerName = ownerName ?? src.name ?? src.companyName ?? src.fullName ?? undefined;
+      const cpf = src.cpfCnpj ?? src.cpf_cnpj ?? src.document ?? undefined;
+      if (!ownerCpfCnpj && cpf) ownerCpfCnpj = String(cpf).replace(/\D/g, "");
+    };
     try {
-      const me = await asaasFetch<any>("/myAccount", { apiKey });
-      ownerName = me?.name ?? me?.companyName ?? undefined;
-      ownerCpfCnpj = me?.cpfCnpj ? String(me.cpfCnpj).replace(/\D/g, "") : undefined;
+      pickOwner(await asaasFetch<any>("/myAccount", { apiKey }));
     } catch (e: any) {
-      console.warn("[Asaas] /myAccount falhou ao buscar titular:", e?.message);
+      console.warn("[Asaas] /myAccount falhou:", e?.message);
+    }
+    if ((!ownerName || !ownerCpfCnpj) && subaccountId) {
+      try {
+        pickOwner(await asaasFetch<any>(`/accounts/${subaccountId}`));
+      } catch (e: any) {
+        console.warn("[Asaas] /accounts/{id} falhou:", e?.message);
+      }
+    }
+    if (!ownerName || !ownerCpfCnpj) {
+      // Último recurso: buscar pela listagem usando a master key.
+      try {
+        const list = await asaasFetch<any>(`/accounts?limit=1${subaccountId ? `&id=${subaccountId}` : ""}`);
+        const first = Array.isArray(list?.data) ? list.data[0] : null;
+        pickOwner(first);
+      } catch (e: any) {
+        console.warn("[Asaas] /accounts (listagem) falhou:", e?.message);
+      }
+    }
+
+    if (!ownerName || !ownerCpfCnpj) {
+      throw new Error(
+        "Não foi possível recuperar o titular/CPF da subconta no Asaas. Tente novamente em instantes ou contate o suporte.",
+      );
     }
 
     await asaasFetch<any>("/bankAccounts", {
@@ -1150,8 +1180,8 @@ export const linkAsaasBankAccount = createServerFn({ method: "POST" })
         account: data.account.replace(/\D/g, ""),
         accountDigit: data.accountDigit.replace(/\D/g, ""),
         bankAccountType: data.accountType,
-        ...(ownerName ? { ownerName } : {}),
-        ...(ownerCpfCnpj ? { ownerCpfCnpj } : {}),
+        ownerName,
+        ownerCpfCnpj,
       }),
     });
 

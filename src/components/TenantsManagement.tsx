@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
-import { Plus, Pencil, Trash2, Users, Mail, Phone, Handshake, MessageCircle } from "lucide-react";
+import { Plus, Pencil, Trash2, Users, Mail, Phone, Handshake, MessageCircle, Link2 } from "lucide-react";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +15,7 @@ import { useTenants, useInstallments, useInvalidate, type Tenant } from "@/lib/q
 import { DebtAgreementDialog } from "@/components/DebtAgreementDialog";
 import { today } from "@/lib/format";
 import { maskCpfCnpj, maskPhone } from "@/lib/br-validators";
+import { generateTenantInviteLink } from "@/lib/asaas.functions";
 
 function waLink(phone: string, message?: string) {
   const digits = phone.replace(/\D/g, "");

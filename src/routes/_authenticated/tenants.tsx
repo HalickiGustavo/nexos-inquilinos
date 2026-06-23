@@ -213,3 +213,35 @@ function WhatsAppLinkButton({ tenant }: { tenant: Tenant }) {
     </Button>
   );
 }
+
+function InviteLinkButton({ tenant }: { tenant: Tenant }) {
+  const generate = useServerFn(generateTenantInviteLink);
+  const [loading, setLoading] = useState(false);
+  if (!tenant.email) return null;
+  return (
+    <Button
+      variant="outline"
+      size="sm"
+      title="Gerar link de convite e copiar"
+      disabled={loading}
+      onClick={async () => {
+        setLoading(true);
+        try {
+          const res = await generate({ data: { tenantId: tenant.id, redirectUrl: window.location.origin } });
+          await navigator.clipboard.writeText(res.actionLink).catch(() => {});
+          toast.success("Link de convite copiado", { description: res.actionLink });
+          if (tenant.phone) {
+            const msg = `Olá, ${tenant.full_name}! Acesse o Portal do Inquilino da Nexo: ${res.actionLink}`;
+            window.open(waLink(tenant.phone, msg), "_blank", "noopener,noreferrer");
+          }
+        } catch (e: any) {
+          toast.error(e?.message ?? "Falha ao gerar link");
+        } finally {
+          setLoading(false);
+        }
+      }}
+    >
+      <Link2 className="size-3.5" />
+    </Button>
+  );
+}

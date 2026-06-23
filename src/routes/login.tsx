@@ -20,8 +20,10 @@ import { Card } from "@/components/ui/card";
 import nexoLogoAsset from "@/assets/nexo-logo.png.asset.json";
 import nexoLogoDarkAsset from "@/assets/nexo-logo-dark.png.asset.json";
 import { useTheme } from "@/components/ThemeProvider";
+import { useServerFn } from "@tanstack/react-start";
+import { useQuery } from "@tanstack/react-query";
+import { getRecaptchaSiteKey } from "@/lib/recaptcha.functions";
 
-const RECAPTCHA_SITE_KEY = "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI";
 
 export const Route = createFileRoute("/login")({
   head: () => ({ meta: [{ title: "Entrar — Nexo" }] }),

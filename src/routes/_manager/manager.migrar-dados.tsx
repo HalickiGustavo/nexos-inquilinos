@@ -266,10 +266,49 @@ function MigrarDadosPage() {
     owners: 0, properties: 0, tenants: 0, contracts: 0,
   });
 
+  // Estado das 3 planilhas separadas
+  const [ownersFile, setOwnersFile] = useState<File | null>(null);
+  const [ownersRows, setOwnersRows] = useState<Record<string, string>[]>([]);
+  const [propsFile, setPropsFile] = useState<File | null>(null);
+  const [propsRows, setPropsRows] = useState<Record<string, string>[]>([]);
+  const [contractsFile, setContractsFile] = useState<File | null>(null);
+  const [contractsRows, setContractsRows] = useState<Record<string, string>[]>([]);
+
   function reset() {
     setFile(null); setRows([]); setErrors([]); setFinished(false);
     setRunning(false); setProgress(0);
     setCounts({ owners: 0, properties: 0, tenants: 0, contracts: 0 });
+    setOwnersFile(null); setOwnersRows([]);
+    setPropsFile(null); setPropsRows([]);
+    setContractsFile(null); setContractsRows([]);
+  }
+
+  async function parseCsvFile<T extends Record<string, string>>(
+    f: File,
+    onDone: (rows: T[]) => void,
+  ) {
+    if (!/\.csv$/i.test(f.name)) { toast.error("Selecione um arquivo .csv válido."); return; }
+    const { default: Papa } = await import("papaparse");
+    Papa.parse<T>(f, {
+      header: true,
+      skipEmptyLines: true,
+      transformHeader: (h: string) => h.trim().toLowerCase().replace(/\s+/g, "_"),
+      complete: (result) => {
+        onDone(result.data);
+        toast.success(`${f.name}: ${result.data.length} linha(s) lida(s).`);
+      },
+      error: (err) => toast.error(`Erro ao ler ${f.name}: ${err.message}`),
+    });
+  }
+
+  function mergeAndPrepare() {
+    if (!ownersRows.length && !propsRows.length && !contractsRows.length) {
+      toast.error("Carregue pelo menos uma das 3 planilhas.");
+      return;
+    }
+    const merged = mergeSeparateSheets(ownersRows, propsRows, contractsRows);
+    setRows(merged);
+    toast.success(`${merged.length} linha(s) prontas para importar.`);
   }
 
   const handleFiles = useCallback(async (files: FileList | null) => {

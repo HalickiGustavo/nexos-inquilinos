@@ -17,6 +17,42 @@ import { AsaasBankAndKycPanel } from "@/components/AsaasBankAndKycPanel";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { maskCpfCnpj, maskPhone, maskCEP } from "@/lib/br-validators";
 
+const BR_BANKS: Array<{ code: string; name: string }> = [
+  { code: "001", name: "Banco do Brasil" },
+  { code: "033", name: "Santander" },
+  { code: "104", name: "Caixa Econômica Federal" },
+  { code: "237", name: "Bradesco" },
+  { code: "341", name: "Itaú Unibanco" },
+  { code: "260", name: "Nubank" },
+  { code: "077", name: "Banco Inter" },
+  { code: "212", name: "Banco Original" },
+  { code: "336", name: "C6 Bank" },
+  { code: "208", name: "BTG Pactual" },
+  { code: "748", name: "Sicredi" },
+  { code: "756", name: "Sicoob" },
+  { code: "422", name: "Safra" },
+  { code: "655", name: "Votorantim" },
+  { code: "070", name: "BRB" },
+  { code: "041", name: "Banrisul" },
+  { code: "389", name: "Banco Mercantil do Brasil" },
+  { code: "320", name: "China Construction Bank (CCB)" },
+  { code: "246", name: "Banco ABC Brasil" },
+  { code: "623", name: "Banco PAN" },
+  { code: "643", name: "Banco Pine" },
+  { code: "611", name: "Banco Paulista" },
+  { code: "094", name: "Banco Finaxis" },
+  { code: "707", name: "Banco Daycoval" },
+  { code: "085", name: "Cooperativa Central Ailos" },
+  { code: "136", name: "Unicred" },
+  { code: "197", name: "Stone" },
+  { code: "323", name: "Mercado Pago" },
+  { code: "380", name: "PicPay" },
+  { code: "335", name: "Banco Digio" },
+  { code: "290", name: "PagSeguro / PagBank" },
+  { code: "364", name: "Gerencianet (Efí)" },
+  { code: "461", name: "Asaas" },
+];
+
 export const Route = createFileRoute("/_authenticated/integrations")({
   head: () => ({ meta: [{ title: "Saldo e Saque — Nexo" }] }),
   component: IntegrationsPage,

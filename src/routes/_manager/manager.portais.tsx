@@ -124,14 +124,24 @@ function ManagerPortaisPage() {
 
 function TestLeadNotificationCard() {
   const send = useServerFn(sendTestLeadNotification);
-  const [phone, setPhone] = useState("");
+  const fetchMembers = useServerFn(listTeamMembersForTest);
+  const [memberId, setMemberId] = useState<string>("");
   const [loading, setLoading] = useState(false);
 
+  const { data: members = [], isLoading: loadingMembers } = useQuery({
+    queryKey: ["test-lead-members"],
+    queryFn: () => fetchMembers(),
+  });
+
   async function handleSend() {
+    if (!memberId) {
+      toast.error("Selecione um membro da equipe.");
+      return;
+    }
     setLoading(true);
     try {
-      const res = await send({ data: { phone: phone.trim() || undefined } });
-      toast.success(`Mensagem de teste enviada para ${res.phone}`);
+      const res = await send({ data: { memberId } });
+      toast.success(`Mensagem de teste enviada para ${res.memberName ?? res.phone}`);
     } catch (e: any) {
       toast.error(e?.message ?? "Falha ao enviar mensagem de teste");
     } finally {
@@ -158,13 +168,27 @@ function TestLeadNotificationCard() {
       </pre>
 
       <div className="flex flex-col sm:flex-row gap-2">
-        <Input
-          placeholder="Telefone (opcional) — usa o do seu perfil se vazio"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-          className="flex-1"
-        />
-        <Button onClick={handleSend} disabled={loading}>
+        <Select value={memberId} onValueChange={setMemberId} disabled={loadingMembers}>
+          <SelectTrigger className="flex-1">
+            <SelectValue
+              placeholder={
+                loadingMembers
+                  ? "Carregando equipe…"
+                  : members.length === 0
+                    ? "Nenhum membro com telefone cadastrado"
+                    : "Selecione um membro da equipe"
+              }
+            />
+          </SelectTrigger>
+          <SelectContent>
+            {members.map((m: any) => (
+              <SelectItem key={m.id} value={m.id}>
+                {m.name} {m.role_label ? `— ${m.role_label}` : ""} ({m.phone})
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Button onClick={handleSend} disabled={loading || !memberId}>
           {loading ? <Loader2 className="size-4 mr-2 animate-spin" /> : <Send className="size-4 mr-2" />}
           Enviar teste
         </Button>
@@ -172,6 +196,7 @@ function TestLeadNotificationCard() {
     </Card>
   );
 }
+
 
 function PortalCard({
   name, description, active, connected, onToggle,

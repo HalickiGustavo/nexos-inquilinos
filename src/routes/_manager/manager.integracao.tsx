@@ -220,13 +220,15 @@ function ManagerIntegracao() {
             </Field>
 
             <div className="sm:col-span-2 mt-2 pt-4 border-t">
-              <h4 className="font-semibold mb-1">Conta bancária de recebimento</h4>
-              <p className="text-xs text-muted-foreground">Saldo será transferido automaticamente todo dia útil.</p>
+              <h4 className="font-semibold mb-1">Conta bancária de recebimento <span className="text-xs font-normal text-muted-foreground">(opcional)</span></h4>
+              <p className="text-xs text-muted-foreground">
+                A subconta já recebe via split sem isto. Preencha apenas quando quiser <strong>sacar</strong> o saldo — pode ser agora ou depois no painel "Conta bancária e KYC".
+              </p>
             </div>
-            <Field label="Código do banco (Febraban)" required>
-              <Input value={bank.bankCode} onChange={(e) => setBank({ ...bank, bankCode: e.target.value.replace(/\D/g, "") })} required maxLength={4} placeholder="Ex.: 341 (Itaú), 001 (BB)" inputMode="numeric" />
+            <Field label="Código do banco (Febraban)">
+              <Input value={bank.bankCode} onChange={(e) => setBank({ ...bank, bankCode: e.target.value.replace(/\D/g, "") })} maxLength={4} placeholder="Ex.: 341 (Itaú), 001 (BB)" inputMode="numeric" />
             </Field>
-            <Field label="Tipo de Conta" required>
+            <Field label="Tipo de Conta">
               <Select value={bank.accountType} onValueChange={(v) => setBank({ ...bank, accountType: v as any })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -235,15 +237,15 @@ function ManagerIntegracao() {
                 </SelectContent>
               </Select>
             </Field>
-            <Field label="Agência (sem dígito)" required>
-              <Input value={bank.agency} onChange={(e) => setBank({ ...bank, agency: e.target.value.replace(/\D/g, "") })} required maxLength={10} inputMode="numeric" />
+            <Field label="Agência (sem dígito)">
+              <Input value={bank.agency} onChange={(e) => setBank({ ...bank, agency: e.target.value.replace(/\D/g, "") })} maxLength={10} inputMode="numeric" />
             </Field>
             <div className="grid grid-cols-[1fr_90px] gap-2">
-              <Field label="Conta" required>
-                <Input value={bank.account} onChange={(e) => setBank({ ...bank, account: e.target.value.replace(/\D/g, "") })} required maxLength={20} inputMode="numeric" />
+              <Field label="Conta">
+                <Input value={bank.account} onChange={(e) => setBank({ ...bank, account: e.target.value.replace(/\D/g, "") })} maxLength={20} inputMode="numeric" />
               </Field>
-              <Field label="Dígito" required>
-                <Input value={bank.accountDigit} onChange={(e) => setBank({ ...bank, accountDigit: e.target.value.replace(/\D/g, "") })} required maxLength={2} inputMode="numeric" />
+              <Field label="Dígito">
+                <Input value={bank.accountDigit} onChange={(e) => setBank({ ...bank, accountDigit: e.target.value.replace(/\D/g, "") })} maxLength={2} inputMode="numeric" />
               </Field>
             </div>
             <div className="sm:col-span-2 flex justify-end">

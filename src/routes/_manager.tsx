@@ -1,11 +1,11 @@
 import { createFileRoute, Outlet, useNavigate, useRouterState, Link } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { LayoutDashboard, Briefcase, Wallet, Users, ClipboardCheck, LogOut, Loader2, FileDigit, Database, Coins, Globe, Shuffle, Inbox } from "lucide-react";
+import { LayoutDashboard, Briefcase, Wallet, Users, ClipboardCheck, LogOut, Loader2, FileDigit, Database, Coins, Globe, Shuffle, Inbox, Home } from "lucide-react";
 import { AlertsBell } from "@/components/AlertsBell";
 import { NexoLogo } from "@/components/NexoLogo";
 import { InstallPwaButton } from "@/components/InstallPwaButton";
 import { useAuth } from "@/lib/auth";
-import { useUserRole } from "@/lib/useUserRole";
+import { useUserRole, roleHomePath } from "@/lib/useUserRole";
 import { useManagerAlerts } from "@/lib/alerts";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";

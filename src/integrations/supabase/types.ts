@@ -614,6 +614,96 @@ export type Database = {
           },
         ]
       }
+      landlord_invites: {
+        Row: {
+          accepted_at: string | null
+          accepted_user_id: string | null
+          created_at: string
+          document: string | null
+          email: string
+          full_name: string | null
+          id: string
+          invite_token: string
+          manager_user_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          accepted_user_id?: string | null
+          created_at?: string
+          document?: string | null
+          email: string
+          full_name?: string | null
+          id?: string
+          invite_token?: string
+          manager_user_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          accepted_user_id?: string | null
+          created_at?: string
+          document?: string | null
+          email?: string
+          full_name?: string | null
+          id?: string
+          invite_token?: string
+          manager_user_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      landlord_withdrawals: {
+        Row: {
+          amount: number
+          asaas_transfer_id: string | null
+          created_at: string
+          id: string
+          landlord_user_id: string
+          manager_user_id: string | null
+          notes: string | null
+          pix_key: string
+          pix_key_type: string
+          processed_at: string | null
+          requested_at: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          asaas_transfer_id?: string | null
+          created_at?: string
+          id?: string
+          landlord_user_id: string
+          manager_user_id?: string | null
+          notes?: string | null
+          pix_key: string
+          pix_key_type: string
+          processed_at?: string | null
+          requested_at?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          asaas_transfer_id?: string | null
+          created_at?: string
+          id?: string
+          landlord_user_id?: string
+          manager_user_id?: string | null
+          notes?: string | null
+          pix_key?: string
+          pix_key_type?: string
+          processed_at?: string | null
+          requested_at?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       maintenance_messages: {
         Row: {
           attachment_urls: string[]
@@ -865,6 +955,8 @@ export type Database = {
           integration_token: string
           integration_zap_connected: boolean
           phone: string | null
+          pix_key: string | null
+          pix_key_type: string | null
           updated_at: string
         }
         Insert: {
@@ -876,6 +968,8 @@ export type Database = {
           integration_token?: string
           integration_zap_connected?: boolean
           phone?: string | null
+          pix_key?: string | null
+          pix_key_type?: string | null
           updated_at?: string
         }
         Update: {
@@ -887,6 +981,8 @@ export type Database = {
           integration_token?: string
           integration_zap_connected?: boolean
           phone?: string | null
+          pix_key?: string | null
+          pix_key_type?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -907,6 +1003,7 @@ export type Database = {
           garages: number
           id: string
           iptu: number
+          landlord_id: string | null
           manager_id: string | null
           neighborhood: string | null
           nickname: string
@@ -942,6 +1039,7 @@ export type Database = {
           garages?: number
           id?: string
           iptu?: number
+          landlord_id?: string | null
           manager_id?: string | null
           neighborhood?: string | null
           nickname: string
@@ -977,6 +1075,7 @@ export type Database = {
           garages?: number
           id?: string
           iptu?: number
+          landlord_id?: string | null
           manager_id?: string | null
           neighborhood?: string | null
           nickname?: string
@@ -1110,7 +1209,9 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_landlord_invite: { Args: { _token: string }; Returns: string }
       accept_manager_invite: { Args: { _token: string }; Returns: string }
+      current_landlord_id: { Args: never; Returns: string }
       current_manager_id: { Args: never; Returns: string }
       current_tenant_id: { Args: never; Returns: string }
       generate_org_slug: { Args: { _manager_user_id: string }; Returns: string }

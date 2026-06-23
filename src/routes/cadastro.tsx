@@ -86,7 +86,7 @@ function CadastroPage() {
 
 
   return (
-    <div className="min-h-screen bg-background text-foreground relative overflow-hidden">
+    <div className="min-h-screen bg-zinc-950 text-zinc-100 relative overflow-hidden">
       {/* Glow ambiente */}
       <div className="pointer-events-none absolute inset-0 opacity-60" aria-hidden>
         <div className="absolute -top-32 left-1/2 -translate-x-1/2 size-[600px] rounded-full bg-primary/20 blur-[120px]" />

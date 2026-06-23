@@ -81,6 +81,7 @@ function IntegrationsPage() {
     postalCode: "",
     incomeValue: "",
     bankCode: "",
+    bankOwnerCpfCnpj: "",
     bankAgency: "",
     bankAccount: "",
     bankAccountDigit: "",
@@ -226,6 +227,9 @@ function IntegrationsPage() {
                   ))}
                 </SelectContent>
               </Select>
+            </Field>
+            <Field label="CPF/CNPJ do titular da conta">
+              <Input value={form.bankOwnerCpfCnpj} onChange={(e) => setForm({ ...form, bankOwnerCpfCnpj: maskCpfCnpj(e.target.value) })} placeholder="000.000.000-00" inputMode="numeric" maxLength={20} />
             </Field>
             <Field label="Tipo de conta">
               <Select value={form.bankAccountType} onValueChange={(v) => setForm({ ...form, bankAccountType: v as any })}>

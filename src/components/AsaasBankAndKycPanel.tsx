@@ -11,6 +11,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { linkAsaasBankAccount, uploadAsaasKycDocument } from "@/lib/asaas.functions";
+import { maskCpfCnpj } from "@/lib/br-validators";
 
 // Lista enxuta dos principais bancos brasileiros (código COMPE/ISPB do Asaas)
 const BANKS: Array<{ code: string; label: string }> = [
@@ -97,6 +98,7 @@ function BankSection({ account, onChanged }: { account: Account; onChanged?: () 
   const link = useServerFn(linkAsaasBankAccount);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
+    ownerCpfCnpj: "",
     bankCode: account.bank_code ?? "",
     agency: account.bank_agency ?? "",
     account: account.bank_account ?? "",
@@ -116,14 +118,15 @@ function BankSection({ account, onChanged }: { account: Account; onChanged?: () 
           className="grid sm:grid-cols-2 gap-4"
           onSubmit={async (e) => {
             e.preventDefault();
-            if (!form.bankCode || !form.accountType) {
-              toast.error("Selecione o banco e o tipo de conta.");
+            if (!form.ownerCpfCnpj || !form.bankCode || !form.accountType) {
+              toast.error("Informe o CPF/CNPJ do titular, banco e tipo de conta.");
               return;
             }
             setSaving(true);
             try {
               await link({
                 data: {
+                  ownerCpfCnpj: form.ownerCpfCnpj,
                   bankCode: form.bankCode,
                   agency: form.agency,
                   account: form.account,
@@ -141,6 +144,17 @@ function BankSection({ account, onChanged }: { account: Account; onChanged?: () 
             }
           }}
         >
+          <div className="space-y-2 sm:col-span-2">
+            <Label>CPF/CNPJ do titular da conta</Label>
+            <Input
+              value={form.ownerCpfCnpj}
+              onChange={(e) => setForm({ ...form, ownerCpfCnpj: maskCpfCnpj(e.target.value) })}
+              required
+              maxLength={20}
+              placeholder="000.000.000-00"
+              inputMode="numeric"
+            />
+          </div>
           <div className="space-y-2 sm:col-span-2">
             <Label>Banco</Label>
             <Select value={form.bankCode} onValueChange={(v) => setForm({ ...form, bankCode: v })}>

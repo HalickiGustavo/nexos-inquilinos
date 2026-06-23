@@ -35,6 +35,7 @@ type BankInfo = {
   address: string;
   addressNumber: string;
   bankCode: string;
+  bankOwnerCpfCnpj: string;
   agency: string;
   account: string;
   accountDigit: string;
@@ -44,7 +45,7 @@ type BankInfo = {
 const emptyBank: BankInfo = {
   legalName: "", email: "", document: "", phone: "", incomeValue: "",
   postalCode: "", province: "", address: "", addressNumber: "",
-  bankCode: "", agency: "", account: "", accountDigit: "", accountType: "CONTA_CORRENTE",
+  bankCode: "", bankOwnerCpfCnpj: "", agency: "", account: "", accountDigit: "", accountType: "CONTA_CORRENTE",
 };
 
 function ManagerIntegracao() {
@@ -89,6 +90,7 @@ function ManagerIntegracao() {
             province: bank.province,
             postalCode: bank.postalCode,
             bankCode: bank.bankCode,
+            bankOwnerCpfCnpj: bank.bankOwnerCpfCnpj,
             bankAgency: bank.agency,
             bankAccount: bank.account,
             bankAccountDigit: bank.accountDigit,
@@ -227,6 +229,9 @@ function ManagerIntegracao() {
             </div>
             <Field label="Código do banco (Febraban)">
               <Input value={bank.bankCode} onChange={(e) => setBank({ ...bank, bankCode: e.target.value.replace(/\D/g, "") })} maxLength={4} placeholder="Ex.: 341 (Itaú), 001 (BB)" inputMode="numeric" />
+            </Field>
+            <Field label="CPF/CNPJ do titular da conta">
+              <Input value={bank.bankOwnerCpfCnpj} onChange={(e) => setBank({ ...bank, bankOwnerCpfCnpj: maskCpfCnpj(e.target.value) })} maxLength={20} placeholder="000.000.000-00" inputMode="numeric" />
             </Field>
             <Field label="Tipo de Conta">
               <Select value={bank.accountType} onValueChange={(v) => setBank({ ...bank, accountType: v as any })}>

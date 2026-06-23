@@ -20,8 +20,10 @@ import { Card } from "@/components/ui/card";
 import nexoLogoAsset from "@/assets/nexo-logo.png.asset.json";
 import nexoLogoDarkAsset from "@/assets/nexo-logo-dark.png.asset.json";
 import { useTheme } from "@/components/ThemeProvider";
+import { useServerFn } from "@tanstack/react-start";
+import { useQuery } from "@tanstack/react-query";
+import { getRecaptchaSiteKey } from "@/lib/recaptcha.functions";
 
-const RECAPTCHA_SITE_KEY = "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI";
 
 export const Route = createFileRoute("/login")({
   head: () => ({ meta: [{ title: "Entrar — Nexo" }] }),
@@ -34,6 +36,8 @@ function LoginPage() {
   const nexoLogo = isDark ? nexoLogoDarkAsset.url : nexoLogoAsset.url;
   const navigate = useNavigate();
   const { user, loading } = useAuth();
+
+
 
   useEffect(() => {
     if (loading || !user) return;
@@ -142,6 +146,14 @@ function SignInForm() {
   const [busy, setBusy] = useState(false);
   const captchaRef = useRef<import("react-google-recaptcha").default | null>(null);
   const navigate = useNavigate();
+  const fetchSiteKey = useServerFn(getRecaptchaSiteKey);
+  const { data: siteKeyData } = useQuery({
+    queryKey: ["recaptcha-site-key"],
+    queryFn: () => fetchSiteKey(),
+    staleTime: Infinity,
+  });
+  const recaptchaSiteKey = siteKeyData?.siteKey;
+
 
   const canSubmit = !!email && !!password && !!captchaToken && !busy;
 
@@ -214,16 +226,21 @@ function SignInForm() {
         <div className="w-[237px] h-[61px] sm:w-[304px] sm:h-[78px] max-w-full rounded-md overflow-hidden ring-1 ring-border">
           <ClientOnly fallback={<div className="w-[237px] h-[61px] sm:w-[304px] sm:h-[78px] bg-muted animate-pulse rounded-md" />}>
             <div className="origin-top-left scale-[0.78] sm:scale-100 w-[304px] h-[78px]">
-              <ReCAPTCHA
-                ref={captchaRef}
-                sitekey={RECAPTCHA_SITE_KEY}
-                theme="dark"
-                onChange={(token) => setCaptchaToken(token)}
-                onExpired={() => setCaptchaToken(null)}
-                onErrored={() => setCaptchaToken(null)}
-              />
+              {recaptchaSiteKey ? (
+                <ReCAPTCHA
+                  ref={captchaRef}
+                  sitekey={recaptchaSiteKey}
+                  theme="dark"
+                  onChange={(token) => setCaptchaToken(token)}
+                  onExpired={() => setCaptchaToken(null)}
+                  onErrored={() => setCaptchaToken(null)}
+                />
+              ) : (
+                <div className="w-[304px] h-[78px] bg-muted animate-pulse rounded-md" />
+              )}
             </div>
           </ClientOnly>
+
         </div>
       </div>
 

@@ -41,7 +41,10 @@ import {
   scorePassword,
 } from "@/lib/br-validators";
 
-const RECAPTCHA_SITE_KEY = "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI";
+import { useServerFn } from "@tanstack/react-start";
+import { useQuery } from "@tanstack/react-query";
+import { getRecaptchaSiteKey } from "@/lib/recaptcha.functions";
+
 
 type Role = "imobiliaria" | "proprietario";
 
@@ -369,6 +372,14 @@ function StepCredentials({
   const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email);
   const matches = form.password.length > 0 && form.password === form.confirm;
   const canNext = emailOk && strength.valid && matches && !!form.captchaToken;
+  const fetchSiteKey = useServerFn(getRecaptchaSiteKey);
+  const { data: siteKeyData } = useQuery({
+    queryKey: ["recaptcha-site-key"],
+    queryFn: () => fetchSiteKey(),
+    staleTime: Infinity,
+  });
+  const recaptchaSiteKey = siteKeyData?.siteKey;
+
 
   return (
     <form
@@ -430,15 +441,20 @@ function StepCredentials({
       <div className="flex justify-center pt-2">
         <div className="w-[237px] h-[61px] sm:w-[304px] sm:h-[78px] max-w-full rounded-md overflow-hidden ring-1 ring-zinc-800">
           <div className="origin-top-left scale-[0.78] sm:scale-100 w-[304px] h-[78px]">
-            <ReCAPTCHA
-              ref={captchaRef}
-              sitekey={RECAPTCHA_SITE_KEY}
-              theme="dark"
-              onChange={(token) => update("captchaToken", token)}
-              onExpired={() => update("captchaToken", null)}
-              onErrored={() => update("captchaToken", null)}
-            />
+            {recaptchaSiteKey ? (
+              <ReCAPTCHA
+                ref={captchaRef}
+                sitekey={recaptchaSiteKey}
+                theme="dark"
+                onChange={(token) => update("captchaToken", token)}
+                onExpired={() => update("captchaToken", null)}
+                onErrored={() => update("captchaToken", null)}
+              />
+            ) : (
+              <div className="w-[304px] h-[78px] bg-muted animate-pulse rounded-md" />
+            )}
           </div>
+
         </div>
       </div>
 

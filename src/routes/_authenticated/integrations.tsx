@@ -72,7 +72,7 @@ function IntegrationsPage() {
               <Wallet className="size-5 text-primary" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold">Asaas (Sandbox)</h2>
+              <h2 className="text-lg font-semibold">Asaas</h2>
               <p className="text-sm text-muted-foreground">
                 Gerador de boletos, Pix e split automático para o Nexo.
               </p>

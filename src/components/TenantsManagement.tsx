@@ -110,6 +110,7 @@ export function TenantsManagement() {
                     </Button>
                   </DialogTrigger>
                 </Dialog>
+                {t.email && <InviteLinkButton tenant={t} />}
                 {t.phone && <WhatsAppLinkButton tenant={t} />}
                 <Button variant="outline" size="sm" onClick={async () => {
                   if (!confirm("Excluir este inquilino?")) return;

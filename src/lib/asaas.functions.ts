@@ -747,6 +747,66 @@ export const inviteTenantUser = createServerFn({ method: "POST" })
     return { ok: true, whatsapp: true };
   });
 
+// ===== Generate (only) a tenant invite link — no WhatsApp send =====
+const generateInviteInput = z.object({
+  tenantId: z.string().uuid(),
+  redirectUrl: z.string().url(),
+});
+
+export const generateTenantInviteLink = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => generateInviteInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+
+    let safeRedirect: string;
+    try {
+      const parsed = new URL(data.redirectUrl);
+      const allowed = getAllowedRedirectOrigins();
+      if (!allowed.includes(parsed.origin)) {
+        throw new Error(`redirectUrl origin não permitido: ${parsed.origin}`);
+      }
+      parsed.pathname = "/tenant-setup";
+      parsed.search = "";
+      parsed.hash = "";
+      safeRedirect = parsed.toString();
+    } catch (e: any) {
+      throw new Error(e?.message ?? "redirectUrl inválido");
+    }
+
+    const tenant = await supabase
+      .from("tenants")
+      .select("id, full_name, email")
+      .eq("id", data.tenantId)
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (tenant.error) throw new Error(tenant.error.message);
+    if (!tenant.data) throw new Error("Inquilino não encontrado");
+    if (!tenant.data.email) throw new Error("Inquilino sem e-mail cadastrado");
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // Try invite first (creates user if needed), then generate magiclink for the URL.
+    const invited = await supabaseAdmin.auth.admin.inviteUserByEmail(tenant.data.email, {
+      redirectTo: safeRedirect,
+      data: { full_name: tenant.data.full_name, tenant_invite: true },
+    });
+    // Ignore "already registered" errors — generateLink still works.
+    if (invited.error && !/already|exist/i.test(invited.error.message)) {
+      // continue; we'll still try generateLink
+    }
+
+    const link = await supabaseAdmin.auth.admin.generateLink({
+      type: "magiclink",
+      email: tenant.data.email,
+      options: { redirectTo: safeRedirect },
+    });
+    if (link.error) throw new Error(link.error.message);
+    const actionLink = (link.data as any)?.properties?.action_link as string | null;
+    if (!actionLink) throw new Error("Não foi possível gerar o link de convite");
+    return { ok: true, actionLink, email: tenant.data.email };
+  });
+
 // ===== Complete tenant onboarding (called from /tenant-setup after auth) =====
 const completeTenantInput = z.object({
   fullName: z.string().trim().min(3).max(200),

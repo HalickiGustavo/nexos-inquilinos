@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
-import { Plus, Pencil, Trash2, Users, Mail, Phone, Handshake, MessageCircle } from "lucide-react";
+import { Plus, Pencil, Trash2, Users, Mail, Phone, Handshake, MessageCircle, Link2 } from "lucide-react";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +15,7 @@ import { useTenants, useInstallments, useInvalidate, type Tenant } from "@/lib/q
 import { DebtAgreementDialog } from "@/components/DebtAgreementDialog";
 import { today } from "@/lib/format";
 import { maskCpfCnpj, maskPhone } from "@/lib/br-validators";
+import { generateTenantInviteLink } from "@/lib/asaas.functions";
 
 function waLink(phone: string, message?: string) {
   const digits = phone.replace(/\D/g, "");
@@ -108,6 +110,7 @@ export function TenantsManagement() {
                     </Button>
                   </DialogTrigger>
                 </Dialog>
+                {t.email && <InviteLinkButton tenant={t} />}
                 {t.phone && <WhatsAppLinkButton tenant={t} />}
                 <Button variant="outline" size="sm" onClick={async () => {
                   if (!confirm("Excluir este inquilino?")) return;
@@ -197,6 +200,38 @@ function WhatsAppLinkButton({ tenant }: { tenant: Tenant }) {
       <a href={waLink(tenant.phone, msg)} target="_blank" rel="noopener noreferrer">
         <MessageCircle className="size-3.5" />
       </a>
+    </Button>
+  );
+}
+
+function InviteLinkButton({ tenant }: { tenant: Tenant }) {
+  const generate = useServerFn(generateTenantInviteLink);
+  const [loading, setLoading] = useState(false);
+  if (!tenant.email) return null;
+  return (
+    <Button
+      variant="outline"
+      size="sm"
+      title="Gerar link de convite e copiar"
+      disabled={loading}
+      onClick={async () => {
+        setLoading(true);
+        try {
+          const res = await generate({ data: { tenantId: tenant.id, redirectUrl: window.location.origin } });
+          await navigator.clipboard.writeText(res.actionLink).catch(() => {});
+          toast.success("Link de convite copiado", { description: res.actionLink });
+          if (tenant.phone) {
+            const msg = `Olá, ${tenant.full_name}! Acesse o Portal do Inquilino da Nexo: ${res.actionLink}`;
+            window.open(waLink(tenant.phone, msg), "_blank", "noopener,noreferrer");
+          }
+        } catch (e: any) {
+          toast.error(e?.message ?? "Falha ao gerar link");
+        } finally {
+          setLoading(false);
+        }
+      }}
+    >
+      <Link2 className="size-3.5" />
     </Button>
   );
 }

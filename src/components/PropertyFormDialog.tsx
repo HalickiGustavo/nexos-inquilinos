@@ -59,6 +59,38 @@ export function PropertyFormDialog({
   const imwConnected = !!integ?.imw;
   const zapConnected = !!integ?.zap;
 
+  // Proprietários cadastrados (landlords que aceitaram o convite desta imobiliária)
+  const { data: landlords = [] } = useQuery({
+    queryKey: ["manager-landlords", user?.id],
+    enabled: !!user && mode === "manager",
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("landlord_invites")
+        .select("id, full_name, email, document, accepted_user_id")
+        .eq("manager_user_id", user!.id)
+        .eq("status", "aceito")
+        .order("full_name", { ascending: true });
+      if (error) throw error;
+      return (data ?? []).filter((l) => l.accepted_user_id);
+    },
+  });
+
+  // Corretores (membros ativos da equipe)
+  const { data: brokers = [] } = useQuery({
+    queryKey: ["manager-brokers", user?.id],
+    enabled: !!user && mode === "manager",
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("manager_members")
+        .select("id, name, email, role_label, is_active, status")
+        .eq("manager_user_id", user!.id)
+        .eq("is_active", true)
+        .order("name", { ascending: true });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
   const e: any = editing ?? {};
   const [form, setForm] = useState({
     nickname: e.nickname ?? "",
@@ -81,8 +113,8 @@ export function PropertyFormDialog({
     bathrooms: String(e.bathrooms ?? 0),
     garages: String(e.garages ?? 0),
     area_total: e.area_total != null ? String(e.area_total) : "",
-    owner_name: e.owner_name ?? "",
-    owner_commission_percent: e.owner_commission_percent != null ? String(e.owner_commission_percent) : "10",
+    landlord_id: (e.landlord_id as string | null) ?? "",
+    responsible_member_id: (e.responsible_member_id as string | null) ?? "",
   });
 
   const indisponivel = form.status === "alugado" || form.status === "manutencao";

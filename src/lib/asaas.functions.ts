@@ -109,6 +109,7 @@ const createSubaccountInput = z.object({
   // Pode ser cadastrada depois, pelo painel "Conta bancária e KYC", apenas quando
   // o usuário for sacar o saldo acumulado via split.
   bankCode: z.string().max(10).optional().or(z.literal("")),
+  bankOwnerCpfCnpj: z.string().max(20).optional().or(z.literal("")),
   bankAgency: z.string().max(10).optional().or(z.literal("")),
   bankAccount: z.string().max(20).optional().or(z.literal("")),
   bankAccountDigit: z.string().max(3).optional().or(z.literal("")),
@@ -180,7 +181,7 @@ export const createAsaasSubaccount = createServerFn({ method: "POST" })
             accountDigit: data.bankAccountDigit!.replace(/\D/g, ""),
             bankAccountType: data.bankAccountType,
             ownerName: data.name,
-            ownerCpfCnpj: data.cpfCnpj.replace(/\D/g, ""),
+            ownerCpfCnpj: (data.bankOwnerCpfCnpj || data.cpfCnpj).replace(/\D/g, ""),
           }),
         });
         try {

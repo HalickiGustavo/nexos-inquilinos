@@ -90,6 +90,7 @@ function ManagerIntegracao() {
             province: bank.province,
             postalCode: bank.postalCode,
             bankCode: bank.bankCode,
+            bankOwnerCpfCnpj: bank.bankOwnerCpfCnpj,
             bankAgency: bank.agency,
             bankAccount: bank.account,
             bankAccountDigit: bank.accountDigit,

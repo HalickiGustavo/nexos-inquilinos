@@ -1,31 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
-import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
-import { Globe, RefreshCw, Loader2, Bell, Send, RotateCcw } from "lucide-react";
+import { Globe, RefreshCw, Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { CentralConexoesPanel } from "@/components/CentralConexoesPanel";
-import {
-  sendTestLeadNotification,
-  listTeamMembersForTest,
-  listTestPresets,
-} from "@/lib/lead-test.functions";
+
 
 export const Route = createFileRoute("/_manager/manager/portais")({
   head: () => ({ meta: [{ title: "Integrações com Portais — NEXO" }] }),

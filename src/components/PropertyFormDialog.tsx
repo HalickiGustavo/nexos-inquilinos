@@ -164,8 +164,10 @@ export function PropertyFormDialog({
           };
           if (mode === "manager") {
             payload.manager_id = user.id;
-            payload.owner_name = form.owner_name || null;
-            payload.owner_commission_percent = Number(form.owner_commission_percent) || 10;
+            const selectedLandlord = landlords.find((l) => l.accepted_user_id === form.landlord_id);
+            payload.landlord_id = form.landlord_id || null;
+            payload.owner_name = selectedLandlord?.full_name || selectedLandlord?.email || null;
+            payload.responsible_member_id = form.responsible_member_id || null;
           }
           const { error } = editing
             ? await supabase.from("properties").update(payload).eq("id", editing.id)

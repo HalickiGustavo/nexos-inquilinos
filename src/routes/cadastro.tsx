@@ -41,7 +41,10 @@ import {
   scorePassword,
 } from "@/lib/br-validators";
 
-const RECAPTCHA_SITE_KEY = "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI";
+import { useServerFn } from "@tanstack/react-start";
+import { useQuery } from "@tanstack/react-query";
+import { getRecaptchaSiteKey } from "@/lib/recaptcha.functions";
+
 
 type Role = "imobiliaria" | "proprietario";
 
@@ -369,6 +372,14 @@ function StepCredentials({
   const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email);
   const matches = form.password.length > 0 && form.password === form.confirm;
   const canNext = emailOk && strength.valid && matches && !!form.captchaToken;
+  const fetchSiteKey = useServerFn(getRecaptchaSiteKey);
+  const { data: siteKeyData } = useQuery({
+    queryKey: ["recaptcha-site-key"],
+    queryFn: () => fetchSiteKey(),
+    staleTime: Infinity,
+  });
+  const recaptchaSiteKey = siteKeyData?.siteKey;
+
 
   return (
     <form

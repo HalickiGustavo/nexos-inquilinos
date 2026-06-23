@@ -175,15 +175,16 @@ function IntegrationsPage() {
               <Input value={form.addressNumber} onChange={(e) => setForm({ ...form, addressNumber: e.target.value })} required />
             </Field>
             <div className="sm:col-span-2 mt-2 pt-4 border-t">
-              <h3 className="font-semibold mb-1">Conta bancária para recebimento</h3>
+              <h3 className="font-semibold mb-1">Conta bancária para recebimento <span className="text-xs font-normal text-muted-foreground">(opcional)</span></h3>
               <p className="text-xs text-muted-foreground mb-3">
-                Para onde o Asaas vai transferir o saldo automaticamente todo dia útil.
+                Você já pode receber via split sem cadastrar conta agora. Para <strong>sacar</strong> o saldo acumulado,
+                preencha estes dados aqui ou depois no painel "Conta bancária e KYC". Saques são feitos automaticamente todo dia útil quando configurados.
               </p>
             </div>
-            <Field label="Código do banco (Febraban)" required>
-              <Input value={form.bankCode} onChange={(e) => setForm({ ...form, bankCode: e.target.value.replace(/\D/g, "") })} placeholder="Ex.: 341 (Itaú), 001 (BB)" inputMode="numeric" maxLength={4} required />
+            <Field label="Código do banco (Febraban)">
+              <Input value={form.bankCode} onChange={(e) => setForm({ ...form, bankCode: e.target.value.replace(/\D/g, "") })} placeholder="Ex.: 341 (Itaú), 001 (BB)" inputMode="numeric" maxLength={4} />
             </Field>
-            <Field label="Tipo de conta" required>
+            <Field label="Tipo de conta">
               <Select value={form.bankAccountType} onValueChange={(v) => setForm({ ...form, bankAccountType: v as any })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -192,15 +193,15 @@ function IntegrationsPage() {
                 </SelectContent>
               </Select>
             </Field>
-            <Field label="Agência (sem dígito)" required>
-              <Input value={form.bankAgency} onChange={(e) => setForm({ ...form, bankAgency: e.target.value.replace(/\D/g, "") })} inputMode="numeric" maxLength={10} required />
+            <Field label="Agência (sem dígito)">
+              <Input value={form.bankAgency} onChange={(e) => setForm({ ...form, bankAgency: e.target.value.replace(/\D/g, "") })} inputMode="numeric" maxLength={10} />
             </Field>
             <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-2">
-              <Field label="Conta" required>
-                <Input value={form.bankAccount} onChange={(e) => setForm({ ...form, bankAccount: e.target.value.replace(/\D/g, "") })} inputMode="numeric" maxLength={20} required />
+              <Field label="Conta">
+                <Input value={form.bankAccount} onChange={(e) => setForm({ ...form, bankAccount: e.target.value.replace(/\D/g, "") })} inputMode="numeric" maxLength={20} />
               </Field>
-              <Field label="Dígito" required>
-                <Input className="sm:w-24" value={form.bankAccountDigit} onChange={(e) => setForm({ ...form, bankAccountDigit: e.target.value.replace(/\D/g, "") })} inputMode="numeric" maxLength={2} required />
+              <Field label="Dígito">
+                <Input className="sm:w-24" value={form.bankAccountDigit} onChange={(e) => setForm({ ...form, bankAccountDigit: e.target.value.replace(/\D/g, "") })} inputMode="numeric" maxLength={2} />
               </Field>
             </div>
             <div className="sm:col-span-2 flex justify-end">

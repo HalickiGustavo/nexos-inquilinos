@@ -168,18 +168,19 @@ export const createAsaasSubaccount = createServerFn({ method: "POST" })
       throw new Error("Asaas não retornou a chave da subconta para vincular os dados bancários.");
     }
 
-    await asaasFetch<any>("/bankAccounts", {
+    await asaasFetch<any>("/bankAccounts/mainAccount", {
       method: "POST",
       apiKey: newApiKey,
       body: JSON.stringify({
-        bank: { code: data.bankCode },
+        accountName: "Conta de recebimento Nexo",
+        thirdPartyAccount: bankOwnerCpfCnpj !== data.cpfCnpj.replace(/\D/g, ""),
+        bank: data.bankCode,
         agency: bankAgency,
         account: bankAccount,
         accountDigit: bankAccountDigit,
         bankAccountType: data.bankAccountType,
-        ownerName: data.name,
+        name: data.name,
         cpfCnpj: bankOwnerCpfCnpj,
-        ownerCpfCnpj: bankOwnerCpfCnpj,
       }),
     });
     try {
@@ -1122,9 +1123,9 @@ export const linkAsaasBankAccount = createServerFn({ method: "POST" })
     const subaccountId = acc.data?.asaas_account_id;
     if (!apiKey) throw new Error("Subconta Asaas ainda não foi criada. Conclua o onboarding primeiro.");
 
-    // 1) Vincular conta bancária de liquidação
-    // O Asaas exige ownerName/ownerCpfCnpj. O CPF/CNPJ vem explicitamente do formulário
-    // de dados bancários para evitar falha quando a API não retorna o documento da subconta.
+    // 1) Vincular conta bancária principal de liquidação.
+    // O endpoint de conta principal espera `name` e `cpfCnpj` no corpo raiz
+    // (não `ownerName`/`ownerCpfCnpj`, que são usados em outros fluxos de transferência).
     // Tentamos múltiplas fontes: /myAccount (com api_key da subconta) e, como fallback,
     // GET /accounts/{id} com a master key.
     let ownerName: string | undefined;
@@ -1171,18 +1172,19 @@ export const linkAsaasBankAccount = createServerFn({ method: "POST" })
       );
     }
 
-    await asaasFetch<any>("/bankAccounts", {
+    await asaasFetch<any>("/bankAccounts/mainAccount", {
       method: "POST",
       apiKey,
       body: JSON.stringify({
-        bank: { code: data.bankCode },
+        accountName: "Conta de recebimento Nexo",
+        thirdPartyAccount: true,
+        bank: data.bankCode,
         agency,
         account: accountNumber,
         accountDigit,
         bankAccountType: data.accountType,
-        ownerName,
+        name: ownerName,
         cpfCnpj: ownerCpfCnpj,
-        ownerCpfCnpj,
       }),
     });
 

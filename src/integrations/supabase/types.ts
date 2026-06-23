@@ -1243,6 +1243,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_current_tenant_property: {
+        Args: { _property_id: string }
+        Returns: boolean
+      }
       sync_cron_secret: { Args: { _secret: string }; Returns: undefined }
       verify_security_invariants: {
         Args: never

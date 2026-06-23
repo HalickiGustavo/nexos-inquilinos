@@ -41,7 +41,7 @@ export const Route = createFileRoute(
             .from("maintenances")
             .select(
               `id, user_id, title, status, tenant_id,
-               property:property_id ( nickname ),
+               property:property_id ( nickname, responsible_member_id ),
                tenant:tenant_id ( id, full_name, user_id_link )`,
             )
             .neq("status", "concluido")

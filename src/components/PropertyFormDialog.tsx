@@ -169,6 +169,9 @@ export function PropertyFormDialog({
             payload.landlord_id = form.landlord_id || null;
             payload.owner_name = selectedLandlord?.full_name || selectedLandlord?.email || null;
             payload.responsible_member_id = form.responsible_member_id || null;
+            const feePct = Number(form.default_management_fee_percent);
+            payload.default_management_fee_percent =
+              Number.isFinite(feePct) && feePct >= 0 && feePct <= 100 ? feePct : 10;
           }
           const { error } = editing
             ? await supabase.from("properties").update(payload).eq("id", editing.id)

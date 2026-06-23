@@ -52,11 +52,10 @@ function Equipe() {
   const roleBadge = (r: string) => {
     const map: Record<string, string> = {
       corretor: "bg-blue-500/15 text-blue-700 border-blue-500/30",
-      admin: "bg-purple-500/15 text-purple-700 border-purple-500/30",
-      financeiro: "bg-primary/15 text-primary border-primary/30",
     };
     return <Badge variant="outline" className={map[r] ?? ""}>{r}</Badge>;
   };
+
 
   const removeMember = async (id: string) => {
     await supabase.from("manager_members").delete().eq("id", id);
@@ -68,7 +67,7 @@ function Equipe() {
       <header className="flex items-end justify-between">
         <div>
           <h1 className="text-2xl font-bold">Equipe</h1>
-          <p className="text-sm text-zinc-500">Corretores, administrativo e financeiro</p>
+          <p className="text-sm text-zinc-500">Corretores da imobiliária</p>
         </div>
         <Button onClick={() => setOpen(true)} className="bg-primary hover:bg-primary/90">
           <UserPlus className="size-4 mr-2" /> Convidar Novo Membro
@@ -182,8 +181,7 @@ function ConvidarDialog({ open, onOpenChange, onSaved }: { open: boolean; onOpen
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="corretor">Corretor</SelectItem>
-                <SelectItem value="admin">Admin</SelectItem>
-                <SelectItem value="financeiro">Financeiro</SelectItem>
+
               </SelectContent>
             </Select>
           </div>

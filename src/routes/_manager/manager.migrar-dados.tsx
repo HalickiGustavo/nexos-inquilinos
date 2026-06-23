@@ -744,3 +744,71 @@ function Stat({ label, value, tone }: { label: string; value: number; tone: keyo
     </div>
   );
 }
+
+function SeparateDropzone({
+  tone, title, description, file, rowCount,
+  onDownload, onFile, onClear, disabled,
+}: {
+  tone: keyof typeof TONE_MAP;
+  title: string;
+  description: string;
+  file: File | null;
+  rowCount: number;
+  onDownload: () => void;
+  onFile: (f: File) => void;
+  onClear: () => void;
+  disabled?: boolean;
+}) {
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const [over, setOver] = useState(false);
+  return (
+    <Card className={cn("p-4 border", TONE_MAP[tone])}>
+      <div className="flex items-start justify-between gap-3 mb-3">
+        <div>
+          <h3 className="text-sm font-semibold text-zinc-100">{title}</h3>
+          <p className="text-[11px] text-muted-foreground font-mono mt-0.5">{description}</p>
+        </div>
+        <Button variant="ghost" size="sm" onClick={onDownload} className="h-7 text-xs">
+          <Download className="size-3 mr-1" /> Modelo
+        </Button>
+      </div>
+      <div
+        onDragOver={(e) => { e.preventDefault(); setOver(true); }}
+        onDragLeave={() => setOver(false)}
+        onDrop={(e) => {
+          e.preventDefault(); setOver(false);
+          const f = e.dataTransfer.files?.[0]; if (f) onFile(f);
+        }}
+        onClick={() => !disabled && inputRef.current?.click()}
+        className={cn(
+          "rounded-lg border-2 border-dashed bg-zinc-950/40 py-6 px-4 text-center cursor-pointer transition-all",
+          over ? "border-zinc-500" : "border-zinc-800 hover:border-zinc-700",
+          disabled && "opacity-50 cursor-not-allowed",
+        )}
+      >
+        <input
+          ref={inputRef} type="file" accept=".csv,text/csv" className="hidden"
+          onChange={(e) => { const f = e.target.files?.[0]; if (f) onFile(f); }}
+        />
+        {file ? (
+          <div className="flex items-center justify-center gap-3 text-sm">
+            <FileUp className="size-4" />
+            <span className="font-medium text-zinc-100">{file.name}</span>
+            <Badge variant="outline">{rowCount} linha(s)</Badge>
+            <Button
+              variant="ghost" size="sm"
+              onClick={(e) => { e.stopPropagation(); onClear(); }}
+              className="h-6 text-xs text-muted-foreground hover:text-rose-400"
+            >Remover</Button>
+          </div>
+        ) : (
+          <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+            <FileSpreadsheet className="size-4" />
+            Arraste o CSV ou clique para selecionar
+          </div>
+        )}
+      </div>
+    </Card>
+  );
+}
+

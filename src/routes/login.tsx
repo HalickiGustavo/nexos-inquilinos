@@ -36,6 +36,14 @@ function LoginPage() {
   const nexoLogo = isDark ? nexoLogoDarkAsset.url : nexoLogoAsset.url;
   const navigate = useNavigate();
   const { user, loading } = useAuth();
+  const fetchSiteKey = useServerFn(getRecaptchaSiteKey);
+  const { data: siteKeyData } = useQuery({
+    queryKey: ["recaptcha-site-key"],
+    queryFn: () => fetchSiteKey(),
+    staleTime: Infinity,
+  });
+  const recaptchaSiteKey = siteKeyData?.siteKey;
+
 
   useEffect(() => {
     if (loading || !user) return;
@@ -216,16 +224,21 @@ function SignInForm() {
         <div className="w-[237px] h-[61px] sm:w-[304px] sm:h-[78px] max-w-full rounded-md overflow-hidden ring-1 ring-border">
           <ClientOnly fallback={<div className="w-[237px] h-[61px] sm:w-[304px] sm:h-[78px] bg-muted animate-pulse rounded-md" />}>
             <div className="origin-top-left scale-[0.78] sm:scale-100 w-[304px] h-[78px]">
-              <ReCAPTCHA
-                ref={captchaRef}
-                sitekey={RECAPTCHA_SITE_KEY}
-                theme="dark"
-                onChange={(token) => setCaptchaToken(token)}
-                onExpired={() => setCaptchaToken(null)}
-                onErrored={() => setCaptchaToken(null)}
-              />
+              {recaptchaSiteKey ? (
+                <ReCAPTCHA
+                  ref={captchaRef}
+                  sitekey={recaptchaSiteKey}
+                  theme="dark"
+                  onChange={(token) => setCaptchaToken(token)}
+                  onExpired={() => setCaptchaToken(null)}
+                  onErrored={() => setCaptchaToken(null)}
+                />
+              ) : (
+                <div className="w-[304px] h-[78px] bg-muted animate-pulse rounded-md" />
+              )}
             </div>
           </ClientOnly>
+
         </div>
       </div>
 

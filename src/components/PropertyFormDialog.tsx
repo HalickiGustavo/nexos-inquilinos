@@ -306,6 +306,25 @@ export function PropertyFormDialog({
                 Receberá as notificações de mensagens de manutenção deste imóvel.
               </p>
             </div>
+            <div className="sm:col-span-2 space-y-2 rounded-lg border bg-primary/5 border-primary/20 p-3">
+              <Label>Repasse da imobiliária (%) *</Label>
+              <div className="flex items-center gap-2">
+                <Input
+                  type="number"
+                  min={0}
+                  max={100}
+                  step="0.01"
+                  required
+                  className="max-w-[140px]"
+                  value={form.default_management_fee_percent}
+                  onChange={(ev) => setForm({ ...form, default_management_fee_percent: ev.target.value })}
+                />
+                <span className="text-sm text-muted-foreground">% sobre o valor do aluguel</span>
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                Percentual que a imobiliária retém de cada aluguel. O proprietário recebe via PIX o valor restante, já descontada a taxa NEXO e este repasse.
+              </p>
+            </div>
           </>
         )}
 

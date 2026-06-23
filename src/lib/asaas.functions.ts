@@ -182,6 +182,8 @@ export const createAsaasSubaccount = createServerFn({ method: "POST" })
             account: data.bankAccount!.replace(/\D/g, ""),
             accountDigit: data.bankAccountDigit!.replace(/\D/g, ""),
             bankAccountType: data.bankAccountType,
+            ownerName: data.name,
+            ownerCpfCnpj: data.cpfCnpj.replace(/\D/g, ""),
           }),
         });
         try {

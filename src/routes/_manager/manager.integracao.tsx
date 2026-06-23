@@ -16,6 +16,32 @@ import { AsaasBankAndKycPanel } from "@/components/AsaasBankAndKycPanel";
 import { formatBRL } from "@/lib/format";
 import { maskCpfCnpj, maskPhone } from "@/lib/br-validators";
 
+const BR_BANKS: Array<{ code: string; name: string }> = [
+  { code: "001", name: "Banco do Brasil" },
+  { code: "033", name: "Santander" },
+  { code: "104", name: "Caixa Econômica Federal" },
+  { code: "237", name: "Bradesco" },
+  { code: "341", name: "Itaú Unibanco" },
+  { code: "260", name: "Nubank" },
+  { code: "077", name: "Banco Inter" },
+  { code: "212", name: "Banco Original" },
+  { code: "336", name: "C6 Bank" },
+  { code: "208", name: "BTG Pactual" },
+  { code: "748", name: "Sicredi" },
+  { code: "756", name: "Sicoob" },
+  { code: "422", name: "Safra" },
+  { code: "655", name: "Votorantim" },
+  { code: "070", name: "BRB" },
+  { code: "041", name: "Banrisul" },
+  { code: "389", name: "Banco Mercantil do Brasil" },
+  { code: "623", name: "Banco PAN" },
+  { code: "707", name: "Banco Daycoval" },
+  { code: "323", name: "Mercado Pago" },
+  { code: "380", name: "PicPay" },
+  { code: "290", name: "PagSeguro / PagBank" },
+  { code: "461", name: "Asaas" },
+];
+
 export const Route = createFileRoute("/_manager/manager/integracao")({
   head: () => ({ meta: [{ title: "Integração Financeira — NEXO Imobiliária" }] }),
   component: ManagerIntegracao,
@@ -75,6 +101,11 @@ function ManagerIntegracao() {
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const requiredBank = [bank.bankCode, bank.bankOwnerCpfCnpj, bank.agency, bank.account, bank.accountDigit, bank.accountType];
+    if (requiredBank.some((value) => !String(value).trim())) {
+      toast.error("Preencha todos os dados bancários antes de enviar.");
+      return;
+    }
     setSaving(true);
     try {
       if (!account) {
@@ -222,18 +253,25 @@ function ManagerIntegracao() {
             </Field>
 
             <div className="sm:col-span-2 mt-2 pt-4 border-t">
-              <h4 className="font-semibold mb-1">Conta bancária de recebimento <span className="text-xs font-normal text-muted-foreground">(opcional)</span></h4>
+              <h4 className="font-semibold mb-1">Conta bancária de recebimento</h4>
               <p className="text-xs text-muted-foreground">
-                A subconta já recebe via split sem isto. Preencha apenas quando quiser <strong>sacar</strong> o saldo — pode ser agora ou depois no painel "Conta bancária e KYC".
+                Para evitar cadastro parcial no Asaas, todos os dados bancários abaixo são obrigatórios.
               </p>
             </div>
-            <Field label="Código do banco (Febraban)">
-              <Input value={bank.bankCode} onChange={(e) => setBank({ ...bank, bankCode: e.target.value.replace(/\D/g, "") })} maxLength={4} placeholder="Ex.: 341 (Itaú), 001 (BB)" inputMode="numeric" />
+            <Field label="Banco" required>
+              <Select value={bank.bankCode} onValueChange={(v) => setBank({ ...bank, bankCode: v })}>
+                <SelectTrigger><SelectValue placeholder="Selecione o banco" /></SelectTrigger>
+                <SelectContent>
+                  {BR_BANKS.map((b) => (
+                    <SelectItem key={b.code} value={b.code}>{b.code} — {b.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </Field>
-            <Field label="CPF/CNPJ do titular da conta">
-              <Input value={bank.bankOwnerCpfCnpj} onChange={(e) => setBank({ ...bank, bankOwnerCpfCnpj: maskCpfCnpj(e.target.value) })} maxLength={20} placeholder="000.000.000-00" inputMode="numeric" />
+            <Field label="CPF/CNPJ do titular da conta" required>
+              <Input value={bank.bankOwnerCpfCnpj} onChange={(e) => setBank({ ...bank, bankOwnerCpfCnpj: maskCpfCnpj(e.target.value) })} maxLength={20} placeholder="000.000.000-00" inputMode="numeric" required />
             </Field>
-            <Field label="Tipo de Conta">
+            <Field label="Tipo de Conta" required>
               <Select value={bank.accountType} onValueChange={(v) => setBank({ ...bank, accountType: v as any })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -242,15 +280,15 @@ function ManagerIntegracao() {
                 </SelectContent>
               </Select>
             </Field>
-            <Field label="Agência (sem dígito)">
-              <Input value={bank.agency} onChange={(e) => setBank({ ...bank, agency: e.target.value.replace(/\D/g, "") })} maxLength={10} inputMode="numeric" />
+            <Field label="Agência (sem dígito)" required>
+              <Input value={bank.agency} onChange={(e) => setBank({ ...bank, agency: e.target.value.replace(/\D/g, "") })} maxLength={10} inputMode="numeric" required />
             </Field>
             <div className="grid grid-cols-[1fr_90px] gap-2">
-              <Field label="Conta">
-                <Input value={bank.account} onChange={(e) => setBank({ ...bank, account: e.target.value.replace(/\D/g, "") })} maxLength={20} inputMode="numeric" />
+              <Field label="Conta" required>
+                <Input value={bank.account} onChange={(e) => setBank({ ...bank, account: e.target.value.replace(/\D/g, "") })} maxLength={20} inputMode="numeric" required />
               </Field>
-              <Field label="Dígito">
-                <Input value={bank.accountDigit} onChange={(e) => setBank({ ...bank, accountDigit: e.target.value.replace(/\D/g, "") })} maxLength={2} inputMode="numeric" />
+              <Field label="Dígito" required>
+                <Input value={bank.accountDigit} onChange={(e) => setBank({ ...bank, accountDigit: e.target.value.replace(/\D/g, "") })} maxLength={2} inputMode="numeric" required />
               </Field>
             </div>
             <div className="sm:col-span-2 flex justify-end">

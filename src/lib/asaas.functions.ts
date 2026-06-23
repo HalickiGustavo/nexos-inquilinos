@@ -105,15 +105,13 @@ const createSubaccountInput = z.object({
   province: z.string().min(2).max(120),
   postalCode: z.string().min(8).max(15),
   incomeValue: z.coerce.number().positive(),
-  // Conta bancária de liquidação — OPCIONAL no onboarding (modelo wallet-lite).
-  // Pode ser cadastrada depois, pelo painel "Conta bancária e KYC", apenas quando
-  // o usuário for sacar o saldo acumulado via split.
-  bankCode: z.string().max(10).optional().or(z.literal("")),
-  bankOwnerCpfCnpj: z.string().max(20).optional().or(z.literal("")),
-  bankAgency: z.string().max(10).optional().or(z.literal("")),
-  bankAccount: z.string().max(20).optional().or(z.literal("")),
-  bankAccountDigit: z.string().max(3).optional().or(z.literal("")),
-  bankAccountType: z.enum(["CONTA_CORRENTE", "CONTA_POUPANCA"]).optional(),
+  // Conta bancária de liquidação — obrigatória para evitar envio parcial ao Asaas.
+  bankCode: z.string().min(1).max(10),
+  bankOwnerCpfCnpj: z.string().min(11).max(20),
+  bankAgency: z.string().min(1).max(10),
+  bankAccount: z.string().min(1).max(20),
+  bankAccountDigit: z.string().min(1).max(3),
+  bankAccountType: z.enum(["CONTA_CORRENTE", "CONTA_POUPANCA"]),
 });
 
 export const createAsaasSubaccount = createServerFn({ method: "POST" })
@@ -132,6 +130,16 @@ export const createAsaasSubaccount = createServerFn({ method: "POST" })
     const digits = data.mobilePhone.replace(/\D/g, "");
     if (digits.length < 10 || digits.length > 11 || (digits.length === 11 && digits[2] !== "9")) {
       throw new Error("Informe um celular válido com DDD (ex.: 41 99999-9999).");
+    }
+    const bankOwnerCpfCnpj = data.bankOwnerCpfCnpj.replace(/\D/g, "");
+    const bankAgency = data.bankAgency.replace(/\D/g, "");
+    const bankAccount = data.bankAccount.replace(/\D/g, "");
+    const bankAccountDigit = data.bankAccountDigit.replace(/\D/g, "");
+    if (![11, 14].includes(bankOwnerCpfCnpj.length)) {
+      throw new Error("Informe o CPF/CNPJ do titular da conta bancária.");
+    }
+    if (!data.bankCode || !bankAgency || !bankAccount || !bankAccountDigit || !data.bankAccountType) {
+      throw new Error("Preencha todos os dados bancários para criar a subconta.");
     }
 
     const payload: Record<string, unknown> = {
@@ -155,50 +163,35 @@ export const createAsaasSubaccount = createServerFn({ method: "POST" })
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    // Vincula conta bancária + auto-transfer (best-effort).
-    // No modelo wallet-lite os dados bancários são OPCIONAIS no onboarding.
-    // Se não vierem, a subconta já fica apta a receber split; o usuário
-    // completa os dados bancários depois no painel "Conta bancária e KYC"
-    // quando quiser sacar o saldo acumulado.
-    let bankWarning: string | null = null;
-    const hasBankData = !!(
-      data.bankCode &&
-      data.bankAgency &&
-      data.bankAccount &&
-      data.bankAccountDigit &&
-      data.bankAccountType
-    );
     const newApiKey: string | null = account.apiKey ?? null;
-    if (newApiKey && hasBankData) {
-      try {
-        await asaasFetch<any>("/bankAccounts", {
-          method: "POST",
-          apiKey: newApiKey,
-          body: JSON.stringify({
-            bank: { code: data.bankCode },
-            agency: data.bankAgency!.replace(/\D/g, ""),
-            account: data.bankAccount!.replace(/\D/g, ""),
-            accountDigit: data.bankAccountDigit!.replace(/\D/g, ""),
-            bankAccountType: data.bankAccountType,
-            ownerName: data.name,
-            ownerCpfCnpj: (data.bankOwnerCpfCnpj || data.cpfCnpj).replace(/\D/g, ""),
-          }),
-        });
-        try {
-          await asaasFetch<any>("/accountConfiguration", {
-            method: "POST",
-            apiKey: newApiKey,
-            body: JSON.stringify({ autoTransferEnabled: true, autoTransferFrequency: "DAILY" }),
-          });
-        } catch (e: any) {
-          console.warn("[Asaas] accountConfiguration falhou:", e?.message);
-        }
-      } catch (e: any) {
-        bankWarning = e?.message ?? "Falha ao vincular conta bancária — refaça pelo painel.";
-      }
+    if (!newApiKey) {
+      throw new Error("Asaas não retornou a chave da subconta para vincular os dados bancários.");
     }
 
-    const persistBank = hasBankData && !bankWarning;
+    await asaasFetch<any>("/bankAccounts", {
+      method: "POST",
+      apiKey: newApiKey,
+      body: JSON.stringify({
+        bank: { code: data.bankCode },
+        agency: bankAgency,
+        account: bankAccount,
+        accountDigit: bankAccountDigit,
+        bankAccountType: data.bankAccountType,
+        ownerName: data.name,
+        cpfCnpj: bankOwnerCpfCnpj,
+        ownerCpfCnpj: bankOwnerCpfCnpj,
+      }),
+    });
+    try {
+      await asaasFetch<any>("/accountConfiguration", {
+        method: "POST",
+        apiKey: newApiKey,
+        body: JSON.stringify({ autoTransferEnabled: true, autoTransferFrequency: "DAILY" }),
+      });
+    } catch (e: any) {
+      console.warn("[Asaas] accountConfiguration falhou:", e?.message);
+    }
+
     const { error } = await supabaseAdmin
       .from("asaas_accounts")
       .upsert(
@@ -209,12 +202,12 @@ export const createAsaasSubaccount = createServerFn({ method: "POST" })
           api_key: newApiKey,
           status: account.id ? "active" : "pending",
           onboarding_url: account.onboardingUrl ?? null,
-          bank_code: persistBank ? data.bankCode : null,
-          bank_agency: persistBank ? data.bankAgency : null,
-          bank_account: persistBank ? data.bankAccount : null,
-          bank_account_digit: persistBank ? data.bankAccountDigit : null,
-          bank_account_type: persistBank ? data.bankAccountType : null,
-          auto_transfer_enabled: persistBank,
+          bank_code: data.bankCode,
+          bank_agency: bankAgency,
+          bank_account: bankAccount,
+          bank_account_digit: bankAccountDigit,
+          bank_account_type: data.bankAccountType,
+          auto_transfer_enabled: true,
         },
         { onConflict: "user_id" },
       );
@@ -224,7 +217,7 @@ export const createAsaasSubaccount = createServerFn({ method: "POST" })
       ok: true,
       walletId: account.walletId ?? null,
       onboardingUrl: account.onboardingUrl ?? null,
-      bankWarning,
+      bankWarning: null,
     };
   });
 
@@ -1136,6 +1129,15 @@ export const linkAsaasBankAccount = createServerFn({ method: "POST" })
     // GET /accounts/{id} com a master key.
     let ownerName: string | undefined;
     const ownerCpfCnpj = data.ownerCpfCnpj.replace(/\D/g, "");
+    const agency = data.agency.replace(/\D/g, "");
+    const accountNumber = data.account.replace(/\D/g, "");
+    const accountDigit = data.accountDigit.replace(/\D/g, "");
+    if (![11, 14].includes(ownerCpfCnpj.length)) {
+      throw new Error("Informe o CPF/CNPJ do titular da conta bancária.");
+    }
+    if (!data.bankCode || !agency || !accountNumber || !accountDigit || !data.accountType) {
+      throw new Error("Preencha todos os dados bancários antes de salvar.");
+    }
     const pickOwner = (src: any) => {
       if (!src || typeof src !== "object") return;
       ownerName = ownerName ?? src.name ?? src.companyName ?? src.fullName ?? undefined;
@@ -1174,11 +1176,12 @@ export const linkAsaasBankAccount = createServerFn({ method: "POST" })
       apiKey,
       body: JSON.stringify({
         bank: { code: data.bankCode },
-        agency: data.agency.replace(/\D/g, ""),
-        account: data.account.replace(/\D/g, ""),
-        accountDigit: data.accountDigit.replace(/\D/g, ""),
+        agency,
+        account: accountNumber,
+        accountDigit,
         bankAccountType: data.accountType,
         ownerName,
+        cpfCnpj: ownerCpfCnpj,
         ownerCpfCnpj,
       }),
     });
@@ -1204,9 +1207,9 @@ export const linkAsaasBankAccount = createServerFn({ method: "POST" })
       .from("asaas_accounts")
       .update({
         bank_code: data.bankCode,
-        bank_agency: data.agency,
-        bank_account: data.account,
-        bank_account_digit: data.accountDigit,
+        bank_agency: agency,
+        bank_account: accountNumber,
+        bank_account_digit: accountDigit,
         bank_account_type: data.accountType,
         auto_transfer_enabled: data.enableAutoTransfer,
       })

@@ -254,12 +254,53 @@ export function PropertyFormDialog({
         {mode === "manager" && (
           <>
             <div className="space-y-2">
-              <Label>Nome do Proprietário</Label>
-              <Input value={form.owner_name} onChange={(ev) => setForm({ ...form, owner_name: ev.target.value })} />
+              <Label>Proprietário</Label>
+              <Select
+                value={form.landlord_id || "__none__"}
+                onValueChange={(v) => setForm({ ...form, landlord_id: v === "__none__" ? "" : v })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione um proprietário cadastrado" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">Sem proprietário vinculado</SelectItem>
+                  {landlords.map((l) => (
+                    <SelectItem key={l.id} value={l.accepted_user_id as string}>
+                      {l.full_name || l.email}{l.document ? ` — ${l.document}` : ""}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {landlords.length === 0 && (
+                <p className="text-xs text-muted-foreground">
+                  Nenhum proprietário aceitou convite ainda.{" "}
+                  <Link to="/manager/proprietarios" className="underline">
+                    Convidar proprietário
+                  </Link>
+                </p>
+              )}
             </div>
             <div className="space-y-2">
-              <Label>Comissão Proprietário (%)</Label>
-              <Input type="number" step="0.01" value={form.owner_commission_percent} onChange={(ev) => setForm({ ...form, owner_commission_percent: ev.target.value })} />
+              <Label>Corretor responsável</Label>
+              <Select
+                value={form.responsible_member_id || "__none__"}
+                onValueChange={(v) => setForm({ ...form, responsible_member_id: v === "__none__" ? "" : v })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione um corretor da equipe" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">Sem corretor responsável</SelectItem>
+                  {brokers.map((b) => (
+                    <SelectItem key={b.id} value={b.id}>
+                      {b.name} {b.role_label ? `· ${b.role_label}` : ""}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-[11px] text-muted-foreground">
+                Receberá as notificações de mensagens de manutenção deste imóvel.
+              </p>
             </div>
           </>
         )}

@@ -146,6 +146,14 @@ function SignInForm() {
   const [busy, setBusy] = useState(false);
   const captchaRef = useRef<import("react-google-recaptcha").default | null>(null);
   const navigate = useNavigate();
+  const fetchSiteKey = useServerFn(getRecaptchaSiteKey);
+  const { data: siteKeyData } = useQuery({
+    queryKey: ["recaptcha-site-key"],
+    queryFn: () => fetchSiteKey(),
+    staleTime: Infinity,
+  });
+  const recaptchaSiteKey = siteKeyData?.siteKey;
+
 
   const canSubmit = !!email && !!password && !!captchaToken && !busy;
 

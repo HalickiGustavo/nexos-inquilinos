@@ -1262,12 +1262,35 @@ export const uploadAsaasKycDocument = createServerFn({ method: "POST" })
       throw new Error("Arquivo excede 5MB.");
     }
 
-    // Monta multipart e faz pass-through direto para o Asaas
-    const form = new FormData();
-    form.append("type", data.documentType);
-    form.append("documentFile", new Blob([bytes.buffer as ArrayBuffer], { type: data.mimeType }), data.filename);
+    // 1) Buscar a lista de documentos pendentes do Asaas para descobrir o ID
+    //    do grupo correspondente ao tipo enviado. O Asaas exige POST em
+    //    /myAccount/documents/{id} — sem esse ID o upload retorna "ID inválido".
+    const listRes = await fetch(`${ASAAS_BASE_URL}/myAccount/documents`, {
+      method: "GET",
+      headers: { access_token: apiKey, "User-Agent": "Nexo/1.0" },
+    });
+    const listText = await listRes.text();
+    const listBody = listText ? (() => { try { return JSON.parse(listText); } catch { return null; } })() : null;
+    if (!listRes.ok) {
+      const msg =
+        (listBody && typeof listBody === "object" && Array.isArray((listBody as any).errors)
+          ? (listBody as any).errors.map((e: any) => e.description).join("; ")
+          : null) || `Asaas ${listRes.status} ao listar documentos`;
+      throw new Error(msg);
+    }
+    const groups: any[] = Array.isArray((listBody as any)?.data) ? (listBody as any).data : [];
+    const group = groups.find((g: any) => g?.type === data.documentType) ?? groups[0];
+    const groupId = group?.id;
+    if (!groupId) {
+      throw new Error("Não foi possível identificar o grupo de documento no Asaas. Tente novamente em instantes.");
+    }
 
-    const res = await fetch(`${ASAAS_BASE_URL}/myAccount/documents`, {
+    // 2) Monta multipart e faz pass-through direto para o Asaas no endpoint correto
+    const form = new FormData();
+    form.append("documentFile", new Blob([bytes.buffer as ArrayBuffer], { type: data.mimeType }), data.filename);
+    form.append("type", data.documentType);
+
+    const res = await fetch(`${ASAAS_BASE_URL}/myAccount/documents/${groupId}`, {
       method: "POST",
       headers: { access_token: apiKey, "User-Agent": "Nexo/1.0" },
       body: form,

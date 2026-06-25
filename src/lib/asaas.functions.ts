@@ -65,8 +65,18 @@ export const getAsaasAccount = createServerFn({ method: "GET" })
     const { data, error } = await supabase
       .from("asaas_accounts")
       .select("id, user_id, asaas_account_id, wallet_id, status, onboarding_url, kyc_status, kyc_reference_id, bank_code, bank_agency, bank_account, bank_account_digit, bank_account_type, auto_transfer_enabled, created_at, updated_at")
+      .eq("user_id", userId)
       .maybeSingle();
     if (error) throw new Error(error.message);
+    // Defesa em profundidade: bloqueia qualquer linha de outro usuário,
+    // mesmo se algo na cadeia de RLS/cliente estiver corrompido.
+    if (data && (data as any).user_id !== userId) {
+      console.error("[security] asaas_accounts cross-user row suppressed", {
+        userId,
+        rowUserId: (data as any).user_id,
+      });
+      return { account: null };
+    }
 
     // Sincroniza CRON_SECRET no Vault de forma idempotente quando um
     // owner/manager autenticado acessa este endpoint. Mantém o cron job

@@ -238,6 +238,9 @@ function ManagerIntegracao() {
             <Field label="Telefone (celular)" required>
               <Input value={bank.phone} onChange={(e) => setBank({ ...bank, phone: maskPhone(e.target.value) })} required maxLength={20} placeholder="(41) 99999-9999" inputMode="tel" />
             </Field>
+            <Field label="Data de nascimento do titular" required>
+              <Input type="date" value={bank.birthDate} onChange={(e) => setBank({ ...bank, birthDate: e.target.value })} required />
+            </Field>
             <Field label="Faturamento mensal (R$)" required>
               <Input type="number" min="1" step="0.01" value={bank.incomeValue} onChange={(e) => setBank({ ...bank, incomeValue: e.target.value })} placeholder="10000" required />
             </Field>

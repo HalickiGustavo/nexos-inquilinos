@@ -70,7 +70,7 @@ type BankInfo = {
 };
 
 const emptyBank: BankInfo = {
-  legalName: "", email: "", document: "", phone: "", incomeValue: "",
+  legalName: "", email: "", document: "", phone: "", birthDate: "", incomeValue: "",
   postalCode: "", province: "", address: "", addressNumber: "",
   bankCode: "", bankOwnerCpfCnpj: "", agency: "", account: "", accountDigit: "", accountType: "CONTA_CORRENTE",
 };

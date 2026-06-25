@@ -55,6 +55,7 @@ type BankInfo = {
   email: string;
   document: string;
   phone: string;
+  birthDate: string;
   incomeValue: string;
   postalCode: string;
   province: string;

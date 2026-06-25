@@ -54,17 +54,23 @@ export function PainelRepasses() {
   };
 
   useEffect(() => {
-    reload();
-    const channel = supabase
-      .channel("asaas-account-self")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "asaas_accounts" },
-        () => reload(),
-      )
-      .subscribe();
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+    (async () => {
+      await reload();
+      const { data: userRes } = await supabase.auth.getUser();
+      const uid = userRes.user?.id;
+      if (!uid) return;
+      channel = supabase
+        .channel(`asaas-account-self-${uid}`)
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "asaas_accounts", filter: `user_id=eq.${uid}` },
+          () => reload(),
+        )
+        .subscribe();
+    })();
     return () => {
-      supabase.removeChannel(channel);
+      if (channel) supabase.removeChannel(channel);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

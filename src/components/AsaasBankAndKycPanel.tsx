@@ -31,7 +31,7 @@ const BANKS: Array<{ code: string; label: string }> = [
   { code: "655", label: "655 — Votorantim" },
 ];
 
-const ACCEPTED_MIME = ["image/jpeg", "image/jpg", "image/png", "application/pdf"] as const;
+const ACCEPTED_MIME = ["image/jpeg", "image/jpg", "application/pdf"] as const;
 const MAX_BYTES = 5 * 1024 * 1024;
 
 type DocType = "IDENTIFICATION" | "SELFIE";
@@ -245,7 +245,7 @@ function KycUploadSection({ onChanged }: { onChanged?: () => Promise<unknown> | 
         <p className="text-sm text-muted-foreground mb-4">
           {dryRun
             ? "Modo teste ativo: o arquivo é enviado ao Asaas para validar o upload, mas o status do KYC NÃO é alterado. A resposta crua aparece abaixo."
-            : "Os arquivos são transmitidos em memória diretamente para o Asaas. Nada é salvo em nossos servidores ou banco de dados (conformidade LGPD). Aceitos: JPG, PNG ou PDF (máx. 5MB)."}
+            : "Os arquivos são transmitidos em memória diretamente para o Asaas. Nada é salvo em nossos servidores ou banco de dados (conformidade LGPD). Aceitos: JPG/JPEG ou PDF (PNG não é aceito pelo Asaas) (máx. 5MB)."}
         </p>
         <div className="grid sm:grid-cols-2 gap-4">
           <KycDropzone label="Documento (RG / CNH)" docType="IDENTIFICATION" dryRun={dryRun} onChanged={onChanged} onResponse={setLastResponse} />
@@ -295,12 +295,12 @@ function KycDropzone({
         ) : (
           <div className="flex flex-col items-center gap-1 text-muted-foreground">
             <Upload className="size-6" />
-            <span className="text-xs">JPG, PNG ou PDF (máx. 5MB)</span>
+            <span className="text-xs">JPG/JPEG ou PDF (máx. 5MB)</span>
           </div>
         )}
         <input
           type="file"
-          accept=".jpg,.jpeg,.png,.pdf"
+          accept=".jpg,.jpeg,.pdf"
           className="sr-only"
           disabled={busy}
           onChange={async (e) => {
@@ -308,7 +308,7 @@ function KycDropzone({
             e.target.value = "";
             if (!file) return;
             if (!ACCEPTED_MIME.includes(file.type as any)) {
-              toast.error("Formato inválido. Envie JPG, PNG ou PDF.");
+              toast.error("Formato inválido. Envie JPG/JPEG ou PDF (PNG não é aceito pelo Asaas).");
               return;
             }
             if (file.size > MAX_BYTES) {

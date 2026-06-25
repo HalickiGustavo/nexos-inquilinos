@@ -1237,7 +1237,11 @@ export const linkAsaasBankAccount = createServerFn({ method: "POST" })
 const kycInput = z.object({
   documentType: z.enum(["IDENTIFICATION", "ADDRESS", "SELFIE", "ENTREPRENEUR_DOCUMENT"]),
   filename: z.string().min(1).max(160),
-  mimeType: z.enum(["image/jpeg", "image/png", "image/jpg", "application/pdf"]),
+  // Asaas só aceita JPG/JPEG e PDF no endpoint /myAccount/documents/{id}.
+  // PNG é rejeitado com a mensagem genérica "Esse tipo de documento não pode ser enviado via API".
+  mimeType: z.enum(["image/jpeg", "image/jpg", "application/pdf"], {
+    message: "Formato não suportado pelo Asaas. Envie JPG/JPEG ou PDF (PNG não é aceito).",
+  }),
   base64: z.string().min(10).max(8_500_000), // ~6MB binário após decode
   dryRun: z.boolean().optional(), // se true: faz o upload mas NÃO atualiza kyc_status e retorna a resposta crua do Asaas
 });

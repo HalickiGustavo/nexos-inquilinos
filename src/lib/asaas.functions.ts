@@ -1317,11 +1317,19 @@ export const uploadAsaasKycDocument = createServerFn({ method: "POST" })
         (body && typeof body === "object" && Array.isArray((body as any).errors)
           ? (body as any).errors.map((e: any) => e.description).join("; ")
           : null) || `Asaas ${res.status}`;
+      if (data.dryRun) {
+        return { ok: false, dryRun: true, httpStatus: res.status, groupId, response: body, error: msg };
+      }
       throw new Error(msg);
     }
 
     const referenceId =
       (body && typeof body === "object" && ((body as any).id ?? (body as any).reference)) || null;
+
+    if (data.dryRun) {
+      // Modo teste: confirma que o upload chegou no Asaas mas NÃO marca o KYC como em análise.
+      return { ok: true, dryRun: true, httpStatus: res.status, groupId, referenceId, response: body };
+    }
 
     await supabaseAdmin
       .from("asaas_accounts")

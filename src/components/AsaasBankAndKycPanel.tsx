@@ -226,27 +226,57 @@ function BankSection({ account, onChanged }: { account: Account; onChanged?: () 
 }
 
 function KycUploadSection({ onChanged }: { onChanged?: () => Promise<unknown> | void }) {
+  const [dryRun, setDryRun] = useState(false);
+  const [lastResponse, setLastResponse] = useState<unknown>(null);
+
   return (
     <Card>
       <CardContent className="p-6">
-        <div className="flex items-center gap-2 mb-1">
-          <FileCheck2 className="size-4 text-primary" />
-          <h3 className="font-semibold">Verificação de Identidade</h3>
+        <div className="flex items-center justify-between gap-4 mb-1">
+          <div className="flex items-center gap-2">
+            <FileCheck2 className="size-4 text-primary" />
+            <h3 className="font-semibold">Verificação de Identidade</h3>
+          </div>
+          <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
+            <Switch checked={dryRun} onCheckedChange={(v) => { setDryRun(v); setLastResponse(null); }} />
+            <span>Modo teste (não atualiza KYC)</span>
+          </label>
         </div>
         <p className="text-sm text-muted-foreground mb-4">
-          Os arquivos são transmitidos em memória diretamente para o Asaas. <strong>Nada é salvo</strong> em
-          nossos servidores ou banco de dados (conformidade LGPD). Aceitos: JPG, PNG ou PDF (máx. 5MB).
+          {dryRun
+            ? "Modo teste ativo: o arquivo é enviado ao Asaas para validar o upload, mas o status do KYC NÃO é alterado. A resposta crua aparece abaixo."
+            : "Os arquivos são transmitidos em memória diretamente para o Asaas. Nada é salvo em nossos servidores ou banco de dados (conformidade LGPD). Aceitos: JPG, PNG ou PDF (máx. 5MB)."}
         </p>
         <div className="grid sm:grid-cols-2 gap-4">
-          <KycDropzone label="Documento (RG / CNH)" docType="IDENTIFICATION" onChanged={onChanged} />
-          <KycDropzone label="Selfie de Verificação" docType="SELFIE" onChanged={onChanged} />
+          <KycDropzone label="Documento (RG / CNH)" docType="IDENTIFICATION" dryRun={dryRun} onChanged={onChanged} onResponse={setLastResponse} />
+          <KycDropzone label="Selfie de Verificação" docType="SELFIE" dryRun={dryRun} onChanged={onChanged} onResponse={setLastResponse} />
         </div>
+        {dryRun && lastResponse != null && (
+          <div className="mt-4 rounded-md border bg-muted/40 p-3">
+            <div className="text-xs font-medium mb-2 text-muted-foreground">Resposta do Asaas (modo teste)</div>
+            <pre className="text-xs whitespace-pre-wrap break-words max-h-72 overflow-auto">
+{JSON.stringify(lastResponse, null, 2)}
+            </pre>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
 }
 
-function KycDropzone({ label, docType, onChanged }: { label: string; docType: DocType; onChanged?: () => Promise<unknown> | void }) {
+function KycDropzone({
+  label,
+  docType,
+  dryRun,
+  onChanged,
+  onResponse,
+}: {
+  label: string;
+  docType: DocType;
+  dryRun: boolean;
+  onChanged?: () => Promise<unknown> | void;
+  onResponse?: (r: unknown) => void;
+}) {
   const upload = useServerFn(uploadAsaasKycDocument);
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
@@ -260,7 +290,7 @@ function KycDropzone({ label, docType, onChanged }: { label: string; docType: Do
         ) : done ? (
           <div className="flex flex-col items-center gap-1 text-emerald-600 dark:text-emerald-400">
             <CheckCircle2 className="size-6" />
-            <span className="text-xs font-medium">Enviado</span>
+            <span className="text-xs font-medium">{dryRun ? "Upload OK (teste)" : "Enviado"}</span>
           </div>
         ) : (
           <div className="flex flex-col items-center gap-1 text-muted-foreground">
@@ -288,17 +318,28 @@ function KycDropzone({ label, docType, onChanged }: { label: string; docType: Do
             setBusy(true);
             try {
               const base64 = await fileToBase64(file);
-              await upload({
+              const result: any = await upload({
                 data: {
                   documentType: docType,
                   filename: file.name,
                   mimeType: file.type as any,
                   base64,
+                  dryRun,
                 },
               });
-              setDone(true);
-              toast.success("Documento enviado para análise!");
-              await onChanged?.();
+              if (dryRun) {
+                onResponse?.(result);
+                if (result?.ok) {
+                  setDone(true);
+                  toast.success(`Upload validado (HTTP ${result.httpStatus}). KYC não foi alterado.`);
+                } else {
+                  toast.error(`Asaas rejeitou o upload: ${result?.error ?? "erro desconhecido"}`);
+                }
+              } else {
+                setDone(true);
+                toast.success("Documento enviado para análise!");
+                await onChanged?.();
+              }
             } catch (err: any) {
               toast.error(`Erro ao enviar documento: ${err?.message ?? "falha desconhecida"}`);
             } finally {

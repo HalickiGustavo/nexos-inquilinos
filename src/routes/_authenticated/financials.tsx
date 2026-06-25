@@ -20,7 +20,7 @@ import { parseExpenses, expensesTotals } from "@/lib/variable-expenses";
 import { PainelRepasses } from "@/components/PainelRepasses";
 
 export const Route = createFileRoute("/_authenticated/financials")({
-  head: () => ({ meta: [{ title: "Finanças — ImovelPro" }] }),
+  head: () => ({ meta: [{ title: "Finanças — Nexo" }] }),
   component: FinancialsPage,
 });
 

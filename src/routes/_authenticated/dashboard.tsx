@@ -10,7 +10,7 @@ import { formatBRL, monthRange } from "@/lib/format";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Cell } from "recharts";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
-  head: () => ({ meta: [{ title: "Visão Geral — ImovelPro" }] }),
+  head: () => ({ meta: [{ title: "Visão Geral — Nexo" }] }),
   component: Dashboard,
 });
 

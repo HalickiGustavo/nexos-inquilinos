@@ -18,7 +18,7 @@ import { formatBRL } from "@/lib/format";
 import { PropertyFormDialog } from "@/components/PropertyFormDialog";
 
 export const Route = createFileRoute("/_authenticated/properties")({
-  head: () => ({ meta: [{ title: "Imóveis — ImovelPro" }] }),
+  head: () => ({ meta: [{ title: "Imóveis — Nexo" }] }),
   component: PropertiesPage,
 });
 

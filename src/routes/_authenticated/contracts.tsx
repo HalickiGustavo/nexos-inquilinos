@@ -16,7 +16,7 @@ import { useContracts, useProperties, useTenants, useInvalidate } from "@/lib/qu
 import { formatBRL, formatDate, parseNumber } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/contracts")({
-  head: () => ({ meta: [{ title: "Contratos — ImovelPro" }] }),
+  head: () => ({ meta: [{ title: "Contratos — Nexo" }] }),
   component: ContractsPage,
 });
 

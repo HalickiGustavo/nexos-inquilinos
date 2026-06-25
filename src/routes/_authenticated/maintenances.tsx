@@ -20,7 +20,7 @@ import { EvidenceGrid } from "@/components/EvidenceUploader";
 import { formatBRL, formatDate, parseNumber } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/maintenances")({
-  head: () => ({ meta: [{ title: "Manutenções — ImovelPro" }] }),
+  head: () => ({ meta: [{ title: "Manutenções — Nexo" }] }),
   component: MaintenancesPage,
 });
 

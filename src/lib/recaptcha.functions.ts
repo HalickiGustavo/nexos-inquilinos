@@ -1,13 +1,12 @@
 import { createServerFn } from "@tanstack/react-start";
 
-// Site key da reCAPTCHA é público (renderizado no HTML do widget).
-// Expor via server fn permite trocar entre teste/produção mexendo só no secret.
+// Site key da reCAPTCHA — temporariamente fixado na chave de TESTE do Google.
+// Os secrets de produção (RECAPTCHA_SITE_KEY / RECAPTCHA_SECRET_KEY) permanecem
+// armazenados nos secrets do projeto e podem ser religados depois.
 export const getRecaptchaSiteKey = createServerFn({ method: "GET" }).handler(
   async () => {
     return {
-      siteKey:
-        process.env.RECAPTCHA_SITE_KEY ??
-        "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI",
+      siteKey: "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI",
     };
   },
 );

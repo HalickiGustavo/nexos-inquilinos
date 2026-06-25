@@ -13,6 +13,7 @@ const corsHeaders = {
 };
 
 const payloadSchema = z.object({
+  token: z.string().min(10).optional(),
   portal: z.string().min(1).max(40).default("desconhecido"),
   property_code: z.string().min(1).max(80).optional(),
   property_external_id: z.string().max(120).optional(),

@@ -107,6 +107,10 @@ function ManagerIntegracao() {
       toast.error("Preencha todos os dados bancários antes de enviar.");
       return;
     }
+    if (!bank.birthDate.trim()) {
+      toast.error("Informe a data de nascimento do titular.");
+      return;
+    }
     setSaving(true);
     try {
       if (!account) {

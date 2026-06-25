@@ -1290,10 +1290,24 @@ export const uploadAsaasKycDocument = createServerFn({ method: "POST" })
       throw new Error(msg);
     }
     const groups: any[] = Array.isArray((listBody as any)?.data) ? (listBody as any).data : [];
-    const group = groups.find((g: any) => g?.type === data.documentType) ?? groups[0];
+    // Resumo enxuto dos grupos para debug (modo teste)
+    const groupsSummary = groups.map((g: any) => ({
+      id: g?.id,
+      type: g?.type,
+      status: g?.status,
+      title: g?.title,
+      responsible: g?.responsible,
+    }));
+    const group = groups.find((g: any) => g?.type === data.documentType);
     const groupId = group?.id;
     if (!groupId) {
-      throw new Error("Não foi possível identificar o grupo de documento no Asaas. Tente novamente em instantes.");
+      const msg = `Nenhum grupo de documento do tipo "${data.documentType}" encontrado no Asaas. Grupos disponíveis: ${
+        groupsSummary.map((g) => g.type).join(", ") || "(nenhum)"
+      }`;
+      if (data.dryRun) {
+        return { ok: false, dryRun: true, httpStatus: 0, groupId: null, availableGroups: groupsSummary, error: msg };
+      }
+      throw new Error(msg);
     }
 
     // 2) Monta multipart e faz pass-through direto para o Asaas no endpoint correto
@@ -1318,7 +1332,7 @@ export const uploadAsaasKycDocument = createServerFn({ method: "POST" })
           ? (body as any).errors.map((e: any) => e.description).join("; ")
           : null) || `Asaas ${res.status}`;
       if (data.dryRun) {
-        return { ok: false, dryRun: true, httpStatus: res.status, groupId, response: body, error: msg };
+        return { ok: false, dryRun: true, httpStatus: res.status, groupId, availableGroups: groupsSummary, response: body, error: msg };
       }
       throw new Error(msg);
     }
@@ -1328,8 +1342,9 @@ export const uploadAsaasKycDocument = createServerFn({ method: "POST" })
 
     if (data.dryRun) {
       // Modo teste: confirma que o upload chegou no Asaas mas NÃO marca o KYC como em análise.
-      return { ok: true, dryRun: true, httpStatus: res.status, groupId, referenceId, response: body };
+      return { ok: true, dryRun: true, httpStatus: res.status, groupId, referenceId, availableGroups: groupsSummary, response: body };
     }
+
 
     await supabaseAdmin
       .from("asaas_accounts")

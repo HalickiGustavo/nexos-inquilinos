@@ -13,6 +13,7 @@ const corsHeaders = {
 };
 
 const payloadSchema = z.object({
+  token: z.string().min(10).optional(),
   portal: z.string().min(1).max(40).default("desconhecido"),
   property_code: z.string().min(1).max(80).optional(),
   property_external_id: z.string().max(120).optional(),
@@ -55,15 +56,26 @@ export const Route = createFileRoute("/api/v1/integrations/$orgSlug/leads")({
           return jsonResp({ received: false, error: "invalid_payload", detail: err?.message }, 400);
         }
 
+        // Require shared secret token (header or body) to prevent slug-guessing lead injection
+        const headerToken = request.headers.get("x-api-key") ?? request.headers.get("x-webhook-token") ?? undefined;
+        const bodyToken = (parsed as any).token as string | undefined;
+        const providedToken = headerToken ?? bodyToken;
+        if (!providedToken || providedToken.length < 10) {
+          return jsonResp({ received: false, error: "missing_token" }, 401);
+        }
+
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
         const { data: agency } = await supabaseAdmin
           .from("agency_settings")
-          .select("manager_user_id, lead_routing_strategy, last_round_robin_member_id")
+          .select("manager_user_id, lead_routing_strategy, last_round_robin_member_id, webhook_token")
           .eq("org_slug", slug)
           .maybeSingle();
-        if (!agency?.manager_user_id) {
+        if (!agency?.manager_user_id || !agency.webhook_token) {
           return jsonResp({ received: false, error: "agency_not_found" }, 404);
+        }
+        if (agency.webhook_token !== providedToken) {
+          return jsonResp({ received: false, error: "invalid_token" }, 401);
         }
 
         const managerId = agency.manager_user_id as string;

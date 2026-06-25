@@ -1239,6 +1239,7 @@ const kycInput = z.object({
   filename: z.string().min(1).max(160),
   mimeType: z.enum(["image/jpeg", "image/png", "image/jpg", "application/pdf"]),
   base64: z.string().min(10).max(8_500_000), // ~6MB binário após decode
+  dryRun: z.boolean().optional(), // se true: faz o upload mas NÃO atualiza kyc_status e retorna a resposta crua do Asaas
 });
 
 export const uploadAsaasKycDocument = createServerFn({ method: "POST" })

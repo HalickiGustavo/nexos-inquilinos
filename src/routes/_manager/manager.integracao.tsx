@@ -116,6 +116,7 @@ function ManagerIntegracao() {
             email: bank.email,
             cpfCnpj: bank.document,
             mobilePhone: bank.phone,
+            birthDate: bank.birthDate || undefined,
             incomeValue: Number(bank.incomeValue),
             address: bank.address,
             addressNumber: bank.addressNumber,

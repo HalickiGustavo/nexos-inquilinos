@@ -55,6 +55,7 @@ type BankInfo = {
   email: string;
   document: string;
   phone: string;
+  birthDate: string;
   incomeValue: string;
   postalCode: string;
   province: string;
@@ -69,7 +70,7 @@ type BankInfo = {
 };
 
 const emptyBank: BankInfo = {
-  legalName: "", email: "", document: "", phone: "", incomeValue: "",
+  legalName: "", email: "", document: "", phone: "", birthDate: "", incomeValue: "",
   postalCode: "", province: "", address: "", addressNumber: "",
   bankCode: "", bankOwnerCpfCnpj: "", agency: "", account: "", accountDigit: "", accountType: "CONTA_CORRENTE",
 };
@@ -106,6 +107,10 @@ function ManagerIntegracao() {
       toast.error("Preencha todos os dados bancários antes de enviar.");
       return;
     }
+    if (!bank.birthDate.trim()) {
+      toast.error("Informe a data de nascimento do titular.");
+      return;
+    }
     setSaving(true);
     try {
       if (!account) {
@@ -115,6 +120,7 @@ function ManagerIntegracao() {
             email: bank.email,
             cpfCnpj: bank.document,
             mobilePhone: bank.phone,
+            birthDate: bank.birthDate || undefined,
             incomeValue: Number(bank.incomeValue),
             address: bank.address,
             addressNumber: bank.addressNumber,
@@ -235,6 +241,9 @@ function ManagerIntegracao() {
             </Field>
             <Field label="Telefone (celular)" required>
               <Input value={bank.phone} onChange={(e) => setBank({ ...bank, phone: maskPhone(e.target.value) })} required maxLength={20} placeholder="(41) 99999-9999" inputMode="tel" />
+            </Field>
+            <Field label="Data de nascimento do titular" required>
+              <Input type="date" value={bank.birthDate} onChange={(e) => setBank({ ...bank, birthDate: e.target.value })} required />
             </Field>
             <Field label="Faturamento mensal (R$)" required>
               <Input type="number" min="1" step="0.01" value={bank.incomeValue} onChange={(e) => setBank({ ...bank, incomeValue: e.target.value })} placeholder="10000" required />

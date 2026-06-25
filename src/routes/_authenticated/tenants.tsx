@@ -26,7 +26,7 @@ function waLink(phone: string, message?: string) {
 }
 
 export const Route = createFileRoute("/_authenticated/tenants")({
-  head: () => ({ meta: [{ title: "Inquilinos — ImovelPro" }] }),
+  head: () => ({ meta: [{ title: "Inquilinos — Nexo" }] }),
   component: TenantsPage,
 });
 

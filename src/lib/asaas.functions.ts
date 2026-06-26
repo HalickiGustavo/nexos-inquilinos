@@ -1302,9 +1302,19 @@ export const uploadAsaasKycDocument = createServerFn({ method: "POST" })
       title: g?.title,
       responsible: g?.responsible,
     }));
-    const group = groups.find((g: any) => g?.type === data.documentType);
+    // Mapeia nomes lógicos do nosso UI para os `type` reais retornados pelo Asaas.
+    // O Asaas usa IDENTIFICATION_SELFIE para selfie e IDENTIFICATION para o documento.
+    const typeAliases: Record<string, string[]> = {
+      SELFIE: ["IDENTIFICATION_SELFIE", "SELFIE"],
+      IDENTIFICATION: ["IDENTIFICATION", "IDENTIFICATION_DOCUMENT"],
+      ADDRESS: ["ADDRESS", "ADDRESS_PROOF"],
+      ENTREPRENEUR_DOCUMENT: ["ENTREPRENEUR_DOCUMENT", "SOCIAL_CONTRACT"],
+    };
+    const candidates = typeAliases[data.documentType] ?? [data.documentType];
+    const group = groups.find((g: any) => candidates.includes(g?.type));
     const groupId = group?.id;
-    if (!groupId) {
+    const groupType: string | undefined = group?.type;
+    if (!groupId || !groupType) {
       const msg = `Nenhum grupo de documento do tipo "${data.documentType}" encontrado no Asaas. Grupos disponíveis: ${
         groupsSummary.map((g) => g.type).join(", ") || "(nenhum)"
       }`;
@@ -1314,10 +1324,11 @@ export const uploadAsaasKycDocument = createServerFn({ method: "POST" })
       throw new Error(msg);
     }
 
-    // 2) Monta multipart e faz pass-through direto para o Asaas no endpoint correto
+    // 2) Monta multipart e faz pass-through direto para o Asaas no endpoint correto.
+    //    O campo `type` precisa ser exatamente o `type` do grupo retornado pelo Asaas.
     const form = new FormData();
     form.append("documentFile", new Blob([bytes.buffer as ArrayBuffer], { type: data.mimeType }), data.filename);
-    form.append("type", data.documentType);
+    form.append("type", groupType);
 
     const res = await fetch(`${ASAAS_BASE_URL}/myAccount/documents/${groupId}`, {
       method: "POST",

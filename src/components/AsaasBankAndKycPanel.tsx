@@ -239,6 +239,7 @@ function KycPanelSection({ account }: { account: Account; onChanged?: () => Prom
   const approved = status === "APROVADO";
   const fetchLinks = useServerFn(getAsaasOnboardingLinks);
   const [items, setItems] = useState<Array<{ id: string; type: string; title: string; status: string; onboardingUrl: string | null }>>([]);
+  const [generalUrl, setGeneralUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -249,6 +250,7 @@ function KycPanelSection({ account }: { account: Account; onChanged?: () => Prom
     try {
       const res: any = await fetchLinks();
       setItems(res?.items ?? []);
+      setGeneralUrl(res?.generalOnboardingUrl ?? null);
       setLoaded(true);
     } catch (e: any) {
       setError(e?.message ?? "Falha ao consultar documentos pendentes no Asaas.");

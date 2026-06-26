@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { linkAsaasBankAccount, getAsaasOnboardingLinks } from "@/lib/asaas.functions";
+import { linkAsaasBankAccount, getAsaasOnboardingLinks, diagnoseAsaasAccount } from "@/lib/asaas.functions";
 import { maskCpfCnpj } from "@/lib/br-validators";
 
 // Lista enxuta dos principais bancos brasileiros (código COMPE/ISPB do Asaas)
@@ -238,12 +238,16 @@ function KycPanelSection({ account }: { account: Account; onChanged?: () => Prom
   const status = (account.kyc_status ?? "PENDENTE").toUpperCase();
   const approved = status === "APROVADO";
   const fetchLinks = useServerFn(getAsaasOnboardingLinks);
+  const diagnose = useServerFn(diagnoseAsaasAccount);
   const [items, setItems] = useState<Array<{ id: string; type: string; title: string; status: string; onboardingUrl: string | null }>>([]);
   const [generalUrl, setGeneralUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [diagLoading, setDiagLoading] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [rawLog, setRawLog] = useState<string | null>(null);
+  const [diagLog, setDiagLog] = useState<string | null>(null);
+
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -294,12 +298,42 @@ function KycPanelSection({ account }: { account: Account; onChanged?: () => Prom
             <h3 className="font-semibold">Verificação de Identidade (KYC)</h3>
           </div>
           {!approved && (
-            <Button variant="ghost" size="sm" onClick={load} disabled={loading}>
-              {loading ? <Loader2 className="size-3.5 animate-spin" /> : <RefreshCw className="size-3.5" />}
-              <span className="ml-1.5 text-xs">Atualizar</span>
-            </Button>
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={async () => {
+                  setDiagLoading(true);
+                  try {
+                    const res: any = await diagnose();
+                    setDiagLog(JSON.stringify(res, null, 2));
+                    // eslint-disable-next-line no-console
+                    console.log("[Asaas] diagnoseAsaasAccount →", res);
+                    if (res?.reasons?.length) {
+                      toast.warning(res.reasons[0]);
+                    } else {
+                      toast.success("Subconta autenticando normalmente no Asaas.");
+                    }
+                  } catch (e: any) {
+                    setDiagLog(JSON.stringify({ error: e?.message }, null, 2));
+                    toast.error(e?.message ?? "Falha no diagnóstico.");
+                  } finally {
+                    setDiagLoading(false);
+                  }
+                }}
+                disabled={diagLoading}
+              >
+                {diagLoading ? <Loader2 className="size-3.5 animate-spin" /> : <ShieldAlert className="size-3.5" />}
+                <span className="ml-1.5 text-xs">Diagnosticar</span>
+              </Button>
+              <Button variant="ghost" size="sm" onClick={load} disabled={loading}>
+                {loading ? <Loader2 className="size-3.5 animate-spin" /> : <RefreshCw className="size-3.5" />}
+                <span className="ml-1.5 text-xs">Atualizar</span>
+              </Button>
+            </div>
           )}
         </div>
+
 
         {approved ? (
           <Alert className="border-emerald-500/30 bg-emerald-500/5">
@@ -403,6 +437,18 @@ function KycPanelSection({ account }: { account: Account; onChanged?: () => Prom
             </pre>
           </details>
         )}
+
+        {diagLog && (
+          <details className="mt-3 rounded-md border bg-muted/30 p-3 text-xs" open>
+            <summary className="cursor-pointer font-medium text-muted-foreground">
+              Diagnóstico da subconta (debug)
+            </summary>
+            <pre className="mt-2 max-h-80 overflow-auto whitespace-pre-wrap break-all font-mono text-[11px] leading-relaxed">
+              {diagLog}
+            </pre>
+          </details>
+        )}
+
       </CardContent>
     </Card>
   );

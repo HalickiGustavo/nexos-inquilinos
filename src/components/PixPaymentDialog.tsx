@@ -33,7 +33,7 @@ export function PixPaymentDialog({
     setCopying(true);
     try {
       await navigator.clipboard.writeText(pixPayload);
-      toast.success("Código Pix copiado!");
+      toast.success("Código Pix copiado! Cole no aplicativo do seu banco para pagar.");
     } catch {
       toast.error("Não foi possível copiar");
     } finally {

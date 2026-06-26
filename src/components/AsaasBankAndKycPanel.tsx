@@ -391,8 +391,7 @@ function KycPanelSection({ account }: { account: Account; onChanged?: () => Prom
             )}
           </>
         )}
-          </>
-        )}
+
 
         {rawLog && (
           <details className="mt-4 rounded-md border bg-muted/30 p-3 text-xs">

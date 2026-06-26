@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { linkAsaasBankAccount, getAsaasOnboardingLinks, diagnoseAsaasAccount } from "@/lib/asaas.functions";
+import { linkAsaasBankAccount, getAsaasOnboardingLinks } from "@/lib/asaas.functions";
 import { maskCpfCnpj } from "@/lib/br-validators";
 
 // Lista enxuta dos principais bancos brasileiros (código COMPE/ISPB do Asaas)

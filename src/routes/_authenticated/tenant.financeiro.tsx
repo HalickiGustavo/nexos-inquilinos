@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
 import { ensureTenantPixCharge } from "@/lib/asaas.functions";
+import { generateTripleSplitPix } from "@/lib/pix-split.functions";
 import { useQueryClient } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/_authenticated/tenant/financeiro")({

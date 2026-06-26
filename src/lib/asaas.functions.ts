@@ -129,6 +129,7 @@ export const getAsaasOnboardingLinks = createServerFn({ method: "GET" })
     // Fallback geral: link de onboarding único da subconta (existe mesmo em
     // subcontas antigas, anteriores ao endpoint /myAccount/documents).
     let generalOnboardingUrl: string | null = acc.onboarding_url ?? null;
+    let accountStatus: string | null = null;
     try {
       const me = await asaasFetch<any>("/myAccount", { method: "GET", apiKey: acc.api_key });
       if (me?.onboardingUrl) {
@@ -140,6 +141,7 @@ export const getAsaasOnboardingLinks = createServerFn({ method: "GET" })
             .eq("user_id", userId);
         }
       }
+      accountStatus = me?.status ?? null;
     } catch (e) {
       console.warn("[asaas] /myAccount fallback falhou:", (e as any)?.message);
     }
@@ -165,20 +167,31 @@ export const getAsaasOnboardingLinks = createServerFn({ method: "GET" })
           .update({ onboarding_url: first })
           .eq("user_id", userId);
       }
-      return { ok: true, items, generalOnboardingUrl, rejectReasons: docs?.rejectReasons ?? null };
+      return { ok: true, items, generalOnboardingUrl, accountStatus, rejectReasons: docs?.rejectReasons ?? null };
     } catch (e: any) {
+      // Mensagem específica quando a subconta está em análise (AWAITING_APPROVAL)
+      // — não é credencial inválida, é o Asaas ainda revisando o cadastro.
+      const awaiting = accountStatus === "AWAITING_APPROVAL";
+      const baseWarn = awaiting
+        ? "Subconta em análise pelo Asaas (AWAITING_APPROVAL). O painel de documentos só é liberado após a aprovação inicial do cadastro/dados bancários. Use o link geral de onboarding abaixo enquanto isso, e tente novamente em alguns minutos."
+        : ((e as any)?.message ?? "Falha ao listar documentos; usando link geral.");
       if (generalOnboardingUrl) {
         return {
           ok: true,
           items: [],
           generalOnboardingUrl,
+          accountStatus,
           rejectReasons: null,
-          warning: (e as any)?.message ?? "Falha ao listar documentos; usando link geral.",
+          warning: baseWarn,
         };
+      }
+      if (awaiting) {
+        throw new Error(baseWarn);
       }
       throw mapAsaasError(e);
     }
   });
+
 
 // ===== Diagnóstico da subconta Asaas =====
 // Objetivo: dar uma resposta objetiva sobre POR QUE /myAccount/documents está

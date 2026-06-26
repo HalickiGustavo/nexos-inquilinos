@@ -14,6 +14,7 @@ import {
   getAsaasAccount,
 } from "@/lib/asaas.functions";
 import { AsaasBankAndKycPanel } from "@/components/AsaasBankAndKycPanel";
+import { PixSplitConfigPanel } from "@/components/PixSplitConfigPanel";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { maskCpfCnpj, maskPhone, maskCEP } from "@/lib/br-validators";
 import { useAuth } from "@/lib/auth";

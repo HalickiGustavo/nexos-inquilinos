@@ -288,39 +288,10 @@ function KycPanelSection({ account }: { account: Account; onChanged?: () => Prom
             <h3 className="font-semibold">Verificação de Identidade (KYC)</h3>
           </div>
           {!approved && (
-            <div className="flex items-center gap-1">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={async () => {
-                  setDiagLoading(true);
-                  try {
-                    const res: any = await diagnose();
-                    setDiagLog(JSON.stringify(res, null, 2));
-                    // eslint-disable-next-line no-console
-                    console.log("[Asaas] diagnoseAsaasAccount →", res);
-                    if (res?.reasons?.length) {
-                      toast.warning(res.reasons[0]);
-                    } else {
-                      toast.success("Subconta autenticando normalmente no Asaas.");
-                    }
-                  } catch (e: any) {
-                    setDiagLog(JSON.stringify({ error: e?.message }, null, 2));
-                    toast.error(e?.message ?? "Falha no diagnóstico.");
-                  } finally {
-                    setDiagLoading(false);
-                  }
-                }}
-                disabled={diagLoading}
-              >
-                {diagLoading ? <Loader2 className="size-3.5 animate-spin" /> : <ShieldAlert className="size-3.5" />}
-                <span className="ml-1.5 text-xs">Diagnosticar</span>
-              </Button>
-              <Button variant="ghost" size="sm" onClick={load} disabled={loading}>
-                {loading ? <Loader2 className="size-3.5 animate-spin" /> : <RefreshCw className="size-3.5" />}
-                <span className="ml-1.5 text-xs">Atualizar</span>
-              </Button>
-            </div>
+            <Button variant="ghost" size="sm" onClick={load} disabled={loading}>
+              {loading ? <Loader2 className="size-3.5 animate-spin" /> : <RefreshCw className="size-3.5" />}
+              <span className="ml-1.5 text-xs">Atualizar</span>
+            </Button>
           )}
         </div>
 

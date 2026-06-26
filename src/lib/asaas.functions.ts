@@ -50,7 +50,15 @@ async function getMasterPlatformWalletId(supabaseAdmin: any): Promise<string> {
 function mapAsaasError(e: any): Error {
   const status = e?.status;
   if (status === 401 || status === 403) {
-    return new Error("Credenciais da subconta inválidas ou expiradas junto ao gateway.");
+    return new Error(
+      "Não conseguimos acessar sua subconta no gateway. Isso normalmente acontece quando os dados bancários (banco, agência, conta, dígito ou CPF/CNPJ do titular) foram preenchidos incorretamente ou ainda não foram validados. Revise os dados bancários na seção 'Conta bancária de recebimento' abaixo e tente novamente. Se já estiverem corretos, aguarde alguns minutos e atualize.",
+    );
+  }
+  if (status === 400) {
+    const msg = String(e?.message ?? "");
+    if (/bank|conta|agência|agencia|titular/i.test(msg)) {
+      return new Error(`Dados bancários recusados pelo gateway: ${msg}. Corrija na seção abaixo e tente novamente.`);
+    }
   }
   if (e instanceof Error) return e;
   return new Error(String(e?.message ?? e));

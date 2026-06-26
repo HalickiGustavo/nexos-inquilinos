@@ -16,6 +16,8 @@ export type Database = {
     Tables: {
       agency_settings: {
         Row: {
+          agency_pix_key: string | null
+          agency_pix_key_type: string | null
           created_at: string
           last_round_robin_member_id: string | null
           lead_routing_strategy: string
@@ -25,6 +27,8 @@ export type Database = {
           webhook_token: string
         }
         Insert: {
+          agency_pix_key?: string | null
+          agency_pix_key_type?: string | null
           created_at?: string
           last_round_robin_member_id?: string | null
           lead_routing_strategy?: string
@@ -34,6 +38,8 @@ export type Database = {
           webhook_token?: string
         }
         Update: {
+          agency_pix_key?: string | null
+          agency_pix_key_type?: string | null
           created_at?: string
           last_round_robin_member_id?: string | null
           lead_routing_strategy?: string
@@ -181,6 +187,7 @@ export type Database = {
       contracts: {
         Row: {
           active: boolean
+          agency_admin_fee_percentage: number
           contract_pdf_path: string | null
           created_at: string
           daily_interest_percent: number
@@ -201,6 +208,7 @@ export type Database = {
         }
         Insert: {
           active?: boolean
+          agency_admin_fee_percentage?: number
           contract_pdf_path?: string | null
           created_at?: string
           daily_interest_percent?: number
@@ -221,6 +229,7 @@ export type Database = {
         }
         Update: {
           active?: boolean
+          agency_admin_fee_percentage?: number
           contract_pdf_path?: string | null
           created_at?: string
           daily_interest_percent?: number
@@ -933,6 +942,71 @@ export type Database = {
         }
         Relationships: []
       }
+      pix_splits: {
+        Row: {
+          agency_amount: number
+          agency_pix_key: string | null
+          created_at: string
+          id: string
+          installment_id: string
+          nexo_amount: number
+          nexo_pix_key: string | null
+          owner_amount: number
+          owner_pix_key: string | null
+          provider: string
+          psp_pix_payload: string | null
+          psp_qrcode_base64: string | null
+          psp_txid: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          agency_amount?: number
+          agency_pix_key?: string | null
+          created_at?: string
+          id?: string
+          installment_id: string
+          nexo_amount?: number
+          nexo_pix_key?: string | null
+          owner_amount?: number
+          owner_pix_key?: string | null
+          provider?: string
+          psp_pix_payload?: string | null
+          psp_qrcode_base64?: string | null
+          psp_txid?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          agency_amount?: number
+          agency_pix_key?: string | null
+          created_at?: string
+          id?: string
+          installment_id?: string
+          nexo_amount?: number
+          nexo_pix_key?: string | null
+          owner_amount?: number
+          owner_pix_key?: string | null
+          provider?: string
+          psp_pix_payload?: string | null
+          psp_qrcode_base64?: string | null
+          psp_txid?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pix_splits_installment_id_fkey"
+            columns: ["installment_id"]
+            isOneToOne: false
+            referencedRelation: "installments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       platform_settings: {
         Row: {
           created_at: string
@@ -1031,6 +1105,8 @@ export type Database = {
           notes: string | null
           owner_commission_percent: number
           owner_name: string | null
+          owner_pix_key: string | null
+          owner_pix_key_type: string | null
           publish_imovelweb: boolean
           publish_zap: boolean
           rent_price: number
@@ -1067,6 +1143,8 @@ export type Database = {
           notes?: string | null
           owner_commission_percent?: number
           owner_name?: string | null
+          owner_pix_key?: string | null
+          owner_pix_key_type?: string | null
           publish_imovelweb?: boolean
           publish_zap?: boolean
           rent_price?: number
@@ -1103,6 +1181,8 @@ export type Database = {
           notes?: string | null
           owner_commission_percent?: number
           owner_name?: string | null
+          owner_pix_key?: string | null
+          owner_pix_key_type?: string | null
           publish_imovelweb?: boolean
           publish_zap?: boolean
           rent_price?: number

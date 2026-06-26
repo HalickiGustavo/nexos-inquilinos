@@ -1,73 +1,56 @@
 ## Objetivo
 
-Reestruturar a tela **Migrar Dados** (`src/routes/_manager/manager.migrar-dados.tsx`) para deixar de usar uma única planilha "tudo-em-um" e passar a aceitar **3 planilhas CSV separadas**, uma para cada entidade do domínio imobiliário:
+Adicionar uma camada de **Pix com split nativo de 3 vias** (Nexo / Imobiliária / Proprietário) usando a Efí Pay como PSP, **sem subcontas e sem KYC**. O Asaas atual continua intacto como fallback para contratos já criados.
 
-1. **Proprietários** (`proprietarios.csv`)
-2. **Imóveis** (`imoveis.csv`) — referencia o proprietário pelo CPF/CNPJ
-3. **Contratos / Inquilinos** (`contratos.csv`) — referencia o imóvel por um código interno e cria o inquilino junto
+Como ainda não temos credenciais da Efí, a engine é entregue em **modo mock**: gera QR Code real (payload BR Code v01 válido, com CRC16 correto) apontando para a chave Pix da Nexo, mas a divisão é **registrada na tabela `pix_splits`** para reconciliação. Quando as credenciais forem fornecidas, basta trocar o adapter `efi.server.ts` por chamadas HTTP reais (estrutura já preparada).
 
-Hoje o arquivo único mistura 8 colunas de 4 entidades e gera confusão (ex.: "qual CPF é do proprietário?", "e se o mesmo proprietário tem 10 imóveis?"). A separação resolve isso e ainda permite importar em etapas (primeiro a base de proprietários, depois imóveis, depois contratos).
+## Banco de dados (migração)
 
-## Nova estrutura das planilhas
+1. `agency_settings`: adicionar `agency_pix_key text`, `agency_pix_key_type text` (CPF/CNPJ/EMAIL/PHONE/EVP).
+2. `properties` (já guarda landlord): adicionar `owner_pix_key text`, `owner_pix_key_type text`.
+3. `contracts`: adicionar `agency_admin_fee_percentage numeric(5,2) default 10`.
+4. `platform_settings`: garantir `nexo_platform_pix_key text`, `nexo_flat_fee numeric(10,2) default 24.99`.
+5. Nova tabela `pix_splits` (registro do split por parcela):
 
-### 1. `proprietarios.csv`
 ```
-proprietario_cpf_cnpj,proprietario_nome,proprietario_email,proprietario_telefone
-123.456.789-09,Maria Souza,maria@exemplo.com,(11) 98888-7777
+id, installment_id (fk), provider text ('efi'|'mock'),
+nexo_amount, agency_amount, owner_amount,
+nexo_pix_key, agency_pix_key, owner_pix_key,
+psp_txid text, psp_qrcode_base64 text, psp_pix_payload text,
+status text ('pending'|'paid'|'failed'), created_at, updated_at
 ```
-- Chave única: `proprietario_cpf_cnpj` (deduplicação no upsert).
-- `email` e `telefone` opcionais.
 
-### 2. `imoveis.csv`
-```
-imovel_codigo,proprietario_cpf_cnpj,imovel_endereco,imovel_tipo,imovel_valor_aluguel,imovel_status
-IM-001,123.456.789-09,Rua das Flores 123 - Centro,apartamento,1500.00,disponivel
-```
-- `imovel_codigo`: identificador interno do cliente (livre, ex.: "AP-302"); usado depois pelo CSV de contratos.
-- `proprietario_cpf_cnpj`: liga o imóvel a um proprietário já importado.
-- `imovel_status`: `disponivel` | `alugado` | `manutencao` (default `disponivel`).
+Com GRANTs e RLS escopados via `installments.user_id`.
 
-### 3. `contratos.csv`
-```
-imovel_codigo,inquilino_cpf,inquilino_nome,inquilino_email,inquilino_telefone,contrato_valor,contrato_vencimento,contrato_duracao_meses,contrato_ativo
-IM-001,987.654.321-00,João Pereira,joao@exemplo.com,(11) 97777-6666,1500.00,2026-07-10,12,sim
-```
-- `imovel_codigo`: precisa existir (importado no passo 2 **ou** já cadastrado na conta).
-- Cria/atualiza o inquilino por CPF e gera o contrato + parcelas (trigger atual cuida das parcelas).
+## Backend
 
-## Mudanças no UI da página
+- `src/lib/efi.server.ts` — adapter isolado (`createCharge`, `createSplitCharge`). Sem credenciais: monta BR Code Pix válido localmente (payload EMV + CRC16 ITU) e retorna QR PNG via lib `qrcode`. Com credenciais (futuro): chama `/v2/cob` + `/v2/loc/{id}/qrcode` da Efí.
+- `src/lib/pix-split.functions.ts` — `generateTripleSplitPix({ installmentId })` com `requireSupabaseAuth`:
+  1. Carrega installment → contract → property → landlord → agency_settings → platform_settings.
+  2. Calcula fatias: `nexo = nexo_flat_fee`; `agency = rent * fee% / 100`; `owner = rent - nexo - agency`. Valida `owner >= 0`.
+  3. Resolve as 3 chaves Pix (erro descritivo se faltar).
+  4. Chama `efi.createSplitCharge(...)` com `infoAdicional: "Aluguel Mensal - Processado por NEXO"`.
+  5. Upsert em `pix_splits`, retorna `{ qrCodeBase64, copiaECola, breakdown }`.
+- Adicionar dep `qrcode` (`bun add qrcode`).
 
-Layout em **3 cards de upload empilhados**, cada um com:
-- Ícone próprio (Users / Home / FileText) e cor do tema (violet/fuchsia/cyan).
-- Botão "Baixar modelo" individual (gera o CSV daquele passo).
-- Dropzone próprio com contador de linhas válidas.
-- Selo de status: `Pendente` → `Pronto` → `Importado ✓` (com contagem de sucessos/erros).
+## Frontend
 
-Abaixo dos três cards, um único botão **"Iniciar importação completa"** que:
-1. Processa `proprietarios` (upsert por CPF/CNPJ).
-2. Processa `imoveis` (resolve `proprietario_cpf_cnpj` → `owner_id`/`owner_name`; deduplica por `imovel_codigo` salvo em `properties.code` ou `notes`).
-3. Processa `contratos` (resolve `imovel_codigo` → `property_id`; upsert do inquilino por CPF; insere contrato).
+- `src/components/PixPaymentDialog.tsx`: trocar a fonte do PIX. Quando o contrato tiver as 3 chaves Pix configuradas, chama `generateTripleSplitPix`; caso contrário, mantém `ensureTenantPixCharge` (Asaas).
+- Novo bloco "Detalhamento do split" (collapsible, dark + neon roxo) mostrando as 3 fatias.
+- Toast verde esmeralda: "Código Pix copiado! Cole no aplicativo do seu banco para pagar."
+- Painéis de cadastro:
+  - `manager.proprietarios.tsx`: campo "Chave Pix do proprietário" + tipo.
+  - `_authenticated/integrations.tsx` (aba Imobiliária): "Chave Pix da imobiliária" + tipo.
+  - `admin.integracoes.tsx`: "Chave Pix da plataforma Nexo" + `nexo_flat_fee`.
 
-Cada etapa só roda se a planilha correspondente estiver carregada **ou** se a etapa anterior puder satisfazer as referências sozinha (ex.: posso importar só `contratos.csv` se os imóveis já existem na conta).
+## Modo Mock x Produção
 
-Painel de progresso atualizado mostra 3 barras (uma por entidade) em vez de uma só, mais a lista consolidada de erros com a coluna "Origem" (`proprietarios` / `imoveis` / `contratos`).
+`EFI_CLIENT_ID` ausente → engine roda mock (QR aponta para chave Nexo, splits ficam em `pix_splits` para repasse manual D+1 via cron já existente). Quando você adicionar `EFI_CLIENT_ID`, `EFI_CLIENT_SECRET`, `EFI_CERTIFICATE_BASE64`, `EFI_PIX_KEY` via `add_secret`, o adapter automaticamente passa a chamar a API real com split nativo.
 
-## Mudanças técnicas (resumo para revisão)
+## Entregas desta rodada
 
-- Refatorar `MigrarDadosPage` para manter 3 estados independentes (`rowsOwners`, `rowsProps`, `rowsContracts`) em vez de um único `rows`.
-- Extrair as funções de parse/validação para um util local `migracao-helpers.ts` (mesma pasta) — `parseBRDate`, `parseMoney`, `parseBool`, `onlyDigits`, validação de headers por entidade.
-- 3 funções `downloadTemplateOwners()`, `downloadTemplateProperties()`, `downloadTemplateContracts()` com headers e linhas-exemplo próprias.
-- `processImport()` vira um pipeline sequencial com 3 etapas; cada etapa devolve `{ ok, errors }` e alimenta um único array consolidado de erros com `origem`.
-- Aproveitar `properties.code` (já existe, gerado por trigger) como chave de ligação — quando o usuário fornece `imovel_codigo`, sobrescrevemos o valor padrão; quando não fornece, geramos um automático e exibimos no relatório final para ele anotar.
-- Nenhuma mudança de schema no Supabase; nenhuma alteração em rotas/sidebar.
-
-## Fora do escopo
-
-- Importação de XLSX (continua só CSV).
-- Importação de fotos/anexos de imóveis.
-- Re-design da sidebar / outras telas.
-- Mudanças no fluxo de criação manual de proprietário/imóvel/contrato.
-
-## Pergunta antes de executar
-
-Confirma esse formato de 3 planilhas separadas, ou prefere 2 planilhas (juntando `imoveis` + `contratos`, já que normalmente vêm juntos do sistema antigo)?
+1. Migração (tabelas + colunas + RLS + GRANT).
+2. `efi.server.ts` (mock + estrutura pronta).
+3. `pix-split.functions.ts` (engine).
+4. UI: PixPaymentDialog com split breakdown + cadastros das 3 chaves.
+5. Documento curto em `.lovable/plan.md` explicando como ativar a Efí real.

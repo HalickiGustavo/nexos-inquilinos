@@ -265,6 +265,8 @@ function IntegrationsPage() {
 
       <AsaasBankAndKycPanel account={account as any} onChanged={() => refetch()} />
 
+      <PixSplitConfigPanel />
+
 
 
     </div>

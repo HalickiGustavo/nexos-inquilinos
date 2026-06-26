@@ -46,6 +46,7 @@ type Account = {
   auto_transfer_enabled?: boolean | null;
   api_key?: string | null;
   asaas_account_id?: string | null;
+  onboarding_url?: string | null;
 };
 
 export function AsaasBankAndKycPanel({
@@ -71,7 +72,7 @@ export function AsaasBankAndKycPanel({
       ) : (
         <>
           <BankSection account={account!} onChanged={onChanged} />
-          <KycUploadSection onChanged={onChanged} />
+          <KycPanelSection account={account!} onChanged={onChanged} />
         </>
       )}
     </div>

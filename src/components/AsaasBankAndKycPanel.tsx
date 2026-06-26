@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { CheckCircle2, Clock, Loader2, ShieldAlert, Upload, Landmark, FileCheck2 } from "lucide-react";
+import { CheckCircle2, Clock, Loader2, ShieldAlert, Upload, Landmark, FileCheck2, ExternalLink } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

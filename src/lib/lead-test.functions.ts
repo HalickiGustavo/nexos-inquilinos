@@ -30,6 +30,19 @@ export const sendTestLeadNotification = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+
+    // Role gate: apenas managers/owners podem disparar mensagens via a
+    // instância Evolution da plataforma (evita abuso de quota por inquilinos
+    // ou proprietários autenticados).
+    const [{ data: isManager }, { data: isOwner }] = await Promise.all([
+      supabase.rpc("has_role", { _user_id: userId, _role: "manager" }),
+      supabase.rpc("has_role", { _user_id: userId, _role: "owner" }),
+    ]);
+    if (!isManager && !isOwner) {
+      throw new Error("Forbidden");
+    }
+
     const { sendEvolutionText, sanitizeBrPhone } = await import("@/lib/whatsapp.server");
 
     let phone: string | null = null;

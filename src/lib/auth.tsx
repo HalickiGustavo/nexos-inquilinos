@@ -28,6 +28,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Hydrate from cached session first to render protected UI on first paint
     supabase.auth.getSession().then(({ data }) => {
       if (cancelled) return;
+      // The QueryClient lives above AuthProvider. If the auth provider remounts
+      // after an account switch, stale sensitive rows from the previous user may
+      // still be in memory. Always start a fresh auth hydration with an empty cache.
+      queryClient.clear();
       lastUserId.current = data.session?.user?.id ?? null;
       setSession(data.session ?? null);
       setLoading(false);

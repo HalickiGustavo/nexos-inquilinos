@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX IF NOT EXISTS pix_splits_installment_unique ON public.pix_splits(installment_id);

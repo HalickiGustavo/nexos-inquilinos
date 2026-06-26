@@ -58,9 +58,35 @@ export function PixPaymentDialog({
             <p className="text-xs uppercase tracking-wide text-muted-foreground">Valor a pagar</p>
             <p className="text-3xl font-bold text-primary mt-1">{formatBRL(amount)}</p>
             <Badge variant="outline" className="mt-2 bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30">
-              Pix processado via Asaas
+              Pix com split nativo de 3 vias
             </Badge>
           </div>
+
+          {installment.split_breakdown && (
+            <div className="rounded-lg border border-violet-500/30 bg-violet-500/[0.06] p-3 shadow-[0_0_24px_-12px_rgb(168_85_247)]">
+              <p className="text-xs uppercase tracking-wide text-violet-300 font-semibold mb-2">
+                Detalhamento do split
+              </p>
+              <div className="space-y-1 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Plataforma Nexo</span>
+                  <span className="font-medium">{formatBRL(installment.split_breakdown.nexo)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Imobiliária (administração)</span>
+                  <span className="font-medium">{formatBRL(installment.split_breakdown.agency)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Proprietário (líquido)</span>
+                  <span className="font-medium">{formatBRL(installment.split_breakdown.owner)}</span>
+                </div>
+                <div className="flex justify-between pt-1 mt-1 border-t border-violet-500/20 font-semibold">
+                  <span>Total</span>
+                  <span>{formatBRL(installment.split_breakdown.total)}</span>
+                </div>
+              </div>
+            </div>
+          )}
 
           {loading && (
             <div className="flex flex-col items-center justify-center py-10 text-muted-foreground">

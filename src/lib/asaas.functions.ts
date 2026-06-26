@@ -118,12 +118,30 @@ export const getAsaasOnboardingLinks = createServerFn({ method: "GET" })
 
     const { data: acc, error } = await supabaseAdmin
       .from("asaas_accounts")
-      .select("api_key, asaas_account_id")
+      .select("api_key, asaas_account_id, onboarding_url")
       .eq("user_id", userId)
       .maybeSingle();
     if (error) throw new Error(error.message);
     if (!acc?.api_key) {
       throw new Error("Subconta Asaas ainda não criada. Conclua o cadastro acima primeiro.");
+    }
+
+    // Fallback geral: link de onboarding único da subconta (existe mesmo em
+    // subcontas antigas, anteriores ao endpoint /myAccount/documents).
+    let generalOnboardingUrl: string | null = acc.onboarding_url ?? null;
+    try {
+      const me = await asaasFetch<any>("/myAccount", { method: "GET", apiKey: acc.api_key });
+      if (me?.onboardingUrl) {
+        generalOnboardingUrl = me.onboardingUrl;
+        if (me.onboardingUrl !== acc.onboarding_url) {
+          await supabaseAdmin
+            .from("asaas_accounts")
+            .update({ onboarding_url: me.onboardingUrl })
+            .eq("user_id", userId);
+        }
+      }
+    } catch (e) {
+      console.warn("[asaas] /myAccount fallback falhou:", (e as any)?.message);
     }
 
     try {
@@ -137,19 +155,27 @@ export const getAsaasOnboardingLinks = createServerFn({ method: "GET" })
         type: g.type,
         title: g.title,
         status: g.status,
-        onboardingUrl: g.onboardingUrl ?? null,
+        onboardingUrl: g.onboardingUrl ?? generalOnboardingUrl ?? null,
       }));
 
-      // Mantém um link "qualquer" no DB só para compat com UI antiga.
-      const first = items.find((i) => !!i.onboardingUrl)?.onboardingUrl ?? null;
-      if (first) {
+      const first = items.find((i) => !!i.onboardingUrl)?.onboardingUrl ?? generalOnboardingUrl;
+      if (first && first !== acc.onboarding_url) {
         await supabaseAdmin
           .from("asaas_accounts")
           .update({ onboarding_url: first })
           .eq("user_id", userId);
       }
-      return { ok: true, items, rejectReasons: docs?.rejectReasons ?? null };
+      return { ok: true, items, generalOnboardingUrl, rejectReasons: docs?.rejectReasons ?? null };
     } catch (e: any) {
+      if (generalOnboardingUrl) {
+        return {
+          ok: true,
+          items: [],
+          generalOnboardingUrl,
+          rejectReasons: null,
+          warning: (e as any)?.message ?? "Falha ao listar documentos; usando link geral.",
+        };
+      }
       throw mapAsaasError(e);
     }
   });

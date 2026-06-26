@@ -437,6 +437,18 @@ function KycPanelSection({ account }: { account: Account; onChanged?: () => Prom
             </pre>
           </details>
         )}
+
+        {diagLog && (
+          <details className="mt-3 rounded-md border bg-muted/30 p-3 text-xs" open>
+            <summary className="cursor-pointer font-medium text-muted-foreground">
+              Diagnóstico da subconta (debug)
+            </summary>
+            <pre className="mt-2 max-h-80 overflow-auto whitespace-pre-wrap break-all font-mono text-[11px] leading-relaxed">
+              {diagLog}
+            </pre>
+          </details>
+        )}
+
       </CardContent>
     </Card>
   );

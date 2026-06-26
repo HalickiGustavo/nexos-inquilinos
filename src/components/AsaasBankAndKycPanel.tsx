@@ -226,142 +226,66 @@ function BankSection({ account, onChanged }: { account: Account; onChanged?: () 
   );
 }
 
-function KycUploadSection({ onChanged }: { onChanged?: () => Promise<unknown> | void }) {
-  const [dryRun, setDryRun] = useState(false);
-  const [lastResponse, setLastResponse] = useState<unknown>(null);
+function KycPanelSection({ account }: { account: Account; onChanged?: () => Promise<unknown> | void }) {
+  const url = account.onboarding_url;
+  const status = (account.kyc_status ?? "PENDENTE").toUpperCase();
+  const approved = status === "APROVADO";
 
   return (
     <Card>
       <CardContent className="p-6">
-        <div className="flex items-center justify-between gap-4 mb-1">
-          <div className="flex items-center gap-2">
-            <FileCheck2 className="size-4 text-primary" />
-            <h3 className="font-semibold">Verificação de Identidade</h3>
-          </div>
-          <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
-            <Switch checked={dryRun} onCheckedChange={(v) => { setDryRun(v); setLastResponse(null); }} />
-            <span>Modo teste (não atualiza KYC)</span>
-          </label>
+        <div className="flex items-center gap-2 mb-2">
+          <FileCheck2 className="size-4 text-primary" />
+          <h3 className="font-semibold">Verificação de Identidade (KYC)</h3>
         </div>
-        <p className="text-sm text-muted-foreground mb-4">
-          {dryRun
-            ? "Modo teste ativo: o arquivo é enviado ao Asaas para validar o upload, mas o status do KYC NÃO é alterado. A resposta crua aparece abaixo."
-            : "Os arquivos são transmitidos em memória diretamente para o Asaas. Nada é salvo em nossos servidores ou banco de dados (conformidade LGPD). Aceitos: JPG/JPEG ou PDF (PNG não é aceito pelo Asaas) (máx. 5MB)."}
-        </p>
-        <div className="grid sm:grid-cols-2 gap-4">
-          <KycDropzone label="Documento (RG / CNH)" docType="IDENTIFICATION" dryRun={dryRun} onChanged={onChanged} onResponse={setLastResponse} />
-          <KycDropzone label="Selfie de Verificação" docType="SELFIE" dryRun={dryRun} onChanged={onChanged} onResponse={setLastResponse} />
-        </div>
-        {dryRun && lastResponse != null && (
-          <div className="mt-4 rounded-md border bg-muted/40 p-3">
-            <div className="text-xs font-medium mb-2 text-muted-foreground">Resposta do Asaas (modo teste)</div>
-            <pre className="text-xs whitespace-pre-wrap break-words max-h-72 overflow-auto">
-{JSON.stringify(lastResponse, null, 2)}
-            </pre>
-          </div>
+
+        {approved ? (
+          <Alert className="border-emerald-500/30 bg-emerald-500/5">
+            <CheckCircle2 className="size-4 text-emerald-600" />
+            <AlertTitle>Conta verificada</AlertTitle>
+            <AlertDescription>
+              Seus documentos foram aprovados pelo Asaas. Os repasses automáticos estão liberados.
+            </AlertDescription>
+          </Alert>
+        ) : (
+          <>
+            <p className="text-sm text-muted-foreground mb-4">
+              O envio de selfie e documento de identidade é feito diretamente no painel oficial do
+              Asaas — eles não permitem o upload por aqui para esse tipo de conta. Clique no botão
+              abaixo para abrir o painel da sua subconta, faça login com o e-mail cadastrado e envie
+              os documentos pela tela "Documentos para verificação".
+            </p>
+            <div className="rounded-md border bg-muted/30 p-3 text-xs text-muted-foreground mb-4 space-y-1">
+              <p><b>O que enviar:</b></p>
+              <ul className="list-disc list-inside space-y-0.5 pl-1">
+                <li>Documento de identificação com foto (RG ou CNH)</li>
+                <li>Selfie de identificação segurando o documento</li>
+              </ul>
+              <p className="pt-1">
+                Após a aprovação (24–48h úteis), os repasses automáticos diários são liberados nesta
+                conta sem necessidade de novo cadastro.
+              </p>
+            </div>
+            {url ? (
+              <Button asChild className="w-full sm:w-auto">
+                <a href={url} target="_blank" rel="noreferrer noopener">
+                  Abrir painel do Asaas <ExternalLink className="size-4 ml-2" />
+                </a>
+              </Button>
+            ) : (
+              <Alert>
+                <ShieldAlert className="size-4" />
+                <AlertTitle>Link de acesso indisponível</AlertTitle>
+                <AlertDescription>
+                  Não conseguimos gerar o link de acesso ao painel Asaas. Recarregue a página ou
+                  entre em contato com o suporte.
+                </AlertDescription>
+              </Alert>
+            )}
+          </>
         )}
       </CardContent>
     </Card>
   );
 }
 
-function KycDropzone({
-  label,
-  docType,
-  dryRun,
-  onChanged,
-  onResponse,
-}: {
-  label: string;
-  docType: DocType;
-  dryRun: boolean;
-  onChanged?: () => Promise<unknown> | void;
-  onResponse?: (r: unknown) => void;
-}) {
-  const upload = useServerFn(uploadAsaasKycDocument);
-  const [busy, setBusy] = useState(false);
-  const [done, setDone] = useState(false);
-
-  return (
-    <label className="block">
-      <span className="text-sm font-medium">{label}</span>
-      <div className={`mt-2 rounded-lg border-2 border-dashed p-4 grid place-items-center text-center transition focus-within:ring-2 focus-within:ring-primary ${done ? "border-emerald-500/50 bg-emerald-500/5" : "border-border hover:border-primary/60"}`}>
-        {busy ? (
-          <Loader2 className="size-6 animate-spin text-primary" />
-        ) : done ? (
-          <div className="flex flex-col items-center gap-1 text-emerald-600 dark:text-emerald-400">
-            <CheckCircle2 className="size-6" />
-            <span className="text-xs font-medium">{dryRun ? "Upload OK (teste)" : "Enviado"}</span>
-          </div>
-        ) : (
-          <div className="flex flex-col items-center gap-1 text-muted-foreground">
-            <Upload className="size-6" />
-            <span className="text-xs">JPG/JPEG ou PDF (máx. 5MB)</span>
-          </div>
-        )}
-        <input
-          type="file"
-          accept=".jpg,.jpeg,.pdf"
-          className="sr-only"
-          disabled={busy}
-          onChange={async (e) => {
-            const file = e.target.files?.[0];
-            e.target.value = "";
-            if (!file) return;
-            if (!ACCEPTED_MIME.includes(file.type as any)) {
-              toast.error("Formato inválido. Envie JPG/JPEG ou PDF (PNG não é aceito pelo Asaas).");
-              return;
-            }
-            if (file.size > MAX_BYTES) {
-              toast.error("Arquivo excede 5MB.");
-              return;
-            }
-            setBusy(true);
-            try {
-              const base64 = await fileToBase64(file);
-              const result: any = await upload({
-                data: {
-                  documentType: docType,
-                  filename: file.name,
-                  mimeType: file.type as any,
-                  base64,
-                  dryRun,
-                },
-              });
-              if (dryRun) {
-                onResponse?.(result);
-                if (result?.ok) {
-                  setDone(true);
-                  toast.success(`Upload validado (HTTP ${result.httpStatus}). KYC não foi alterado.`);
-                } else {
-                  toast.error(`Asaas rejeitou o upload: ${result?.error ?? "erro desconhecido"}`);
-                }
-              } else {
-                setDone(true);
-                toast.success("Documento enviado para análise!");
-                await onChanged?.();
-              }
-            } catch (err: any) {
-              toast.error(`Erro ao enviar documento: ${err?.message ?? "falha desconhecida"}`);
-            } finally {
-              setBusy(false);
-            }
-          }}
-        />
-      </div>
-    </label>
-  );
-}
-
-function fileToBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result as string;
-      const idx = result.indexOf(",");
-      resolve(idx >= 0 ? result.slice(idx + 1) : result);
-    };
-    reader.onerror = () => reject(reader.error ?? new Error("Falha ao ler arquivo"));
-    reader.readAsDataURL(file);
-  });
-}

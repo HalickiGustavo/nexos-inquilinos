@@ -243,6 +243,7 @@ function KycPanelSection({ account }: { account: Account; onChanged?: () => Prom
   const [loading, setLoading] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [rawLog, setRawLog] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -252,8 +253,14 @@ function KycPanelSection({ account }: { account: Account; onChanged?: () => Prom
       setItems(res?.items ?? []);
       setGeneralUrl(res?.generalOnboardingUrl ?? null);
       setLoaded(true);
+      setRawLog(JSON.stringify(res, null, 2));
+      // eslint-disable-next-line no-console
+      console.log("[Asaas] getAsaasOnboardingLinks →", res);
     } catch (e: any) {
       setError(e?.message ?? "Falha ao consultar documentos pendentes no Asaas.");
+      setRawLog(JSON.stringify({ error: e?.message, stack: e?.stack, data: e?.data ?? null }, null, 2));
+      // eslint-disable-next-line no-console
+      console.error("[Asaas] getAsaasOnboardingLinks error", e);
     } finally {
       setLoading(false);
     }

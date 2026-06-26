@@ -243,6 +243,7 @@ function KycPanelSection({ account }: { account: Account; onChanged?: () => Prom
   const [loading, setLoading] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [rawLog, setRawLog] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -252,8 +253,14 @@ function KycPanelSection({ account }: { account: Account; onChanged?: () => Prom
       setItems(res?.items ?? []);
       setGeneralUrl(res?.generalOnboardingUrl ?? null);
       setLoaded(true);
+      setRawLog(JSON.stringify(res, null, 2));
+      // eslint-disable-next-line no-console
+      console.log("[Asaas] getAsaasOnboardingLinks →", res);
     } catch (e: any) {
       setError(e?.message ?? "Falha ao consultar documentos pendentes no Asaas.");
+      setRawLog(JSON.stringify({ error: e?.message, stack: e?.stack, data: e?.data ?? null }, null, 2));
+      // eslint-disable-next-line no-console
+      console.error("[Asaas] getAsaasOnboardingLinks error", e);
     } finally {
       setLoading(false);
     }
@@ -383,6 +390,18 @@ function KycPanelSection({ account }: { account: Account; onChanged?: () => Prom
               </Alert>
             )}
           </>
+        )}
+
+
+        {rawLog && (
+          <details className="mt-4 rounded-md border bg-muted/30 p-3 text-xs">
+            <summary className="cursor-pointer font-medium text-muted-foreground">
+              Log da resposta do Asaas (debug)
+            </summary>
+            <pre className="mt-2 max-h-80 overflow-auto whitespace-pre-wrap break-all font-mono text-[11px] leading-relaxed">
+              {rawLog}
+            </pre>
+          </details>
         )}
       </CardContent>
     </Card>

@@ -180,6 +180,98 @@ export const getAsaasOnboardingLinks = createServerFn({ method: "GET" })
     }
   });
 
+// ===== Diagnóstico da subconta Asaas =====
+// Objetivo: dar uma resposta objetiva sobre POR QUE /myAccount/documents está
+// retornando 401/403. Verifica, na ordem:
+//   1. Ambiente atual da plataforma (sandbox vs produção)
+//   2. Presença e formato da api_key salva
+//   3. Se a master key consegue ver a subconta no ambiente atual
+//      (404 = subconta foi criada em outro ambiente)
+//   4. Se a própria api_key da subconta autentica em /myAccount
+export const diagnoseAsaasAccount = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { userId } = context;
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { asaasFetch, ASAAS_BASE_URL } = await import("./asaas.server");
+
+    const env = process.env.ASAAS_ENV === "production" ? "production" : "sandbox";
+    const masterKeyPresent = !!process.env.ASAAS_API_KEY;
+    const masterWalletEnv = process.env.NEXO_MASTER_WALLET_ID || process.env.ASAAS_NEXO_WALLET_ID || null;
+
+    const { data: acc, error } = await supabaseAdmin
+      .from("asaas_accounts")
+      .select("api_key, asaas_account_id, wallet_id, status, created_at, updated_at")
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+
+    const apiKey: string | null = acc?.api_key ?? null;
+    const accountId: string | null = acc?.asaas_account_id ?? null;
+    const apiKeyLast4 = apiKey ? apiKey.slice(-4) : null;
+    const apiKeyLength = apiKey?.length ?? 0;
+
+    let myAccountStatus: { ok: boolean; status?: number; message?: string; sample?: any } = { ok: false };
+    if (apiKey) {
+      try {
+        const me = await asaasFetch<any>("/myAccount", { method: "GET", apiKey });
+        myAccountStatus = {
+          ok: true,
+          sample: { id: me?.id, walletId: me?.walletId, status: me?.status, accountStatus: me?.accountStatus },
+        };
+      } catch (e: any) {
+        myAccountStatus = { ok: false, status: e?.status, message: e?.message };
+      }
+    } else {
+      myAccountStatus = { ok: false, message: "api_key ausente no banco para este usuário." };
+    }
+
+    let masterLookup: { ok: boolean; status?: number; message?: string; sample?: any } = { ok: false };
+    if (masterKeyPresent && accountId) {
+      try {
+        const sub = await asaasFetch<any>(`/accounts/${accountId}`);
+        masterLookup = {
+          ok: true,
+          sample: { id: sub?.id, walletId: sub?.walletId, status: sub?.status, accountStatus: sub?.accountStatus, name: sub?.name, email: sub?.email },
+        };
+      } catch (e: any) {
+        masterLookup = { ok: false, status: e?.status, message: e?.message };
+      }
+    }
+
+    // Diagnóstico textual
+    const reasons: string[] = [];
+    if (!masterKeyPresent) reasons.push("ASAAS_API_KEY (chave master) não está configurada no servidor.");
+    if (!apiKey) reasons.push("A api_key da subconta não está salva no banco — recriar a subconta resolve.");
+    if (apiKey && apiKeyLength < 30) reasons.push(`A api_key salva parece truncada (${apiKeyLength} chars).`);
+    if (masterLookup.status === 404) reasons.push(`A subconta ${accountId} não existe no ambiente "${env}" — provavelmente foi criada no outro ambiente (sandbox/produção).`);
+    if (masterLookup.ok && !myAccountStatus.ok && myAccountStatus.status && myAccountStatus.status >= 400) {
+      reasons.push(`A subconta existe no ambiente "${env}", mas a api_key salva não autentica nela (status ${myAccountStatus.status}). O Asaas pode ter rotacionado a chave — apague a linha em asaas_accounts e recrie a subconta, ou peça reset ao suporte Asaas.`);
+    }
+
+    return {
+      env,
+      baseUrl: ASAAS_BASE_URL,
+      masterKeyPresent,
+      masterWalletConfigured: !!masterWalletEnv,
+      account: {
+        accountId,
+        walletId: acc?.wallet_id ?? null,
+        status: acc?.status ?? null,
+        apiKeyPresent: !!apiKey,
+        apiKeyLength,
+        apiKeyLast4,
+        createdAt: acc?.created_at ?? null,
+        updatedAt: acc?.updated_at ?? null,
+      },
+      myAccountCheck: myAccountStatus,
+      masterLookup,
+      reasons,
+    };
+  });
+
+
+
 
 
 

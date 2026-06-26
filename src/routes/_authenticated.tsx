@@ -16,7 +16,6 @@ import { useAuth } from "@/lib/auth";
 import { useUserRole } from "@/lib/useUserRole";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { supabase } from "@/integrations/supabase/client";
 import { TenantShell } from "@/components/TenantShell";
 import { InstallPwaButton } from "@/components/InstallPwaButton";
 import { NexoLogo } from "@/components/NexoLogo";
@@ -55,6 +54,8 @@ function AuthLayout() {
     const isTenantPath = pathname === "/tenant" || pathname.startsWith("/tenant/");
     if (role === "manager") {
       navigate({ to: "/manager", replace: true });
+    } else if (role === "landlord") {
+      navigate({ to: "/landlord", replace: true });
     } else if (role === "tenant" && !isTenantPath) {
       navigate({ to: "/tenant", replace: true });
     } else if (role === "owner" && isTenantPath) {
@@ -113,7 +114,6 @@ function AuthLayout() {
             className="w-full justify-start text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground"
             onClick={async () => {
               await signOut();
-              await supabase.auth.signOut();
               navigate({ to: "/login", replace: true });
             }}
           >
@@ -159,7 +159,6 @@ function AuthLayout() {
             <button
               onClick={async () => {
                 await signOut();
-                await supabase.auth.signOut();
                 navigate({ to: "/login", replace: true });
               }}
               className="flex items-center gap-2 px-3 py-1.5 rounded-md text-xs whitespace-nowrap bg-muted text-muted-foreground"

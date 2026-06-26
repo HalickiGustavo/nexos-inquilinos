@@ -6,12 +6,15 @@ import { useAuth } from "@/lib/auth";
 // properties.landlord_id = auth.uid() (e cascata em contracts/installments/maintenances).
 
 export function useLandlordProperties() {
+  const { user } = useAuth();
   return useQuery({
-    queryKey: ["landlord", "properties"],
+    queryKey: ["landlord", "properties", user?.id],
+    enabled: !!user?.id,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("properties")
         .select("*")
+        .eq("landlord_id", user!.id)
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data ?? [];
@@ -20,8 +23,10 @@ export function useLandlordProperties() {
 }
 
 export function useLandlordContracts() {
+  const { user } = useAuth();
   return useQuery({
-    queryKey: ["landlord", "contracts"],
+    queryKey: ["landlord", "contracts", user?.id],
+    enabled: !!user?.id,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("contracts")
@@ -34,8 +39,10 @@ export function useLandlordContracts() {
 }
 
 export function useLandlordInstallments() {
+  const { user } = useAuth();
   return useQuery({
-    queryKey: ["landlord", "installments"],
+    queryKey: ["landlord", "installments", user?.id],
+    enabled: !!user?.id,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("installments")
@@ -49,8 +56,10 @@ export function useLandlordInstallments() {
 }
 
 export function useLandlordMaintenances() {
+  const { user } = useAuth();
   return useQuery({
-    queryKey: ["landlord", "maintenances"],
+    queryKey: ["landlord", "maintenances", user?.id],
+    enabled: !!user?.id,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("maintenances")

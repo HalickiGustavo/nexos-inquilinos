@@ -32,6 +32,7 @@ const BANKS: Array<{ code: string; label: string }> = [
 ];
 
 type Account = {
+  user_id?: string | null;
   kyc_status?: string | null;
   bank_code?: string | null;
   bank_agency?: string | null;
@@ -103,6 +104,18 @@ function BankSection({ account, onChanged }: { account: Account; onChanged?: () 
     accountType: (account.bank_account_type as "CONTA_CORRENTE" | "CONTA_POUPANCA" | "") ?? "",
     enableAutoTransfer: account.auto_transfer_enabled ?? true,
   });
+
+  useEffect(() => {
+    setForm({
+      ownerCpfCnpj: "",
+      bankCode: account.bank_code ?? "",
+      agency: account.bank_agency ?? "",
+      account: account.bank_account ?? "",
+      accountDigit: account.bank_account_digit ?? "",
+      accountType: (account.bank_account_type as "CONTA_CORRENTE" | "CONTA_POUPANCA" | "") ?? "",
+      enableAutoTransfer: account.auto_transfer_enabled ?? true,
+    });
+  }, [account.user_id, account.asaas_account_id, account.bank_code, account.bank_agency, account.bank_account, account.bank_account_digit, account.bank_account_type, account.auto_transfer_enabled]);
 
   return (
     <Card>

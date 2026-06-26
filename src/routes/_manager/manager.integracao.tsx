@@ -15,6 +15,7 @@ import { createAsaasSubaccount, getAsaasAccount, getNexoFeeSetting } from "@/lib
 import { AsaasBankAndKycPanel } from "@/components/AsaasBankAndKycPanel";
 import { formatBRL } from "@/lib/format";
 import { maskCpfCnpj, maskPhone } from "@/lib/br-validators";
+import { useAuth } from "@/lib/auth";
 
 const BR_BANKS: Array<{ code: string; name: string }> = [
   { code: "001", name: "Banco do Brasil" },
@@ -76,11 +77,13 @@ const emptyBank: BankInfo = {
 };
 
 function ManagerIntegracao() {
+  const { user } = useAuth();
   const fetchAccount = useServerFn(getAsaasAccount);
   const fetchFee = useServerFn(getNexoFeeSetting);
   const submit = useServerFn(createAsaasSubaccount);
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ["asaas-account"],
+    queryKey: ["asaas-account", user?.id],
+    enabled: !!user?.id,
     queryFn: () => fetchAccount(),
   });
   const { data: feeData } = useQuery({

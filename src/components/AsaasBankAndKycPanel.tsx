@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { CheckCircle2, Clock, Loader2, ShieldAlert, Upload, Landmark, FileCheck2, ExternalLink } from "lucide-react";
+import { CheckCircle2, Clock, Loader2, ShieldAlert, Landmark, FileCheck2, ExternalLink } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { linkAsaasBankAccount, uploadAsaasKycDocument } from "@/lib/asaas.functions";
+import { linkAsaasBankAccount } from "@/lib/asaas.functions";
 import { maskCpfCnpj } from "@/lib/br-validators";
 
 // Lista enxuta dos principais bancos brasileiros (código COMPE/ISPB do Asaas)
@@ -30,11 +30,6 @@ const BANKS: Array<{ code: string; label: string }> = [
   { code: "422", label: "422 — Safra" },
   { code: "655", label: "655 — Votorantim" },
 ];
-
-const ACCEPTED_MIME = ["image/jpeg", "image/jpg", "application/pdf"] as const;
-const MAX_BYTES = 5 * 1024 * 1024;
-
-type DocType = "IDENTIFICATION" | "SELFIE";
 
 type Account = {
   kyc_status?: string | null;

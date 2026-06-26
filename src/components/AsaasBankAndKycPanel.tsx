@@ -238,12 +238,16 @@ function KycPanelSection({ account }: { account: Account; onChanged?: () => Prom
   const status = (account.kyc_status ?? "PENDENTE").toUpperCase();
   const approved = status === "APROVADO";
   const fetchLinks = useServerFn(getAsaasOnboardingLinks);
+  const diagnose = useServerFn(diagnoseAsaasAccount);
   const [items, setItems] = useState<Array<{ id: string; type: string; title: string; status: string; onboardingUrl: string | null }>>([]);
   const [generalUrl, setGeneralUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [diagLoading, setDiagLoading] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [rawLog, setRawLog] = useState<string | null>(null);
+  const [diagLog, setDiagLog] = useState<string | null>(null);
+
 
   const load = useCallback(async () => {
     setLoading(true);

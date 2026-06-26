@@ -100,6 +100,54 @@ export const getAsaasAccount = createServerFn({ method: "GET" })
     return { account: data };
   });
 
+// ===== Gera/recupera links de onboarding por documento (subconta) =====
+export const getAsaasOnboardingLinks = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { userId } = context;
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { asaasFetch } = await import("./asaas.server");
+
+    const { data: acc, error } = await supabaseAdmin
+      .from("asaas_accounts")
+      .select("api_key, asaas_account_id")
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!acc?.api_key) {
+      throw new Error("Subconta Asaas ainda não criada. Conclua o cadastro acima primeiro.");
+    }
+
+    try {
+      const docs = await asaasFetch<any>("/myAccount/documents", {
+        method: "GET",
+        apiKey: acc.api_key,
+      });
+      const list: Array<any> = Array.isArray(docs?.data) ? docs.data : [];
+      const items = list.map((g) => ({
+        id: g.id,
+        type: g.type,
+        title: g.title,
+        status: g.status,
+        onboardingUrl: g.onboardingUrl ?? null,
+      }));
+
+      // Mantém um link "qualquer" no DB só para compat com UI antiga.
+      const first = items.find((i) => !!i.onboardingUrl)?.onboardingUrl ?? null;
+      if (first) {
+        await supabaseAdmin
+          .from("asaas_accounts")
+          .update({ onboarding_url: first })
+          .eq("user_id", userId);
+      }
+      return { ok: true, items, rejectReasons: docs?.rejectReasons ?? null };
+    } catch (e: any) {
+      throw mapAsaasError(e);
+    }
+  });
+
+
+
 
 
 // ===== Create Asaas subaccount for the current owner =====

@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { CheckCircle2, Clock, Loader2, ShieldAlert, Landmark, FileCheck2, ExternalLink } from "lucide-react";
+import { CheckCircle2, Clock, Loader2, ShieldAlert, Landmark, FileCheck2, ExternalLink, RefreshCw } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { linkAsaasBankAccount } from "@/lib/asaas.functions";
+import { linkAsaasBankAccount, getAsaasOnboardingLinks } from "@/lib/asaas.functions";
 import { maskCpfCnpj } from "@/lib/br-validators";
 
 // Lista enxuta dos principais bancos brasileiros (código COMPE/ISPB do Asaas)
@@ -222,16 +222,61 @@ function BankSection({ account, onChanged }: { account: Account; onChanged?: () 
 }
 
 function KycPanelSection({ account }: { account: Account; onChanged?: () => Promise<unknown> | void }) {
-  const url = account.onboarding_url;
   const status = (account.kyc_status ?? "PENDENTE").toUpperCase();
   const approved = status === "APROVADO";
+  const fetchLinks = useServerFn(getAsaasOnboardingLinks);
+  const [items, setItems] = useState<Array<{ id: string; type: string; title: string; status: string; onboardingUrl: string | null }>>([]);
+  const [loading, setLoading] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res: any = await fetchLinks();
+      setItems(res?.items ?? []);
+      setLoaded(true);
+    } catch (e: any) {
+      setError(e?.message ?? "Falha ao consultar documentos pendentes no Asaas.");
+    } finally {
+      setLoading(false);
+    }
+  }, [fetchLinks]);
+
+  useEffect(() => {
+    if (!approved) load();
+  }, [approved, load]);
+
+  const pending = items.filter((i) => (i.status ?? "").toUpperCase() !== "APPROVED");
+  const withLinks = pending.filter((i) => !!i.onboardingUrl);
+
+  const typeLabel = (t: string) => {
+    const map: Record<string, string> = {
+      IDENTIFICATION: "Documento de identificação (RG/CNH)",
+      IDENTIFICATION_SELFIE: "Selfie de identificação",
+      SOCIAL_CONTRACT: "Contrato social",
+      ENTREPRENEUR_REQUIREMENT: "Requerimento do empresário",
+      MINUTES_OF_ELECTION: "Ata de eleição",
+      CUSTOM: "Documento adicional",
+    };
+    return map[t] ?? t;
+  };
 
   return (
     <Card>
       <CardContent className="p-6">
-        <div className="flex items-center gap-2 mb-2">
-          <FileCheck2 className="size-4 text-primary" />
-          <h3 className="font-semibold">Verificação de Identidade (KYC)</h3>
+        <div className="flex items-center justify-between gap-2 mb-2">
+          <div className="flex items-center gap-2">
+            <FileCheck2 className="size-4 text-primary" />
+            <h3 className="font-semibold">Verificação de Identidade (KYC)</h3>
+          </div>
+          {!approved && (
+            <Button variant="ghost" size="sm" onClick={load} disabled={loading}>
+              {loading ? <Loader2 className="size-3.5 animate-spin" /> : <RefreshCw className="size-3.5" />}
+              <span className="ml-1.5 text-xs">Atualizar</span>
+            </Button>
+          )}
         </div>
 
         {approved ? (
@@ -245,35 +290,60 @@ function KycPanelSection({ account }: { account: Account; onChanged?: () => Prom
         ) : (
           <>
             <p className="text-sm text-muted-foreground mb-4">
-              O envio de selfie e documento de identidade é feito diretamente no painel oficial do
-              Asaas — eles não permitem o upload por aqui para esse tipo de conta. Clique no botão
-              abaixo para abrir o painel da sua subconta, faça login com o e-mail cadastrado e envie
-              os documentos pela tela "Documentos para verificação".
+              O envio de selfie e documento é feito em uma página segura do Asaas. Cada documento
+              tem um link único — clique para abrir, fazer o upload e a prova de vida.
             </p>
-            <div className="rounded-md border bg-muted/30 p-3 text-xs text-muted-foreground mb-4 space-y-1">
-              <p><b>O que enviar:</b></p>
-              <ul className="list-disc list-inside space-y-0.5 pl-1">
-                <li>Documento de identificação com foto (RG ou CNH)</li>
-                <li>Selfie de identificação segurando o documento</li>
-              </ul>
-              <p className="pt-1">
-                Após a aprovação (24–48h úteis), os repasses automáticos diários são liberados nesta
-                conta sem necessidade de novo cadastro.
-              </p>
-            </div>
-            {url ? (
-              <Button asChild className="w-full sm:w-auto">
-                <a href={url} target="_blank" rel="noreferrer noopener">
-                  Abrir painel do Asaas <ExternalLink className="size-4 ml-2" />
-                </a>
-              </Button>
-            ) : (
+
+            {loading && !loaded && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="size-4 animate-spin" /> Buscando links no Asaas...
+              </div>
+            )}
+
+            {error && (
+              <Alert variant="destructive">
+                <ShieldAlert className="size-4" />
+                <AlertTitle>Erro ao gerar links</AlertTitle>
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+
+            {loaded && !error && pending.length === 0 && (
+              <Alert>
+                <CheckCircle2 className="size-4" />
+                <AlertTitle>Documentos enviados</AlertTitle>
+                <AlertDescription>
+                  Todos os documentos foram enviados e estão em análise pelo Asaas (até 48h úteis).
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {withLinks.length > 0 && (
+              <div className="space-y-2">
+                {withLinks.map((it) => (
+                  <div key={it.id} className="flex items-center justify-between gap-3 rounded-md border p-3">
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium truncate">{typeLabel(it.type)}</p>
+                      <p className="text-xs text-muted-foreground">Status: {it.status}</p>
+                    </div>
+                    <Button asChild size="sm">
+                      <a href={it.onboardingUrl!} target="_blank" rel="noreferrer noopener">
+                        Abrir <ExternalLink className="size-3.5 ml-1.5" />
+                      </a>
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {loaded && !error && pending.length > 0 && withLinks.length === 0 && (
               <Alert>
                 <ShieldAlert className="size-4" />
-                <AlertTitle>Link de acesso indisponível</AlertTitle>
+                <AlertTitle>Sem links disponíveis no momento</AlertTitle>
                 <AlertDescription>
-                  Não conseguimos gerar o link de acesso ao painel Asaas. Recarregue a página ou
-                  entre em contato com o suporte.
+                  O Asaas ainda não disponibilizou links de upload para os documentos pendentes
+                  desta conta. Aguarde alguns minutos após a criação da subconta e clique em
+                  "Atualizar". Se persistir, contate o suporte do Asaas.
                 </AlertDescription>
               </Alert>
             )}
@@ -283,4 +353,5 @@ function KycPanelSection({ account }: { account: Account; onChanged?: () => Prom
     </Card>
   );
 }
+
 

@@ -1,4 +1,5 @@
-import { createContext, useContext, useEffect, useMemo, useState, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useMemo, useState, useCallback, useRef, type ReactNode } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -19,16 +20,25 @@ const Ctx = createContext<AuthCtx>({
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const lastUserId = useRef<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     // Hydrate from cached session first to render protected UI on first paint
     supabase.auth.getSession().then(({ data }) => {
       if (cancelled) return;
+      lastUserId.current = data.session?.user?.id ?? null;
       setSession(data.session ?? null);
       setLoading(false);
     });
-    const { data: sub } = supabase.auth.onAuthStateChange((_evt, s) => {
+    const { data: sub } = supabase.auth.onAuthStateChange(async (_evt, s) => {
+      const nextUserId = s?.user?.id ?? null;
+      if (lastUserId.current !== nextUserId) {
+        await queryClient.cancelQueries();
+        queryClient.clear();
+      }
+      lastUserId.current = nextUserId;
       setSession(s);
       setLoading(false);
     });
@@ -36,11 +46,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       cancelled = true;
       sub.subscription.unsubscribe();
     };
-  }, []);
+  }, [queryClient]);
 
   const signOut = useCallback(async () => {
+    await queryClient.cancelQueries();
+    queryClient.clear();
+    lastUserId.current = null;
     await supabase.auth.signOut();
-  }, []);
+  }, [queryClient]);
 
   // Memoize context value so consumers don't re-render on parent re-renders
   const value = useMemo<AuthCtx>(

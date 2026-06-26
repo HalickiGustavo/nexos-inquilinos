@@ -16,6 +16,7 @@ import {
 import { AsaasBankAndKycPanel } from "@/components/AsaasBankAndKycPanel";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { maskCpfCnpj, maskPhone, maskCEP } from "@/lib/br-validators";
+import { useAuth } from "@/lib/auth";
 
 const BR_BANKS: Array<{ code: string; name: string }> = [
   { code: "001", name: "Banco do Brasil" },
@@ -59,10 +60,12 @@ export const Route = createFileRoute("/_authenticated/integrations")({
 });
 
 function IntegrationsPage() {
+  const { user } = useAuth();
   const fetchAccount = useServerFn(getAsaasAccount);
   const submit = useServerFn(createAsaasSubaccount);
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ["asaas-account"],
+    queryKey: ["asaas-account", user?.id],
+    enabled: !!user?.id,
     queryFn: () => fetchAccount(),
   });
 

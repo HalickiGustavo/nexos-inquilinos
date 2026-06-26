@@ -239,6 +239,7 @@ function KycPanelSection({ account }: { account: Account; onChanged?: () => Prom
   const approved = status === "APROVADO";
   const fetchLinks = useServerFn(getAsaasOnboardingLinks);
   const [items, setItems] = useState<Array<{ id: string; type: string; title: string; status: string; onboardingUrl: string | null }>>([]);
+  const [generalUrl, setGeneralUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -249,6 +250,7 @@ function KycPanelSection({ account }: { account: Account; onChanged?: () => Prom
     try {
       const res: any = await fetchLinks();
       setItems(res?.items ?? []);
+      setGeneralUrl(res?.generalOnboardingUrl ?? null);
       setLoaded(true);
     } catch (e: any) {
       setError(e?.message ?? "Falha ao consultar documentos pendentes no Asaas.");
@@ -349,14 +351,34 @@ function KycPanelSection({ account }: { account: Account; onChanged?: () => Prom
               </div>
             )}
 
-            {loaded && !error && pending.length > 0 && withLinks.length === 0 && (
+            {loaded && !error && pending.length > 0 && withLinks.length === 0 && generalUrl && (
+              <Alert>
+                <ShieldAlert className="size-4" />
+                <AlertTitle>Use o painel geral do Asaas</AlertTitle>
+                <AlertDescription className="space-y-3">
+                  <p>
+                    Esta subconta foi criada antes do recurso de link por documento. Use o
+                    painel geral do Asaas abaixo para enviar a selfie e o documento de
+                    identificação. Após a aprovação (até 48h úteis), o status será
+                    atualizado aqui automaticamente.
+                  </p>
+                  <Button asChild size="sm">
+                    <a href={generalUrl} target="_blank" rel="noreferrer noopener">
+                      Abrir painel do Asaas <ExternalLink className="size-3.5 ml-1.5" />
+                    </a>
+                  </Button>
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {loaded && !error && pending.length > 0 && withLinks.length === 0 && !generalUrl && (
               <Alert>
                 <ShieldAlert className="size-4" />
                 <AlertTitle>Sem links disponíveis no momento</AlertTitle>
                 <AlertDescription>
-                  O Asaas ainda não disponibilizou links de upload para os documentos pendentes
-                  desta conta. Aguarde alguns minutos após a criação da subconta e clique em
-                  "Atualizar". Se persistir, contate o suporte do Asaas.
+                  O Asaas ainda não disponibilizou links de upload para esta conta.
+                  Aguarde alguns minutos e clique em "Atualizar". Se persistir, contate
+                  o suporte do Asaas.
                 </AlertDescription>
               </Alert>
             )}

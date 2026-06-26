@@ -55,6 +55,7 @@ function TenantFinanceiro() {
   const [pixError, setPixError] = useState<string | null>(null);
   const [agreement, setAgreement] = useState<any | null>(null);
   const ensurePix = useServerFn(ensureTenantPixCharge);
+  const tripleSplit = useServerFn(generateTripleSplitPix);
   const queryClient = useQueryClient();
 
   const openPix = async (i: any) => {
@@ -63,17 +64,35 @@ function TenantFinanceiro() {
     if (i.pix_qrcode && i.pix_payload) return;
     setPixLoading(true);
     try {
-      const res: any = await ensurePix({ data: { installmentId: i.id } });
-      if (res?.ok === false) {
-        setPixError(res.error ?? "Não foi possível gerar o PIX no momento.");
-        return;
+      // Tenta primeiro o split nativo de 3 vias (Nexo + Imobiliária + Proprietário).
+      // Se a plataforma/imobiliária/proprietário não tiverem chave Pix configurada,
+      // cai no Asaas (subconta) como fallback.
+      let res: any;
+      try {
+        res = await tripleSplit({ data: { installmentId: i.id } });
+      } catch {
+        res = { ok: false };
       }
-      setPixFor({
-        ...i,
-        pix_qrcode: res.pixQrCode,
-        pix_payload: res.pixPayload,
-        boleto_url: res.boletoUrl ?? i.boleto_url,
-      });
+      if (!res?.ok) {
+        res = await ensurePix({ data: { installmentId: i.id } });
+        if (res?.ok === false) {
+          setPixError(res.error ?? "Não foi possível gerar o PIX no momento.");
+          return;
+        }
+        setPixFor({
+          ...i,
+          pix_qrcode: res.pixQrCode,
+          pix_payload: res.pixPayload,
+          boleto_url: res.boletoUrl ?? i.boleto_url,
+        });
+      } else {
+        setPixFor({
+          ...i,
+          pix_qrcode: res.qrCodeBase64,
+          pix_payload: res.pixPayload,
+          split_breakdown: res.breakdown,
+        });
+      }
       queryClient.invalidateQueries({ queryKey: ["tenant-installments"] });
     } catch (e: any) {
       setPixError(e?.message ?? "Erro ao gerar PIX");

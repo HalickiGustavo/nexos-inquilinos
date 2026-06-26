@@ -191,20 +191,7 @@ function IntegrationsPage() {
             <Field label="CPF / CNPJ" required>
               <Input value={form.cpfCnpj} onChange={(e) => setForm({ ...form, cpfCnpj: maskCpfCnpj(e.target.value) })} required placeholder="000.000.000-00" inputMode="numeric" />
             </Field>
-            <Field label="Tipo de empresa" required>
-              <Select
-                value={form.companyType}
-                onValueChange={(v) => setForm({ ...form, companyType: v as any })}
-              >
-                <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="INDIVIDUAL">Pessoa Física</SelectItem>
-                  <SelectItem value="MEI">MEI</SelectItem>
-                  <SelectItem value="LIMITED">LTDA / Limitada</SelectItem>
-                  <SelectItem value="ASSOCIATION">Associação</SelectItem>
-                </SelectContent>
-              </Select>
-            </Field>
+            {/* Tipo de empresa é definido automaticamente no backend a partir do CPF/CNPJ. */}
             <Field label="Celular" required>
               <Input value={form.mobilePhone} onChange={(e) => setForm({ ...form, mobilePhone: maskPhone(e.target.value) })} placeholder="(41) 99999-9999" inputMode="tel" required />
             </Field>

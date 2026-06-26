@@ -246,7 +246,14 @@ export const createAsaasSubaccount = createServerFn({ method: "POST" })
       postalCode: data.postalCode.replace(/\D/g, ""),
     };
     if (data.birthDate) payload.birthDate = data.birthDate;
-    if (data.companyType) payload.companyType = data.companyType;
+    // Auto-define companyType: CNPJ (14 dígitos) exige tipo de empresa no Asaas.
+    // Default LIMITED cobre a maioria das imobiliárias (LTDA / sociedades).
+    const cleanDoc = data.cpfCnpj.replace(/\D/g, "");
+    if (cleanDoc.length === 14) {
+      payload.companyType = data.companyType ?? "LIMITED";
+    } else if (data.companyType) {
+      payload.companyType = data.companyType;
+    }
 
     const account = await asaasFetch<any>("/accounts", {
       method: "POST",

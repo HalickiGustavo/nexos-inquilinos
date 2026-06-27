@@ -191,6 +191,7 @@ export type Database = {
           contract_pdf_path: string | null
           created_at: string
           daily_interest_percent: number
+          deleted_at: string | null
           due_day: number
           end_date: string
           id: string
@@ -212,6 +213,7 @@ export type Database = {
           contract_pdf_path?: string | null
           created_at?: string
           daily_interest_percent?: number
+          deleted_at?: string | null
           due_day: number
           end_date: string
           id?: string
@@ -233,6 +235,7 @@ export type Database = {
           contract_pdf_path?: string | null
           created_at?: string
           daily_interest_percent?: number
+          deleted_at?: string | null
           due_day?: number
           end_date?: string
           id?: string
@@ -1245,6 +1248,7 @@ export type Database = {
       tenants: {
         Row: {
           created_at: string
+          deleted_at: string | null
           document: string | null
           email: string | null
           emergency_contact: string | null
@@ -1258,6 +1262,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          deleted_at?: string | null
           document?: string | null
           email?: string | null
           emergency_contact?: string | null
@@ -1271,6 +1276,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          deleted_at?: string | null
           document?: string | null
           email?: string | null
           emergency_contact?: string | null

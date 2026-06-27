@@ -431,6 +431,59 @@ export type Database = {
           },
         ]
       }
+      efi_payouts: {
+        Row: {
+          amount: number
+          created_at: string
+          e2e_id: string | null
+          error: string | null
+          id: string
+          paid_at: string | null
+          pix_key: string
+          pix_key_type: string | null
+          pix_split_id: string
+          recipient: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          e2e_id?: string | null
+          error?: string | null
+          id?: string
+          paid_at?: string | null
+          pix_key: string
+          pix_key_type?: string | null
+          pix_split_id: string
+          recipient: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          e2e_id?: string | null
+          error?: string | null
+          id?: string
+          paid_at?: string | null
+          pix_key?: string
+          pix_key_type?: string | null
+          pix_split_id?: string
+          recipient?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "efi_payouts_pix_split_id_fkey"
+            columns: ["pix_split_id"]
+            isOneToOne: false
+            referencedRelation: "pix_splits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       inspections: {
         Row: {
           contract_id: string
@@ -538,7 +591,9 @@ export type Database = {
           amount: number
           asaas_payment_id: string | null
           barcode: string | null
+          boleto_barcode: string | null
           boleto_url: string | null
+          charge_provider: string
           contract_id: string
           created_at: string
           debt_agreement_id: string | null
@@ -568,7 +623,9 @@ export type Database = {
           amount: number
           asaas_payment_id?: string | null
           barcode?: string | null
+          boleto_barcode?: string | null
           boleto_url?: string | null
+          charge_provider?: string
           contract_id: string
           created_at?: string
           debt_agreement_id?: string | null
@@ -598,7 +655,9 @@ export type Database = {
           amount?: number
           asaas_payment_id?: string | null
           barcode?: string | null
+          boleto_barcode?: string | null
           boleto_url?: string | null
+          charge_provider?: string
           contract_id?: string
           created_at?: string
           debt_agreement_id?: string | null
@@ -949,6 +1008,9 @@ export type Database = {
         Row: {
           agency_amount: number
           agency_pix_key: string | null
+          boleto_barcode: string | null
+          boleto_url: string | null
+          charge_type: string
           created_at: string
           id: string
           installment_id: string
@@ -956,6 +1018,10 @@ export type Database = {
           nexo_pix_key: string | null
           owner_amount: number
           owner_pix_key: string | null
+          paid_at: string | null
+          payout_error: string | null
+          payout_scheduled_for: string | null
+          payout_status: string
           provider: string
           psp_pix_payload: string | null
           psp_qrcode_base64: string | null
@@ -967,6 +1033,9 @@ export type Database = {
         Insert: {
           agency_amount?: number
           agency_pix_key?: string | null
+          boleto_barcode?: string | null
+          boleto_url?: string | null
+          charge_type?: string
           created_at?: string
           id?: string
           installment_id: string
@@ -974,6 +1043,10 @@ export type Database = {
           nexo_pix_key?: string | null
           owner_amount?: number
           owner_pix_key?: string | null
+          paid_at?: string | null
+          payout_error?: string | null
+          payout_scheduled_for?: string | null
+          payout_status?: string
           provider?: string
           psp_pix_payload?: string | null
           psp_qrcode_base64?: string | null
@@ -985,6 +1058,9 @@ export type Database = {
         Update: {
           agency_amount?: number
           agency_pix_key?: string | null
+          boleto_barcode?: string | null
+          boleto_url?: string | null
+          charge_type?: string
           created_at?: string
           id?: string
           installment_id?: string
@@ -992,6 +1068,10 @@ export type Database = {
           nexo_pix_key?: string | null
           owner_amount?: number
           owner_pix_key?: string | null
+          paid_at?: string | null
+          payout_error?: string | null
+          payout_scheduled_for?: string | null
+          payout_status?: string
           provider?: string
           psp_pix_payload?: string | null
           psp_qrcode_base64?: string | null

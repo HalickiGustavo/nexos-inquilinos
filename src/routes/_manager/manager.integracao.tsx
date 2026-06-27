@@ -375,6 +375,9 @@ function ManagerIntegracao() {
 
       {/* Conta bancária + KYC pass-through */}
       <AsaasBankAndKycPanel account={account as any} onChanged={() => refetch()} />
+
+      {/* Chaves Pix do split (Nexo / Imobiliária / Proprietários) */}
+      <PixSplitConfigPanel />
     </div>
   );
 }

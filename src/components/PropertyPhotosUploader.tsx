@@ -143,6 +143,7 @@ function SortablePhoto({
 export function PropertyPhotosUploader({ propertyId }: { propertyId: string }) {
   const { user } = useAuth();
   const qc = useQueryClient();
+  const confirm = useConfirm();
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [order, setOrder] = useState<Photo[]>([]);

@@ -14,6 +14,7 @@ import { formatBRL } from "@/lib/format";
 import { PropertyFormDialog } from "@/components/PropertyFormDialog";
 import { ContractPdfUploader } from "@/components/ContractPdfUploader";
 import { useInvalidate, type Property } from "@/lib/queries";
+import { useConfirm } from "@/components/ui/confirm";
 
 export const Route = createFileRoute("/_manager/manager/carteira")({
   component: Carteira,

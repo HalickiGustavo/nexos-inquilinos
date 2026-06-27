@@ -4,7 +4,7 @@ import { Building2, Wallet, TrendingUp, AlertCircle, CheckCircle2, Home, Bell, A
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { useProperties, useInstallments, useMaintenances } from "@/lib/queries";
+import { useProperties, useInstallments, useMaintenances, useContracts } from "@/lib/queries";
 import { useUserRole, roleHomePath } from "@/lib/useUserRole";
 import { formatBRL, monthRange } from "@/lib/format";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Cell } from "recharts";

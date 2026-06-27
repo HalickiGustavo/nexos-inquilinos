@@ -130,6 +130,7 @@ export const getAsaasOnboardingLinks = createServerFn({ method: "GET" })
     // subcontas antigas, anteriores ao endpoint /myAccount/documents).
     let generalOnboardingUrl: string | null = acc.onboarding_url ?? null;
     let accountStatus: string | null = null;
+    let accountEmail: string | null = null;
     try {
       const me = await asaasFetch<any>("/myAccount", { method: "GET", apiKey: acc.api_key });
       if (me?.onboardingUrl) {
@@ -142,8 +143,19 @@ export const getAsaasOnboardingLinks = createServerFn({ method: "GET" })
         }
       }
       accountStatus = me?.status ?? null;
+      accountEmail = me?.email ?? null;
     } catch (e) {
       console.warn("[asaas] /myAccount fallback falhou:", (e as any)?.message);
+    }
+
+    // Sandbox: aprova subcontas automaticamente, então não existe onboardingUrl
+    // real. Devolvemos o login do painel Sandbox para permitir testar o iframe.
+    const isSandbox = (process.env.ASAAS_ENV ?? "sandbox") !== "production";
+    let sandboxFallback = false;
+    if (!generalOnboardingUrl && isSandbox) {
+      const u = accountEmail ? `?username=${encodeURIComponent(accountEmail)}` : "";
+      generalOnboardingUrl = `https://sandbox.asaas.com/login${u}`;
+      sandboxFallback = true;
     }
 
     try {

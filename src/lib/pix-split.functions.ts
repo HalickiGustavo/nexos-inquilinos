@@ -187,7 +187,7 @@ export const generateTripleSplitPix = createServerFn({ method: "POST" })
           owner_amount: ctx.ownerAmount,
           nexo_pix_key: ctx.nexoKey,
           agency_pix_key: ctx.agency?.agency_pix_key ?? null,
-          owner_pix_key: ctx.prop?.owner_pix_key ?? null,
+          owner_pix_key: ctx.ownerPixKey ?? null,
           psp_txid: charge.txid,
           psp_qrcode_base64: charge.qrCodeBase64,
           psp_pix_payload: charge.pixPayload,

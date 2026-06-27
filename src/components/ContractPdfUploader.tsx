@@ -23,6 +23,7 @@ export function ContractPdfUploader({ contractId, currentPath }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const invalidate = useInvalidate();
+  const confirm = useConfirm();
 
   async function handleFile(file: File) {
     if (file.type !== "application/pdf") {

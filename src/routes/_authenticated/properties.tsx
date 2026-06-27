@@ -13,7 +13,7 @@ import {
   Tabs, TabsList, TabsTrigger,
 } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
-import { useProperties, useInvalidate, type Property } from "@/lib/queries";
+import { useProperties, useContracts, useInvalidate, type Property } from "@/lib/queries";
 import { formatBRL } from "@/lib/format";
 import { PropertyFormDialog } from "@/components/PropertyFormDialog";
 
@@ -24,13 +24,26 @@ export const Route = createFileRoute("/_authenticated/properties")({
 
 function PropertiesPage() {
   const { data: properties = [], isLoading } = useProperties();
+  const { data: contracts = [] } = useContracts();
   const [filter, setFilter] = useState<"all" | "disponivel" | "alugado">("all");
   const [search, setSearch] = useState("");
   const [editing, setEditing] = useState<Property | null>(null);
   const [open, setOpen] = useState(false);
 
+  // Occupancy derivada do contrato ativo (única fonte da verdade).
+  const occupiedIds = new Set<string>(
+    (contracts as any[])
+      .filter((c) => c.active && !c.deleted_at && c.property_id)
+      .map((c) => c.property_id as string),
+  );
+  const effectiveStatus = (p: Property): "alugado" | "disponivel" | "manutencao" => {
+    if (occupiedIds.has(p.id)) return "alugado";
+    if (p.status === "manutencao") return "manutencao";
+    return "disponivel";
+  };
+
   const filtered = properties.filter((p) => {
-    const matchStatus = filter === "all" || p.status === filter;
+    const matchStatus = filter === "all" || effectiveStatus(p) === filter;
     const matchSearch = !search ||
       p.nickname.toLowerCase().includes(search.toLowerCase()) ||
       p.address.toLowerCase().includes(search.toLowerCase());

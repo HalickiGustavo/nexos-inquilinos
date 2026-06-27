@@ -290,7 +290,12 @@ function ManagerIntegracao() {
             <Building2 className="size-4 text-primary" />
             <h3 className="font-semibold">Dados Cadastrais e Bancários</h3>
           </div>
-          <form className="grid sm:grid-cols-2 gap-4" onSubmit={onSubmit}>
+          <p className="text-xs text-muted-foreground mb-3">
+            Os campos abaixo são apenas para visualização. Todo o cadastro é preenchido diretamente no painel hospedado do Asaas pelo botão acima.
+          </p>
+          <form className="grid sm:grid-cols-2 gap-4" onSubmit={(e) => e.preventDefault()}>
+            <fieldset disabled className="contents opacity-70">
+
             <Field label="Razão Social / Nome" required>
               <Input value={bank.legalName} onChange={(e) => setBank({ ...bank, legalName: e.target.value })} required maxLength={120} />
             </Field>

@@ -1,56 +1,97 @@
 ## Objetivo
 
-Adicionar uma camada de **Pix com split nativo de 3 vias** (Nexo / Imobiliária / Proprietário) usando a Efí Pay como PSP, **sem subcontas e sem KYC**. O Asaas atual continua intacto como fallback para contratos já criados.
+Trocar o gateway de pagamento da NEXO: sair do **Asaas** (subcontas + KYC) e ir para a **Efí Pay**, mantendo todas as funcionalidades de cobrança, sem exigir KYC do proprietário nem da imobiliária.
 
-Como ainda não temos credenciais da Efí, a engine é entregue em **modo mock**: gera QR Code real (payload BR Code v01 válido, com CRC16 correto) apontando para a chave Pix da Nexo, mas a divisão é **registrada na tabela `pix_splits`** para reconciliação. Quando as credenciais forem fornecidas, basta trocar o adapter `efi.server.ts` por chamadas HTTP reais (estrutura já preparada).
+Dois fluxos cobertos:
 
-## Banco de dados (migração)
+1. **Pix com split nativo (zero KYC)** — A Efí divide o valor na liquidação entre 3 chaves Pix: Nexo, Imobiliária e Proprietário. Proprietário/Imobiliária só precisam informar a chave Pix.
+2. **Boleto (Opção A)** — Boleto emitido pela Efí cai 100% na conta Efí da Nexo. Webhook `charge.paid` dispara, em D+1, transferências Pix automáticas para a Imobiliária e Proprietário (mesmas chaves já cadastradas). Sem subcontas.
 
-1. `agency_settings`: adicionar `agency_pix_key text`, `agency_pix_key_type text` (CPF/CNPJ/EMAIL/PHONE/EVP).
-2. `properties` (já guarda landlord): adicionar `owner_pix_key text`, `owner_pix_key_type text`.
-3. `contracts`: adicionar `agency_admin_fee_percentage numeric(5,2) default 10`.
-4. `platform_settings`: garantir `nexo_platform_pix_key text`, `nexo_flat_fee numeric(10,2) default 24.99`.
-5. Nova tabela `pix_splits` (registro do split por parcela):
+Adapter Efí já existe em modo mock (`src/lib/efi.server.ts`). Esta rodada pluga a API real, adiciona Boleto, webhook e payout automatizado, e remove o Asaas do caminho crítico.
 
-```
-id, installment_id (fk), provider text ('efi'|'mock'),
-nexo_amount, agency_amount, owner_amount,
-nexo_pix_key, agency_pix_key, owner_pix_key,
-psp_txid text, psp_qrcode_base64 text, psp_pix_payload text,
-status text ('pending'|'paid'|'failed'), created_at, updated_at
-```
+> Os secrets da Efí (`EFI_CLIENT_ID`, `EFI_CLIENT_SECRET`, `EFI_CERTIFICATE_BASE64`, `EFI_PIX_KEY`, `EFI_WEBHOOK_HMAC`) **não** serão pedidos agora — o usuário ainda vai criar a conta na Efí. Enquanto faltam, o sistema roda em modo mock (Pix com QR válido apontando para a chave Nexo, Boleto desabilitado com aviso).
 
-Com GRANTs e RLS escopados via `installments.user_id`.
+## Mudanças de banco (1 migração)
+
+1. `pix_splits`: adicionar coluna `charge_type text default 'pix'` (`pix`|`boleto`), `boleto_url text`, `boleto_barcode text`, `paid_at timestamptz`, `payout_status text default 'pending'` (`pending`|`scheduled`|`paid`|`failed`), `payout_scheduled_for date`, `payout_error text`.
+2. Nova tabela `efi_payouts` (transferências Pix individuais para imobiliária/proprietário após boleto pago):
+   - `id, pix_split_id (fk), recipient text ('agency'|'owner'), pix_key, pix_key_type, amount, e2e_id, status, error, created_at, paid_at`.
+3. `installments`: adicionar `boleto_url text`, `boleto_barcode text`, `charge_provider text default 'efi'`.
+4. GRANTs + RLS escopado por `installments.user_id` / `pix_splits.user_id`.
 
 ## Backend
 
-- `src/lib/efi.server.ts` — adapter isolado (`createCharge`, `createSplitCharge`). Sem credenciais: monta BR Code Pix válido localmente (payload EMV + CRC16 ITU) e retorna QR PNG via lib `qrcode`. Com credenciais (futuro): chama `/v2/cob` + `/v2/loc/{id}/qrcode` da Efí.
-- `src/lib/pix-split.functions.ts` — `generateTripleSplitPix({ installmentId })` com `requireSupabaseAuth`:
-  1. Carrega installment → contract → property → landlord → agency_settings → platform_settings.
-  2. Calcula fatias: `nexo = nexo_flat_fee`; `agency = rent * fee% / 100`; `owner = rent - nexo - agency`. Valida `owner >= 0`.
-  3. Resolve as 3 chaves Pix (erro descritivo se faltar).
-  4. Chama `efi.createSplitCharge(...)` com `infoAdicional: "Aluguel Mensal - Processado por NEXO"`.
-  5. Upsert em `pix_splits`, retorna `{ qrCodeBase64, copiaECola, breakdown }`.
-- Adicionar dep `qrcode` (`bun add qrcode`).
+### `src/lib/efi.server.ts` (expandir adapter)
+
+- `isProductionMode()` continua olhando `EFI_CLIENT_ID`.
+- `createPixSplitCharge(input)` — em produção: `POST /v2/cob/{txid}` com `split` nativo, depois `GET /v2/loc/{id}/qrcode` para QR; em mock mantém o BR Code atual.
+- `createBoletoCharge(input)` — `POST /v1/charge` (boleto Efí), retorna `barcode`, `pdf.charge`, `link`. Em mock retorna erro amigável: "Boleto exige credenciais Efí. Use Pix por enquanto."
+- `sendPix(input)` — `POST /v3/gn/pix/{idEnvio}` para repasses D+1. Em mock: registra como `mock_sent`.
+- `verifyWebhookSignature(rawBody, signature)` — HMAC SHA-256 contra `EFI_WEBHOOK_HMAC`.
+- Autenticação Efí: OAuth client_credentials com certificado P12 (carregado de `EFI_CERTIFICATE_BASE64`) — helper `efiFetch(path, opts)` cacheia o token por 50 min.
+
+### `src/lib/pix-split.functions.ts` (ampliar)
+
+- `generateTripleSplitPix({ installmentId })` — já existe; passa a chamar `createPixSplitCharge` (split nativo) quando produção.
+- **NOVO** `generateBoletoCharge({ installmentId })` — calcula mesmas 3 fatias, cria boleto na conta Efí da Nexo, grava `pix_splits` com `charge_type='boleto'`, atualiza `installments.boleto_url/boleto_barcode`. Retorna `{ url, barcode }`.
+
+### `src/routes/api/public/efi-webhook.ts` (NOVO)
+
+- `POST /api/public/efi-webhook` — recebe notificações Efí (Pix + Boleto).
+- Verifica HMAC (`verifyWebhookSignature`), valida payload Zod.
+- Eventos relevantes:
+  - `pix` recebido (split nativo): marca `pix_splits.status='paid'`, `installments.status='pago'`.
+  - `charge.paid` (boleto): marca `pix_splits.status='paid'`, `installments.status='pago'`, agenda `payout_status='scheduled'`, `payout_scheduled_for=now+1d`.
+- Idempotente por `psp_txid`/`e2e_id`.
+
+### `src/lib/efi-payouts.functions.ts` (NOVO, server-only)
+
+- `runProcessEfiBoletoPayouts()` — busca `pix_splits` com `charge_type='boleto'`, `status='paid'`, `payout_status='scheduled'`, `payout_scheduled_for<=today`. Para cada:
+  - Cria 2 `efi_payouts` (agency, owner) com valores das fatias.
+  - Chama `sendPix` para cada um (chaves já gravadas em `pix_splits.agency_pix_key`/`owner_pix_key`).
+  - Atualiza `payout_status='paid'` quando ambos confirmam (ou `failed` + `payout_error`).
+
+### `src/routes/api/public/hooks/process-efi-payouts.ts` (NOVO)
+
+- Cron diário (autenticado por `apikey: SUPABASE_ANON_KEY`) que invoca `runProcessEfiBoletoPayouts()`.
+- SQL `pg_cron` será publicado via `supabase--insert` no fim.
 
 ## Frontend
 
-- `src/components/PixPaymentDialog.tsx`: trocar a fonte do PIX. Quando o contrato tiver as 3 chaves Pix configuradas, chama `generateTripleSplitPix`; caso contrário, mantém `ensureTenantPixCharge` (Asaas).
-- Novo bloco "Detalhamento do split" (collapsible, dark + neon roxo) mostrando as 3 fatias.
-- Toast verde esmeralda: "Código Pix copiado! Cole no aplicativo do seu banco para pagar."
-- Painéis de cadastro:
-  - `manager.proprietarios.tsx`: campo "Chave Pix do proprietário" + tipo.
-  - `_authenticated/integrations.tsx` (aba Imobiliária): "Chave Pix da imobiliária" + tipo.
-  - `admin.integracoes.tsx`: "Chave Pix da plataforma Nexo" + `nexo_flat_fee`.
+### `src/components/PixPaymentDialog.tsx`
+
+- Adicionar tabs **Pix** / **Boleto**. Pix = `generateTripleSplitPix`. Boleto = `generateBoletoCharge` (botão "Gerar boleto", baixa PDF, copia linha digitável).
+- Mensagem clara em modo mock para boleto: "Disponível assim que as credenciais da Efí forem cadastradas."
+
+### Aposentar Asaas no fluxo principal
+
+- `PainelRepasses.tsx` — substituir leitura de `asaas_accounts/kyc_status` por status simples baseado em `pix_splits` recentes; remover bloco "KYC pendente".
+- `manager.integracao.tsx` / `AsaasBankAndKycPanel.tsx` — esconder seção Asaas atrás de um accordion "Legado (Asaas)" colapsado por padrão. **Não apagar tabelas/código** — apenas tirar do caminho do usuário, para preservar contratos antigos.
+- `PixSplitConfigPanel.tsx` — promovê-lo a card principal da aba Integrações: "Configurar suas chaves Pix (sem KYC)" com os 3 campos (Nexo no admin, Imobiliária na agência, Proprietário no cadastro do imóvel — já existem).
+- Toda referência a `ensureTenantPixCharge` (Asaas) deixa de ser fallback: passa a usar Efí mock se faltarem credenciais.
+
+### `manager.financeiro.tsx` e `tenant.financeiro.tsx`
+
+- Coluna "Boleto" com link PDF quando `installments.boleto_url` existir.
 
 ## Modo Mock x Produção
 
-`EFI_CLIENT_ID` ausente → engine roda mock (QR aponta para chave Nexo, splits ficam em `pix_splits` para repasse manual D+1 via cron já existente). Quando você adicionar `EFI_CLIENT_ID`, `EFI_CLIENT_SECRET`, `EFI_CERTIFICATE_BASE64`, `EFI_PIX_KEY` via `add_secret`, o adapter automaticamente passa a chamar a API real com split nativo.
+- Sem `EFI_CLIENT_ID`: Pix mock (QR válido para chave Nexo configurada em `platform_settings`), boleto desabilitado com tooltip explicativo, payout marca `mock_sent` sem chamar API.
+- Com credenciais: tudo flui real, split nativo na liquidação, webhook ativo, payout D+1 ativo.
 
 ## Entregas desta rodada
 
-1. Migração (tabelas + colunas + RLS + GRANT).
-2. `efi.server.ts` (mock + estrutura pronta).
-3. `pix-split.functions.ts` (engine).
-4. UI: PixPaymentDialog com split breakdown + cadastros das 3 chaves.
-5. Documento curto em `.lovable/plan.md` explicando como ativar a Efí real.
+1. Migração SQL (3 alterações + 1 nova tabela + GRANT/RLS).
+2. `efi.server.ts` expandido (OAuth, split nativo, boleto, sendPix, HMAC).
+3. `pix-split.functions.ts` com `generateBoletoCharge`.
+4. `efi-payouts.functions.ts` + route `api/public/hooks/process-efi-payouts`.
+5. `api/public/efi-webhook.ts`.
+6. UI: `PixPaymentDialog` com tabs Pix/Boleto, Asaas movido para "Legado", `PixSplitConfigPanel` em destaque.
+7. Atualização do `.lovable/plan.md` com instruções de ativação.
+8. Quando o usuário avisar que criou a conta Efí, peço os secrets via `add_secret`.
+
+## Riscos / pontos de atenção
+
+- **Boleto sem credenciais** fica desabilitado — comunico isso na UI.
+- **Asaas legado** continua funcionando para contratos antigos; nada é deletado. Webhook Asaas permanece ativo para liquidações pendentes.
+- Cron de repasse antigo (`process-landlord-payouts`, baseado em Asaas) é mantido até zerar inadimplências antigas; o novo (`process-efi-payouts`) opera só sobre boletos Efí.

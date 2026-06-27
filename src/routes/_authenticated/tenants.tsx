@@ -127,15 +127,25 @@ function TenantsPage() {
                 <Button variant="outline" size="sm" onClick={async () => {
                   const ok = await confirm({
                     title: `Excluir o inquilino "${t.full_name}"?`,
-                    description: "O registro do inquilino será removido. Esta ação não pode ser desfeita.",
+                    description: "O inquilino será arquivado. Contratos ativos vinculados impedem a exclusão.",
                     confirmLabel: "Excluir inquilino",
                     tone: "destructive",
                   });
                   if (!ok) return;
-                  const { error } = await supabase.from("tenants").delete().eq("id", t.id);
-                  if (error) return toast.error(error.message);
-                  toast.success("Inquilino excluído");
-                  invalidate(["tenants"]);
+                  try {
+                    await softDelete({ data: { tenantId: t.id } });
+                    toast.success("Inquilino removido com sucesso de seu painel.");
+                    invalidate(["tenants", "contracts", "installments"]);
+                  } catch (e: any) {
+                    const msg = String(e?.message || e);
+                    if (msg.includes("ACTIVE_CONTRACT")) {
+                      toast.error(
+                        "Não é possível excluir: Este inquilino possui um contrato ativo vinculado. Encerre o contrato antes de removê-lo.",
+                      );
+                    } else {
+                      toast.error(msg);
+                    }
+                  }
                 }}>
                   <Trash2 className="size-3.5 text-destructive" />
                 </Button>

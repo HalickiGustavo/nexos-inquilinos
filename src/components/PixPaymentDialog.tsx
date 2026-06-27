@@ -174,16 +174,63 @@ export function PixPaymentDialog({
               </div>
             </>
           )}
+          </TabsContent>
 
-          {installment.boleto_url && (
-            <Button variant="outline" className="w-full" asChild>
-              <a href={installment.boleto_url} target="_blank" rel="noreferrer">
-                <Download className="size-4 mr-2" /> Visualizar Boleto PDF
-              </a>
-            </Button>
-          )}
-        </div>
+          <TabsContent value="boleto" className="space-y-4 mt-4">
+            <div className="rounded-lg border-2 border-primary/20 bg-primary/5 p-4 text-center">
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">Valor do boleto</p>
+              <p className="text-3xl font-bold text-primary mt-1">{formatBRL(amount)}</p>
+              <Badge variant="outline" className="mt-2 bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30">
+                Repasse automático D+1 para imobiliária e proprietário
+              </Badge>
+            </div>
+
+            {!boletoUrl && !boletoLoading && (
+              <Button className="w-full" onClick={handleGenerateBoleto}>
+                <FileText className="size-4 mr-2" /> Gerar Boleto
+              </Button>
+            )}
+
+            {boletoLoading && (
+              <div className="flex flex-col items-center justify-center py-10 text-muted-foreground">
+                <Loader2 className="size-8 animate-spin mb-3 text-primary" />
+                <p className="text-sm">Emitindo boleto na Efí...</p>
+              </div>
+            )}
+
+            {boletoError && (
+              <div className="flex flex-col items-center justify-center py-6 text-center">
+                <AlertCircle className="size-7 text-destructive mb-2" />
+                <p className="text-sm font-medium text-destructive">Não foi possível gerar o boleto</p>
+                <p className="text-xs text-muted-foreground mt-1">{boletoError}</p>
+              </div>
+            )}
+
+            {boletoUrl && (
+              <div className="space-y-3">
+                <Button variant="outline" className="w-full" asChild>
+                  <a href={boletoUrl} target="_blank" rel="noreferrer">
+                    <Download className="size-4 mr-2" /> Visualizar Boleto PDF
+                  </a>
+                </Button>
+
+                {boletoBarcode && (
+                  <div className="space-y-2">
+                    <p className="text-xs uppercase tracking-wide text-muted-foreground">Linha digitável</p>
+                    <div className="font-mono text-xs break-all rounded-md border bg-muted/40 p-3 max-h-20 overflow-auto">
+                      {boletoBarcode}
+                    </div>
+                    <Button className="w-full" onClick={copyBarcode}>
+                      <Copy className="size-4 mr-2" /> Copiar linha digitável
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
       </DialogContent>
+
     </Dialog>
   );
 }

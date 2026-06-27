@@ -640,38 +640,53 @@ export const startAsaasCadastro = createServerFn({ method: "POST" })
 
     const isSandbox = (process.env.ASAAS_ENV ?? "sandbox") !== "production";
 
-    async function resolveOnboardingUrl(apiKey: string, email: string): Promise<{ url: string | null; sandboxFallback: boolean }> {
+    async function resolveOnboardingUrl(apiKey: string, email: string): Promise<{ url: string | null; sandboxFallback: boolean; diag: any }> {
       let url: string | null = null;
+      const diag: any = { env: isSandbox ? "sandbox" : "production", steps: [] };
       try {
         const docs = await asaasFetch<any>("/myAccount/documents", { method: "GET", apiKey });
         const list: Array<any> = Array.isArray(docs?.data) ? docs.data : [];
+        diag.steps.push({ endpoint: "/myAccount/documents", count: list.length, hasUrl: list.some((g) => !!g?.onboardingUrl), accountStatus: docs?.accountStatus ?? null, rejectReasons: docs?.rejectReasons ?? null });
         url = list.find((g) => !!g?.onboardingUrl)?.onboardingUrl ?? null;
-      } catch { /* ignore */ }
+      } catch (e: any) {
+        diag.steps.push({ endpoint: "/myAccount/documents", error: e?.message ?? String(e) });
+      }
       if (!url) {
         try {
           const me = await asaasFetch<any>("/myAccount", { method: "GET", apiKey });
+          diag.steps.push({ endpoint: "/myAccount", hasUrl: !!me?.onboardingUrl, status: me?.status ?? null, accountStatus: me?.accountStatus ?? null });
           if (me?.onboardingUrl) url = me.onboardingUrl;
-        } catch { /* ignore */ }
+        } catch (e: any) {
+          diag.steps.push({ endpoint: "/myAccount", error: e?.message ?? String(e) });
+        }
       }
       if (!url && isSandbox) {
-        return { url: `https://sandbox.asaas.com/login?username=${encodeURIComponent(email)}`, sandboxFallback: true };
+        return { url: `https://sandbox.asaas.com/login?username=${encodeURIComponent(email)}`, sandboxFallback: true, diag };
       }
-      return { url, sandboxFallback: false };
+      return { url, sandboxFallback: false, diag };
     }
 
     if (existing.data?.api_key) {
       const profile = await supabaseAdmin.from("profiles").select("email").eq("id", userId).maybeSingle();
       const r = await resolveOnboardingUrl(existing.data.api_key, profile.data?.email ?? "");
+      console.log("[startAsaasCadastro] reused diag:", JSON.stringify(r.diag));
       if (existing.data.onboarding_url && existing.data.onboarding_url !== r.url) {
         await supabaseAdmin.from("asaas_accounts").update({ onboarding_url: r.url }).eq("user_id", userId);
+      }
+      if (!r.url) {
+        throw new Error(
+          `Asaas não retornou onboardingUrl. Diagnóstico: ${JSON.stringify(r.diag)}`,
+        );
       }
       return {
         ok: true,
         reused: true,
-        onboardingUrl: r.url ?? existing.data.onboarding_url ?? null,
+        onboardingUrl: r.url,
         sandboxFallback: r.sandboxFallback,
+        diag: r.diag,
       };
     }
+
 
     // Pega dados do perfil
     const { data: prof } = await supabaseAdmin

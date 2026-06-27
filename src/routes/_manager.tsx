@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet, useNavigate, useRouterState, Link } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { LayoutDashboard, Briefcase, Wallet, Users, ClipboardCheck, LogOut, Loader2, FileDigit, Database, Coins, Globe, Shuffle, Inbox, Home, KeyRound } from "lucide-react";
+import { LayoutDashboard, Briefcase, Wallet, Users, ClipboardCheck, LogOut, Loader2, FileDigit, Database, Coins, Globe, Shuffle, Inbox, Home, KeyRound, UserCog } from "lucide-react";
 import { AlertsBell } from "@/components/AlertsBell";
 import { NexoLogo } from "@/components/NexoLogo";
 import { InstallPwaButton } from "@/components/InstallPwaButton";

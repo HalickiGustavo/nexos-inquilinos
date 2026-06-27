@@ -614,6 +614,133 @@ export const setupSubaccountOnboarding = createServerFn({ method: "POST" })
     };
   });
 
+// ===== Start hosted Asaas cadastro.io with MINIMAL data =====
+// Cria a subconta usando apenas dados do perfil + placeholders editáveis
+// no cadastro.io. O usuário completa endereço/banco/docs/fotos dentro do
+// painel hospedado do Asaas, sem precisar preencher o formulário no Nexo.
+export const startAsaasCadastro = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { userId, supabase } = context;
+    const { asaasFetch } = await import("./asaas.server");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const [{ data: isManager }, { data: isOwner }] = await Promise.all([
+      supabase.rpc("has_role", { _user_id: userId, _role: "manager" as any }),
+      supabase.rpc("has_role", { _user_id: userId, _role: "owner" as any }),
+    ]);
+    if (!isManager && !isOwner) throw new Error("Forbidden");
+
+    // Se já existe subconta, devolve o onboardingUrl atual (ou Sandbox fallback)
+    const existing = await supabaseAdmin
+      .from("asaas_accounts")
+      .select("api_key, asaas_account_id, onboarding_url")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    const isSandbox = (process.env.ASAAS_ENV ?? "sandbox") !== "production";
+
+    async function resolveOnboardingUrl(apiKey: string, email: string): Promise<{ url: string | null; sandboxFallback: boolean }> {
+      let url: string | null = null;
+      try {
+        const docs = await asaasFetch<any>("/myAccount/documents", { method: "GET", apiKey });
+        const list: Array<any> = Array.isArray(docs?.data) ? docs.data : [];
+        url = list.find((g) => !!g?.onboardingUrl)?.onboardingUrl ?? null;
+      } catch { /* ignore */ }
+      if (!url) {
+        try {
+          const me = await asaasFetch<any>("/myAccount", { method: "GET", apiKey });
+          if (me?.onboardingUrl) url = me.onboardingUrl;
+        } catch { /* ignore */ }
+      }
+      if (!url && isSandbox) {
+        return { url: `https://sandbox.asaas.com/login?username=${encodeURIComponent(email)}`, sandboxFallback: true };
+      }
+      return { url, sandboxFallback: false };
+    }
+
+    if (existing.data?.api_key) {
+      const profile = await supabaseAdmin.from("profiles").select("email").eq("id", userId).maybeSingle();
+      const r = await resolveOnboardingUrl(existing.data.api_key, profile.data?.email ?? "");
+      if (existing.data.onboarding_url && existing.data.onboarding_url !== r.url) {
+        await supabaseAdmin.from("asaas_accounts").update({ onboarding_url: r.url }).eq("user_id", userId);
+      }
+      return {
+        ok: true,
+        reused: true,
+        onboardingUrl: r.url ?? existing.data.onboarding_url ?? null,
+        sandboxFallback: r.sandboxFallback,
+      };
+    }
+
+    // Pega dados do perfil
+    const { data: prof } = await supabaseAdmin
+      .from("profiles")
+      .select("full_name, email, phone, document")
+      .eq("id", userId)
+      .maybeSingle();
+
+    const name = (prof?.full_name ?? "").trim();
+    const email = (prof?.email ?? "").trim();
+    const cpfCnpj = (prof?.document ?? "").replace(/\D/g, "");
+    const mobilePhone = (prof?.phone ?? "").replace(/\D/g, "");
+
+    if (!name) throw new Error("Complete seu nome no perfil antes de iniciar o cadastro Asaas.");
+    if (!email) throw new Error("Complete seu e-mail no perfil antes de iniciar o cadastro Asaas.");
+    if (![11, 14].includes(cpfCnpj.length)) throw new Error("Cadastre um CPF ou CNPJ válido no seu perfil.");
+    if (mobilePhone.length < 10 || mobilePhone.length > 11) throw new Error("Cadastre um celular válido (com DDD) no seu perfil.");
+
+    // Placeholders editáveis no cadastro.io
+    const payload: Record<string, unknown> = {
+      name,
+      email,
+      cpfCnpj,
+      mobilePhone,
+      incomeValue: 5000,
+      address: "A completar",
+      addressNumber: "S/N",
+      province: "A completar",
+      postalCode: "00000000",
+    };
+    if (cpfCnpj.length === 14) payload.companyType = "LIMITED";
+
+    const account = await asaasFetch<any>("/accounts", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+    const newApiKey: string | null = account.apiKey ?? null;
+    if (!newApiKey) throw new Error("Asaas não retornou a chave da subconta criada.");
+
+    await supabaseAdmin.from("asaas_accounts").upsert(
+      {
+        user_id: userId,
+        asaas_account_id: account.id ?? null,
+        wallet_id: account.walletId ?? null,
+        api_key: newApiKey,
+        status: account.id ? "active" : "pending",
+        onboarding_url: account.onboardingUrl ?? null,
+      },
+      { onConflict: "user_id" },
+    );
+
+    // Aguarda barramento provisionar a trilha KYC
+    await new Promise((resolve) => setTimeout(resolve, 15000));
+
+    const r = await resolveOnboardingUrl(newApiKey, email);
+    if (r.url) {
+      await supabaseAdmin.from("asaas_accounts").update({ onboarding_url: r.url }).eq("user_id", userId);
+    }
+
+    return {
+      ok: true,
+      reused: false,
+      onboardingUrl: r.url,
+      sandboxFallback: r.sandboxFallback,
+      accountId: account.id ?? null,
+      walletId: account.walletId ?? null,
+    };
+  });
+
 // ===== Generate boleto + Pix for an installment =====
 const generateInput = z.object({
   installmentId: z.string().uuid(),

@@ -1,22 +1,22 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { CheckCircle2, ExternalLink, Loader2, Wallet } from "lucide-react";
+import { CheckCircle2, ExternalLink, Loader2, Wallet, ShieldCheck, Sparkles, Lock } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
-  createAsaasSubaccount,
   getAsaasAccount,
+  startAsaasCadastro,
 } from "@/lib/asaas.functions";
 import { AsaasBankAndKycPanel } from "@/components/AsaasBankAndKycPanel";
 import { PixSplitConfigPanel } from "@/components/PixSplitConfigPanel";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { maskCpfCnpj, maskPhone, maskCEP } from "@/lib/br-validators";
 import { useAuth } from "@/lib/auth";
 
 const BR_BANKS: Array<{ code: string; name: string }> = [
@@ -37,14 +37,9 @@ const BR_BANKS: Array<{ code: string; name: string }> = [
   { code: "070", name: "BRB" },
   { code: "041", name: "Banrisul" },
   { code: "389", name: "Banco Mercantil do Brasil" },
-  { code: "320", name: "China Construction Bank (CCB)" },
   { code: "246", name: "Banco ABC Brasil" },
   { code: "623", name: "Banco PAN" },
-  { code: "643", name: "Banco Pine" },
-  { code: "611", name: "Banco Paulista" },
-  { code: "094", name: "Banco Finaxis" },
   { code: "707", name: "Banco Daycoval" },
-  { code: "085", name: "Cooperativa Central Ailos" },
   { code: "136", name: "Unicred" },
   { code: "197", name: "Stone" },
   { code: "323", name: "Mercado Pago" },
@@ -63,50 +58,48 @@ export const Route = createFileRoute("/_authenticated/integrations")({
 function IntegrationsPage() {
   const { user } = useAuth();
   const fetchAccount = useServerFn(getAsaasAccount);
-  const submit = useServerFn(createAsaasSubaccount);
+  const startCadastro = useServerFn(startAsaasCadastro);
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["asaas-account", user?.id],
     enabled: !!user?.id,
     queryFn: () => fetchAccount(),
   });
 
-  const account = data?.account;
+  const account = data?.account as any;
+  const hasAccount = !!account?.asaas_account_id;
+  const [opening, setOpening] = useState(false);
 
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    cpfCnpj: "",
-    mobilePhone: "",
-    companyType: "" as "" | "MEI" | "LIMITED" | "INDIVIDUAL" | "ASSOCIATION",
-    birthDate: "",
-    address: "",
-    addressNumber: "",
-    province: "",
-    postalCode: "",
-    incomeValue: "",
-    bankCode: "",
-    bankOwnerCpfCnpj: "",
-    bankAgency: "",
-    bankAccount: "",
-    bankAccountDigit: "",
-    bankAccountType: "CONTA_CORRENTE" as "CONTA_CORRENTE" | "CONTA_POUPANCA",
-  });
-  const [saving, setSaving] = useState(false);
-
-  useEffect(() => {
-    if (account) setSaving(false);
-  }, [account]);
+  async function handleOpenCadastro() {
+    setOpening(true);
+    try {
+      const res: any = await startCadastro();
+      if (!res?.onboardingUrl) throw new Error("URL do cadastro indisponível.");
+      window.open(res.onboardingUrl, "_blank", "noopener,noreferrer");
+      if (res.sandboxFallback) {
+        toast.info("Sandbox do Asaas aprovou a subconta automaticamente. Abrindo o painel Sandbox para simular o fluxo.", { duration: 7000 });
+      } else if (!res.reused) {
+        toast.success("Subconta criada! Complete o cadastro no painel Asaas que abrimos em uma nova aba.");
+      } else {
+        toast.success("Abrindo seu cadastro Asaas em uma nova aba.");
+      }
+      await refetch();
+    } catch (err: any) {
+      toast.error(err?.message ?? "Falha ao abrir o cadastro Asaas.");
+    } finally {
+      setOpening(false);
+    }
+  }
 
   return (
     <div className="p-6 lg:p-8 max-w-3xl mx-auto space-y-6">
       <header>
         <h1 className="text-3xl font-bold tracking-tight">Saldo e Saque</h1>
         <p className="text-muted-foreground mt-1">
-          Conecte sua conta de recebimento para emitir boletos e Pix e configurar os repasses automáticos.
+          Conecte sua conta de recebimento Asaas para emitir boletos, Pix e configurar os repasses automáticos.
         </p>
       </header>
 
-      <Card className="p-6">
+      <Card className="p-6 space-y-5">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-3">
             <div className="p-2.5 rounded-lg bg-primary/10">
@@ -128,158 +121,149 @@ function IntegrationsPage() {
           ) : null}
         </div>
 
+        {/* Botão Cadastro Asaas no topo */}
+        <div className="rounded-xl border border-violet-500/30 bg-gradient-to-br from-violet-500/10 via-fuchsia-500/5 to-transparent p-5 space-y-3">
+          <div className="flex items-start gap-3">
+            <div className="p-2 rounded-lg bg-violet-500/20 text-violet-700 dark:text-violet-300">
+              <Sparkles className="size-4" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="font-semibold">
+                  {hasAccount ? "Continuar cadastro no Asaas" : "Cadastro 100% no Asaas"}
+                </h3>
+                <Badge variant="outline" className="border-emerald-500/40 text-emerald-600 dark:text-emerald-400 inline-flex items-center gap-1 text-[10px]">
+                  <Lock className="size-2.5" /> Seguro
+                </Badge>
+              </div>
+              <p className="text-sm text-muted-foreground mt-1">
+                {hasAccount
+                  ? "Reabra o painel hospedado do Asaas para revisar dados, banco, documentos e selfie."
+                  : "Endereço, dados bancários, contrato social, documentos e selfie são preenchidos diretamente no painel hospedado do Asaas. Sem upload no Nexo."}
+              </p>
+            </div>
+          </div>
+          <Button
+            onClick={handleOpenCadastro}
+            disabled={opening}
+            className="w-full sm:w-auto bg-violet-600 hover:bg-violet-500 text-white shadow-[0_0_28px_-8px_rgb(139_92_246)]"
+          >
+            {opening ? <Loader2 className="size-4 mr-2 animate-spin" /> : <ShieldCheck className="size-4 mr-2" />}
+            {hasAccount ? "Abrir painel Asaas" : "Abrir cadastro Asaas"}
+            <ExternalLink className="size-3.5 ml-2" />
+          </Button>
+        </div>
+
         {isLoading ? (
           <div className="py-8 grid place-items-center text-muted-foreground">
             <Loader2 className="size-5 animate-spin" />
           </div>
-        ) : account?.asaas_account_id ? (
-          <div className="mt-5 space-y-3 text-sm">
-            <Row label="ID da subconta" value={account.asaas_account_id} mono />
-            <Row label="Wallet ID" value={account.wallet_id ?? "—"} mono />
-            <Row label="Status" value={account.status} />
-            {account.onboarding_url && (
-              <Button asChild variant="outline" className="mt-2">
-                <a href={account.onboarding_url} target="_blank" rel="noreferrer">
-                  Completar onboarding KYC <ExternalLink className="size-3.5 ml-2" />
-                </a>
-              </Button>
-            )}
-          </div>
         ) : (
-          <form
-            className="mt-6 grid sm:grid-cols-2 gap-4"
-            onSubmit={async (e) => {
-              e.preventDefault();
-              const requiredBank = [
-                form.bankCode,
-                form.bankOwnerCpfCnpj,
-                form.bankAgency,
-                form.bankAccount,
-                form.bankAccountDigit,
-                form.bankAccountType,
-              ];
-              if (requiredBank.some((value) => !String(value).trim())) {
-                toast.error("Preencha todos os dados bancários antes de conectar.");
-                return;
-              }
-              setSaving(true);
-              try {
-                const payload: any = { ...form };
-                if (!payload.companyType) delete payload.companyType;
-                if (!payload.birthDate) delete payload.birthDate;
-                payload.incomeValue = Number(form.incomeValue);
-                const res = await submit({ data: payload });
-                toast.success("Subconta criada!");
-                if (res.bankWarning) {
-                  toast.warning(`Conta bancária: ${res.bankWarning}`);
-                }
-                if (res.onboardingUrl) {
-                  toast.info("Complete o onboarding KYC no Asaas.");
-                }
-                await refetch();
-              } catch (err: any) {
-                toast.error(err?.message ?? "Falha ao criar subconta");
-                setSaving(false);
-              }
-            }}
-          >
-            <Field label="Razão social / Nome" required>
-              <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
-            </Field>
-            <Field label="E-mail" required>
-              <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
-            </Field>
-            <Field label="CPF / CNPJ" required>
-              <Input value={form.cpfCnpj} onChange={(e) => setForm({ ...form, cpfCnpj: maskCpfCnpj(e.target.value) })} required placeholder="000.000.000-00" inputMode="numeric" />
-            </Field>
-            {/* Tipo de empresa é definido automaticamente no backend a partir do CPF/CNPJ. */}
-            <Field label="Celular" required>
-              <Input value={form.mobilePhone} onChange={(e) => setForm({ ...form, mobilePhone: maskPhone(e.target.value) })} placeholder="(41) 99999-9999" inputMode="tel" required />
-            </Field>
-            <Field label="Renda / Faturamento mensal (R$)" required>
-              <Input type="number" min="1" step="0.01" value={form.incomeValue} onChange={(e) => setForm({ ...form, incomeValue: e.target.value })} placeholder="5000" required />
-            </Field>
-            <Field label="Data de nascimento (PF)">
-              <Input type="date" value={form.birthDate} onChange={(e) => setForm({ ...form, birthDate: e.target.value })} />
-            </Field>
-            <Field label="CEP" required>
-              <Input value={form.postalCode} onChange={(e) => setForm({ ...form, postalCode: maskCEP(e.target.value) })} required placeholder="00000-000" inputMode="numeric" />
-            </Field>
-            <Field label="Bairro" required>
-              <Input value={form.province} onChange={(e) => setForm({ ...form, province: e.target.value })} required />
-            </Field>
-            <Field label="Endereço" required>
-              <Input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} required />
-            </Field>
-            <Field label="Número" required>
-              <Input value={form.addressNumber} onChange={(e) => setForm({ ...form, addressNumber: e.target.value })} required />
-            </Field>
-            <div className="sm:col-span-2 mt-2 pt-4 border-t">
-              <h3 className="font-semibold mb-1">Conta bancária para recebimento</h3>
-              <p className="text-xs text-muted-foreground mb-3">
-                Para evitar cadastro parcial no Asaas, todos os dados bancários abaixo são obrigatórios.
-              </p>
-            </div>
-            <Field label="Banco" required>
-              <Select value={form.bankCode} onValueChange={(v) => setForm({ ...form, bankCode: v })}>
-                <SelectTrigger><SelectValue placeholder="Selecione o banco" /></SelectTrigger>
-                <SelectContent>
-                  {BR_BANKS.map((b) => (
-                    <SelectItem key={b.code} value={b.code}>{b.code} — {b.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </Field>
-            <Field label="CPF/CNPJ do titular da conta" required>
-              <Input value={form.bankOwnerCpfCnpj} onChange={(e) => setForm({ ...form, bankOwnerCpfCnpj: maskCpfCnpj(e.target.value) })} placeholder="000.000.000-00" inputMode="numeric" maxLength={20} required />
-            </Field>
-            <Field label="Tipo de conta" required>
-              <Select value={form.bankAccountType} onValueChange={(v) => setForm({ ...form, bankAccountType: v as any })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="CONTA_CORRENTE">Conta Corrente</SelectItem>
-                  <SelectItem value="CONTA_POUPANCA">Conta Poupança</SelectItem>
-                </SelectContent>
-              </Select>
-            </Field>
-            <Field label="Agência (sem dígito)" required>
-              <Input value={form.bankAgency} onChange={(e) => setForm({ ...form, bankAgency: e.target.value.replace(/\D/g, "") })} inputMode="numeric" maxLength={10} required />
-            </Field>
-            <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-2">
-              <Field label="Conta" required>
-                <Input value={form.bankAccount} onChange={(e) => setForm({ ...form, bankAccount: e.target.value.replace(/\D/g, "") })} inputMode="numeric" maxLength={20} required />
+          <>
+            {hasAccount && (
+              <div className="grid sm:grid-cols-2 gap-3 text-sm rounded-lg border bg-muted/30 p-4">
+                <Row label="ID da subconta" value={account.asaas_account_id} mono />
+                <Row label="Wallet ID" value={account.wallet_id ?? "—"} mono />
+                <Row label="Status" value={account.status ?? "—"} />
+                <Row label="KYC" value={account.kyc_status ?? "PENDENTE"} />
+              </div>
+            )}
+
+            <Alert className="border-dashed">
+              <AlertTitle className="text-sm">Os campos abaixo são informativos</AlertTitle>
+              <AlertDescription className="text-xs">
+                Toda edição é feita no painel hospedado do Asaas (botão acima). Quando o cadastro for concluído,
+                os dados aparecerão aqui automaticamente.
+              </AlertDescription>
+            </Alert>
+
+            <fieldset disabled className="grid sm:grid-cols-2 gap-4 opacity-70">
+              <Field label="Razão social / Nome">
+                <Input value={account?.name ?? ""} readOnly disabled placeholder="Preenchido no Asaas" />
               </Field>
-              <Field label="Dígito" required>
-                <Input className="sm:w-24" value={form.bankAccountDigit} onChange={(e) => setForm({ ...form, bankAccountDigit: e.target.value.replace(/\D/g, "") })} inputMode="numeric" maxLength={2} required />
+              <Field label="E-mail">
+                <Input value={account?.email ?? ""} readOnly disabled placeholder="Preenchido no Asaas" />
               </Field>
-            </div>
-            <div className="sm:col-span-2 flex justify-end">
-              <Button type="submit" disabled={saving} className="w-full sm:w-auto">
-                {saving && <Loader2 className="size-4 mr-2 animate-spin" />}
-                Conectar Asaas
-              </Button>
-            </div>
-          </form>
+              <Field label="CPF / CNPJ">
+                <Input value={account?.cpf_cnpj ?? ""} readOnly disabled placeholder="Preenchido no Asaas" />
+              </Field>
+              <Field label="Celular">
+                <Input value={account?.mobile_phone ?? ""} readOnly disabled placeholder="Preenchido no Asaas" />
+              </Field>
+              <Field label="Renda / Faturamento mensal (R$)">
+                <Input value={account?.income_value ?? ""} readOnly disabled placeholder="Preenchido no Asaas" />
+              </Field>
+              <Field label="Data de nascimento (PF)">
+                <Input value={account?.birth_date ?? ""} readOnly disabled placeholder="Preenchido no Asaas" />
+              </Field>
+              <Field label="CEP">
+                <Input value={account?.postal_code ?? ""} readOnly disabled placeholder="Preenchido no Asaas" />
+              </Field>
+              <Field label="Bairro">
+                <Input value={account?.province ?? ""} readOnly disabled placeholder="Preenchido no Asaas" />
+              </Field>
+              <Field label="Endereço">
+                <Input value={account?.address ?? ""} readOnly disabled placeholder="Preenchido no Asaas" />
+              </Field>
+              <Field label="Número">
+                <Input value={account?.address_number ?? ""} readOnly disabled placeholder="Preenchido no Asaas" />
+              </Field>
+
+              <div className="sm:col-span-2 mt-2 pt-4 border-t">
+                <h3 className="font-semibold mb-1">Conta bancária para recebimento</h3>
+                <p className="text-xs text-muted-foreground">
+                  Cadastrada e validada no painel Asaas.
+                </p>
+              </div>
+              <Field label="Banco">
+                <Select value={account?.bank_code ?? ""} disabled>
+                  <SelectTrigger><SelectValue placeholder="Cadastrado no Asaas" /></SelectTrigger>
+                  <SelectContent>
+                    {BR_BANKS.map((b) => (
+                      <SelectItem key={b.code} value={b.code}>{b.code} — {b.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Field>
+              <Field label="CPF/CNPJ do titular da conta">
+                <Input value={account?.bank_owner_cpf_cnpj ?? ""} readOnly disabled placeholder="Cadastrado no Asaas" />
+              </Field>
+              <Field label="Tipo de conta">
+                <Select value={account?.bank_account_type ?? ""} disabled>
+                  <SelectTrigger><SelectValue placeholder="Cadastrado no Asaas" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="CONTA_CORRENTE">Conta Corrente</SelectItem>
+                    <SelectItem value="CONTA_POUPANCA">Conta Poupança</SelectItem>
+                  </SelectContent>
+                </Select>
+              </Field>
+              <Field label="Agência (sem dígito)">
+                <Input value={account?.bank_agency ?? ""} readOnly disabled placeholder="Cadastrado no Asaas" />
+              </Field>
+              <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-2">
+                <Field label="Conta">
+                  <Input value={account?.bank_account ?? ""} readOnly disabled placeholder="Cadastrado no Asaas" />
+                </Field>
+                <Field label="Dígito">
+                  <Input className="sm:w-24" value={account?.bank_account_digit ?? ""} readOnly disabled placeholder="—" />
+                </Field>
+              </div>
+            </fieldset>
+          </>
         )}
       </Card>
 
       <AsaasBankAndKycPanel account={account as any} onChanged={() => refetch()} />
 
       <PixSplitConfigPanel />
-
-
-
     </div>
   );
 }
 
-function Field({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="space-y-2">
-      <Label>
-        {label}
-        {required && <span className="text-destructive ml-1">*</span>}
-      </Label>
+      <Label className="text-xs">{label}</Label>
       {children}
     </div>
   );
@@ -287,9 +271,9 @@ function Field({ label, required, children }: { label: string; required?: boolea
 
 function Row({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
   return (
-    <div className="flex items-center justify-between gap-3 py-1 border-b last:border-0">
-      <span className="text-muted-foreground">{label}</span>
-      <span className={mono ? "font-mono text-xs break-all" : ""}>{value}</span>
+    <div className="flex items-center justify-between gap-3">
+      <span className="text-muted-foreground text-xs">{label}</span>
+      <span className={mono ? "font-mono text-xs break-all text-right" : "text-xs text-right"}>{value}</span>
     </div>
   );
 }

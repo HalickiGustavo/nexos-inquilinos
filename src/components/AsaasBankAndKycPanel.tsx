@@ -66,10 +66,7 @@ export function AsaasBankAndKycPanel({
           </AlertDescription>
         </Alert>
       ) : (
-        <>
-          <BankSection account={account!} onChanged={onChanged} />
-          <KycPanelSection account={account!} onChanged={onChanged} />
-        </>
+        <BankSection account={account!} onChanged={onChanged} />
       )}
     </div>
   );

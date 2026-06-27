@@ -34,6 +34,7 @@ export function useTenants() {
       const { data, error } = await supabase
         .from("tenants")
         .select("*")
+        .is("deleted_at", null)
         .order("created_at", { ascending: false })
         .limit(500);
       if (error) throw error;
@@ -49,6 +50,7 @@ export function useContracts() {
       const { data, error } = await supabase
         .from("contracts")
         .select("*, property:properties(*), tenant:tenants(*)")
+        .is("deleted_at", null)
         .order("created_at", { ascending: false })
         .limit(500);
       if (error) throw error;

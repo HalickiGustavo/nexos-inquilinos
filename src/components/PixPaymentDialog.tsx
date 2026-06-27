@@ -51,6 +51,40 @@ export function PixPaymentDialog({
     }
   };
 
+  const handleGenerateBoleto = async () => {
+    if (!installment?.id) return;
+    setBoletoLoading(true);
+    setBoletoError(null);
+    try {
+      const res: any = await genBoleto({ data: { installmentId: installment.id } });
+      if (!res?.ok) {
+        setBoletoError(res?.error ?? "Falha ao gerar boleto.");
+        toast.error(res?.error ?? "Falha ao gerar boleto.");
+        return;
+      }
+      setBoletoUrl(res.url);
+      setBoletoBarcode(res.barcode);
+      toast.success("Boleto gerado com sucesso!");
+    } catch (e: any) {
+      const msg = e?.message ?? "Falha ao gerar boleto.";
+      setBoletoError(msg);
+      toast.error(msg);
+    } finally {
+      setBoletoLoading(false);
+    }
+  };
+
+  const copyBarcode = async () => {
+    if (!boletoBarcode) return;
+    try {
+      await navigator.clipboard.writeText(boletoBarcode);
+      toast.success("Linha digitável copiada!");
+    } catch {
+      toast.error("Não foi possível copiar");
+    }
+  };
+
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">

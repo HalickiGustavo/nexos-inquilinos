@@ -26,6 +26,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useContracts, useInvalidate } from "@/lib/queries";
+import { useConfirm } from "@/components/ui/confirm";
 import { formatDate } from "@/lib/format";
 import {
   COND_LABEL,
@@ -95,6 +96,7 @@ function VistoriasPage() {
 
 function InspectionCard({ inspection }: { inspection: any }) {
   const invalidate = useInvalidate();
+  const confirm = useConfirm();
   const rooms = parseRooms(inspection.rooms);
 
   async function downloadPdf() {
@@ -108,7 +110,13 @@ function InspectionCard({ inspection }: { inspection: any }) {
   }
 
   async function remove() {
-    if (!confirm("Excluir esta vistoria? O arquivo PDF também será removido.")) return;
+    const ok = await confirm({
+      title: "Excluir esta vistoria?",
+      description: "O arquivo PDF anexado também será removido. Esta ação não pode ser desfeita.",
+      confirmLabel: "Excluir vistoria",
+      tone: "destructive",
+    });
+    if (!ok) return;
     if (inspection.pdf_path) {
       await supabase.storage.from("inspections").remove([inspection.pdf_path]);
     }

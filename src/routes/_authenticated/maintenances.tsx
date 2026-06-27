@@ -18,6 +18,7 @@ import { MaintenanceChat } from "@/components/MaintenanceChat";
 import { MaintenanceBudgetPanel } from "@/components/MaintenanceBudgetPanel";
 import { EvidenceGrid } from "@/components/EvidenceUploader";
 import { formatBRL, formatDate, parseNumber } from "@/lib/format";
+import { useConfirm } from "@/components/ui/confirm";
 
 export const Route = createFileRoute("/_authenticated/maintenances")({
   head: () => ({ meta: [{ title: "Manutenções — Nexo" }] }),
@@ -85,6 +86,7 @@ function MaintenancesPage() {
 
 function MaintenanceCard({ item }: { item: any }) {
   const invalidate = useInvalidate();
+  const confirm = useConfirm();
   return (
     <Card className="p-4 hover:shadow-md transition">
       <div className="flex items-start justify-between gap-2">
@@ -139,7 +141,13 @@ function MaintenanceCard({ item }: { item: any }) {
           </Sheet>
         )}
         <Button variant="outline" size="sm" onClick={async () => {
-          if (!confirm("Excluir esta manutenção?")) return;
+          const ok = await confirm({
+            title: "Excluir esta manutenção?",
+            description: "O chamado e seus anexos serão removidos permanentemente.",
+            confirmLabel: "Excluir manutenção",
+            tone: "destructive",
+          });
+          if (!ok) return;
           const { error } = await supabase.from("maintenances").delete().eq("id", item.id);
           if (error) return toast.error(error.message);
           toast.success("Excluído");

@@ -12,6 +12,7 @@ import { Toaster } from "sonner";
 import appCss from "../styles.css?url";
 import { AuthProvider } from "../lib/auth";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { ConfirmProvider } from "@/components/ui/confirm";
 
 export const Route = createRootRoute({
   head: () => ({
@@ -117,8 +118,10 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <AuthProvider>
-          <Outlet />
-          <Toaster richColors position="top-right" />
+          <ConfirmProvider>
+            <Outlet />
+            <Toaster richColors position="top-right" />
+          </ConfirmProvider>
         </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>

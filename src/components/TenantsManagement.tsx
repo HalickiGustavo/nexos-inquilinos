@@ -17,6 +17,7 @@ import { today } from "@/lib/format";
 import { maskCpfCnpj, maskPhone } from "@/lib/br-validators";
 import { generateTenantInviteLink } from "@/lib/asaas.functions";
 import { softDeleteTenant } from "@/lib/tenants.functions";
+import { useConfirm } from "@/components/ui/confirm";
 
 function waLink(phone: string, message?: string) {
   const digits = phone.replace(/\D/g, "");
@@ -30,12 +31,20 @@ export function TenantsManagement() {
   const { data: installments = [] } = useInstallments();
   const invalidate = useInvalidate();
   const softDelete = useServerFn(softDeleteTenant);
+  const confirm = useConfirm();
   const [editing, setEditing] = useState<Tenant | null>(null);
   const [open, setOpen] = useState(false);
   const [agreementFor, setAgreementFor] = useState<Tenant | null>(null);
 
   const handleSoftDelete = async (t: Tenant) => {
-    if (!confirm(`Remover o inquilino "${t.full_name}" do painel?\n\nO registro será arquivado (soft-delete) e poderá ser recuperado pelo suporte. Contratos ativos bloqueiam a exclusão.`)) return;
+    const ok = await confirm({
+      title: `Remover o inquilino "${t.full_name}"?`,
+      description:
+        "O registro será arquivado (soft-delete) e poderá ser recuperado pelo suporte. Contratos ativos bloqueiam a exclusão.",
+      confirmLabel: "Remover inquilino",
+      tone: "destructive",
+    });
+    if (!ok) return;
     try {
       await softDelete({ data: { tenantId: t.id } });
       toast.success("Inquilino removido com sucesso de seu painel.", {

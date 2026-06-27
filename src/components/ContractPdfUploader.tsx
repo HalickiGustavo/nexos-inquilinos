@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useInvalidate } from "@/lib/queries";
+import { useConfirm } from "@/components/ui/confirm";
 
 interface Props {
   contractId: string;
@@ -22,6 +23,7 @@ export function ContractPdfUploader({ contractId, currentPath }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const invalidate = useInvalidate();
+  const confirm = useConfirm();
 
   async function handleFile(file: File) {
     if (file.type !== "application/pdf") {
@@ -59,7 +61,13 @@ export function ContractPdfUploader({ contractId, currentPath }: Props) {
 
   async function handleRemove() {
     if (!currentPath) return;
-    if (!confirm("Remover o PDF anexado deste contrato?")) return;
+    const ok = await confirm({
+      title: "Remover o PDF anexado deste contrato?",
+      description: "Esta ação não pode ser desfeita.",
+      confirmLabel: "Remover PDF",
+      tone: "destructive",
+    });
+    if (!ok) return;
     setBusy(true);
     try {
       await supabase.storage.from("contracts").remove([currentPath]);

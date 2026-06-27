@@ -14,6 +14,7 @@ import { ContractPdfUploader } from "@/components/ContractPdfUploader";
 import { useAuth } from "@/lib/auth";
 import { useContracts, useProperties, useTenants, useInvalidate } from "@/lib/queries";
 import { formatBRL, formatDate, parseNumber } from "@/lib/format";
+import { useConfirm } from "@/components/ui/confirm";
 
 export const Route = createFileRoute("/_authenticated/contracts")({
   head: () => ({ meta: [{ title: "Contratos — Nexo" }] }),
@@ -23,6 +24,7 @@ export const Route = createFileRoute("/_authenticated/contracts")({
 function ContractsPage() {
   const { data: contracts = [], isLoading } = useContracts();
   const invalidate = useInvalidate();
+  const confirm = useConfirm();
   const [open, setOpen] = useState(false);
 
   return (
@@ -74,7 +76,15 @@ function ContractsPage() {
               <div className="mt-4 flex justify-between items-center gap-2 flex-wrap border-t pt-4">
                 <ContractPdfUploader contractId={c.id} currentPath={c.contract_pdf_path} />
                 <Button variant="outline" size="sm" onClick={async () => {
-                  if (!confirm("Tem certeza que deseja excluir este contrato? Todas as parcelas vinculadas serão perdidas.")) return;
+                  const ok = await confirm({
+                    title: "Excluir este contrato?",
+                    description:
+                      "Todas as parcelas vinculadas ao contrato serão perdidas. Esta ação não pode ser desfeita.",
+                    confirmLabel: "Excluir contrato",
+                    tone: "destructive",
+                    requireText: "EXCLUIR",
+                  });
+                  if (!ok) return;
                   const { error } = await supabase.from("contracts").delete().eq("id", c.id);
                   if (error) return toast.error(error.message);
                   toast.success("Contrato excluído");

@@ -26,6 +26,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import { useConfirm } from "@/components/ui/confirm";
 
 const BUCKET = "property-images";
 const SIGNED_TTL = 60 * 60; // 1h
@@ -142,6 +143,7 @@ function SortablePhoto({
 export function PropertyPhotosUploader({ propertyId }: { propertyId: string }) {
   const { user } = useAuth();
   const qc = useQueryClient();
+  const confirm = useConfirm();
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [order, setOrder] = useState<Photo[]>([]);
@@ -252,7 +254,13 @@ export function PropertyPhotosUploader({ propertyId }: { propertyId: string }) {
   }
 
   async function removePhoto(photo: Photo) {
-    if (!confirm("Remover esta foto?")) return;
+    const ok = await confirm({
+      title: "Remover esta foto?",
+      description: "A foto será excluída permanentemente do imóvel.",
+      confirmLabel: "Remover foto",
+      tone: "destructive",
+    });
+    if (!ok) return;
     try {
       const path = extractPath(photo.url);
       if (path) await supabase.storage.from(BUCKET).remove([path]);

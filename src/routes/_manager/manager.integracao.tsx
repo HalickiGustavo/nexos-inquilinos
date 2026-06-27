@@ -290,7 +290,12 @@ function ManagerIntegracao() {
             <Building2 className="size-4 text-primary" />
             <h3 className="font-semibold">Dados Cadastrais e Bancários</h3>
           </div>
-          <form className="grid sm:grid-cols-2 gap-4" onSubmit={onSubmit}>
+          <p className="text-xs text-muted-foreground mb-3">
+            Os campos abaixo são apenas para visualização. Todo o cadastro é preenchido diretamente no painel hospedado do Asaas pelo botão acima.
+          </p>
+          <form className="grid sm:grid-cols-2 gap-4" onSubmit={(e) => e.preventDefault()}>
+            <fieldset disabled className="contents opacity-70">
+
             <Field label="Razão Social / Nome" required>
               <Input value={bank.legalName} onChange={(e) => setBank({ ...bank, legalName: e.target.value })} required maxLength={120} />
             </Field>
@@ -361,15 +366,11 @@ function ManagerIntegracao() {
                 <Input value={bank.accountDigit} onChange={(e) => setBank({ ...bank, accountDigit: e.target.value.replace(/\D/g, "") })} maxLength={2} inputMode="numeric" required />
               </Field>
             </div>
-            <div className="sm:col-span-2 flex justify-end">
-              <Button type="submit" disabled={saving || !!account}>
-                {saving && <Loader2 className="size-4 mr-2 animate-spin" />}
-                {account ? "Subconta já criada" : "Enviar para análise Asaas"}
-              </Button>
-            </div>
+            </fieldset>
           </form>
         </CardContent>
       </Card>
+
 
       {/* Conta bancária + KYC pass-through */}
       <AsaasBankAndKycPanel account={account as any} onChanged={() => refetch()} />

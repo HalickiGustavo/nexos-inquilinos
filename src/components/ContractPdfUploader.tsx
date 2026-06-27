@@ -61,7 +61,13 @@ export function ContractPdfUploader({ contractId, currentPath }: Props) {
 
   async function handleRemove() {
     if (!currentPath) return;
-    if (!confirm("Remover o PDF anexado deste contrato?")) return;
+    const ok = await confirm({
+      title: "Remover o PDF anexado deste contrato?",
+      description: "Esta ação não pode ser desfeita.",
+      confirmLabel: "Remover PDF",
+      tone: "destructive",
+    });
+    if (!ok) return;
     setBusy(true);
     try {
       await supabase.storage.from("contracts").remove([currentPath]);

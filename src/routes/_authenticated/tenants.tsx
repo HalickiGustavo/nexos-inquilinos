@@ -34,6 +34,8 @@ export const Route = createFileRoute("/_authenticated/tenants")({
 function TenantsPage() {
   const { data: tenants = [], isLoading } = useTenants();
   const { data: installments = [] } = useInstallments();
+  const invalidate = useInvalidate();
+  const confirm = useConfirm();
   const [editing, setEditing] = useState<Tenant | null>(null);
   const [open, setOpen] = useState(false);
   const [agreementFor, setAgreementFor] = useState<Tenant | null>(null);

@@ -61,16 +61,23 @@ export function AsaasBankAndKycPanel({
           <ShieldAlert className="size-4" />
           <AlertTitle>Conclua o cadastro Asaas primeiro</AlertTitle>
           <AlertDescription>
-            Antes de enviar dados bancários ou documentos de identidade, preencha o formulário acima
-            para criar sua subconta Asaas.
+            Use o botão "Abrir cadastro Asaas" para finalizar dados, banco, documentos e selfie no painel oficial.
           </AlertDescription>
         </Alert>
       ) : (
-        <BankSection account={account!} onChanged={onChanged} />
+        <Alert className="border-emerald-500/30 bg-emerald-500/5">
+          <CheckCircle2 className="size-4 text-emerald-600" />
+          <AlertTitle>Dados bancários gerenciados no Asaas</AlertTitle>
+          <AlertDescription>
+            A conta bancária de liquidação é cadastrada e mantida diretamente no painel hospedado do Asaas (cadastro.io).
+            Use o botão "Abrir cadastro Asaas" / "Abrir painel Asaas" acima para revisar ou alterar.
+          </AlertDescription>
+        </Alert>
       )}
     </div>
   );
 }
+
 
 function KycStatusBadge({ status }: { status: string }) {
   const map: Record<string, { label: string; className: string; Icon: typeof Clock }> = {

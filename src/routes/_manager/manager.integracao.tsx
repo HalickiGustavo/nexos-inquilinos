@@ -366,15 +366,11 @@ function ManagerIntegracao() {
                 <Input value={bank.accountDigit} onChange={(e) => setBank({ ...bank, accountDigit: e.target.value.replace(/\D/g, "") })} maxLength={2} inputMode="numeric" required />
               </Field>
             </div>
-            <div className="sm:col-span-2 flex justify-end">
-              <Button type="submit" disabled={saving || !!account}>
-                {saving && <Loader2 className="size-4 mr-2 animate-spin" />}
-                {account ? "Subconta já criada" : "Enviar para análise Asaas"}
-              </Button>
-            </div>
+            </fieldset>
           </form>
         </CardContent>
       </Card>
+
 
       {/* Conta bancária + KYC pass-through */}
       <AsaasBankAndKycPanel account={account as any} onChanged={() => refetch()} />

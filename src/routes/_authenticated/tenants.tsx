@@ -17,6 +17,8 @@ import { DebtAgreementDialog } from "@/components/DebtAgreementDialog";
 import { today } from "@/lib/format";
 import { maskCpfCnpj, maskPhone } from "@/lib/br-validators";
 import { generateTenantInviteLink } from "@/lib/asaas.functions";
+import { useConfirm } from "@/components/ui/confirm";
+import { useInvalidate } from "@/lib/queries";
 
 function waLink(phone: string, message?: string) {
   const digits = phone.replace(/\D/g, "");

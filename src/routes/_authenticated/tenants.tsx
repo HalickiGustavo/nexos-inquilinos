@@ -123,10 +123,17 @@ function TenantsPage() {
                 {t.email && <InviteLinkButton tenant={t} />}
                 {t.phone && <WhatsAppLinkButton tenant={t} />}
                 <Button variant="outline" size="sm" onClick={async () => {
-                  if (!confirm("Excluir este inquilino?")) return;
+                  const ok = await confirm({
+                    title: `Excluir o inquilino "${t.full_name}"?`,
+                    description: "O registro do inquilino será removido. Esta ação não pode ser desfeita.",
+                    confirmLabel: "Excluir inquilino",
+                    tone: "destructive",
+                  });
+                  if (!ok) return;
                   const { error } = await supabase.from("tenants").delete().eq("id", t.id);
                   if (error) return toast.error(error.message);
                   toast.success("Inquilino excluído");
+                  invalidate(["tenants"]);
                 }}>
                   <Trash2 className="size-3.5 text-destructive" />
                 </Button>

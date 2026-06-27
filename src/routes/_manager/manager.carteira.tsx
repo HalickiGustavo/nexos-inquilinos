@@ -148,12 +148,19 @@ function Carteira() {
 
 function DeleteButton({ id }: { id: string }) {
   const invalidate = useInvalidate();
+  const confirm = useConfirm();
   return (
     <Button
       variant="outline"
       size="sm"
       onClick={async () => {
-        if (!confirm("Excluir este imóvel?")) return;
+        const ok = await confirm({
+          title: "Excluir este imóvel?",
+          description: "O imóvel será removido permanentemente. Contratos vinculados podem bloquear a exclusão.",
+          confirmLabel: "Excluir imóvel",
+          tone: "destructive",
+        });
+        if (!ok) return;
         const { error } = await supabase.from("properties").delete().eq("id", id);
         if (error) return toast.error(error.message);
         toast.success("Imóvel excluído");

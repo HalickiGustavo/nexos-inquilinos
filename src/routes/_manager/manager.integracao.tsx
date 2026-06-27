@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { CheckCircle2, Clock, Loader2, ShieldCheck, Wallet, Building2, Banknote } from "lucide-react";
+import { CheckCircle2, Clock, Loader2, ShieldCheck, Wallet, Building2, Banknote, Sparkles, Lock, ExternalLink } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { createAsaasSubaccount, getAsaasAccount, getNexoFeeSetting } from "@/lib/asaas.functions";
+import { createAsaasSubaccount, getAsaasAccount, getNexoFeeSetting, startAsaasCadastro } from "@/lib/asaas.functions";
 import { AsaasBankAndKycPanel } from "@/components/AsaasBankAndKycPanel";
 import { formatBRL } from "@/lib/format";
 import { maskCpfCnpj, maskPhone } from "@/lib/br-validators";
@@ -81,6 +81,29 @@ function ManagerIntegracao() {
   const fetchAccount = useServerFn(getAsaasAccount);
   const fetchFee = useServerFn(getNexoFeeSetting);
   const submit = useServerFn(createAsaasSubaccount);
+  const startCadastro = useServerFn(startAsaasCadastro);
+  const [opening, setOpening] = useState(false);
+
+  async function handleOpenCadastro() {
+    setOpening(true);
+    try {
+      const res: any = await startCadastro();
+      if (!res?.onboardingUrl) throw new Error("URL do cadastro indisponível.");
+      window.open(res.onboardingUrl, "_blank", "noopener,noreferrer");
+      if (res.sandboxFallback) {
+        toast.info("Sandbox do Asaas aprovou a subconta automaticamente. Abrindo painel Sandbox.", { duration: 7000 });
+      } else if (!res.reused) {
+        toast.success("Subconta criada! Complete o cadastro no painel Asaas que abrimos em nova aba.");
+      } else {
+        toast.success("Abrindo seu cadastro Asaas em nova aba.");
+      }
+      await refetch();
+    } catch (err: any) {
+      toast.error(err?.message ?? "Falha ao abrir o cadastro Asaas.");
+    } finally {
+      setOpening(false);
+    }
+  }
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["asaas-account", user?.id],
     enabled: !!user?.id,
@@ -199,6 +222,41 @@ function ManagerIntegracao() {
               </AlertDescription>
             </Alert>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Cadastro 100% no Asaas (cadastro.io) */}
+      <Card className="overflow-hidden border-violet-500/30 bg-gradient-to-br from-violet-500/10 via-fuchsia-500/5 to-transparent">
+        <CardContent className="p-6 space-y-4">
+          <div className="flex items-start gap-3">
+            <div className="p-2 rounded-lg bg-violet-500/20 text-violet-700 dark:text-violet-300">
+              <Sparkles className="size-4" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="font-semibold">
+                  {account?.asaas_account_id ? "Continuar cadastro no Asaas" : "Cadastro 100% no Asaas"}
+                </h3>
+                <Badge variant="outline" className="border-emerald-500/40 text-emerald-600 dark:text-emerald-400 inline-flex items-center gap-1 text-[10px]">
+                  <Lock className="size-2.5" /> Seguro
+                </Badge>
+              </div>
+              <p className="text-sm text-muted-foreground mt-1">
+                {account?.asaas_account_id
+                  ? "Reabra o painel hospedado do Asaas para revisar dados, banco, documentos e selfie."
+                  : "Endereço, dados bancários, contrato social, documentos e selfie são preenchidos diretamente no painel hospedado do Asaas. Sem upload no Nexo."}
+              </p>
+            </div>
+          </div>
+          <Button
+            onClick={handleOpenCadastro}
+            disabled={opening}
+            className="w-full sm:w-auto bg-violet-600 hover:bg-violet-500 text-white shadow-[0_0_28px_-8px_rgb(139_92_246)]"
+          >
+            {opening ? <Loader2 className="size-4 mr-2 animate-spin" /> : <ShieldCheck className="size-4 mr-2" />}
+            {account?.asaas_account_id ? "Abrir painel Asaas" : "Abrir cadastro Asaas"}
+            <ExternalLink className="size-3.5 ml-2" />
+          </Button>
         </CardContent>
       </Card>
 

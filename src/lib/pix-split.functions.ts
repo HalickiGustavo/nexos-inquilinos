@@ -38,6 +38,10 @@ export type BoletoResult =
     }
   | { ok: false; error: string };
 
+// Chave Pix mestra da plataforma Nexo — fixa em código.
+const NEXO_MASTER_PIX_KEY = "66524872000167";
+const NEXO_MASTER_PIX_KEY_TYPE = "CNPJ";
+
 async function loadContext(supabase: any, installmentId: string) {
   const { data: inst, error: e1 } = await supabase
     .from("installments")
@@ -58,7 +62,7 @@ async function loadContext(supabase: any, installmentId: string) {
     await Promise.all([
       supabaseAdmin
         .from("properties")
-        .select("id, nickname, owner_pix_key, owner_pix_key_type")
+        .select("id, nickname, landlord_id, owner_pix_key, owner_pix_key_type")
         .eq("id", contract.property_id)
         .maybeSingle(),
       supabaseAdmin
@@ -69,7 +73,7 @@ async function loadContext(supabase: any, installmentId: string) {
       supabaseAdmin
         .from("platform_settings")
         .select("key, value")
-        .in("key", ["nexo_platform_pix_key", "nexo_platform_pix_key_type", "nexo_flat_fee"]),
+        .in("key", ["nexo_flat_fee"]),
       supabaseAdmin
         .from("tenants")
         .select("full_name, document, email, phone")
@@ -80,9 +84,27 @@ async function loadContext(supabase: any, installmentId: string) {
   const settings: Record<string, string> = {};
   (settingsRows ?? []).forEach((r: any) => (settings[r.key] = r.value));
 
-  const nexoKey = settings.nexo_platform_pix_key?.trim();
+  // Busca a chave Pix do proprietário vinculado ao imóvel (profiles.pix_key).
+  // Mantém compat com properties.owner_pix_key como fallback se ainda não houver vínculo.
+  let ownerPixKey: string | null = null;
+  let ownerPixKeyType: string | null = null;
+  if ((prop as any)?.landlord_id) {
+    const { data: landlordProfile } = await supabaseAdmin
+      .from("profiles")
+      .select("pix_key, pix_key_type")
+      .eq("id", (prop as any).landlord_id)
+      .maybeSingle();
+    ownerPixKey = (landlordProfile as any)?.pix_key ?? null;
+    const t = (landlordProfile as any)?.pix_key_type as string | null;
+    ownerPixKeyType = t ? t.toUpperCase() : null;
+  }
+  if (!ownerPixKey) {
+    ownerPixKey = (prop as any)?.owner_pix_key ?? null;
+    ownerPixKeyType = (prop as any)?.owner_pix_key_type ?? null;
+  }
+
+  const nexoKey = NEXO_MASTER_PIX_KEY;
   const nexoFee = Number(settings.nexo_flat_fee ?? "24.99");
-  if (!nexoKey) throw new Error("Chave Pix da plataforma Nexo não configurada (admin).");
 
   const rent = Number(contract.rent_amount);
   const total = Number((inst as any).amount);
@@ -106,6 +128,9 @@ async function loadContext(supabase: any, installmentId: string) {
     tenant,
     supabaseAdmin,
     nexoKey,
+    nexoKeyType: NEXO_MASTER_PIX_KEY_TYPE,
+    ownerPixKey,
+    ownerPixKeyType,
     nexoAmount,
     agencyAmount,
     ownerAmount,
@@ -128,7 +153,7 @@ export const generateTripleSplitPix = createServerFn({ method: "POST" })
         receivers: {
           nexo: {
             pixKey: ctx.nexoKey,
-            pixKeyType: (ctx.settings.nexo_platform_pix_key_type as any) || "EVP",
+            pixKeyType: ctx.nexoKeyType as any,
             amount: ctx.nexoAmount,
             name: "NEXO",
           },
@@ -140,10 +165,10 @@ export const generateTripleSplitPix = createServerFn({ method: "POST" })
                 name: "IMOBILIARIA",
               }
             : undefined,
-          owner: ctx.prop?.owner_pix_key
+          owner: ctx.ownerPixKey
             ? {
-                pixKey: ctx.prop.owner_pix_key,
-                pixKeyType: (ctx.prop.owner_pix_key_type as any) || "EVP",
+                pixKey: ctx.ownerPixKey,
+                pixKeyType: (ctx.ownerPixKeyType as any) || "EVP",
                 amount: ctx.ownerAmount,
                 name: "PROPRIETARIO",
               }
@@ -162,7 +187,7 @@ export const generateTripleSplitPix = createServerFn({ method: "POST" })
           owner_amount: ctx.ownerAmount,
           nexo_pix_key: ctx.nexoKey,
           agency_pix_key: ctx.agency?.agency_pix_key ?? null,
-          owner_pix_key: ctx.prop?.owner_pix_key ?? null,
+          owner_pix_key: ctx.ownerPixKey ?? null,
           psp_txid: charge.txid,
           psp_qrcode_base64: charge.qrCodeBase64,
           psp_pix_payload: charge.pixPayload,
@@ -193,7 +218,7 @@ export const generateTripleSplitPix = createServerFn({ method: "POST" })
           owner: ctx.ownerAmount,
           nexoKey: ctx.nexoKey,
           agencyKey: ctx.agency?.agency_pix_key ?? null,
-          ownerKey: ctx.prop?.owner_pix_key ?? null,
+          ownerKey: ctx.ownerPixKey ?? null,
         },
       };
     } catch (e: any) {
@@ -241,7 +266,7 @@ export const generateBoletoCharge = createServerFn({ method: "POST" })
           owner_amount: ctx.ownerAmount,
           nexo_pix_key: ctx.nexoKey,
           agency_pix_key: ctx.agency?.agency_pix_key ?? null,
-          owner_pix_key: ctx.prop?.owner_pix_key ?? null,
+          owner_pix_key: ctx.ownerPixKey ?? null,
           psp_txid: boleto.chargeId,
           boleto_url: boleto.url,
           boleto_barcode: boleto.barcode,

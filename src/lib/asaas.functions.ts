@@ -690,17 +690,48 @@ export const startAsaasCadastro = createServerFn({ method: "POST" })
     if (![11, 14].includes(cpfCnpj.length)) throw new Error("Cadastre um CPF ou CNPJ válido no seu perfil.");
     if (mobilePhone.length < 10 || mobilePhone.length > 11) throw new Error("Cadastre um celular válido (com DDD) no seu perfil.");
 
-    // Placeholders editáveis no cadastro.io
+    // Valida CPF/CNPJ por dígito verificador (Asaas rejeita inválidos)
+    function validateCpf(c: string): boolean {
+      if (!/^\d{11}$/.test(c) || /^(\d)\1{10}$/.test(c)) return false;
+      let s = 0;
+      for (let i = 0; i < 9; i++) s += Number(c[i]) * (10 - i);
+      let d1 = (s * 10) % 11; if (d1 === 10) d1 = 0;
+      if (d1 !== Number(c[9])) return false;
+      s = 0;
+      for (let i = 0; i < 10; i++) s += Number(c[i]) * (11 - i);
+      let d2 = (s * 10) % 11; if (d2 === 10) d2 = 0;
+      return d2 === Number(c[10]);
+    }
+    function validateCnpj(c: string): boolean {
+      if (!/^\d{14}$/.test(c) || /^(\d)\1{13}$/.test(c)) return false;
+      const calc = (base: string, weights: number[]) => {
+        const s = weights.reduce((acc, w, i) => acc + Number(base[i]) * w, 0);
+        const r = s % 11; return r < 2 ? 0 : 11 - r;
+      };
+      const w1 = [5,4,3,2,9,8,7,6,5,4,3,2];
+      const w2 = [6,5,4,3,2,9,8,7,6,5,4,3,2];
+      const d1 = calc(c.slice(0, 12), w1);
+      const d2 = calc(c.slice(0, 12) + d1, w2);
+      return d1 === Number(c[12]) && d2 === Number(c[13]);
+    }
+    const docOk = cpfCnpj.length === 11 ? validateCpf(cpfCnpj) : validateCnpj(cpfCnpj);
+    if (!docOk) {
+      throw new Error(
+        `O ${cpfCnpj.length === 11 ? "CPF" : "CNPJ"} cadastrado no seu perfil é inválido. Corrija em "Perfil" antes de abrir o cadastro Asaas.`,
+      );
+    }
+
+    // Placeholders editáveis no cadastro.io — CEP precisa ser válido para o Asaas aceitar
     const payload: Record<string, unknown> = {
       name,
       email,
       cpfCnpj,
       mobilePhone,
       incomeValue: 5000,
-      address: "A completar",
-      addressNumber: "S/N",
-      province: "A completar",
-      postalCode: "00000000",
+      address: "Avenida Paulista",
+      addressNumber: "1000",
+      province: "Bela Vista",
+      postalCode: "01310100",
     };
     if (cpfCnpj.length === 14) payload.companyType = "LIMITED";
 

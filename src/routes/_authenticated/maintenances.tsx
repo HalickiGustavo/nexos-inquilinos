@@ -18,6 +18,7 @@ import { MaintenanceChat } from "@/components/MaintenanceChat";
 import { MaintenanceBudgetPanel } from "@/components/MaintenanceBudgetPanel";
 import { EvidenceGrid } from "@/components/EvidenceUploader";
 import { formatBRL, formatDate, parseNumber } from "@/lib/format";
+import { useConfirm } from "@/components/ui/confirm";
 
 export const Route = createFileRoute("/_authenticated/maintenances")({
   head: () => ({ meta: [{ title: "Manutenções — Nexo" }] }),

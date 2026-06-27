@@ -218,7 +218,7 @@ export const generateTripleSplitPix = createServerFn({ method: "POST" })
           owner: ctx.ownerAmount,
           nexoKey: ctx.nexoKey,
           agencyKey: ctx.agency?.agency_pix_key ?? null,
-          ownerKey: ctx.prop?.owner_pix_key ?? null,
+          ownerKey: ctx.ownerPixKey ?? null,
         },
       };
     } catch (e: any) {

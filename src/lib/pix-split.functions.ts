@@ -266,7 +266,7 @@ export const generateBoletoCharge = createServerFn({ method: "POST" })
           owner_amount: ctx.ownerAmount,
           nexo_pix_key: ctx.nexoKey,
           agency_pix_key: ctx.agency?.agency_pix_key ?? null,
-          owner_pix_key: ctx.prop?.owner_pix_key ?? null,
+          owner_pix_key: ctx.ownerPixKey ?? null,
           psp_txid: boleto.chargeId,
           boleto_url: boleto.url,
           boleto_barcode: boleto.barcode,

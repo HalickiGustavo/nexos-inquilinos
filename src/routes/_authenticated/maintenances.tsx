@@ -141,7 +141,13 @@ function MaintenanceCard({ item }: { item: any }) {
           </Sheet>
         )}
         <Button variant="outline" size="sm" onClick={async () => {
-          if (!confirm("Excluir esta manutenção?")) return;
+          const ok = await confirm({
+            title: "Excluir esta manutenção?",
+            description: "O chamado e seus anexos serão removidos permanentemente.",
+            confirmLabel: "Excluir manutenção",
+            tone: "destructive",
+          });
+          if (!ok) return;
           const { error } = await supabase.from("maintenances").delete().eq("id", item.id);
           if (error) return toast.error(error.message);
           toast.success("Excluído");

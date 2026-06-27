@@ -107,8 +107,8 @@ export function ContractPdfUploader({ contractId, currentPath }: Props) {
             {busy ? <Loader2 className="size-3.5 mr-1.5 animate-spin" /> : <Upload className="size-3.5 mr-1.5" />}
             Substituir
           </Button>
-          <Button size="sm" variant="ghost" onClick={handleRemove} disabled={busy}>
-            <Trash2 className="size-3.5 text-destructive" />
+          <Button size="sm" variant="ghost" onClick={handleRemove} disabled={busy} title="Remover PDF anexado">
+            <Trash2 className="size-3.5 text-destructive mr-1.5" />Remover PDF
           </Button>
         </>
       ) : (

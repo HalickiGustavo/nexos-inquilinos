@@ -179,7 +179,7 @@ export const getAsaasOnboardingLinks = createServerFn({ method: "GET" })
           .update({ onboarding_url: first })
           .eq("user_id", userId);
       }
-      return { ok: true, items, generalOnboardingUrl, accountStatus, rejectReasons: docs?.rejectReasons ?? null };
+      return { ok: true, items, generalOnboardingUrl, sandboxFallback, accountStatus, rejectReasons: docs?.rejectReasons ?? null };
     } catch (e: any) {
       // Mensagem específica quando a subconta está em análise (AWAITING_APPROVAL)
       // — não é credencial inválida, é o Asaas ainda revisando o cadastro.
@@ -192,9 +192,12 @@ export const getAsaasOnboardingLinks = createServerFn({ method: "GET" })
           ok: true,
           items: [],
           generalOnboardingUrl,
+          sandboxFallback,
           accountStatus,
           rejectReasons: null,
-          warning: baseWarn,
+          warning: sandboxFallback
+            ? "Sandbox do Asaas aprova subcontas automaticamente — não há documentos a homologar. O link abaixo abre o painel Sandbox para você simular o fluxo."
+            : baseWarn,
         };
       }
       if (awaiting) {

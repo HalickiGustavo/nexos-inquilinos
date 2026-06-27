@@ -77,7 +77,7 @@ function Dashboard() {
     return arr;
   }, [installments]);
 
-  const availableProps = properties.filter((p) => p.status === "disponivel");
+  const availableProps = properties.filter((p) => !occupiedIds.has(p.id));
 
   return (
     <div className="p-6 lg:p-8 max-w-7xl mx-auto space-y-6">

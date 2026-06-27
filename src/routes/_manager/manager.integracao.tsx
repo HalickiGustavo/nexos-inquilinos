@@ -81,6 +81,29 @@ function ManagerIntegracao() {
   const fetchAccount = useServerFn(getAsaasAccount);
   const fetchFee = useServerFn(getNexoFeeSetting);
   const submit = useServerFn(createAsaasSubaccount);
+  const startCadastro = useServerFn(startAsaasCadastro);
+  const [opening, setOpening] = useState(false);
+
+  async function handleOpenCadastro() {
+    setOpening(true);
+    try {
+      const res: any = await startCadastro();
+      if (!res?.onboardingUrl) throw new Error("URL do cadastro indisponível.");
+      window.open(res.onboardingUrl, "_blank", "noopener,noreferrer");
+      if (res.sandboxFallback) {
+        toast.info("Sandbox do Asaas aprovou a subconta automaticamente. Abrindo painel Sandbox.", { duration: 7000 });
+      } else if (!res.reused) {
+        toast.success("Subconta criada! Complete o cadastro no painel Asaas que abrimos em nova aba.");
+      } else {
+        toast.success("Abrindo seu cadastro Asaas em nova aba.");
+      }
+      await refetch();
+    } catch (err: any) {
+      toast.error(err?.message ?? "Falha ao abrir o cadastro Asaas.");
+    } finally {
+      setOpening(false);
+    }
+  }
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["asaas-account", user?.id],
     enabled: !!user?.id,

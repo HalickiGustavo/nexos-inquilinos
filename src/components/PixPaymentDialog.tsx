@@ -24,6 +24,12 @@ export function PixPaymentDialog({
   error?: string | null;
 }) {
   const [copying, setCopying] = useState(false);
+  const [boletoLoading, setBoletoLoading] = useState(false);
+  const [boletoUrl, setBoletoUrl] = useState<string | null>(installment?.boleto_url ?? null);
+  const [boletoBarcode, setBoletoBarcode] = useState<string | null>(installment?.boleto_barcode ?? installment?.barcode ?? null);
+  const [boletoError, setBoletoError] = useState<string | null>(null);
+  const genBoleto = useServerFn(generateBoletoCharge);
+
   if (!installment) return null;
 
   const amount = Number(installment.amount);

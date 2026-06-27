@@ -124,6 +124,12 @@ function SubcontaOnboardingPage() {
       });
       if (!res?.onboardingUrl) throw new Error("URL de onboarding indisponível.");
       setOnboardingUrl(res.onboardingUrl);
+      if (res.sandboxFallback) {
+        toast.info(
+          "Sandbox do Asaas aprovou a subconta automaticamente. Abrindo o painel Sandbox para você simular o fluxo de homologação.",
+          { duration: 8000 },
+        );
+      }
       await refetch();
     } catch (err: any) {
       toast.error(err?.message ?? "Falha ao iniciar a homologação.");

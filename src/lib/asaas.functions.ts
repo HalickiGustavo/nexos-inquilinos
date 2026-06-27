@@ -130,6 +130,7 @@ export const getAsaasOnboardingLinks = createServerFn({ method: "GET" })
     // subcontas antigas, anteriores ao endpoint /myAccount/documents).
     let generalOnboardingUrl: string | null = acc.onboarding_url ?? null;
     let accountStatus: string | null = null;
+    let accountEmail: string | null = null;
     try {
       const me = await asaasFetch<any>("/myAccount", { method: "GET", apiKey: acc.api_key });
       if (me?.onboardingUrl) {
@@ -142,8 +143,19 @@ export const getAsaasOnboardingLinks = createServerFn({ method: "GET" })
         }
       }
       accountStatus = me?.status ?? null;
+      accountEmail = me?.email ?? null;
     } catch (e) {
       console.warn("[asaas] /myAccount fallback falhou:", (e as any)?.message);
+    }
+
+    // Sandbox: aprova subcontas automaticamente, então não existe onboardingUrl
+    // real. Devolvemos o login do painel Sandbox para permitir testar o iframe.
+    const isSandbox = (process.env.ASAAS_ENV ?? "sandbox") !== "production";
+    let sandboxFallback = false;
+    if (!generalOnboardingUrl && isSandbox) {
+      const u = accountEmail ? `?username=${encodeURIComponent(accountEmail)}` : "";
+      generalOnboardingUrl = `https://sandbox.asaas.com/login${u}`;
+      sandboxFallback = true;
     }
 
     try {
@@ -167,7 +179,7 @@ export const getAsaasOnboardingLinks = createServerFn({ method: "GET" })
           .update({ onboarding_url: first })
           .eq("user_id", userId);
       }
-      return { ok: true, items, generalOnboardingUrl, accountStatus, rejectReasons: docs?.rejectReasons ?? null };
+      return { ok: true, items, generalOnboardingUrl, sandboxFallback, accountStatus, rejectReasons: docs?.rejectReasons ?? null };
     } catch (e: any) {
       // Mensagem específica quando a subconta está em análise (AWAITING_APPROVAL)
       // — não é credencial inválida, é o Asaas ainda revisando o cadastro.
@@ -180,9 +192,12 @@ export const getAsaasOnboardingLinks = createServerFn({ method: "GET" })
           ok: true,
           items: [],
           generalOnboardingUrl,
+          sandboxFallback,
           accountStatus,
           rejectReasons: null,
-          warning: baseWarn,
+          warning: sandboxFallback
+            ? "Sandbox do Asaas aprova subcontas automaticamente — não há documentos a homologar. O link abaixo abre o painel Sandbox para você simular o fluxo."
+            : baseWarn,
         };
       }
       if (awaiting) {
@@ -565,6 +580,18 @@ export const setupSubaccountOnboarding = createServerFn({ method: "POST" })
       }
     }
 
+    // Fallback Sandbox: o ambiente de testes do Asaas aprova subcontas
+    // automaticamente (status APPROVED, sem documentos pendentes), então
+    // /myAccount/documents e /myAccount não retornam onboardingUrl. Para
+    // permitir testar o fluxo de iframe, devolvemos o login do painel Sandbox
+    // pré-preenchido com o e-mail da subconta criada.
+    const isSandbox = (process.env.ASAAS_ENV ?? "sandbox") !== "production";
+    let sandboxFallback = false;
+    if (!onboardingUrl && isSandbox) {
+      onboardingUrl = `https://sandbox.asaas.com/login?username=${encodeURIComponent(data.email)}`;
+      sandboxFallback = true;
+    }
+
     if (onboardingUrl && onboardingUrl !== account.onboardingUrl) {
       await supabaseAdmin
         .from("asaas_accounts")
@@ -581,6 +608,7 @@ export const setupSubaccountOnboarding = createServerFn({ method: "POST" })
     return {
       ok: true,
       onboardingUrl,
+      sandboxFallback,
       accountId: account.id ?? null,
       walletId: account.walletId ?? null,
     };

@@ -138,12 +138,12 @@ export function TenantsManagement() {
                 </Dialog>
                 {t.email && <InviteLinkButton tenant={t} />}
                 {t.phone && <WhatsAppLinkButton tenant={t} />}
-                <Button variant="outline" size="sm" onClick={async () => {
-                  if (!confirm("Excluir este inquilino?")) return;
-                  const { error } = await supabase.from("tenants").delete().eq("id", t.id);
-                  if (error) return toast.error(error.message);
-                  toast.success("Inquilino excluído");
-                }}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  title="Remover do painel (soft-delete)"
+                  onClick={() => handleSoftDelete(t)}
+                >
                   <Trash2 className="size-3.5 text-destructive" />
                 </Button>
               </div>

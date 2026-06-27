@@ -13,6 +13,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { createAsaasSubaccount, getAsaasAccount, getNexoFeeSetting, startAsaasCadastro } from "@/lib/asaas.functions";
 import { AsaasBankAndKycPanel } from "@/components/AsaasBankAndKycPanel";
+import { PixSplitConfigPanel } from "@/components/PixSplitConfigPanel";
 import { formatBRL } from "@/lib/format";
 import { maskCpfCnpj, maskPhone } from "@/lib/br-validators";
 import { useAuth } from "@/lib/auth";
@@ -374,6 +375,9 @@ function ManagerIntegracao() {
 
       {/* Conta bancária + KYC pass-through */}
       <AsaasBankAndKycPanel account={account as any} onChanged={() => refetch()} />
+
+      {/* Chaves Pix do split (Nexo / Imobiliária / Proprietários) */}
+      <PixSplitConfigPanel />
     </div>
   );
 }

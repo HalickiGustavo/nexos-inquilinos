@@ -153,7 +153,7 @@ export const generateTripleSplitPix = createServerFn({ method: "POST" })
         receivers: {
           nexo: {
             pixKey: ctx.nexoKey,
-            pixKeyType: (ctx.settings.nexo_platform_pix_key_type as any) || "EVP",
+            pixKeyType: ctx.nexoKeyType as any,
             amount: ctx.nexoAmount,
             name: "NEXO",
           },
@@ -165,10 +165,10 @@ export const generateTripleSplitPix = createServerFn({ method: "POST" })
                 name: "IMOBILIARIA",
               }
             : undefined,
-          owner: ctx.prop?.owner_pix_key
+          owner: ctx.ownerPixKey
             ? {
-                pixKey: ctx.prop.owner_pix_key,
-                pixKeyType: (ctx.prop.owner_pix_key_type as any) || "EVP",
+                pixKey: ctx.ownerPixKey,
+                pixKeyType: (ctx.ownerPixKeyType as any) || "EVP",
                 amount: ctx.ownerAmount,
                 name: "PROPRIETARIO",
               }

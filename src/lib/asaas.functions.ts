@@ -688,10 +688,10 @@ export const startAsaasCadastro = createServerFn({ method: "POST" })
     }
 
 
-    // Pega dados do perfil
+    // Pega dados do perfil — sem placeholders, sem invenções
     const { data: prof } = await supabaseAdmin
       .from("profiles")
-      .select("full_name, email, phone, document")
+      .select("full_name, email, phone, document, postal_code, address, address_number, province, birth_date, income_value")
       .eq("id", userId)
       .maybeSingle();
 
@@ -699,11 +699,29 @@ export const startAsaasCadastro = createServerFn({ method: "POST" })
     const email = (prof?.email ?? "").trim();
     const cpfCnpj = (prof?.document ?? "").replace(/\D/g, "");
     const mobilePhone = (prof?.phone ?? "").replace(/\D/g, "");
+    const postalCode = (prof?.postal_code ?? "").replace(/\D/g, "");
+    const address = (prof?.address ?? "").trim();
+    const addressNumber = (prof?.address_number ?? "").trim();
+    const province = (prof?.province ?? "").trim();
+    const birthDate = (prof?.birth_date ?? "") as string;
+    const incomeValue = Number(prof?.income_value ?? 0);
 
-    if (!name) throw new Error("Complete seu nome no perfil antes de iniciar o cadastro Asaas.");
-    if (!email) throw new Error("Complete seu e-mail no perfil antes de iniciar o cadastro Asaas.");
-    if (![11, 14].includes(cpfCnpj.length)) throw new Error("Cadastre um CPF ou CNPJ válido no seu perfil.");
-    if (mobilePhone.length < 10 || mobilePhone.length > 11) throw new Error("Cadastre um celular válido (com DDD) no seu perfil.");
+    const missing: string[] = [];
+    if (!name) missing.push("nome completo");
+    if (!email) missing.push("e-mail");
+    if (![11, 14].includes(cpfCnpj.length)) missing.push("CPF/CNPJ");
+    if (mobilePhone.length < 10 || mobilePhone.length > 11) missing.push("celular");
+    if (postalCode.length !== 8) missing.push("CEP");
+    if (!address) missing.push("endereço");
+    if (!addressNumber) missing.push("número");
+    if (!province) missing.push("bairro");
+    if (!(incomeValue > 0)) missing.push("faturamento mensal");
+    if (cpfCnpj.length === 11 && !birthDate) missing.push("data de nascimento");
+    if (missing.length) {
+      throw new Error(
+        `Complete no seu Perfil antes de abrir o cadastro Asaas: ${missing.join(", ")}.`,
+      );
+    }
 
     // Valida CPF/CNPJ por dígito verificador (Asaas rejeita inválidos)
     function validateCpf(c: string): boolean {
@@ -736,19 +754,21 @@ export const startAsaasCadastro = createServerFn({ method: "POST" })
       );
     }
 
-    // Placeholders editáveis no cadastro.io — CEP precisa ser válido para o Asaas aceitar
+    // Payload mínimo necessário pelo Asaas — todos os campos vêm do Perfil real
     const payload: Record<string, unknown> = {
       name,
       email,
       cpfCnpj,
       mobilePhone,
-      incomeValue: 5000,
-      address: "Avenida Paulista",
-      addressNumber: "1000",
-      province: "Bela Vista",
-      postalCode: "01310100",
+      incomeValue,
+      address,
+      addressNumber,
+      province,
+      postalCode,
     };
+    if (birthDate) payload.birthDate = birthDate;
     if (cpfCnpj.length === 14) payload.companyType = "LIMITED";
+
 
     const account = await asaasFetch<any>("/accounts", {
       method: "POST",

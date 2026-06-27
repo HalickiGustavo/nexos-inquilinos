@@ -426,6 +426,166 @@ export const createAsaasSubaccount = createServerFn({ method: "POST" })
     };
   });
 
+// ===== Setup hosted onboarding (cadastro.io iframe) =====
+// Cria a subconta + dados bancários, aguarda 15s (barramento Asaas
+// provisionar a trilha KYC) e retorna o `onboardingUrl` que será
+// embutido em um <iframe> no painel admin.
+export const setupSubaccountOnboarding = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => createSubaccountInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const { userId, supabase } = context;
+    const { asaasFetch } = await import("./asaas.server");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // Bloqueio: só manager/owner pode iniciar a homologação.
+    const [{ data: isManager }, { data: isOwner }] = await Promise.all([
+      supabase.rpc("has_role", { _user_id: userId, _role: "manager" as any }),
+      supabase.rpc("has_role", { _user_id: userId, _role: "owner" as any }),
+    ]);
+    if (!isManager && !isOwner) throw new Error("Forbidden");
+
+    const digits = data.mobilePhone.replace(/\D/g, "");
+    if (digits.length < 10 || digits.length > 11 || (digits.length === 11 && digits[2] !== "9")) {
+      throw new Error("Informe um celular válido com DDD (ex.: 41 99999-9999).");
+    }
+    const bankOwnerCpfCnpj = data.bankOwnerCpfCnpj.replace(/\D/g, "");
+    const bankAgency = data.bankAgency.replace(/\D/g, "");
+    const bankAccount = data.bankAccount.replace(/\D/g, "");
+    const bankAccountDigit = data.bankAccountDigit.replace(/\D/g, "");
+    if (![11, 14].includes(bankOwnerCpfCnpj.length)) {
+      throw new Error("Informe o CPF/CNPJ do titular da conta bancária.");
+    }
+
+    // Step 1 — Criação da subconta com master token
+    const payload: Record<string, unknown> = {
+      name: data.name,
+      email: data.email,
+      cpfCnpj: data.cpfCnpj.replace(/\D/g, ""),
+      mobilePhone: digits,
+      incomeValue: Number(data.incomeValue),
+      address: data.address,
+      addressNumber: data.addressNumber,
+      province: data.province,
+      postalCode: data.postalCode.replace(/\D/g, ""),
+    };
+    if (data.birthDate) payload.birthDate = data.birthDate;
+    const cleanDoc = data.cpfCnpj.replace(/\D/g, "");
+    if (cleanDoc.length === 14) {
+      payload.companyType = data.companyType ?? "LIMITED";
+    } else if (data.companyType) {
+      payload.companyType = data.companyType;
+    }
+
+    const account = await asaasFetch<any>("/accounts", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+
+    const newApiKey: string | null = account.apiKey ?? null;
+    if (!newApiKey) {
+      throw new Error("Asaas não retornou a chave da subconta criada.");
+    }
+
+    // Vincula conta bancária imediatamente (necessário para liberar a trilha KYC)
+    try {
+      await asaasFetch<any>("/bankAccounts/mainAccount", {
+        method: "POST",
+        apiKey: newApiKey,
+        body: JSON.stringify({
+          accountName: "Conta de recebimento Nexo",
+          thirdPartyAccount: bankOwnerCpfCnpj !== cleanDoc,
+          bank: data.bankCode,
+          agency: bankAgency,
+          account: bankAccount,
+          accountDigit: bankAccountDigit,
+          bankAccountType: data.bankAccountType,
+          name: data.name,
+          cpfCnpj: bankOwnerCpfCnpj,
+        }),
+      });
+    } catch (e: any) {
+      console.warn("[Asaas] bankAccounts/mainAccount falhou:", e?.message);
+    }
+    try {
+      await asaasFetch<any>("/accountConfiguration", {
+        method: "POST",
+        apiKey: newApiKey,
+        body: JSON.stringify({ autoTransferEnabled: true, autoTransferFrequency: "DAILY" }),
+      });
+    } catch (e: any) {
+      console.warn("[Asaas] accountConfiguration falhou:", e?.message);
+    }
+
+    // Persiste subconta antes de aguardar, para não perder a referência
+    // caso o cliente desconecte durante o delay de 15s.
+    await supabaseAdmin
+      .from("asaas_accounts")
+      .upsert(
+        {
+          user_id: userId,
+          asaas_account_id: account.id ?? null,
+          wallet_id: account.walletId ?? null,
+          api_key: newApiKey,
+          status: account.id ? "active" : "pending",
+          onboarding_url: account.onboardingUrl ?? null,
+          bank_code: data.bankCode,
+          bank_agency: bankAgency,
+          bank_account: bankAccount,
+          bank_account_digit: bankAccountDigit,
+          bank_account_type: data.bankAccountType,
+          auto_transfer_enabled: true,
+        },
+        { onConflict: "user_id" },
+      );
+
+    // Step 2 — Delay crítico de 15s para o barramento interno do Asaas
+    // provisionar a trilha KYC (cadastro.io) da nova subconta.
+    await new Promise((resolve) => setTimeout(resolve, 15000));
+
+    // Step 3 — Busca o onboardingUrl com a apiKey da subconta recém-criada
+    let onboardingUrl: string | null = account.onboardingUrl ?? null;
+    try {
+      const docs = await asaasFetch<any>("/myAccount/documents", {
+        method: "GET",
+        apiKey: newApiKey,
+      });
+      const list: Array<any> = Array.isArray(docs?.data) ? docs.data : [];
+      const first = list.find((g) => !!g?.onboardingUrl)?.onboardingUrl ?? null;
+      if (first) onboardingUrl = first;
+    } catch (e: any) {
+      console.warn("[Asaas] /myAccount/documents falhou:", e?.message);
+    }
+    if (!onboardingUrl) {
+      try {
+        const me = await asaasFetch<any>("/myAccount", { method: "GET", apiKey: newApiKey });
+        if (me?.onboardingUrl) onboardingUrl = me.onboardingUrl;
+      } catch {
+        /* ignore */
+      }
+    }
+
+    if (onboardingUrl && onboardingUrl !== account.onboardingUrl) {
+      await supabaseAdmin
+        .from("asaas_accounts")
+        .update({ onboarding_url: onboardingUrl })
+        .eq("user_id", userId);
+    }
+
+    if (!onboardingUrl) {
+      throw new Error(
+        "Subconta criada, mas o Asaas ainda não liberou o painel de verificação. Atualize em alguns minutos.",
+      );
+    }
+
+    return {
+      ok: true,
+      onboardingUrl,
+      accountId: account.id ?? null,
+      walletId: account.walletId ?? null,
+    };
+  });
+
 // ===== Generate boleto + Pix for an installment =====
 const generateInput = z.object({
   installmentId: z.string().uuid(),

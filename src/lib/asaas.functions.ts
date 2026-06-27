@@ -773,8 +773,15 @@ export const startAsaasCadastro = createServerFn({ method: "POST" })
     await new Promise((resolve) => setTimeout(resolve, 15000));
 
     const r = await resolveOnboardingUrl(newApiKey, email);
+    console.log("[startAsaasCadastro] new diag:", JSON.stringify(r.diag), "accountCreated:", { id: account.id, status: account.status, onboardingUrl: account.onboardingUrl });
     if (r.url) {
       await supabaseAdmin.from("asaas_accounts").update({ onboarding_url: r.url }).eq("user_id", userId);
+    }
+
+    if (!r.url) {
+      throw new Error(
+        `Asaas não retornou onboardingUrl após criar a subconta. Diagnóstico: ${JSON.stringify({ ...r.diag, accountStatus: account.status ?? null })}`,
+      );
     }
 
     return {
@@ -784,8 +791,10 @@ export const startAsaasCadastro = createServerFn({ method: "POST" })
       sandboxFallback: r.sandboxFallback,
       accountId: account.id ?? null,
       walletId: account.walletId ?? null,
+      diag: r.diag,
     };
   });
+
 
 // ===== Generate boleto + Pix for an installment =====
 const generateInput = z.object({

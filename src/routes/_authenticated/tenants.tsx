@@ -37,6 +37,7 @@ function TenantsPage() {
   const { data: installments = [] } = useInstallments();
   const invalidate = useInvalidate();
   const confirm = useConfirm();
+  const softDelete = useServerFn(softDeleteTenant);
   const [editing, setEditing] = useState<Tenant | null>(null);
   const [open, setOpen] = useState(false);
   const [agreementFor, setAgreementFor] = useState<Tenant | null>(null);

@@ -16,6 +16,7 @@ import { DebtAgreementDialog } from "@/components/DebtAgreementDialog";
 import { today } from "@/lib/format";
 import { maskCpfCnpj, maskPhone } from "@/lib/br-validators";
 import { generateTenantInviteLink } from "@/lib/asaas.functions";
+import { softDeleteTenant } from "@/lib/tenants.functions";
 
 function waLink(phone: string, message?: string) {
   const digits = phone.replace(/\D/g, "");
@@ -27,9 +28,34 @@ function waLink(phone: string, message?: string) {
 export function TenantsManagement() {
   const { data: tenants = [], isLoading } = useTenants();
   const { data: installments = [] } = useInstallments();
+  const invalidate = useInvalidate();
+  const softDelete = useServerFn(softDeleteTenant);
   const [editing, setEditing] = useState<Tenant | null>(null);
   const [open, setOpen] = useState(false);
   const [agreementFor, setAgreementFor] = useState<Tenant | null>(null);
+
+  const handleSoftDelete = async (t: Tenant) => {
+    if (!confirm(`Remover o inquilino "${t.full_name}" do painel?\n\nO registro será arquivado (soft-delete) e poderá ser recuperado pelo suporte. Contratos ativos bloqueiam a exclusão.`)) return;
+    try {
+      await softDelete({ data: { tenantId: t.id } });
+      toast.success("Inquilino removido com sucesso de seu painel.", {
+        className: "border-emerald-500/40 bg-emerald-500/10 text-emerald-200",
+      });
+      invalidate(["tenants", "contracts", "installments"]);
+    } catch (e: any) {
+      const raw = String(e?.message ?? e ?? "");
+      if (raw.includes("ACTIVE_CONTRACT")) {
+        toast.error(
+          "Não é possível excluir: Este inquilino possui um contrato ativo vinculado. Encerre o contrato antes de removê-lo.",
+          { className: "border-red-500/50 bg-red-600/15 text-red-100", duration: 6500 },
+        );
+      } else {
+        toast.error(raw || "Falha ao remover inquilino.", {
+          className: "border-red-500/50 bg-red-600/15 text-red-100",
+        });
+      }
+    }
+  };
 
   const overdueByTenant = useMemo(() => {
     const todayStr = today();
@@ -112,12 +138,12 @@ export function TenantsManagement() {
                 </Dialog>
                 {t.email && <InviteLinkButton tenant={t} />}
                 {t.phone && <WhatsAppLinkButton tenant={t} />}
-                <Button variant="outline" size="sm" onClick={async () => {
-                  if (!confirm("Excluir este inquilino?")) return;
-                  const { error } = await supabase.from("tenants").delete().eq("id", t.id);
-                  if (error) return toast.error(error.message);
-                  toast.success("Inquilino excluído");
-                }}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  title="Remover do painel (soft-delete)"
+                  onClick={() => handleSoftDelete(t)}
+                >
                   <Trash2 className="size-3.5 text-destructive" />
                 </Button>
               </div>

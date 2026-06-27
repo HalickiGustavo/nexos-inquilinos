@@ -13,7 +13,7 @@ import {
   Tabs, TabsList, TabsTrigger,
 } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
-import { useProperties, useInvalidate, type Property } from "@/lib/queries";
+import { useProperties, useContracts, useInvalidate, type Property } from "@/lib/queries";
 import { formatBRL } from "@/lib/format";
 import { PropertyFormDialog } from "@/components/PropertyFormDialog";
 
@@ -24,13 +24,26 @@ export const Route = createFileRoute("/_authenticated/properties")({
 
 function PropertiesPage() {
   const { data: properties = [], isLoading } = useProperties();
+  const { data: contracts = [] } = useContracts();
   const [filter, setFilter] = useState<"all" | "disponivel" | "alugado">("all");
   const [search, setSearch] = useState("");
   const [editing, setEditing] = useState<Property | null>(null);
   const [open, setOpen] = useState(false);
 
+  // Occupancy derivada do contrato ativo (única fonte da verdade).
+  const occupiedIds = new Set<string>(
+    (contracts as any[])
+      .filter((c) => c.active && !c.deleted_at && c.property_id)
+      .map((c) => c.property_id as string),
+  );
+  const effectiveStatus = (p: Property): "alugado" | "disponivel" | "manutencao" => {
+    if (occupiedIds.has(p.id)) return "alugado";
+    if (p.status === "manutencao") return "manutencao";
+    return "disponivel";
+  };
+
   const filtered = properties.filter((p) => {
-    const matchStatus = filter === "all" || p.status === filter;
+    const matchStatus = filter === "all" || effectiveStatus(p) === filter;
     const matchSearch = !search ||
       p.nickname.toLowerCase().includes(search.toLowerCase()) ||
       p.address.toLowerCase().includes(search.toLowerCase());
@@ -82,9 +95,14 @@ function PropertiesPage() {
                   <h3 className="font-semibold truncate">{p.nickname}</h3>
                   <p className="text-sm text-muted-foreground truncate">{p.address}</p>
                 </div>
-                <Badge variant={p.status === "alugado" ? "default" : "secondary"} className={p.status === "alugado" ? "bg-primary text-primary-foreground" : ""}>
-                  {p.status === "alugado" ? "Alugado" : p.status === "disponivel" ? "Disponível" : "Manutenção"}
-                </Badge>
+                {(() => {
+                  const st = effectiveStatus(p);
+                  return (
+                    <Badge variant={st === "alugado" ? "default" : "secondary"} className={st === "alugado" ? "bg-primary text-primary-foreground" : ""}>
+                      {st === "alugado" ? "Alugado" : st === "disponivel" ? "Disponível" : "Manutenção"}
+                    </Badge>
+                  );
+                })()}
               </div>
               <div className="mt-4 space-y-1 text-sm">
                 <div className="flex justify-between"><span className="text-muted-foreground">Aluguel</span><span className="font-semibold text-primary">{formatBRL(Number(p.rent_price))}</span></div>

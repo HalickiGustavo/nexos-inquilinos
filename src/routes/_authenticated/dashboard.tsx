@@ -4,7 +4,7 @@ import { Building2, Wallet, TrendingUp, AlertCircle, CheckCircle2, Home, Bell, A
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { useProperties, useInstallments, useMaintenances } from "@/lib/queries";
+import { useProperties, useInstallments, useMaintenances, useContracts } from "@/lib/queries";
 import { useUserRole, roleHomePath } from "@/lib/useUserRole";
 import { formatBRL, monthRange } from "@/lib/format";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Cell } from "recharts";
@@ -23,8 +23,20 @@ function Dashboard() {
 
   const { data: properties = [] } = useProperties();
   const { data: installments = [] } = useInstallments();
+  const { data: contracts = [] } = useContracts();
   const { data: maintenances = [] } = useMaintenances();
   const pendingApprovals = (maintenances as any[]).filter((m) => m.budget_status === "pendente");
+
+  // Source of truth: a property is OCCUPIED only when it has at least one
+  // active, non-deleted contract. The "status" column is a hint kept in sync
+  // by a trigger, but it can drift after edits/cancellations — derive instead.
+  const occupiedIds = useMemo(() => {
+    const ids = new Set<string>();
+    for (const c of contracts as any[]) {
+      if (c.active && !c.deleted_at && c.property_id) ids.add(c.property_id);
+    }
+    return ids;
+  }, [contracts]);
 
   const stats = useMemo(() => {
     const { start, end } = monthRange();
@@ -40,14 +52,14 @@ function Dashboard() {
       .filter((i) => i.status !== "pago" && i.due_date < today)
       .reduce((s, i) => s + Number(i.amount) + Number(i.extra_fees), 0);
     const total = properties.length;
-    const rented = properties.filter((p) => p.status === "alugado").length;
-    const available = properties.filter((p) => p.status === "disponivel").length;
+    const rented = properties.filter((p) => occupiedIds.has(p.id)).length;
+    const available = total - rented;
     const occupancy = total === 0 ? 0 : Math.round((rented / total) * 100);
     const monthTotal = toReceive + paid;
     const collected = monthTotal === 0 ? 0 : Math.round((paid / monthTotal) * 100);
 
     return { toReceive, paid, overdue, total, rented, available, occupancy, collected, monthTotal };
-  }, [properties, installments]);
+  }, [properties, installments, occupiedIds]);
 
   const chartData = useMemo(() => {
     const arr: { month: string; pago: number; pendente: number }[] = [];
@@ -65,7 +77,7 @@ function Dashboard() {
     return arr;
   }, [installments]);
 
-  const availableProps = properties.filter((p) => p.status === "disponivel");
+  const availableProps = properties.filter((p) => !occupiedIds.has(p.id));
 
   return (
     <div className="p-6 lg:p-8 max-w-7xl mx-auto space-y-6">

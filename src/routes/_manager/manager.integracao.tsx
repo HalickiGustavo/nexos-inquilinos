@@ -225,6 +225,41 @@ function ManagerIntegracao() {
         </CardContent>
       </Card>
 
+      {/* Cadastro 100% no Asaas (cadastro.io) */}
+      <Card className="overflow-hidden border-violet-500/30 bg-gradient-to-br from-violet-500/10 via-fuchsia-500/5 to-transparent">
+        <CardContent className="p-6 space-y-4">
+          <div className="flex items-start gap-3">
+            <div className="p-2 rounded-lg bg-violet-500/20 text-violet-700 dark:text-violet-300">
+              <Sparkles className="size-4" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="font-semibold">
+                  {account?.asaas_account_id ? "Continuar cadastro no Asaas" : "Cadastro 100% no Asaas"}
+                </h3>
+                <Badge variant="outline" className="border-emerald-500/40 text-emerald-600 dark:text-emerald-400 inline-flex items-center gap-1 text-[10px]">
+                  <Lock className="size-2.5" /> Seguro
+                </Badge>
+              </div>
+              <p className="text-sm text-muted-foreground mt-1">
+                {account?.asaas_account_id
+                  ? "Reabra o painel hospedado do Asaas para revisar dados, banco, documentos e selfie."
+                  : "Endereço, dados bancários, contrato social, documentos e selfie são preenchidos diretamente no painel hospedado do Asaas. Sem upload no Nexo."}
+              </p>
+            </div>
+          </div>
+          <Button
+            onClick={handleOpenCadastro}
+            disabled={opening}
+            className="w-full sm:w-auto bg-violet-600 hover:bg-violet-500 text-white shadow-[0_0_28px_-8px_rgb(139_92_246)]"
+          >
+            {opening ? <Loader2 className="size-4 mr-2 animate-spin" /> : <ShieldCheck className="size-4 mr-2" />}
+            {account?.asaas_account_id ? "Abrir painel Asaas" : "Abrir cadastro Asaas"}
+            <ExternalLink className="size-3.5 ml-2" />
+          </Button>
+        </CardContent>
+      </Card>
+
       {/* Split preview */}
       <Card className="bg-muted/30">
         <CardContent className="p-6 space-y-3">

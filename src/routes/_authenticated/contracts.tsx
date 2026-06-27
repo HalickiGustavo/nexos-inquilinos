@@ -14,6 +14,7 @@ import { ContractPdfUploader } from "@/components/ContractPdfUploader";
 import { useAuth } from "@/lib/auth";
 import { useContracts, useProperties, useTenants, useInvalidate } from "@/lib/queries";
 import { formatBRL, formatDate, parseNumber } from "@/lib/format";
+import { useConfirm } from "@/components/ui/confirm";
 
 export const Route = createFileRoute("/_authenticated/contracts")({
   head: () => ({ meta: [{ title: "Contratos — Nexo" }] }),

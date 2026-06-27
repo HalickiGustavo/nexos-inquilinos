@@ -26,6 +26,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import { useConfirm } from "@/components/ui/confirm";
 
 const BUCKET = "property-images";
 const SIGNED_TTL = 60 * 60; // 1h

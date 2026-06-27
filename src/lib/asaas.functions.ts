@@ -565,6 +565,18 @@ export const setupSubaccountOnboarding = createServerFn({ method: "POST" })
       }
     }
 
+    // Fallback Sandbox: o ambiente de testes do Asaas aprova subcontas
+    // automaticamente (status APPROVED, sem documentos pendentes), então
+    // /myAccount/documents e /myAccount não retornam onboardingUrl. Para
+    // permitir testar o fluxo de iframe, devolvemos o login do painel Sandbox
+    // pré-preenchido com o e-mail da subconta criada.
+    const isSandbox = (process.env.ASAAS_ENV ?? "sandbox") !== "production";
+    let sandboxFallback = false;
+    if (!onboardingUrl && isSandbox) {
+      onboardingUrl = `https://sandbox.asaas.com/login?username=${encodeURIComponent(data.email)}`;
+      sandboxFallback = true;
+    }
+
     if (onboardingUrl && onboardingUrl !== account.onboardingUrl) {
       await supabaseAdmin
         .from("asaas_accounts")

@@ -76,7 +76,15 @@ function ContractsPage() {
               <div className="mt-4 flex justify-between items-center gap-2 flex-wrap border-t pt-4">
                 <ContractPdfUploader contractId={c.id} currentPath={c.contract_pdf_path} />
                 <Button variant="outline" size="sm" onClick={async () => {
-                  if (!confirm("Tem certeza que deseja excluir este contrato? Todas as parcelas vinculadas serão perdidas.")) return;
+                  const ok = await confirm({
+                    title: "Excluir este contrato?",
+                    description:
+                      "Todas as parcelas vinculadas ao contrato serão perdidas. Esta ação não pode ser desfeita.",
+                    confirmLabel: "Excluir contrato",
+                    tone: "destructive",
+                    requireText: "EXCLUIR",
+                  });
+                  if (!ok) return;
                   const { error } = await supabase.from("contracts").delete().eq("id", c.id);
                   if (error) return toast.error(error.message);
                   toast.success("Contrato excluído");

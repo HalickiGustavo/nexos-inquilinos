@@ -593,6 +593,7 @@ export const setupSubaccountOnboarding = createServerFn({ method: "POST" })
     return {
       ok: true,
       onboardingUrl,
+      sandboxFallback,
       accountId: account.id ?? null,
       walletId: account.walletId ?? null,
     };

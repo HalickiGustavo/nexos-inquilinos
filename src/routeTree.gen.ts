@@ -58,6 +58,7 @@ import { Route as ApiPublicHooksSendMaintenanceResponseRemindersRouteImport } fr
 import { Route as ApiPublicHooksProcessScheduledInvoicesRouteImport } from './routes/api/public/hooks/process-scheduled-invoices'
 import { Route as ApiPublicHooksProcessLandlordPayoutsRouteImport } from './routes/api/public/hooks/process-landlord-payouts'
 import { Route as ManagerManagerConfiguracoesRoletaRouteImport } from './routes/_manager/manager.configuracoes.roleta'
+import { Route as AuthenticatedAdminConfiguracoesSubcontaRouteImport } from './routes/_authenticated/admin.configuracoes.subconta'
 import { Route as ApiV1IntegrationsOrgSlugListingsDotxmlRouteImport } from './routes/api/v1/integrations/$orgSlug/listings[.]xml'
 import { Route as ApiV1IntegrationsOrgSlugLeadsRouteImport } from './routes/api/v1/integrations/$orgSlug/leads'
 
@@ -324,6 +325,12 @@ const ManagerManagerConfiguracoesRoletaRoute =
     path: '/manager/configuracoes/roleta',
     getParentRoute: () => ManagerRoute,
   } as any)
+const AuthenticatedAdminConfiguracoesSubcontaRoute =
+  AuthenticatedAdminConfiguracoesSubcontaRouteImport.update({
+    id: '/admin/configuracoes/subconta',
+    path: '/admin/configuracoes/subconta',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const ApiV1IntegrationsOrgSlugListingsDotxmlRoute =
   ApiV1IntegrationsOrgSlugListingsDotxmlRouteImport.update({
     id: '/api/v1/integrations/$orgSlug/listings.xml',
@@ -377,6 +384,7 @@ export interface FileRoutesByFullPath {
   '/tenant/': typeof AuthenticatedTenantIndexRoute
   '/landlord/': typeof LandlordLandlordIndexRoute
   '/manager/': typeof ManagerManagerIndexRoute
+  '/admin/configuracoes/subconta': typeof AuthenticatedAdminConfiguracoesSubcontaRoute
   '/manager/configuracoes/roleta': typeof ManagerManagerConfiguracoesRoletaRoute
   '/api/public/hooks/process-landlord-payouts': typeof ApiPublicHooksProcessLandlordPayoutsRoute
   '/api/public/hooks/process-scheduled-invoices': typeof ApiPublicHooksProcessScheduledInvoicesRoute
@@ -427,6 +435,7 @@ export interface FileRoutesByTo {
   '/tenant': typeof AuthenticatedTenantIndexRoute
   '/landlord': typeof LandlordLandlordIndexRoute
   '/manager': typeof ManagerManagerIndexRoute
+  '/admin/configuracoes/subconta': typeof AuthenticatedAdminConfiguracoesSubcontaRoute
   '/manager/configuracoes/roleta': typeof ManagerManagerConfiguracoesRoletaRoute
   '/api/public/hooks/process-landlord-payouts': typeof ApiPublicHooksProcessLandlordPayoutsRoute
   '/api/public/hooks/process-scheduled-invoices': typeof ApiPublicHooksProcessScheduledInvoicesRoute
@@ -481,6 +490,7 @@ export interface FileRoutesById {
   '/_authenticated/tenant/': typeof AuthenticatedTenantIndexRoute
   '/_landlord/landlord/': typeof LandlordLandlordIndexRoute
   '/_manager/manager/': typeof ManagerManagerIndexRoute
+  '/_authenticated/admin/configuracoes/subconta': typeof AuthenticatedAdminConfiguracoesSubcontaRoute
   '/_manager/manager/configuracoes/roleta': typeof ManagerManagerConfiguracoesRoletaRoute
   '/api/public/hooks/process-landlord-payouts': typeof ApiPublicHooksProcessLandlordPayoutsRoute
   '/api/public/hooks/process-scheduled-invoices': typeof ApiPublicHooksProcessScheduledInvoicesRoute
@@ -533,6 +543,7 @@ export interface FileRouteTypes {
     | '/tenant/'
     | '/landlord/'
     | '/manager/'
+    | '/admin/configuracoes/subconta'
     | '/manager/configuracoes/roleta'
     | '/api/public/hooks/process-landlord-payouts'
     | '/api/public/hooks/process-scheduled-invoices'
@@ -583,6 +594,7 @@ export interface FileRouteTypes {
     | '/tenant'
     | '/landlord'
     | '/manager'
+    | '/admin/configuracoes/subconta'
     | '/manager/configuracoes/roleta'
     | '/api/public/hooks/process-landlord-payouts'
     | '/api/public/hooks/process-scheduled-invoices'
@@ -636,6 +648,7 @@ export interface FileRouteTypes {
     | '/_authenticated/tenant/'
     | '/_landlord/landlord/'
     | '/_manager/manager/'
+    | '/_authenticated/admin/configuracoes/subconta'
     | '/_manager/manager/configuracoes/roleta'
     | '/api/public/hooks/process-landlord-payouts'
     | '/api/public/hooks/process-scheduled-invoices'
@@ -1012,6 +1025,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ManagerManagerConfiguracoesRoletaRouteImport
       parentRoute: typeof ManagerRoute
     }
+    '/_authenticated/admin/configuracoes/subconta': {
+      id: '/_authenticated/admin/configuracoes/subconta'
+      path: '/admin/configuracoes/subconta'
+      fullPath: '/admin/configuracoes/subconta'
+      preLoaderRoute: typeof AuthenticatedAdminConfiguracoesSubcontaRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/api/v1/integrations/$orgSlug/listings.xml': {
       id: '/api/v1/integrations/$orgSlug/listings.xml'
       path: '/api/v1/integrations/$orgSlug/listings.xml'
@@ -1045,6 +1065,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedTenantFinanceiroRoute: typeof AuthenticatedTenantFinanceiroRoute
   AuthenticatedTenantManutencoesRoute: typeof AuthenticatedTenantManutencoesRoute
   AuthenticatedTenantIndexRoute: typeof AuthenticatedTenantIndexRoute
+  AuthenticatedAdminConfiguracoesSubcontaRoute: typeof AuthenticatedAdminConfiguracoesSubcontaRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
@@ -1063,6 +1084,8 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedTenantFinanceiroRoute: AuthenticatedTenantFinanceiroRoute,
   AuthenticatedTenantManutencoesRoute: AuthenticatedTenantManutencoesRoute,
   AuthenticatedTenantIndexRoute: AuthenticatedTenantIndexRoute,
+  AuthenticatedAdminConfiguracoesSubcontaRoute:
+    AuthenticatedAdminConfiguracoesSubcontaRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(

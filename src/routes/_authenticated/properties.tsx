@@ -16,6 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useProperties, useContracts, useInvalidate, type Property } from "@/lib/queries";
 import { formatBRL } from "@/lib/format";
 import { PropertyFormDialog } from "@/components/PropertyFormDialog";
+import { useConfirm } from "@/components/ui/confirm";
 
 export const Route = createFileRoute("/_authenticated/properties")({
   head: () => ({ meta: [{ title: "Imóveis — Nexo" }] }),

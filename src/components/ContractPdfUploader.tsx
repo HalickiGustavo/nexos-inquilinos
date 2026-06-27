@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useInvalidate } from "@/lib/queries";
+import { useConfirm } from "@/components/ui/confirm";
 
 interface Props {
   contractId: string;

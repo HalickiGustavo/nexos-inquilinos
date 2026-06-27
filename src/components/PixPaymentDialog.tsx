@@ -90,14 +90,21 @@ export function PixPaymentDialog({
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <QrCode className="size-5 text-primary" /> Pagar com PIX
+            <QrCode className="size-5 text-primary" /> Pagar este aluguel
           </DialogTitle>
           <DialogDescription>
-            Vencimento {formatDate(installment.due_date)} — escaneie o QR Code ou copie o código.
+            Vencimento {formatDate(installment.due_date)} — escolha Pix ou Boleto.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <Tabs defaultValue="pix" className="w-full">
+          <TabsList className="grid grid-cols-2 w-full">
+            <TabsTrigger value="pix"><QrCode className="size-4 mr-1.5" /> Pix</TabsTrigger>
+            <TabsTrigger value="boleto"><FileText className="size-4 mr-1.5" /> Boleto</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="pix" className="space-y-4 mt-4">
+
           <div className="rounded-lg border-2 border-primary/20 bg-primary/5 p-4 text-center">
             <p className="text-xs uppercase tracking-wide text-muted-foreground">Valor a pagar</p>
             <p className="text-3xl font-bold text-primary mt-1">{formatBRL(amount)}</p>

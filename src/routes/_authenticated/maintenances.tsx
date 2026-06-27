@@ -86,6 +86,7 @@ function MaintenancesPage() {
 
 function MaintenanceCard({ item }: { item: any }) {
   const invalidate = useInvalidate();
+  const confirm = useConfirm();
   return (
     <Card className="p-4 hover:shadow-md transition">
       <div className="flex items-start justify-between gap-2">

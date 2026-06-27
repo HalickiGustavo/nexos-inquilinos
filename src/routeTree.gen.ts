@@ -33,6 +33,7 @@ import { Route as ApiPublicAsaasWebhookRouteImport } from './routes/api/public/a
 import { Route as ManagerManagerVistoriasRouteImport } from './routes/_manager/manager.vistorias'
 import { Route as ManagerManagerProprietariosRouteImport } from './routes/_manager/manager.proprietarios'
 import { Route as ManagerManagerPortaisRouteImport } from './routes/_manager/manager.portais'
+import { Route as ManagerManagerPerfilRouteImport } from './routes/_manager/manager.perfil'
 import { Route as ManagerManagerMigrarDadosRouteImport } from './routes/_manager/manager.migrar-dados'
 import { Route as ManagerManagerLeadsRouteImport } from './routes/_manager/manager.leads'
 import { Route as ManagerManagerIntegracaoRouteImport } from './routes/_manager/manager.integracao'
@@ -182,6 +183,11 @@ const ManagerManagerProprietariosRoute =
 const ManagerManagerPortaisRoute = ManagerManagerPortaisRouteImport.update({
   id: '/manager/portais',
   path: '/manager/portais',
+  getParentRoute: () => ManagerRoute,
+} as any)
+const ManagerManagerPerfilRoute = ManagerManagerPerfilRouteImport.update({
+  id: '/manager/perfil',
+  path: '/manager/perfil',
   getParentRoute: () => ManagerRoute,
 } as any)
 const ManagerManagerMigrarDadosRoute =
@@ -377,6 +383,7 @@ export interface FileRoutesByFullPath {
   '/manager/integracao': typeof ManagerManagerIntegracaoRoute
   '/manager/leads': typeof ManagerManagerLeadsRoute
   '/manager/migrar-dados': typeof ManagerManagerMigrarDadosRoute
+  '/manager/perfil': typeof ManagerManagerPerfilRoute
   '/manager/portais': typeof ManagerManagerPortaisRoute
   '/manager/proprietarios': typeof ManagerManagerProprietariosRoute
   '/manager/vistorias': typeof ManagerManagerVistoriasRoute
@@ -428,6 +435,7 @@ export interface FileRoutesByTo {
   '/manager/integracao': typeof ManagerManagerIntegracaoRoute
   '/manager/leads': typeof ManagerManagerLeadsRoute
   '/manager/migrar-dados': typeof ManagerManagerMigrarDadosRoute
+  '/manager/perfil': typeof ManagerManagerPerfilRoute
   '/manager/portais': typeof ManagerManagerPortaisRoute
   '/manager/proprietarios': typeof ManagerManagerProprietariosRoute
   '/manager/vistorias': typeof ManagerManagerVistoriasRoute
@@ -483,6 +491,7 @@ export interface FileRoutesById {
   '/_manager/manager/integracao': typeof ManagerManagerIntegracaoRoute
   '/_manager/manager/leads': typeof ManagerManagerLeadsRoute
   '/_manager/manager/migrar-dados': typeof ManagerManagerMigrarDadosRoute
+  '/_manager/manager/perfil': typeof ManagerManagerPerfilRoute
   '/_manager/manager/portais': typeof ManagerManagerPortaisRoute
   '/_manager/manager/proprietarios': typeof ManagerManagerProprietariosRoute
   '/_manager/manager/vistorias': typeof ManagerManagerVistoriasRoute
@@ -536,6 +545,7 @@ export interface FileRouteTypes {
     | '/manager/integracao'
     | '/manager/leads'
     | '/manager/migrar-dados'
+    | '/manager/perfil'
     | '/manager/portais'
     | '/manager/proprietarios'
     | '/manager/vistorias'
@@ -587,6 +597,7 @@ export interface FileRouteTypes {
     | '/manager/integracao'
     | '/manager/leads'
     | '/manager/migrar-dados'
+    | '/manager/perfil'
     | '/manager/portais'
     | '/manager/proprietarios'
     | '/manager/vistorias'
@@ -641,6 +652,7 @@ export interface FileRouteTypes {
     | '/_manager/manager/integracao'
     | '/_manager/manager/leads'
     | '/_manager/manager/migrar-dados'
+    | '/_manager/manager/perfil'
     | '/_manager/manager/portais'
     | '/_manager/manager/proprietarios'
     | '/_manager/manager/vistorias'
@@ -848,6 +860,13 @@ declare module '@tanstack/react-router' {
       path: '/manager/portais'
       fullPath: '/manager/portais'
       preLoaderRoute: typeof ManagerManagerPortaisRouteImport
+      parentRoute: typeof ManagerRoute
+    }
+    '/_manager/manager/perfil': {
+      id: '/_manager/manager/perfil'
+      path: '/manager/perfil'
+      fullPath: '/manager/perfil'
+      preLoaderRoute: typeof ManagerManagerPerfilRouteImport
       parentRoute: typeof ManagerRoute
     }
     '/_manager/manager/migrar-dados': {
@@ -1121,6 +1140,7 @@ interface ManagerRouteChildren {
   ManagerManagerIntegracaoRoute: typeof ManagerManagerIntegracaoRoute
   ManagerManagerLeadsRoute: typeof ManagerManagerLeadsRoute
   ManagerManagerMigrarDadosRoute: typeof ManagerManagerMigrarDadosRoute
+  ManagerManagerPerfilRoute: typeof ManagerManagerPerfilRoute
   ManagerManagerPortaisRoute: typeof ManagerManagerPortaisRoute
   ManagerManagerProprietariosRoute: typeof ManagerManagerProprietariosRoute
   ManagerManagerVistoriasRoute: typeof ManagerManagerVistoriasRoute
@@ -1139,6 +1159,7 @@ const ManagerRouteChildren: ManagerRouteChildren = {
   ManagerManagerIntegracaoRoute: ManagerManagerIntegracaoRoute,
   ManagerManagerLeadsRoute: ManagerManagerLeadsRoute,
   ManagerManagerMigrarDadosRoute: ManagerManagerMigrarDadosRoute,
+  ManagerManagerPerfilRoute: ManagerManagerPerfilRoute,
   ManagerManagerPortaisRoute: ManagerManagerPortaisRoute,
   ManagerManagerProprietariosRoute: ManagerManagerProprietariosRoute,
   ManagerManagerVistoriasRoute: ManagerManagerVistoriasRoute,

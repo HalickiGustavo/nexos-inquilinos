@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet, useNavigate, useRouterState, Link } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { LayoutDashboard, Briefcase, Wallet, Users, ClipboardCheck, LogOut, Loader2, FileDigit, Database, Coins, Globe, Shuffle, Inbox, Home, KeyRound } from "lucide-react";
+import { LayoutDashboard, Briefcase, Wallet, Users, ClipboardCheck, LogOut, Loader2, FileDigit, Database, Coins, Globe, Shuffle, Inbox, Home, KeyRound, UserCog } from "lucide-react";
 import { AlertsBell } from "@/components/AlertsBell";
 import { NexoLogo } from "@/components/NexoLogo";
 import { InstallPwaButton } from "@/components/InstallPwaButton";
@@ -32,6 +32,7 @@ const navItems: { to: string; label: string; icon: typeof LayoutDashboard; exact
   { to: "/manager/integracao", label: "Saldo e Saque", icon: Coins, tour: "nav-manager-integracao" },
   { to: "/manager/portais", label: "Portais de Venda", icon: Globe, tour: "nav-manager-portais" },
   { to: "/manager/migrar-dados", label: "Migrar Dados", icon: Database, tour: "nav-manager-migrar-dados" },
+  { to: "/manager/perfil", label: "Meu Perfil", icon: UserCog, tour: "nav-manager-perfil" },
 ];
 
 

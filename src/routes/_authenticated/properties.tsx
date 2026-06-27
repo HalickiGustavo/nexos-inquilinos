@@ -95,9 +95,14 @@ function PropertiesPage() {
                   <h3 className="font-semibold truncate">{p.nickname}</h3>
                   <p className="text-sm text-muted-foreground truncate">{p.address}</p>
                 </div>
-                <Badge variant={p.status === "alugado" ? "default" : "secondary"} className={p.status === "alugado" ? "bg-primary text-primary-foreground" : ""}>
-                  {p.status === "alugado" ? "Alugado" : p.status === "disponivel" ? "Disponível" : "Manutenção"}
-                </Badge>
+                {(() => {
+                  const st = effectiveStatus(p);
+                  return (
+                    <Badge variant={st === "alugado" ? "default" : "secondary"} className={st === "alugado" ? "bg-primary text-primary-foreground" : ""}>
+                      {st === "alugado" ? "Alugado" : st === "disponivel" ? "Disponível" : "Manutenção"}
+                    </Badge>
+                  );
+                })()}
               </div>
               <div className="mt-4 space-y-1 text-sm">
                 <div className="flex justify-between"><span className="text-muted-foreground">Aluguel</span><span className="font-semibold text-primary">{formatBRL(Number(p.rent_price))}</span></div>

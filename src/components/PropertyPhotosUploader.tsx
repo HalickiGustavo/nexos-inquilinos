@@ -254,7 +254,13 @@ export function PropertyPhotosUploader({ propertyId }: { propertyId: string }) {
   }
 
   async function removePhoto(photo: Photo) {
-    if (!confirm("Remover esta foto?")) return;
+    const ok = await confirm({
+      title: "Remover esta foto?",
+      description: "A foto será excluída permanentemente do imóvel.",
+      confirmLabel: "Remover foto",
+      tone: "destructive",
+    });
+    if (!ok) return;
     try {
       const path = extractPath(photo.url);
       if (path) await supabase.storage.from(BUCKET).remove([path]);

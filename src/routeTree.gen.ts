@@ -29,6 +29,7 @@ import { Route as AuthenticatedContaCorrenteRouteImport } from './routes/_authen
 import { Route as ManagerManagerIndexRouteImport } from './routes/_manager/manager.index'
 import { Route as LandlordLandlordIndexRouteImport } from './routes/_landlord/landlord.index'
 import { Route as AuthenticatedTenantIndexRouteImport } from './routes/_authenticated/tenant.index'
+import { Route as ApiPublicEfiWebhookRouteImport } from './routes/api/public/efi-webhook'
 import { Route as ApiPublicAsaasWebhookRouteImport } from './routes/api/public/asaas-webhook'
 import { Route as ManagerManagerVistoriasRouteImport } from './routes/_manager/manager.vistorias'
 import { Route as ManagerManagerProprietariosRouteImport } from './routes/_manager/manager.proprietarios'
@@ -164,6 +165,11 @@ const AuthenticatedTenantIndexRoute =
     path: '/tenant/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const ApiPublicEfiWebhookRoute = ApiPublicEfiWebhookRouteImport.update({
+  id: '/api/public/efi-webhook',
+  path: '/api/public/efi-webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicAsaasWebhookRoute = ApiPublicAsaasWebhookRouteImport.update({
   id: '/api/public/asaas-webhook',
   path: '/api/public/asaas-webhook',
@@ -388,6 +394,7 @@ export interface FileRoutesByFullPath {
   '/manager/proprietarios': typeof ManagerManagerProprietariosRoute
   '/manager/vistorias': typeof ManagerManagerVistoriasRoute
   '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
+  '/api/public/efi-webhook': typeof ApiPublicEfiWebhookRoute
   '/tenant/': typeof AuthenticatedTenantIndexRoute
   '/landlord/': typeof LandlordLandlordIndexRoute
   '/manager/': typeof ManagerManagerIndexRoute
@@ -440,6 +447,7 @@ export interface FileRoutesByTo {
   '/manager/proprietarios': typeof ManagerManagerProprietariosRoute
   '/manager/vistorias': typeof ManagerManagerVistoriasRoute
   '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
+  '/api/public/efi-webhook': typeof ApiPublicEfiWebhookRoute
   '/tenant': typeof AuthenticatedTenantIndexRoute
   '/landlord': typeof LandlordLandlordIndexRoute
   '/manager': typeof ManagerManagerIndexRoute
@@ -496,6 +504,7 @@ export interface FileRoutesById {
   '/_manager/manager/proprietarios': typeof ManagerManagerProprietariosRoute
   '/_manager/manager/vistorias': typeof ManagerManagerVistoriasRoute
   '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
+  '/api/public/efi-webhook': typeof ApiPublicEfiWebhookRoute
   '/_authenticated/tenant/': typeof AuthenticatedTenantIndexRoute
   '/_landlord/landlord/': typeof LandlordLandlordIndexRoute
   '/_manager/manager/': typeof ManagerManagerIndexRoute
@@ -550,6 +559,7 @@ export interface FileRouteTypes {
     | '/manager/proprietarios'
     | '/manager/vistorias'
     | '/api/public/asaas-webhook'
+    | '/api/public/efi-webhook'
     | '/tenant/'
     | '/landlord/'
     | '/manager/'
@@ -602,6 +612,7 @@ export interface FileRouteTypes {
     | '/manager/proprietarios'
     | '/manager/vistorias'
     | '/api/public/asaas-webhook'
+    | '/api/public/efi-webhook'
     | '/tenant'
     | '/landlord'
     | '/manager'
@@ -657,6 +668,7 @@ export interface FileRouteTypes {
     | '/_manager/manager/proprietarios'
     | '/_manager/manager/vistorias'
     | '/api/public/asaas-webhook'
+    | '/api/public/efi-webhook'
     | '/_authenticated/tenant/'
     | '/_landlord/landlord/'
     | '/_manager/manager/'
@@ -682,6 +694,7 @@ export interface RootRouteChildren {
   ManagerSetupRoute: typeof ManagerSetupRoute
   TenantSetupRoute: typeof TenantSetupRoute
   ApiPublicAsaasWebhookRoute: typeof ApiPublicAsaasWebhookRoute
+  ApiPublicEfiWebhookRoute: typeof ApiPublicEfiWebhookRoute
   ApiPublicHooksProcessLandlordPayoutsRoute: typeof ApiPublicHooksProcessLandlordPayoutsRoute
   ApiPublicHooksProcessScheduledInvoicesRoute: typeof ApiPublicHooksProcessScheduledInvoicesRoute
   ApiPublicHooksSendMaintenanceResponseRemindersRoute: typeof ApiPublicHooksSendMaintenanceResponseRemindersRoute
@@ -833,6 +846,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/tenant/'
       preLoaderRoute: typeof AuthenticatedTenantIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
+    }
+    '/api/public/efi-webhook': {
+      id: '/api/public/efi-webhook'
+      path: '/api/public/efi-webhook'
+      fullPath: '/api/public/efi-webhook'
+      preLoaderRoute: typeof ApiPublicEfiWebhookRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/public/asaas-webhook': {
       id: '/api/public/asaas-webhook'
@@ -1181,6 +1201,7 @@ const rootRouteChildren: RootRouteChildren = {
   ManagerSetupRoute: ManagerSetupRoute,
   TenantSetupRoute: TenantSetupRoute,
   ApiPublicAsaasWebhookRoute: ApiPublicAsaasWebhookRoute,
+  ApiPublicEfiWebhookRoute: ApiPublicEfiWebhookRoute,
   ApiPublicHooksProcessLandlordPayoutsRoute:
     ApiPublicHooksProcessLandlordPayoutsRoute,
   ApiPublicHooksProcessScheduledInvoicesRoute:

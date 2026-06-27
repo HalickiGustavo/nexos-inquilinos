@@ -26,6 +26,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useContracts, useInvalidate } from "@/lib/queries";
+import { useConfirm } from "@/components/ui/confirm";
 import { formatDate } from "@/lib/format";
 import {
   COND_LABEL,

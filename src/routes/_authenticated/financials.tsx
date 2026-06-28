@@ -18,6 +18,7 @@ import { formatBRL, formatDate, parseNumber } from "@/lib/format";
 import { generateAsaasCharge, updateAsaasChargeFee, simulateAsaasPayment } from "@/lib/asaas.functions";
 import { parseExpenses, expensesTotals } from "@/lib/variable-expenses";
 import { PainelRepasses } from "@/components/PainelRepasses";
+import { OwnerPixKeyPanel } from "@/components/OwnerPixKeyPanel";
 
 export const Route = createFileRoute("/_authenticated/financials")({
   head: () => ({ meta: [{ title: "Finanças — Nexo" }] }),

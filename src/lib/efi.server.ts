@@ -227,13 +227,21 @@ async function efiFetch(api: "pix" | "boleto", path: string, init: { method: str
 
 export async function createSplitCharge(input: SplitChargeInput): Promise<SplitChargeResult> {
   if (!isEfiProductionMode()) {
-    const nexo = input.receivers.nexo;
-    if (!nexo?.pixKey) throw new Error("Chave Pix da Nexo não configurada.");
+    // Sem credenciais Efí: gera BR Code estático apontando direto para o
+    // PROPRIETÁRIO (preferido) ou imobiliária; sem split, mas o dinheiro
+    // cai na conta certa. Nexo é último fallback.
+    const target =
+      input.receivers.owner?.pixKey
+        ? input.receivers.owner
+        : input.receivers.agency?.pixKey
+          ? input.receivers.agency
+          : input.receivers.nexo;
+    if (!target?.pixKey) throw new Error("Nenhuma chave Pix disponível (proprietário/imobiliária/Nexo).");
     const payload = buildBrCode({
-      pixKey: nexo.pixKey,
+      pixKey: target.pixKey,
       amount: input.totalValue,
       txid: input.txid,
-      merchantName: nexo.name || "NEXO",
+      merchantName: target.name || "NEXO",
       merchantCity: "SAO PAULO",
       description: input.description,
     });

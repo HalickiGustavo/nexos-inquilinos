@@ -54,6 +54,37 @@ function TenantHome() {
 
   const openCount = maintenances.filter((m: any) => m.status !== "concluido").length;
 
+  const tripleSplit = useServerFn(generateTripleSplitPix);
+  const queryClient = useQueryClient();
+  const [pixFor, setPixFor] = useState<any | null>(null);
+  const [pixLoading, setPixLoading] = useState(false);
+  const [pixError, setPixError] = useState<string | null>(null);
+
+  const openPix = async (i: any) => {
+    setPixFor(i);
+    setPixError(null);
+    if (i.pix_qrcode && i.pix_payload) return;
+    setPixLoading(true);
+    try {
+      const res: any = await tripleSplit({ data: { installmentId: i.id } });
+      if (!res?.ok) {
+        setPixError(res?.error ?? "Não foi possível gerar o PIX.");
+        return;
+      }
+      setPixFor({
+        ...i,
+        pix_qrcode: res.qrCodeBase64,
+        pix_payload: res.pixPayload,
+        split_breakdown: res.breakdown,
+      });
+      queryClient.invalidateQueries({ queryKey: ["tenant-installments"] });
+    } catch (e: any) {
+      setPixError(e?.message ?? "Erro ao gerar PIX");
+    } finally {
+      setPixLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-5 animate-in fade-in duration-300">
       <header>

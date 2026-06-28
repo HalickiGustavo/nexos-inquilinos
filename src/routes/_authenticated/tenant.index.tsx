@@ -98,8 +98,13 @@ function TenantHome() {
           <div className="flex flex-wrap gap-2 mt-4">
             <Button
               onClick={() => {
-                navigator.clipboard.writeText(PIX_KEY);
-                toast.success("Chave Pix copiada!");
+                const ownerKey = (contract as any)?.property?.owner_pix_key?.trim();
+                if (!ownerKey) {
+                  toast.error("O proprietário ainda não cadastrou a chave Pix. Use o boleto ou aguarde.");
+                  return;
+                }
+                navigator.clipboard.writeText(ownerKey);
+                toast.success("Chave Pix do proprietário copiada!");
               }}
             >
               <Copy className="size-4 mr-2" /> Copiar chave Pix

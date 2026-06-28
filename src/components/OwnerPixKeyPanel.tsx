@@ -11,14 +11,21 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 
-const KEY_TYPES = ["CPF", "CNPJ", "EMAIL", "PHONE", "EVP"] as const;
+const KEY_TYPES = [
+  { value: "cpf", label: "CPF" },
+  { value: "cnpj", label: "CNPJ" },
+  { value: "email", label: "E-mail" },
+  { value: "phone", label: "Telefone" },
+  { value: "random", label: "Aleatória" },
+] as const;
+type KeyType = typeof KEY_TYPES[number]["value"];
 
 export function OwnerPixKeyPanel() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [pixKey, setPixKey] = useState("");
-  const [pixKeyType, setPixKeyType] = useState<typeof KEY_TYPES[number]>("CPF");
+  const [pixKeyType, setPixKeyType] = useState<KeyType>("cpf");
 
   useEffect(() => {
     if (!user?.id) return;
@@ -74,7 +81,7 @@ export function OwnerPixKeyPanel() {
               <Select value={pixKeyType} onValueChange={(v) => setPixKeyType(v as any)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {KEY_TYPES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                  {KEY_TYPES.map((t) => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>

@@ -81,7 +81,7 @@ export function OwnerPixKeyPanel() {
               <Select value={pixKeyType} onValueChange={(v) => setPixKeyType(v as any)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {KEY_TYPES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                  {KEY_TYPES.map((t) => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>

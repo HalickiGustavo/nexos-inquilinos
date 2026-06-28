@@ -18,7 +18,7 @@ export const Route = createFileRoute("/_authenticated/tenant/")({
   component: TenantHome,
 });
 
-const PIX_KEY = "contato@nexo.com.br";
+
 
 function TenantHome() {
   const { data: tenant } = useCurrentTenant();

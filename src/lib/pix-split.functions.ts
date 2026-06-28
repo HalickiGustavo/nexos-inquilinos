@@ -107,14 +107,16 @@ async function loadContext(supabase: any, installmentId: string) {
   const nexoFee = Number(settings.nexo_flat_fee ?? "24.99");
 
   const rent = Number(contract.rent_amount);
-  const total = Number((inst as any).amount);
   const feePct = Number(contract.agency_admin_fee_percentage ?? 10);
+  const nexoAmount = +nexoFee.toFixed(2);
   const agencyAmount = +((rent * feePct) / 100).toFixed(2);
-  const nexoAmount = +Math.min(nexoFee, total).toFixed(2);
-  const ownerAmount = +(total - nexoAmount - agencyAmount).toFixed(2);
+  // Taxa Nexo cobrada ON TOP do aluguel — inquilino paga rent + nexoFee.
+  // Proprietário recebe o aluguel inteiro menos a taxa de administração da imobiliária.
+  const total = +(rent + nexoAmount).toFixed(2);
+  const ownerAmount = +(rent - agencyAmount).toFixed(2);
   if (ownerAmount < 0) {
     throw new Error(
-      `Valor do proprietário negativo (R$ ${ownerAmount.toFixed(2)}). Revise a taxa Nexo e/ou a taxa de administração.`,
+      `Valor do proprietário negativo (R$ ${ownerAmount.toFixed(2)}). Revise a taxa de administração da imobiliária.`,
     );
   }
 

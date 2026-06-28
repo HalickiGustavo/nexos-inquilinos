@@ -164,6 +164,20 @@ function TenantHome() {
           <Bell className="size-3" /> Notificações desativadas no navegador.
         </p>
       ) : null}
+
+      <PixPaymentDialog
+        installment={pixFor}
+        open={!!pixFor}
+        loading={pixLoading}
+        error={pixError}
+        onOpenChange={(o) => {
+          if (!o) {
+            setPixFor(null);
+            setPixError(null);
+            setPixLoading(false);
+          }
+        }}
+      />
     </div>
   );
 }

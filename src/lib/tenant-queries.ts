@@ -29,7 +29,7 @@ export function useTenantActiveContract() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("contracts")
-        .select("*, property:properties(*, landlord:profiles!properties_landlord_id_fkey(pix_key, pix_key_type))")
+        .select("*, property:properties(*)")
         .eq("tenant_id", tenant!.id)
         .eq("active", true)
         .is("deleted_at", null)

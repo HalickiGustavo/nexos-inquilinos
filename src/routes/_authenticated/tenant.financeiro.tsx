@@ -12,7 +12,7 @@ import { PixPaymentDialog } from "@/components/PixPaymentDialog";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
-import { ensureTenantPixCharge } from "@/lib/asaas.functions";
+
 import { generateTripleSplitPix } from "@/lib/pix-split.functions";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -54,7 +54,6 @@ function TenantFinanceiro() {
   const [pixLoading, setPixLoading] = useState(false);
   const [pixError, setPixError] = useState<string | null>(null);
   const [agreement, setAgreement] = useState<any | null>(null);
-  const ensurePix = useServerFn(ensureTenantPixCharge);
   const tripleSplit = useServerFn(generateTripleSplitPix);
   const queryClient = useQueryClient();
 
@@ -64,35 +63,18 @@ function TenantFinanceiro() {
     if (i.pix_qrcode && i.pix_payload) return;
     setPixLoading(true);
     try {
-      // Tenta primeiro o split nativo de 3 vias (Nexo + Imobiliária + Proprietário).
-      // Se a plataforma/imobiliária/proprietário não tiverem chave Pix configurada,
-      // cai no Asaas (subconta) como fallback.
-      let res: any;
-      try {
-        res = await tripleSplit({ data: { installmentId: i.id } });
-      } catch {
-        res = { ok: false };
-      }
+      // Split nativo Efí (Nexo + Imobiliária + Proprietário). Sem fallback Asaas.
+      const res: any = await tripleSplit({ data: { installmentId: i.id } });
       if (!res?.ok) {
-        res = await ensurePix({ data: { installmentId: i.id } });
-        if (res?.ok === false) {
-          setPixError(res.error ?? "Não foi possível gerar o PIX no momento.");
-          return;
-        }
-        setPixFor({
-          ...i,
-          pix_qrcode: res.pixQrCode,
-          pix_payload: res.pixPayload,
-          boleto_url: res.boletoUrl ?? i.boleto_url,
-        });
-      } else {
-        setPixFor({
-          ...i,
-          pix_qrcode: res.qrCodeBase64,
-          pix_payload: res.pixPayload,
-          split_breakdown: res.breakdown,
-        });
+        setPixError(res?.error ?? "Não foi possível gerar o PIX no momento.");
+        return;
       }
+      setPixFor({
+        ...i,
+        pix_qrcode: res.qrCodeBase64,
+        pix_payload: res.pixPayload,
+        split_breakdown: res.breakdown,
+      });
       queryClient.invalidateQueries({ queryKey: ["tenant-installments"] });
     } catch (e: any) {
       setPixError(e?.message ?? "Erro ao gerar PIX");

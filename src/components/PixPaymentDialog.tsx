@@ -32,7 +32,7 @@ export function PixPaymentDialog({
 
   if (!installment) return null;
 
-  const amount = Number(installment.amount);
+  const amount = Number(installment.split_breakdown?.total ?? installment.amount);
   const pixPayload: string | null = installment.pix_payload ?? null;
   const qrSrc = installment.pix_qrcode
     ? `data:image/png;base64,${installment.pix_qrcode}`

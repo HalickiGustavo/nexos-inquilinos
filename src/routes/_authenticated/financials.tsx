@@ -77,6 +77,8 @@ function FinancialsPage() {
         <p className="text-muted-foreground mt-1">Parcelas agrupadas por contrato. Clique para expandir.</p>
       </div>
 
+      <OwnerPixKeyPanel />
+
       <PainelRepasses />
 
 

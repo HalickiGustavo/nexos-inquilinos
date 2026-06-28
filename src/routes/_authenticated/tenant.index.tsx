@@ -1,10 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect } from "react";
-import { Bell, Copy, Wallet, FileText, Wrench, AlertTriangle } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Bell, QrCode, Wallet, FileText, Wrench, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
+import { useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { PixPaymentDialog } from "@/components/PixPaymentDialog";
+import { generateTripleSplitPix } from "@/lib/pix-split.functions";
 import {
   useCurrentTenant,
   useTenantActiveContract,

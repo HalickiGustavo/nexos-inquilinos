@@ -25,7 +25,7 @@ export function OwnerPixKeyPanel() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [pixKey, setPixKey] = useState("");
-  const [pixKeyType, setPixKeyType] = useState<typeof KEY_TYPES[number]>("CPF");
+  const [pixKeyType, setPixKeyType] = useState<KeyType>("cpf");
 
   useEffect(() => {
     if (!user?.id) return;

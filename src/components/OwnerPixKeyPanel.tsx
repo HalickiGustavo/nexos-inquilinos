@@ -50,6 +50,13 @@ export function OwnerPixKeyPanel() {
       .from("profiles")
       .update({ pix_key: pixKey.trim(), pix_key_type: pixKeyType } as any)
       .eq("id", user.id);
+    if (!error) {
+      // Propaga para todos os imóveis vinculados (autônomo: user_id; convidado: landlord_id)
+      await supabase.from("properties").update({
+        owner_pix_key: pixKey.trim(),
+        owner_pix_key_type: pixKeyType.toUpperCase(),
+      } as any).or(`user_id.eq.${user.id},landlord_id.eq.${user.id}`);
+    }
     setSaving(false);
     if (error) toast.error(error.message);
     else toast.success("Chave PIX salva. Os repasses serão depositados nela.");

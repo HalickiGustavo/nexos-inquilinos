@@ -67,6 +67,12 @@ function LandlordSetup() {
       pix_key: pixKey.trim(),
       pix_key_type: pixKeyType,
     } as any).eq("id", user.id);
+    if (!error) {
+      await supabase.from("properties").update({
+        owner_pix_key: pixKey.trim(),
+        owner_pix_key_type: pixKeyType.toUpperCase(),
+      } as any).eq("landlord_id", user.id);
+    }
     setBusy(false);
 
     if (error) return toast.error(error.message);

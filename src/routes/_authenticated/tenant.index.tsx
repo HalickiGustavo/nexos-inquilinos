@@ -131,18 +131,8 @@ function TenantHome() {
 
         {upcoming && (
           <div className="flex flex-wrap gap-2 mt-4">
-            <Button
-              onClick={() => {
-                const ownerKey = (contract as any)?.property?.owner_pix_key?.trim();
-                if (!ownerKey) {
-                  toast.error("O proprietário ainda não cadastrou a chave Pix. Use o boleto ou aguarde.");
-                  return;
-                }
-                navigator.clipboard.writeText(ownerKey);
-                toast.success("Chave Pix do proprietário copiada!");
-              }}
-            >
-              <Copy className="size-4 mr-2" /> Copiar chave Pix
+            <Button onClick={() => openPix(upcoming)} className="bg-emerald-600 hover:bg-emerald-700 text-white">
+              <QrCode className="size-4 mr-2" /> Gerar QR Pix — {formatBRL(Number(upcoming.amount))}
             </Button>
             <Button variant="outline" asChild>
               <Link to="/tenant/financeiro">Ver boleto</Link>

@@ -45,7 +45,7 @@ function LandlordLayout() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("profiles")
-        .select("document, pix_key")
+        .select("pix_key")
         .eq("id", user!.id)
         .maybeSingle();
       if (error) throw error;
@@ -55,8 +55,7 @@ function LandlordLayout() {
 
   useEffect(() => {
     if (role !== "landlord" || profileLoading || !profile) return;
-    const incomplete = !profile.document || !profile.pix_key;
-    if (incomplete) navigate({ to: "/landlord-setup", replace: true });
+    if (!profile.pix_key) navigate({ to: "/landlord-setup", replace: true });
   }, [role, profile, profileLoading, navigate]);
 
   if (loading || !user || roleLoading || role !== "landlord" || profileLoading) {

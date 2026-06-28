@@ -1,10 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect } from "react";
-import { Bell, Copy, Wallet, FileText, Wrench, AlertTriangle } from "lucide-react";
-import { toast } from "sonner";
+import { useEffect, useState } from "react";
+import { Bell, QrCode, Wallet, FileText, Wrench, AlertTriangle } from "lucide-react";
+
+import { useServerFn } from "@tanstack/react-start";
+import { useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { PixPaymentDialog } from "@/components/PixPaymentDialog";
+import { generateTripleSplitPix } from "@/lib/pix-split.functions";
 import {
   useCurrentTenant,
   useTenantActiveContract,
@@ -49,6 +53,37 @@ function TenantHome() {
   }, [overdue, upcoming?.id]);
 
   const openCount = maintenances.filter((m: any) => m.status !== "concluido").length;
+
+  const tripleSplit = useServerFn(generateTripleSplitPix);
+  const queryClient = useQueryClient();
+  const [pixFor, setPixFor] = useState<any | null>(null);
+  const [pixLoading, setPixLoading] = useState(false);
+  const [pixError, setPixError] = useState<string | null>(null);
+
+  const openPix = async (i: any) => {
+    setPixFor(i);
+    setPixError(null);
+    if (i.pix_qrcode && i.pix_payload) return;
+    setPixLoading(true);
+    try {
+      const res: any = await tripleSplit({ data: { installmentId: i.id } });
+      if (!res?.ok) {
+        setPixError(res?.error ?? "Não foi possível gerar o PIX.");
+        return;
+      }
+      setPixFor({
+        ...i,
+        pix_qrcode: res.qrCodeBase64,
+        pix_payload: res.pixPayload,
+        split_breakdown: res.breakdown,
+      });
+      queryClient.invalidateQueries({ queryKey: ["tenant-installments"] });
+    } catch (e: any) {
+      setPixError(e?.message ?? "Erro ao gerar PIX");
+    } finally {
+      setPixLoading(false);
+    }
+  };
 
   return (
     <div className="space-y-5 animate-in fade-in duration-300">
@@ -96,18 +131,8 @@ function TenantHome() {
 
         {upcoming && (
           <div className="flex flex-wrap gap-2 mt-4">
-            <Button
-              onClick={() => {
-                const ownerKey = (contract as any)?.property?.owner_pix_key?.trim();
-                if (!ownerKey) {
-                  toast.error("O proprietário ainda não cadastrou a chave Pix. Use o boleto ou aguarde.");
-                  return;
-                }
-                navigator.clipboard.writeText(ownerKey);
-                toast.success("Chave Pix do proprietário copiada!");
-              }}
-            >
-              <Copy className="size-4 mr-2" /> Copiar chave Pix
+            <Button onClick={() => openPix(upcoming)} className="bg-emerald-600 hover:bg-emerald-700 text-white">
+              <QrCode className="size-4 mr-2" /> Gerar QR Pix — {formatBRL(Number(upcoming.amount))}
             </Button>
             <Button variant="outline" asChild>
               <Link to="/tenant/financeiro">Ver boleto</Link>
@@ -139,6 +164,20 @@ function TenantHome() {
           <Bell className="size-3" /> Notificações desativadas no navegador.
         </p>
       ) : null}
+
+      <PixPaymentDialog
+        installment={pixFor}
+        open={!!pixFor}
+        loading={pixLoading}
+        error={pixError}
+        onOpenChange={(o) => {
+          if (!o) {
+            setPixFor(null);
+            setPixError(null);
+            setPixLoading(false);
+          }
+        }}
+      />
     </div>
   );
 }

@@ -18,6 +18,7 @@ import { formatBRL, formatDate, parseNumber } from "@/lib/format";
 import { generateAsaasCharge, updateAsaasChargeFee, simulateAsaasPayment } from "@/lib/asaas.functions";
 import { parseExpenses, expensesTotals } from "@/lib/variable-expenses";
 import { PainelRepasses } from "@/components/PainelRepasses";
+import { OwnerPixKeyPanel } from "@/components/OwnerPixKeyPanel";
 
 export const Route = createFileRoute("/_authenticated/financials")({
   head: () => ({ meta: [{ title: "Finanças — Nexo" }] }),
@@ -75,6 +76,8 @@ function FinancialsPage() {
         <h1 className="text-3xl font-bold tracking-tight">Finanças</h1>
         <p className="text-muted-foreground mt-1">Parcelas agrupadas por contrato. Clique para expandir.</p>
       </div>
+
+      <OwnerPixKeyPanel />
 
       <PainelRepasses />
 

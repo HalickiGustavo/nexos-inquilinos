@@ -330,6 +330,50 @@ export const generateTripleSplitPix = createServerFn({ method: "POST" })
     }
   });
 
+// Consulta status atual da cobrança na Efí e marca como paga se CONCLUIDA.
+// Usado como polling no client + fallback quando o webhook não chega.
+export const checkPixPayment = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => inputSchema.parse(d))
+  .handler(async ({ data }): Promise<{ paid: boolean; status?: string; error?: string }> => {
+    try {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { data: split } = await supabaseAdmin
+        .from("pix_splits")
+        .select("id, psp_txid, status, charge_type")
+        .eq("installment_id", data.installmentId)
+        .maybeSingle();
+      if (!split?.psp_txid) return { paid: false, error: "Cobrança não encontrada." };
+      if (split.status === "paid") return { paid: true, status: "CONCLUIDA" };
+      if (split.charge_type !== "pix") return { paid: false };
+
+      const { fetchPixCob } = await import("./efi.server");
+      const cob = await fetchPixCob(split.psp_txid);
+      const status = String(cob?.status ?? "").toUpperCase();
+      if (status === "CONCLUIDA") {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        await supabaseAdmin
+          .from("pix_splits")
+          .update({
+            status: "paid",
+            paid_at: new Date().toISOString(),
+            payout_status: "scheduled",
+            payout_scheduled_for: tomorrow.toISOString().slice(0, 10),
+          })
+          .eq("id", split.id);
+        await supabaseAdmin
+          .from("installments")
+          .update({ status: "pago", payment_date: new Date().toISOString() })
+          .eq("id", data.installmentId);
+        return { paid: true, status };
+      }
+      return { paid: false, status };
+    } catch (e: any) {
+      return { paid: false, error: e?.message ?? String(e) };
+    }
+  });
+
 export const generateBoletoCharge = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => inputSchema.parse(d))

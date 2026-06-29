@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Copy, Download, QrCode, Loader2, AlertCircle, FileText } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Copy, Download, QrCode, Loader2, AlertCircle, FileText, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -7,7 +7,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatBRL, formatDate } from "@/lib/format";
-import { generateBoletoCharge } from "@/lib/pix-split.functions";
+import { generateBoletoCharge, checkPixPayment } from "@/lib/pix-split.functions";
+
 
 
 export function PixPaymentDialog({
@@ -17,6 +18,7 @@ export function PixPaymentDialog({
   loading = false,
   error = null,
   debug = null,
+  onPaid,
 }: {
   installment: any | null;
   open: boolean;
@@ -24,15 +26,43 @@ export function PixPaymentDialog({
   loading?: boolean;
   error?: string | null;
   debug?: unknown | null;
+  onPaid?: () => void;
 }) {
   const [copying, setCopying] = useState(false);
   const [boletoLoading, setBoletoLoading] = useState(false);
   const [boletoUrl, setBoletoUrl] = useState<string | null>(installment?.boleto_url ?? null);
   const [boletoBarcode, setBoletoBarcode] = useState<string | null>(installment?.boleto_barcode ?? installment?.barcode ?? null);
   const [boletoError, setBoletoError] = useState<string | null>(null);
+  const [paid, setPaid] = useState(false);
   const genBoleto = useServerFn(generateBoletoCharge);
+  const checkPaid = useServerFn(checkPixPayment);
+  const onPaidRef = useRef(onPaid);
+  onPaidRef.current = onPaid;
+
+  // Polling: enquanto o diálogo está aberto com Pix gerado, consulta a Efí
+  // a cada 5s para detectar pagamento (fallback ao webhook).
+  useEffect(() => {
+    if (!open || !installment?.id || !installment?.pix_payload || paid) return;
+    let cancelled = false;
+    const tick = async () => {
+      try {
+        const res: any = await checkPaid({ data: { installmentId: installment.id } });
+        if (!cancelled && res?.paid) {
+          setPaid(true);
+          toast.success("Pagamento confirmado! 🎉");
+          onPaidRef.current?.();
+        }
+      } catch { /* ignora — próxima rodada */ }
+    };
+    const id = setInterval(tick, 5000);
+    tick();
+    return () => { cancelled = true; clearInterval(id); };
+  }, [open, installment?.id, installment?.pix_payload, paid, checkPaid]);
+
+  useEffect(() => { if (!open) setPaid(false); }, [open]);
 
   if (!installment) return null;
+
 
   const amount = Number(installment.split_breakdown?.total ?? installment.amount);
   const pixPayload: string | null = installment.pix_payload ?? null;
@@ -196,18 +226,34 @@ export function PixPaymentDialog({
 
           {!loading && !error && qrSrc && pixPayload && (
             <>
+              {paid && (
+                <div className="rounded-lg border border-emerald-500/40 bg-emerald-500/10 p-3 flex items-center gap-3">
+                  <CheckCircle2 className="size-6 text-emerald-500 shrink-0" />
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">Pagamento confirmado</p>
+                    <p className="text-xs text-muted-foreground">Atualizamos automaticamente sua parcela.</p>
+                  </div>
+                  <Button size="sm" onClick={() => onOpenChange(false)}>Fechar</Button>
+                </div>
+              )}
               <div className="flex justify-center">
-                <div className="p-3 bg-white rounded-lg ring-2 ring-violet-500/60 shadow-[0_0_36px_-6px_rgb(168_85_247)]">
+                <div className={`p-3 bg-white rounded-lg ring-2 shadow-[0_0_36px_-6px_rgb(168_85_247)] ${paid ? "ring-emerald-500/60 opacity-60" : "ring-violet-500/60"}`}>
                   <img src={qrSrc} alt="QR Code Pix" className="w-full max-w-[208px] h-auto aspect-square" />
                 </div>
               </div>
+
+              {!paid && (
+                <p className="text-xs text-center text-muted-foreground flex items-center justify-center gap-1.5">
+                  <Loader2 className="size-3 animate-spin" /> Aguardando confirmação do pagamento...
+                </p>
+              )}
 
               <div className="space-y-2">
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">Pix Copia e Cola</p>
                 <div className="font-mono text-xs break-all rounded-md border bg-muted/40 p-3 max-h-20 overflow-auto">
                   {pixPayload}
                 </div>
-                <Button className="w-full" onClick={copy} disabled={copying}>
+                <Button className="w-full" onClick={copy} disabled={copying || paid}>
                   {copying ? <Loader2 className="size-4 mr-2 animate-spin" /> : <Copy className="size-4 mr-2" />}
                   Copiar Código Copia e Cola
                 </Button>

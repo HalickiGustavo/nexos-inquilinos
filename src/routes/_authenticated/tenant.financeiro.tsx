@@ -263,12 +263,14 @@ function TenantFinanceiro() {
         loading={pixLoading}
         error={pixError}
         debug={pixDebug}
+        onPaid={() => queryClient.invalidateQueries({ queryKey: ["tenant-installments"] })}
         onOpenChange={(o) => {
           if (!o) {
             setPixFor(null);
             setPixError(null);
             setPixDebug(null);
             setPixLoading(false);
+            queryClient.invalidateQueries({ queryKey: ["tenant-installments"] });
           }
         }}
       />

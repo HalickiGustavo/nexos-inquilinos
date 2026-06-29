@@ -221,7 +221,9 @@ export function PixPaymentDialog({
               <p className="text-xs uppercase tracking-wide text-muted-foreground">Valor do boleto</p>
               <p className="text-3xl font-bold text-primary mt-1">{formatBRL(amount)}</p>
               <Badge variant="outline" className="mt-2 bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30">
-                Repasse automático D+1 para imobiliária e proprietário
+                {Number(installment.split_breakdown?.agency ?? 0) > 0
+                  ? "Repasse automático D+1 para imobiliária e proprietário"
+                  : "Repasse automático D+1 para o proprietário"}
               </Badge>
             </div>
 

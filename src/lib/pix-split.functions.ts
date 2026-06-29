@@ -20,7 +20,35 @@ export type TripleSplitResult =
         ownerKey: string | null;
       };
     }
-  | { ok: false; error: string };
+  | { ok: false; error: string; debug?: PixDebugInfo };
+
+export type PixDebugInfo = {
+  at: string;
+  installmentId: string;
+  txid?: string;
+  error: {
+    name: string | null;
+    message: string;
+    code: string | null;
+    causeName: string | null;
+    causeMessage: string | null;
+    causeCode: string | null;
+  };
+  efi: string | null;
+  context?: {
+    total: number;
+    nexoAmount: number;
+    agencyAmount: number;
+    ownerAmount: number;
+    hasAgencyPixKey: boolean;
+    agencyPixKeyType: string | null;
+    agencyPixKeyMasked: string | null;
+    hasOwnerPixKey: boolean;
+    ownerPixKeyType: string | null;
+    ownerPixKeyMasked: string | null;
+    hasNexoPixKey: boolean;
+  };
+};
 
 export type BoletoResult =
   | {
@@ -41,6 +69,61 @@ export type BoletoResult =
 // Chave Pix mestra da plataforma Nexo — fixa em código.
 const NEXO_MASTER_PIX_KEY = "66524872000167";
 const NEXO_MASTER_PIX_KEY_TYPE = "CNPJ";
+
+function maskPixKey(key?: string | null) {
+  if (!key) return null;
+  const clean = String(key).trim();
+  if (clean.length <= 6) return `${clean.slice(0, 1)}***${clean.slice(-1)}`;
+  return `${clean.slice(0, 3)}***${clean.slice(-4)}`;
+}
+
+function serializeError(error: unknown) {
+  const e = error as any;
+  const cause = e?.cause as any;
+  return {
+    name: e?.name ?? null,
+    message: e?.message ?? String(error),
+    code: e?.code ?? null,
+    causeName: cause?.name ?? null,
+    causeMessage: cause?.message ?? null,
+    causeCode: cause?.code ?? null,
+  };
+}
+
+function serializeDebugValue(value: unknown) {
+  if (value == null) return null;
+  try {
+    return JSON.stringify(value, null, 2);
+  } catch {
+    return String(value);
+  }
+}
+
+function buildPixDebug(error: unknown, installmentId: string, txid?: string, ctx?: Awaited<ReturnType<typeof loadContext>>) {
+  const e = error as any;
+  return {
+    at: new Date().toISOString(),
+    installmentId,
+    txid,
+    error: serializeError(error),
+    efi: serializeDebugValue(e?.efiDebug),
+    context: ctx
+      ? {
+          total: ctx.total,
+          nexoAmount: ctx.nexoAmount,
+          agencyAmount: ctx.agencyAmount,
+          ownerAmount: ctx.ownerAmount,
+          hasAgencyPixKey: Boolean(ctx.agency?.agency_pix_key),
+          agencyPixKeyType: ctx.agency?.agency_pix_key_type ?? null,
+          agencyPixKeyMasked: maskPixKey(ctx.agency?.agency_pix_key),
+          hasOwnerPixKey: Boolean(ctx.ownerPixKey),
+          ownerPixKeyType: ctx.ownerPixKeyType,
+          ownerPixKeyMasked: maskPixKey(ctx.ownerPixKey),
+          hasNexoPixKey: Boolean(ctx.nexoKey),
+        }
+      : undefined,
+  };
+}
 
 async function loadContext(supabase: any, installmentId: string) {
   const { data: inst, error: e1 } = await supabase
@@ -144,10 +227,12 @@ export const generateTripleSplitPix = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => inputSchema.parse(d))
   .handler(async ({ data, context }): Promise<TripleSplitResult> => {
+    let ctx: Awaited<ReturnType<typeof loadContext>> | undefined;
+    let txid: string | undefined;
     try {
-      const ctx = await loadContext(context.supabase, data.installmentId);
+      ctx = await loadContext(context.supabase, data.installmentId);
       const { createSplitCharge } = await import("./efi.server");
-      const txid = `NEXO${String(data.installmentId).replace(/-/g, "").slice(0, 21)}`;
+      txid = `NEXO${String(data.installmentId).replace(/-/g, "").slice(0, 21)}`;
       const charge = await createSplitCharge({
         txid,
         totalValue: ctx.total,
@@ -224,7 +309,13 @@ export const generateTripleSplitPix = createServerFn({ method: "POST" })
         },
       };
     } catch (e: any) {
-      return { ok: false, error: e?.message ?? String(e) };
+      const debug = buildPixDebug(e, data.installmentId, txid, ctx);
+      console.error("[pix-split] generateTripleSplitPix failed", debug);
+      return {
+        ok: false,
+        error: e?.message && e.message !== "fetch failed" ? e.message : "Falha ao gerar QR Pix na Efí.",
+        debug,
+      };
     }
   });
 

@@ -53,6 +53,7 @@ function TenantFinanceiro() {
   const [pixFor, setPixFor] = useState<any | null>(null);
   const [pixLoading, setPixLoading] = useState(false);
   const [pixError, setPixError] = useState<string | null>(null);
+  const [pixDebug, setPixDebug] = useState<unknown | null>(null);
   const [agreement, setAgreement] = useState<any | null>(null);
   const tripleSplit = useServerFn(generateTripleSplitPix);
   const queryClient = useQueryClient();
@@ -60,6 +61,7 @@ function TenantFinanceiro() {
   const openPix = async (i: any) => {
     setPixFor(i);
     setPixError(null);
+    setPixDebug(null);
     if (i.pix_qrcode && i.pix_payload) return;
     setPixLoading(true);
     try {
@@ -67,6 +69,7 @@ function TenantFinanceiro() {
       const res: any = await tripleSplit({ data: { installmentId: i.id } });
       if (!res?.ok) {
         setPixError(res?.error ?? "Não foi possível gerar o PIX no momento.");
+        setPixDebug(res?.debug ?? null);
         return;
       }
       setPixFor({
@@ -78,6 +81,7 @@ function TenantFinanceiro() {
       queryClient.invalidateQueries({ queryKey: ["tenant-installments"] });
     } catch (e: any) {
       setPixError(e?.message ?? "Erro ao gerar PIX");
+      setPixDebug({ at: new Date().toISOString(), source: "client", message: e?.message ?? String(e), name: e?.name ?? null });
     } finally {
       setPixLoading(false);
     }
@@ -258,10 +262,12 @@ function TenantFinanceiro() {
         open={!!pixFor}
         loading={pixLoading}
         error={pixError}
+        debug={pixDebug}
         onOpenChange={(o) => {
           if (!o) {
             setPixFor(null);
             setPixError(null);
+            setPixDebug(null);
             setPixLoading(false);
           }
         }}

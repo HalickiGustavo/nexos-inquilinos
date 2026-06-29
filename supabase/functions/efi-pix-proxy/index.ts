@@ -124,6 +124,8 @@ async function getToken(api: Api): Promise<string> {
           "gn.balance.read",
           "gn.settings.write",
           "gn.settings.read",
+          "gn.split.write",
+          "gn.split.read",
         ].join(" ")
       : "";
   const res = await fetch(`${baseUrl(api)}/oauth/token`, {

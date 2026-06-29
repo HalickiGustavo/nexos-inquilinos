@@ -104,13 +104,35 @@ async function getToken(api: Api): Promise<string> {
   }
   const basic = btoa(`${CLIENT_ID}:${CLIENT_SECRET}`);
   const client = getHttpClient();
+  // Escopos exigidos pela Efí. Sem isso, GET /v2/loc/:id/qrcode retorna
+  // 403 insufficient_scope mesmo com credenciais válidas.
+  const scope =
+    api === "pix"
+      ? [
+          "cob.write",
+          "cob.read",
+          "cobv.write",
+          "cobv.read",
+          "pix.write",
+          "pix.read",
+          "pix.send",
+          "loterias.read",
+          "webhook.write",
+          "webhook.read",
+          "payloadlocation.write",
+          "payloadlocation.read",
+          "gn.balance.read",
+          "gn.settings.write",
+          "gn.settings.read",
+        ].join(" ")
+      : "";
   const res = await fetch(`${baseUrl(api)}/oauth/token`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Basic ${basic}`,
     },
-    body: JSON.stringify({ grant_type: "client_credentials" }),
+    body: JSON.stringify(scope ? { grant_type: "client_credentials", scope } : { grant_type: "client_credentials" }),
     // @ts-ignore - Deno fetch aceita client
     client,
   });

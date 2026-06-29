@@ -232,8 +232,15 @@ export const generateTripleSplitPix = createServerFn({ method: "POST" })
     try {
       ctx = await loadContext(context.supabase, data.installmentId);
       const { createSplitCharge } = await import("./efi.server");
-      // Efí exige txid ^[a-zA-Z0-9]{26,35}$. UUID sem hífen = 32 chars → NEXO + 28 = 32.
-      txid = `NEXO${String(data.installmentId).replace(/-/g, "").slice(0, 28)}`;
+      // Efí exige txid ^[a-zA-Z0-9]{26,35}$ e recusa reuso (409 txid_duplicado).
+      // Combina installmentId + timestamp base36 + sufixo aleatório para garantir unicidade por tentativa.
+      const instPart = String(data.installmentId).replace(/-/g, "").slice(0, 14);
+      const tsPart = Date.now().toString(36);
+      const randPart = (globalThis.crypto?.randomUUID?.() ?? `${Math.random()}`)
+        .replace(/[^a-zA-Z0-9]/g, "")
+        .slice(0, 10);
+      txid = `NEXO${instPart}${tsPart}${randPart}`.replace(/[^a-zA-Z0-9]/g, "").slice(0, 32);
+      if (txid.length < 26) txid = (txid + "0000000000").slice(0, 26);
       const charge = await createSplitCharge({
         txid,
         totalValue: ctx.total,

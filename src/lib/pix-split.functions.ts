@@ -232,7 +232,8 @@ export const generateTripleSplitPix = createServerFn({ method: "POST" })
     try {
       ctx = await loadContext(context.supabase, data.installmentId);
       const { createSplitCharge } = await import("./efi.server");
-      txid = `NEXO${String(data.installmentId).replace(/-/g, "").slice(0, 21)}`;
+      // Efí exige txid ^[a-zA-Z0-9]{26,35}$. UUID sem hífen = 32 chars → NEXO + 28 = 32.
+      txid = `NEXO${String(data.installmentId).replace(/-/g, "").slice(0, 28)}`;
       const charge = await createSplitCharge({
         txid,
         totalValue: ctx.total,

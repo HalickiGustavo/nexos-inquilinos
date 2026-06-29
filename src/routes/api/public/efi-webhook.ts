@@ -41,14 +41,24 @@ export const Route = createFileRoute("/api/public/efi-webhook")({
             if (!txid) continue;
             const { data: split } = await supabaseAdmin
               .from("pix_splits")
-              .select("id, installment_id, charge_type")
+              .select("id, installment_id, charge_type, payout_scheduled_for")
               .eq("psp_txid", txid)
               .maybeSingle();
             if (!split) continue;
 
+            // Pix cai 100% na conta Nexo (Efí não aceita split inline em PUT /v2/cob).
+            // Agendamos o repasse para imobiliária/proprietário no próximo ciclo do cron.
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
             await supabaseAdmin
               .from("pix_splits")
-              .update({ status: "paid", paid_at: new Date().toISOString() })
+              .update({
+                status: "paid",
+                paid_at: new Date().toISOString(),
+                payout_status: "scheduled",
+                payout_scheduled_for:
+                  split.payout_scheduled_for ?? tomorrow.toISOString().slice(0, 10),
+              })
               .eq("id", split.id);
             await supabaseAdmin
               .from("installments")

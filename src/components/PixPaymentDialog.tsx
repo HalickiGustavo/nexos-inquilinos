@@ -16,12 +16,14 @@ export function PixPaymentDialog({
   onOpenChange,
   loading = false,
   error = null,
+  debug = null,
 }: {
   installment: any | null;
   open: boolean;
   onOpenChange: (o: boolean) => void;
   loading?: boolean;
   error?: string | null;
+  debug?: unknown | null;
 }) {
   const [copying, setCopying] = useState(false);
   const [boletoLoading, setBoletoLoading] = useState(false);
@@ -36,6 +38,11 @@ export function PixPaymentDialog({
   const pixPayload: string | null = installment.pix_payload ?? null;
   const qrSrc = installment.pix_qrcode
     ? `data:image/png;base64,${installment.pix_qrcode}`
+    : null;
+  const debugText = debug
+    ? typeof debug === "string"
+      ? debug
+      : JSON.stringify(debug, null, 2)
     : null;
 
   const copy = async () => {
@@ -147,10 +154,34 @@ export function PixPaymentDialog({
           )}
 
           {!loading && error && (
-            <div className="flex flex-col items-center justify-center py-8 text-center">
-              <AlertCircle className="size-8 text-destructive mb-2" />
-              <p className="text-sm font-medium text-destructive">Não foi possível gerar o PIX</p>
-              <p className="text-xs text-muted-foreground mt-1">{error}</p>
+            <div className="flex flex-col items-center justify-center py-8 text-center gap-3">
+              <div>
+                <AlertCircle className="size-8 text-destructive mb-2 mx-auto" />
+                <p className="text-sm font-medium text-destructive">Não foi possível gerar o PIX</p>
+                <p className="text-xs text-muted-foreground mt-1">{error}</p>
+              </div>
+              {debugText && (
+                <div className="w-full rounded-md border border-destructive/30 bg-destructive/5 p-3 text-left">
+                  <div className="flex items-center justify-between gap-2 mb-2">
+                    <p className="text-xs font-semibold text-destructive">Log técnico Pix</p>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      className="h-7 px-2 text-xs"
+                      onClick={() => {
+                        navigator.clipboard.writeText(debugText);
+                        toast.success("Log Pix copiado");
+                      }}
+                    >
+                      <Copy className="size-3 mr-1" /> Copiar
+                    </Button>
+                  </div>
+                  <pre className="max-h-40 overflow-auto whitespace-pre-wrap break-words text-[11px] leading-relaxed text-muted-foreground">
+                    {debugText}
+                  </pre>
+                </div>
+              )}
             </div>
           )}
 

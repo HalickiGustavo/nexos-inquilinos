@@ -149,6 +149,49 @@ async function pngBase64FromPayload(payload: string): Promise<string> {
 
 let cachedToken: { value: string; expiresAt: number } | null = null;
 
+function serializeProviderError(error: unknown) {
+  const e = error as any;
+  const cause = e?.cause as any;
+  return {
+    name: e?.name ?? null,
+    message: e?.message ?? String(error),
+    code: e?.code ?? null,
+    causeName: cause?.name ?? null,
+    causeMessage: cause?.message ?? null,
+    causeCode: cause?.code ?? null,
+  };
+}
+
+function attachEfiDebug(error: Error, debug: Record<string, unknown>) {
+  (error as any).efiDebug = debug;
+  return error;
+}
+
+function summarizeJsonText(text: string) {
+  if (!text) return "";
+  try {
+    return JSON.stringify(JSON.parse(text));
+  } catch {
+    return text.slice(0, 1200);
+  }
+}
+
+function efiRuntimeFlags(api: "pix" | "boleto") {
+  const certBytes = process.env.EFI_CERTIFICATE_BASE64
+    ? Buffer.from(process.env.EFI_CERTIFICATE_BASE64, "base64").length
+    : 0;
+  return {
+    api,
+    env: (process.env.EFI_ENV || "production").toLowerCase(),
+    hasClientId: Boolean(process.env.EFI_CLIENT_ID),
+    hasClientSecret: Boolean(process.env.EFI_CLIENT_SECRET),
+    hasCertificateBase64: Boolean(process.env.EFI_CERTIFICATE_BASE64),
+    certificateBytes: certBytes,
+    hasCertificatePassphrase: Boolean(process.env.EFI_CERTIFICATE_PASSPHRASE),
+    hasPixKey: Boolean(process.env.EFI_PIX_KEY),
+  };
+}
+
 function getEfiBaseUrl(api: "pix" | "boleto"): string {
   const env = (process.env.EFI_ENV || "production").toLowerCase();
   if (api === "pix") {
@@ -184,16 +227,39 @@ async function efiOAuthToken(api: "pix" | "boleto"): Promise<string> {
   const { fetch: undiciFetch, Agent } = await import("undici");
   const dispatcher = new Agent({ connect: { pfx: (agent as any).options.pfx, passphrase: (agent as any).options.passphrase } });
 
-  const res = await undiciFetch(`${baseUrl}/oauth/token`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Basic ${basic}` },
-    body: JSON.stringify({ grant_type: "client_credentials" }),
-    dispatcher,
-  } as any);
+  let res: Awaited<ReturnType<typeof undiciFetch>>;
+  try {
+    res = await undiciFetch(`${baseUrl}/oauth/token`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Basic ${basic}` },
+      body: JSON.stringify({ grant_type: "client_credentials" }),
+      dispatcher,
+    } as any);
+  } catch (error) {
+    const debug = {
+      step: "oauth-fetch",
+      method: "POST",
+      url: `${baseUrl}/oauth/token`,
+      runtime: efiRuntimeFlags(api),
+      error: serializeProviderError(error),
+    };
+    console.error("[efi] OAuth fetch failed", debug);
+    throw attachEfiDebug(new Error("Falha de conexão com a Efí ao autenticar."), debug);
+  }
 
   if (!res.ok) {
     const txt = await res.text();
-    throw new Error(`Efí OAuth falhou: ${res.status} ${txt}`);
+    const debug = {
+      step: "oauth-response",
+      method: "POST",
+      url: `${baseUrl}/oauth/token`,
+      status: res.status,
+      statusText: res.statusText,
+      response: summarizeJsonText(txt),
+      runtime: efiRuntimeFlags(api),
+    };
+    console.error("[efi] OAuth rejected", debug);
+    throw attachEfiDebug(new Error(`Efí OAuth falhou: ${res.status}`), debug);
   }
   const data: any = await res.json();
   cachedToken = { value: data.access_token, expiresAt: now + (data.expires_in ?? 3600) * 1000 };
@@ -207,16 +273,39 @@ async function efiFetch(api: "pix" | "boleto", path: string, init: { method: str
   const pfx = Buffer.from(process.env.EFI_CERTIFICATE_BASE64!, "base64");
   const dispatcher = new Agent({ connect: { pfx, passphrase: process.env.EFI_CERTIFICATE_PASSPHRASE || "" } });
 
-  const res = await undiciFetch(`${baseUrl}${path}`, {
-    method: init.method,
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-    body: init.body ? JSON.stringify(init.body) : undefined,
-    dispatcher,
-  } as any);
+  let res: Awaited<ReturnType<typeof undiciFetch>>;
+  try {
+    res = await undiciFetch(`${baseUrl}${path}`, {
+      method: init.method,
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: init.body ? JSON.stringify(init.body) : undefined,
+      dispatcher,
+    } as any);
+  } catch (error) {
+    const debug = {
+      step: "api-fetch",
+      method: init.method,
+      url: `${baseUrl}${path}`,
+      runtime: efiRuntimeFlags(api),
+      error: serializeProviderError(error),
+    };
+    console.error("[efi] API fetch failed", debug);
+    throw attachEfiDebug(new Error(`Falha de conexão com a Efí em ${init.method} ${path}.`), debug);
+  }
 
   const text = await res.text();
   if (!res.ok) {
-    throw new Error(`Efí ${init.method} ${path} ${res.status}: ${text}`);
+    const debug = {
+      step: "api-response",
+      method: init.method,
+      url: `${baseUrl}${path}`,
+      status: res.status,
+      statusText: res.statusText,
+      response: summarizeJsonText(text),
+      runtime: efiRuntimeFlags(api),
+    };
+    console.error("[efi] API rejected", debug);
+    throw attachEfiDebug(new Error(`Efí ${init.method} ${path} falhou com status ${res.status}.`), debug);
   }
   return text ? JSON.parse(text) : {};
 }

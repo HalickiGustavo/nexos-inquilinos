@@ -378,7 +378,8 @@ export async function createSplitCharge(input: SplitChargeInput): Promise<SplitC
       const debug = (splitErr as any)?.efiDebug ?? {};
       console.error("[efi] split vinculo falhou — cobrança seguirá sem split nativo", {
         txid: input.txid,
-        divisao,
+        repasses,
+        minhaParte,
         debug,
       });
       throw splitErr;

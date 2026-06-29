@@ -20,13 +20,8 @@ const EFI_ENV = (Deno.env.get("EFI_ENV") || "production").toLowerCase();
 const CLIENT_ID = Deno.env.get("EFI_CLIENT_ID") || "";
 const CLIENT_SECRET = Deno.env.get("EFI_CLIENT_SECRET") || "";
 const CERT_B64 = Deno.env.get("EFI_CERTIFICATE_BASE64") || "";
-// Efí gera P12 SEM senha por padrão. Tratamos "none", "null", "-" ou string
-// vazia como ausência de senha — passamos "" para o node-forge, que é como
-// ele espera P12 sem proteção.
-const RAW_PASS = (Deno.env.get("EFI_CERTIFICATE_PASSPHRASE") || "").trim();
-const CERT_PASS = ["", "none", "null", "-", "vazio", "empty"].includes(RAW_PASS.toLowerCase())
-  ? ""
-  : RAW_PASS;
+// Efí gera P12 SEM senha por padrão — sempre passamos string vazia.
+const CERT_PASS = "";
 
 function baseUrl(api: Api): string {
   if (api === "pix") {

@@ -134,6 +134,40 @@ function buildBrCode(opts: {
   return partial + crc16(partial);
 }
 
+function normalizeDynamicPixLocation(location: string): string {
+  const clean = location.trim().replace(/^https?:\/\//i, "");
+  if (!clean) throw new Error("Efí retornou location vazio para o Pix dinâmico.");
+  if (clean.length > 77) {
+    throw new Error(`Location Pix dinâmico inválido: excede 77 caracteres (${clean.length}).`);
+  }
+  return clean;
+}
+
+function buildDynamicBrCode(opts: {
+  location: string;
+  amount: number;
+  merchantName: string;
+  merchantCity: string;
+}): string {
+  const gui = tlv("00", "br.gov.bcb.pix");
+  const urlTlv = tlv("25", normalizeDynamicPixLocation(opts.location));
+  const merchantAccount = tlv("26", gui + urlTlv);
+  const additional = tlv("62", tlv("05", "***"));
+  const partial =
+    tlv("00", "01") +
+    tlv("01", "12") +
+    merchantAccount +
+    tlv("52", "0000") +
+    tlv("53", "986") +
+    tlv("54", opts.amount.toFixed(2)) +
+    tlv("58", "BR") +
+    tlv("59", sanitize(opts.merchantName, 25) || "NEXO") +
+    tlv("60", sanitize(opts.merchantCity, 15) || "SAO PAULO") +
+    additional +
+    "6304";
+  return partial + crc16(partial);
+}
+
 async function pngBase64FromPayload(payload: string): Promise<string> {
   const dataUrl = await QRCode.toDataURL(payload, {
     errorCorrectionLevel: "M",
@@ -286,8 +320,27 @@ export async function createSplitCharge(input: SplitChargeInput): Promise<SplitC
     },
   });
 
+  const locLocation = cob.loc?.location ?? cob.location;
+  if (locLocation) {
+    // Evita depender do endpoint /v2/loc/:id/qrcode, que exige permissão
+    // separada `location.read` no painel da Efí. A cobrança já foi criada;
+    // o BR Code dinâmico pode ser montado localmente a partir do `location`.
+    const pixPayload = buildDynamicBrCode({
+      location: String(locLocation),
+      amount: input.totalValue,
+      merchantName: input.receivers.nexo.name || "NEXO",
+      merchantCity: "SAO PAULO",
+    });
+    return {
+      provider: "efi",
+      txid: input.txid,
+      pixPayload,
+      qrCodeBase64: await pngBase64FromPayload(pixPayload),
+    };
+  }
+
   const locId = cob.loc?.id;
-  if (!locId) throw new Error("Efí não retornou loc.id para gerar QR Code");
+  if (!locId) throw new Error("Efí não retornou loc.location/loc.id para gerar QR Code");
   const qr = await efiFetch("pix", `/v2/loc/${locId}/qrcode`, { method: "GET" });
 
   return {

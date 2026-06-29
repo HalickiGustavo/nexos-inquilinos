@@ -104,8 +104,8 @@ async function getToken(api: Api): Promise<string> {
   }
   const basic = btoa(`${CLIENT_ID}:${CLIENT_SECRET}`);
   const client = getHttpClient();
-  // Escopos exigidos pela Efí. Sem isso, GET /v2/loc/:id/qrcode retorna
-  // 403 insufficient_scope mesmo com credenciais válidas.
+  // Escopos exigidos pela Efí. Sem `location.read`, GET /v2/loc/:id/qrcode
+  // retorna 403 insufficient_scope mesmo com credenciais válidas.
   const scope =
     api === "pix"
       ? [
@@ -119,8 +119,8 @@ async function getToken(api: Api): Promise<string> {
           "loterias.read",
           "webhook.write",
           "webhook.read",
-          "payloadlocation.write",
-          "payloadlocation.read",
+          "location.write",
+          "location.read",
           "gn.balance.read",
           "gn.settings.write",
           "gn.settings.read",

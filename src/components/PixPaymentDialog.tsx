@@ -115,9 +115,15 @@ export function PixPaymentDialog({
           <div className="rounded-lg border-2 border-primary/20 bg-primary/5 p-4 text-center">
             <p className="text-xs uppercase tracking-wide text-muted-foreground">Valor a pagar</p>
             <p className="text-3xl font-bold text-primary mt-1">{formatBRL(amount)}</p>
-            <Badge variant="outline" className="mt-2 bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30">
-              Pix com split nativo de 3 vias
-            </Badge>
+            {(() => {
+              const agencyAmt = Number(installment.split_breakdown?.agency ?? 0);
+              const ways = agencyAmt > 0 ? 3 : 2;
+              return (
+                <Badge variant="outline" className="mt-2 bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30">
+                  Pix com split nativo de {ways} vias
+                </Badge>
+              );
+            })()}
           </div>
 
           {installment.split_breakdown && (
@@ -130,10 +136,12 @@ export function PixPaymentDialog({
                   <span className="text-muted-foreground">Plataforma Nexo</span>
                   <span className="font-medium">{formatBRL(installment.split_breakdown.nexo)}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Imobiliária (administração)</span>
-                  <span className="font-medium">{formatBRL(installment.split_breakdown.agency)}</span>
-                </div>
+                {Number(installment.split_breakdown.agency ?? 0) > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Imobiliária (administração)</span>
+                    <span className="font-medium">{formatBRL(installment.split_breakdown.agency)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Proprietário (líquido)</span>
                   <span className="font-medium">{formatBRL(installment.split_breakdown.owner)}</span>
@@ -145,6 +153,7 @@ export function PixPaymentDialog({
               </div>
             </div>
           )}
+
 
           {loading && (
             <div className="flex flex-col items-center justify-center py-10 text-muted-foreground">
@@ -212,7 +221,9 @@ export function PixPaymentDialog({
               <p className="text-xs uppercase tracking-wide text-muted-foreground">Valor do boleto</p>
               <p className="text-3xl font-bold text-primary mt-1">{formatBRL(amount)}</p>
               <Badge variant="outline" className="mt-2 bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30">
-                Repasse automático D+1 para imobiliária e proprietário
+                {Number(installment.split_breakdown?.agency ?? 0) > 0
+                  ? "Repasse automático D+1 para imobiliária e proprietário"
+                  : "Repasse automático D+1 para o proprietário"}
               </Badge>
             </div>
 

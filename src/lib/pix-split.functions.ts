@@ -190,11 +190,14 @@ async function loadContext(supabase: any, installmentId: string) {
   const nexoFee = Number(settings.nexo_flat_fee ?? "24.99");
 
   const rent = Number(contract.rent_amount);
-  const feePct = Number(contract.agency_admin_fee_percentage ?? 10);
+  const hasAgency = Boolean((agency as any)?.agency_pix_key);
+  const feePct = hasAgency ? Number(contract.agency_admin_fee_percentage ?? 10) : 0;
   const nexoAmount = +nexoFee.toFixed(2);
-  const agencyAmount = +((rent * feePct) / 100).toFixed(2);
+  // Sem imobiliária no contrato → split 2 vias (Nexo + Proprietário).
+  // Com imobiliária → split 3 vias (Nexo + Imobiliária + Proprietário).
+  const agencyAmount = hasAgency ? +((rent * feePct) / 100).toFixed(2) : 0;
   // Taxa Nexo cobrada ON TOP do aluguel — inquilino paga rent + nexoFee.
-  // Proprietário recebe o aluguel inteiro menos a taxa de administração da imobiliária.
+  // Proprietário recebe o aluguel inteiro menos a taxa de administração da imobiliária (0 quando não há).
   const total = +(rent + nexoAmount).toFixed(2);
   const ownerAmount = +(rent - agencyAmount).toFixed(2);
   if (ownerAmount < 0) {

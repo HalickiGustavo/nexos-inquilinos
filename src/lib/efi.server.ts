@@ -281,9 +281,6 @@ async function efiFetch(
 
 export async function createSplitCharge(input: SplitChargeInput): Promise<SplitChargeResult> {
   if (!isEfiProductionMode()) {
-    // Sem credenciais Efí: gera BR Code estático apontando direto para o
-    // PROPRIETÁRIO (preferido) ou imobiliária; sem split, mas o dinheiro
-    // cai na conta certa. Nexo é último fallback.
     const target =
       input.receivers.owner?.pixKey
         ? input.receivers.owner
@@ -303,13 +300,36 @@ export async function createSplitCharge(input: SplitChargeInput): Promise<SplitC
     return { provider: "mock", txid: input.txid, pixPayload: payload, qrCodeBase64: qr };
   }
 
-  // Produção — cobrança Pix simples na conta Efí da Nexo.
-  // O split nativo da Efí exige vínculo prévio via /v2/gn/split/config + /v2/gn/split/vinculo/cob/:txid
-  // (não pode vir inline no PUT /v2/cob — gera "additionalProperties" no .body).
-  // Estratégia atual: recebemos 100% na conta Nexo e fazemos o repasse via sendPix D+1
-  // para imobiliária e proprietário, usando as chaves Pix cadastradas.
+  // Produção — Split NATIVO da Efí (dinheiro cai já dividido nas contas dos
+  // recebedores no momento da liquidação Pix).
+  //
+  // Fluxo Efí (3 passos):
+  //   1) POST /v2/gn/split/config       → cria configuração e devolve {id}
+  //   2) PUT  /v2/cob/:txid              → cria a cobrança Pix (sem split inline)
+  //   3) PUT  /v2/gn/split/vinculo/cob/:txid/:idConfig → vincula split à cobrança
+  //
+  // Os recebedores (imobiliária / proprietário) precisam estar cadastrados
+  // como "destinatários" na conta Efí, identificados pela própria chave Pix.
   const nexoKey = process.env.EFI_PIX_KEY || input.receivers.nexo.pixKey;
 
+  // Monta a divisão em centavos (Efí espera "valor.fixo" como string em reais).
+  const divisao: Array<{ tipo: "PERCENTUAL" | "VALOR_FIXO"; valor: string; favorecido: { chave: string } }> = [];
+  if (input.receivers.agency?.pixKey && input.receivers.agency.amount > 0) {
+    divisao.push({
+      tipo: "VALOR_FIXO",
+      valor: input.receivers.agency.amount.toFixed(2),
+      favorecido: { chave: input.receivers.agency.pixKey },
+    });
+  }
+  if (input.receivers.owner?.pixKey && input.receivers.owner.amount > 0) {
+    divisao.push({
+      tipo: "VALOR_FIXO",
+      valor: input.receivers.owner.amount.toFixed(2),
+      favorecido: { chave: input.receivers.owner.pixKey },
+    });
+  }
+
+  // 1) Cria a cobrança Pix na conta Nexo.
   const cob = await efiFetch("pix", `/v2/cob/${input.txid}`, {
     method: "PUT",
     body: {
@@ -320,11 +340,39 @@ export async function createSplitCharge(input: SplitChargeInput): Promise<SplitC
     },
   });
 
+  // 2) Se há recebedores além da Nexo, cria config de split e vincula à cobrança.
+  if (divisao.length > 0) {
+    try {
+      const config = await efiFetch("pix", `/v2/gn/split/config`, {
+        method: "POST",
+        body: {
+          descricao: `NEXO split ${input.txid}`.slice(0, 140),
+          ladoRecebedorTaxa: "PAGADOR", // Nexo não paga taxa Pix
+          split: { divisao },
+        },
+      });
+      const idConfig = config?.id ?? config?.identificador ?? config?.split?.id;
+      if (!idConfig) {
+        throw new Error("Efí não devolveu id da config de split.");
+      }
+      await efiFetch("pix", `/v2/gn/split/vinculo/cob/${input.txid}/${idConfig}`, {
+        method: "PUT",
+      });
+    } catch (splitErr: any) {
+      // Mantém a cobrança viva mesmo se o vínculo falhar — operador pode
+      // reprocessar via repasse D+1. Anexa contexto ao erro original.
+      const debug = (splitErr as any)?.efiDebug ?? {};
+      console.error("[efi] split vinculo falhou — cobrança seguirá sem split nativo", {
+        txid: input.txid,
+        divisao,
+        debug,
+      });
+      throw splitErr;
+    }
+  }
+
   const locLocation = cob.loc?.location ?? cob.location;
   if (locLocation) {
-    // Evita depender do endpoint /v2/loc/:id/qrcode, que exige permissão
-    // separada `location.read` no painel da Efí. A cobrança já foi criada;
-    // o BR Code dinâmico pode ser montado localmente a partir do `location`.
     const pixPayload = buildDynamicBrCode({
       location: String(locLocation),
       amount: input.totalValue,

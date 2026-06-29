@@ -15,7 +15,7 @@ export async function runProcessEfiBoletoPayouts(): Promise<{
   const { data: pending, error } = await supabaseAdmin
     .from("pix_splits")
     .select("*")
-    .eq("charge_type", "boleto")
+    .in("charge_type", ["pix", "boleto"])
     .eq("status", "paid")
     .eq("payout_status", "scheduled")
     .lte("payout_scheduled_for", today)

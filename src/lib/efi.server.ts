@@ -461,6 +461,14 @@ export async function sendPix(input: SendPixInput): Promise<SendPixResult> {
   return { provider: "efi", e2eId: res.e2eId ?? res.endToEndId ?? input.idEnvio, status: "PROCESSING" };
 }
 
+// Consulta status de uma cobrança Pix (CONCLUIDA = paga).
+export async function fetchPixCob(txid: string): Promise<any> {
+  if (!isEfiProductionMode()) {
+    return { status: "ATIVA", txid };
+  }
+  return await efiFetch("pix", `/v2/cob/${txid}`, { method: "GET" });
+}
+
 // =====================================================================
 // Webhook HMAC
 // =====================================================================

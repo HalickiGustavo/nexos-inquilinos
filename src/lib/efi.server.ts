@@ -312,22 +312,32 @@ export async function createSplitCharge(input: SplitChargeInput): Promise<SplitC
   // como "destinatários" na conta Efí, identificados pela própria chave Pix.
   const nexoKey = process.env.EFI_PIX_KEY || input.receivers.nexo.pixKey;
 
-  // Monta a divisão em centavos (Efí espera "valor.fixo" como string em reais).
-  const divisao: Array<{ tipo: "PERCENTUAL" | "VALOR_FIXO"; valor: string; favorecido: { chave: string } }> = [];
+  // Monta os "repasses" (favorecidos diferentes da Nexo) em VALOR_FIXO (reais como string).
+  const repasses: Array<{
+    favorecido: { chave: string };
+    tipo: "VALOR_FIXO" | "PERCENTUAL";
+    valor: string;
+  }> = [];
   if (input.receivers.agency?.pixKey && input.receivers.agency.amount > 0) {
-    divisao.push({
+    repasses.push({
+      favorecido: { chave: input.receivers.agency.pixKey },
       tipo: "VALOR_FIXO",
       valor: input.receivers.agency.amount.toFixed(2),
-      favorecido: { chave: input.receivers.agency.pixKey },
     });
   }
   if (input.receivers.owner?.pixKey && input.receivers.owner.amount > 0) {
-    divisao.push({
+    repasses.push({
+      favorecido: { chave: input.receivers.owner.pixKey },
       tipo: "VALOR_FIXO",
       valor: input.receivers.owner.amount.toFixed(2),
-      favorecido: { chave: input.receivers.owner.pixKey },
     });
   }
+
+  // Nexo (recebedor principal) fica com `minhaParte`.
+  const minhaParte = {
+    tipo: "VALOR_FIXO" as const,
+    valor: input.receivers.nexo.amount.toFixed(2),
+  };
 
   // 1) Cria a cobrança Pix na conta Nexo.
   const cob = await efiFetch("pix", `/v2/cob/${input.txid}`, {
@@ -341,14 +351,18 @@ export async function createSplitCharge(input: SplitChargeInput): Promise<SplitC
   });
 
   // 2) Se há recebedores além da Nexo, cria config de split e vincula à cobrança.
-  if (divisao.length > 0) {
+  if (repasses.length > 0) {
     try {
       const config = await efiFetch("pix", `/v2/gn/split/config`, {
         method: "POST",
         body: {
           descricao: `NEXO split ${input.txid}`.slice(0, 140),
-          ladoRecebedorTaxa: "PAGADOR", // Nexo não paga taxa Pix
-          split: { divisao },
+          lancamento: { imediato: true },
+          split: {
+            divisaoTarifa: "RECEBEDOR_PRINCIPAL",
+            minhaParte,
+            repasses,
+          },
         },
       });
       const idConfig = config?.id ?? config?.identificador ?? config?.split?.id;
@@ -364,7 +378,8 @@ export async function createSplitCharge(input: SplitChargeInput): Promise<SplitC
       const debug = (splitErr as any)?.efiDebug ?? {};
       console.error("[efi] split vinculo falhou — cobrança seguirá sem split nativo", {
         txid: input.txid,
-        divisao,
+        repasses,
+        minhaParte,
         debug,
       });
       throw splitErr;

@@ -18,6 +18,7 @@ export function PixPaymentDialog({
   loading = false,
   error = null,
   debug = null,
+  onPaid,
 }: {
   installment: any | null;
   open: boolean;
@@ -25,15 +26,43 @@ export function PixPaymentDialog({
   loading?: boolean;
   error?: string | null;
   debug?: unknown | null;
+  onPaid?: () => void;
 }) {
   const [copying, setCopying] = useState(false);
   const [boletoLoading, setBoletoLoading] = useState(false);
   const [boletoUrl, setBoletoUrl] = useState<string | null>(installment?.boleto_url ?? null);
   const [boletoBarcode, setBoletoBarcode] = useState<string | null>(installment?.boleto_barcode ?? installment?.barcode ?? null);
   const [boletoError, setBoletoError] = useState<string | null>(null);
+  const [paid, setPaid] = useState(false);
   const genBoleto = useServerFn(generateBoletoCharge);
+  const checkPaid = useServerFn(checkPixPayment);
+  const onPaidRef = useRef(onPaid);
+  onPaidRef.current = onPaid;
+
+  // Polling: enquanto o diálogo está aberto com Pix gerado, consulta a Efí
+  // a cada 5s para detectar pagamento (fallback ao webhook).
+  useEffect(() => {
+    if (!open || !installment?.id || !installment?.pix_payload || paid) return;
+    let cancelled = false;
+    const tick = async () => {
+      try {
+        const res: any = await checkPaid({ data: { installmentId: installment.id } });
+        if (!cancelled && res?.paid) {
+          setPaid(true);
+          toast.success("Pagamento confirmado! 🎉");
+          onPaidRef.current?.();
+        }
+      } catch { /* ignora — próxima rodada */ }
+    };
+    const id = setInterval(tick, 5000);
+    tick();
+    return () => { cancelled = true; clearInterval(id); };
+  }, [open, installment?.id, installment?.pix_payload, paid, checkPaid]);
+
+  useEffect(() => { if (!open) setPaid(false); }, [open]);
 
   if (!installment) return null;
+
 
   const amount = Number(installment.split_breakdown?.total ?? installment.amount);
   const pixPayload: string | null = installment.pix_payload ?? null;

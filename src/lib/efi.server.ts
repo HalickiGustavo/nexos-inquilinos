@@ -269,23 +269,12 @@ export async function createSplitCharge(input: SplitChargeInput): Promise<SplitC
     return { provider: "mock", txid: input.txid, pixPayload: payload, qrCodeBase64: qr };
   }
 
-  // Produção — split nativo Efí
+  // Produção — cobrança Pix simples na conta Efí da Nexo.
+  // O split nativo da Efí exige vínculo prévio via /v2/gn/split/config + /v2/gn/split/vinculo/cob/:txid
+  // (não pode vir inline no PUT /v2/cob — gera "additionalProperties" no .body).
+  // Estratégia atual: recebemos 100% na conta Nexo e fazemos o repasse via sendPix D+1
+  // para imobiliária e proprietário, usando as chaves Pix cadastradas.
   const nexoKey = process.env.EFI_PIX_KEY || input.receivers.nexo.pixKey;
-  const splits: Array<{ identificador: string; valor: string; chave: string }> = [];
-  if (input.receivers.agency) {
-    splits.push({
-      identificador: `agency-${input.txid}`.slice(0, 35),
-      valor: input.receivers.agency.amount.toFixed(2),
-      chave: input.receivers.agency.pixKey,
-    });
-  }
-  if (input.receivers.owner) {
-    splits.push({
-      identificador: `owner-${input.txid}`.slice(0, 35),
-      valor: input.receivers.owner.amount.toFixed(2),
-      chave: input.receivers.owner.pixKey,
-    });
-  }
 
   const cob = await efiFetch("pix", `/v2/cob/${input.txid}`, {
     method: "PUT",
@@ -294,7 +283,6 @@ export async function createSplitCharge(input: SplitChargeInput): Promise<SplitC
       valor: { original: input.totalValue.toFixed(2) },
       chave: nexoKey,
       solicitacaoPagador: input.description.slice(0, 140),
-      ...(splits.length ? { split: { divisao: splits } } : {}),
     },
   });
 

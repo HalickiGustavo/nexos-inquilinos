@@ -34,7 +34,7 @@ export type PixDebugInfo = {
     causeMessage: string | null;
     causeCode: string | null;
   };
-  efi?: unknown;
+  efi: string | null;
   context?: {
     total: number;
     nexoAmount: number;
@@ -90,6 +90,15 @@ function serializeError(error: unknown) {
   };
 }
 
+function serializeDebugValue(value: unknown) {
+  if (value == null) return null;
+  try {
+    return JSON.stringify(value, null, 2);
+  } catch {
+    return String(value);
+  }
+}
+
 function buildPixDebug(error: unknown, installmentId: string, txid?: string, ctx?: Awaited<ReturnType<typeof loadContext>>) {
   const e = error as any;
   return {
@@ -97,7 +106,7 @@ function buildPixDebug(error: unknown, installmentId: string, txid?: string, ctx
     installmentId,
     txid,
     error: serializeError(error),
-    efi: e?.efiDebug ?? null,
+    efi: serializeDebugValue(e?.efiDebug),
     context: ctx
       ? {
           total: ctx.total,

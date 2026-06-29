@@ -226,18 +226,34 @@ export function PixPaymentDialog({
 
           {!loading && !error && qrSrc && pixPayload && (
             <>
+              {paid && (
+                <div className="rounded-lg border border-emerald-500/40 bg-emerald-500/10 p-3 flex items-center gap-3">
+                  <CheckCircle2 className="size-6 text-emerald-500 shrink-0" />
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">Pagamento confirmado</p>
+                    <p className="text-xs text-muted-foreground">Atualizamos automaticamente sua parcela.</p>
+                  </div>
+                  <Button size="sm" onClick={() => onOpenChange(false)}>Fechar</Button>
+                </div>
+              )}
               <div className="flex justify-center">
-                <div className="p-3 bg-white rounded-lg ring-2 ring-violet-500/60 shadow-[0_0_36px_-6px_rgb(168_85_247)]">
+                <div className={`p-3 bg-white rounded-lg ring-2 shadow-[0_0_36px_-6px_rgb(168_85_247)] ${paid ? "ring-emerald-500/60 opacity-60" : "ring-violet-500/60"}`}>
                   <img src={qrSrc} alt="QR Code Pix" className="w-full max-w-[208px] h-auto aspect-square" />
                 </div>
               </div>
+
+              {!paid && (
+                <p className="text-xs text-center text-muted-foreground flex items-center justify-center gap-1.5">
+                  <Loader2 className="size-3 animate-spin" /> Aguardando confirmação do pagamento...
+                </p>
+              )}
 
               <div className="space-y-2">
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">Pix Copia e Cola</p>
                 <div className="font-mono text-xs break-all rounded-md border bg-muted/40 p-3 max-h-20 overflow-auto">
                   {pixPayload}
                 </div>
-                <Button className="w-full" onClick={copy} disabled={copying}>
+                <Button className="w-full" onClick={copy} disabled={copying || paid}>
                   {copying ? <Loader2 className="size-4 mr-2 animate-spin" /> : <Copy className="size-4 mr-2" />}
                   Copiar Código Copia e Cola
                 </Button>

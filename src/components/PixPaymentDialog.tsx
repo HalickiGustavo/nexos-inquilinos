@@ -85,28 +85,6 @@ export function PixPaymentDialog({
     }
   };
 
-  const handleGenerateBoleto = async () => {
-    if (!installment?.id) return;
-    setBoletoLoading(true);
-    setBoletoError(null);
-    try {
-      const res: any = await genBoleto({ data: { installmentId: installment.id } });
-      if (!res?.ok) {
-        setBoletoError(res?.error ?? "Falha ao gerar boleto.");
-        toast.error(res?.error ?? "Falha ao gerar boleto.");
-        return;
-      }
-      setBoletoUrl(res.url);
-      setBoletoBarcode(res.barcode);
-      toast.success("Boleto gerado com sucesso!");
-    } catch (e: any) {
-      const msg = e?.message ?? "Falha ao gerar boleto.";
-      setBoletoError(msg);
-      toast.error(msg);
-    } finally {
-      setBoletoLoading(false);
-    }
-  };
 
   const copyBarcode = async () => {
     if (!boletoBarcode) return;

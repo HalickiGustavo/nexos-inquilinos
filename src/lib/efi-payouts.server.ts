@@ -30,16 +30,37 @@ async function dispatchSplitPayout(split: any): Promise<{ ok: boolean; error?: s
   for (const t of targets) {
     if (!t.pixKey || t.amount <= 0) continue;
 
-    // Idempotência por destinatário: se já registramos esse repasse, pula.
+    // Idempotência por destinatário: se já existe repasse não-falho, pula.
     const { data: existing } = await supabaseAdmin
       .from("efi_payouts")
       .select("id, status")
       .eq("pix_split_id", split.id)
       .eq("recipient", t.recipient)
-      .in("status", ["processing", "mock_sent", "paid", "completed"])
+      .in("status", ["pending", "processing", "mock_sent", "paid", "completed"])
       .maybeSingle();
     if (existing) {
       attempts.push({ recipient: t.recipient, ok: true });
+      continue;
+    }
+
+    // 1) Cria registro PENDING antes de chamar a API (auditoria + retry).
+    const { data: pendingRow, error: insertErr } = await supabaseAdmin
+      .from("efi_payouts")
+      .insert({
+        pix_split_id: split.id,
+        user_id: split.user_id,
+        recipient: t.recipient,
+        pix_key: t.pixKey,
+        amount: t.amount,
+        status: "pending",
+      })
+      .select("id")
+      .single();
+
+    if (insertErr || !pendingRow) {
+      allOk = false;
+      lastErr = insertErr?.message ?? "Falha ao registrar repasse pendente";
+      attempts.push({ recipient: t.recipient, ok: false, error: lastErr });
       continue;
     }
 
@@ -51,29 +72,28 @@ async function dispatchSplitPayout(split: any): Promise<{ ok: boolean; error?: s
         pixKey: t.pixKey,
         description: `Repasse Nexo - ${t.recipient === "agency" ? "Administracao" : "Proprietario"}`,
       });
-      await supabaseAdmin.from("efi_payouts").insert({
-        pix_split_id: split.id,
-        user_id: split.user_id,
-        recipient: t.recipient,
-        pix_key: t.pixKey,
-        amount: t.amount,
-        e2e_id: res.e2eId,
-        status: res.status === "MOCK" ? "mock_sent" : "processing",
-        paid_at: res.status === "MOCK" ? new Date().toISOString() : null,
-      });
+      // 2) Sucesso: COMPLETED + e2eId.
+      await supabaseAdmin
+        .from("efi_payouts")
+        .update({
+          e2e_id: res.e2eId,
+          status: res.status === "MOCK" ? "mock_sent" : "completed",
+          paid_at: new Date().toISOString(),
+          error: null,
+        })
+        .eq("id", pendingRow.id);
       attempts.push({ recipient: t.recipient, ok: true });
     } catch (innerErr: any) {
+      // 3) Falha: FAILED + mensagem completa; permanece elegível p/ retry.
       allOk = false;
-      lastErr = innerErr?.message ?? String(innerErr);
-      await supabaseAdmin.from("efi_payouts").insert({
-        pix_split_id: split.id,
-        user_id: split.user_id,
-        recipient: t.recipient,
-        pix_key: t.pixKey,
-        amount: t.amount,
-        status: "failed",
-        error: lastErr,
-      });
+      const efiDebug = innerErr?.efiDebug
+        ? ` | debug=${JSON.stringify(innerErr.efiDebug).slice(0, 800)}`
+        : "";
+      lastErr = `${innerErr?.message ?? String(innerErr)}${efiDebug}`;
+      await supabaseAdmin
+        .from("efi_payouts")
+        .update({ status: "failed", error: lastErr })
+        .eq("id", pendingRow.id);
       attempts.push({ recipient: t.recipient, ok: false, error: lastErr ?? undefined });
     }
   }

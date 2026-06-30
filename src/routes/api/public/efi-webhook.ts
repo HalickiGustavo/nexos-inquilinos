@@ -61,9 +61,70 @@ export const Route = createFileRoute("/api/public/efi-webhook")({
         try {
           const { runInstantPayoutForSplit } = await import("@/lib/efi-payouts.server");
 
-          // ---------------- PIX recebido ----------------
+          // ---------------- PIX recebido / Pix enviado ----------------
           const pixEvents: Array<any> = Array.isArray(payload?.pix) ? payload.pix : [];
           for (const evt of pixEvents) {
+            const sentE2eId = evt?.endToEndId ?? evt?.e2eId;
+            const sentStatus = String(evt?.status ?? "").toUpperCase();
+            const isSentPixEvent = sentE2eId && !evt?.txid;
+
+            if (isSentPixEvent) {
+              const completed = ["REALIZADO", "CONCLUIDO", "CONCLUÍDO", "COMPLETED"].includes(sentStatus);
+              const failed = ["NAO_REALIZADO", "NÃO_REALIZADO", "REJEITADO", "DEVOLVIDO", "CANCELADO", "FAILED"].includes(sentStatus);
+
+              const { data: payout } = await supabaseAdmin
+                .from("efi_payouts")
+                .select("id, pix_split_id")
+                .eq("e2e_id", sentE2eId)
+                .maybeSingle();
+
+              if (payout && completed) {
+                await supabaseAdmin
+                  .from("efi_payouts")
+                  .update({ status: "completed", paid_at: evt?.horario ?? new Date().toISOString(), error: null })
+                  .eq("id", payout.id);
+
+                const { data: split } = await supabaseAdmin
+                  .from("pix_splits")
+                  .select("id, agency_amount, owner_amount")
+                  .eq("id", payout.pix_split_id)
+                  .maybeSingle();
+
+                if (split) {
+                  const requiredRecipients = [
+                    Number(split.agency_amount) > 0 ? "agency" : null,
+                    Number(split.owner_amount) > 0 ? "owner" : null,
+                  ].filter(Boolean);
+
+                  const { data: completedPayouts } = await supabaseAdmin
+                    .from("efi_payouts")
+                    .select("recipient")
+                    .eq("pix_split_id", split.id)
+                    .in("status", ["completed", "mock_sent", "paid"]);
+
+                  const completedRecipients = new Set((completedPayouts ?? []).map((p: any) => p.recipient));
+                  const allDone = requiredRecipients.every((r) => completedRecipients.has(r));
+                  if (allDone) {
+                    await supabaseAdmin
+                      .from("pix_splits")
+                      .update({ payout_status: "paid", payout_error: null })
+                      .eq("id", split.id);
+                  }
+                }
+              } else if (payout && failed) {
+                await supabaseAdmin
+                  .from("efi_payouts")
+                  .update({ status: "failed", error: `Efí confirmou falha no envio Pix (${sentStatus})` })
+                  .eq("id", payout.id);
+                await supabaseAdmin
+                  .from("pix_splits")
+                  .update({ payout_status: "scheduled", payout_error: `Efí confirmou falha no envio Pix (${sentStatus})` })
+                  .eq("id", payout.pix_split_id);
+              }
+
+              continue;
+            }
+
             const txid = evt?.txid;
             if (!txid) continue;
             const { data: split } = await supabaseAdmin

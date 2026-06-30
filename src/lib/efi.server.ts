@@ -81,6 +81,15 @@ export type SendPixResult = {
   status: "PROCESSING" | "COMPLETED" | "MOCK";
 };
 
+export type SentPixStatusResult = {
+  provider: "efi" | "mock";
+  idEnvio: string;
+  e2eId?: string;
+  rawStatus: string;
+  status: "PROCESSING" | "COMPLETED" | "FAILED";
+  paidAt?: string;
+};
+
 export function isEfiProductionMode(): boolean {
   return !!process.env.EFI_CLIENT_ID && !!process.env.EFI_CLIENT_SECRET && !!process.env.EFI_CERTIFICATE_BASE64;
 }
@@ -467,7 +476,33 @@ export async function sendPix(input: SendPixInput): Promise<SendPixResult> {
     favorecido: { chave: input.pixKey },
   };
   const res = await efiFetch("pix", `/v3/gn/pix/${input.idEnvio}`, { method: "PUT", body });
-  return { provider: "efi", e2eId: res.e2eId ?? res.endToEndId ?? input.idEnvio, status: "PROCESSING" };
+  const rawStatus = String(res.status ?? "").toUpperCase();
+  const completed = ["REALIZADO", "CONCLUIDO", "CONCLUÍDO", "COMPLETED"].includes(rawStatus);
+  return {
+    provider: "efi",
+    e2eId: res.e2eId ?? res.endToEndId ?? input.idEnvio,
+    status: completed ? "COMPLETED" : "PROCESSING",
+  };
+}
+
+export async function fetchSentPixByIdEnvio(idEnvio: string): Promise<SentPixStatusResult> {
+  if (!isEfiProductionMode()) {
+    return { provider: "mock", idEnvio, e2eId: `mock-${idEnvio}`, rawStatus: "MOCK", status: "COMPLETED" };
+  }
+
+  const res = await efiFetch("pix", `/v2/gn/pix/enviados/id-envio/${idEnvio}`, { method: "GET" });
+  const rawStatus = String(res.status ?? "").toUpperCase();
+  const completed = ["REALIZADO", "CONCLUIDO", "CONCLUÍDO", "COMPLETED"].includes(rawStatus);
+  const failed = ["NAO_REALIZADO", "NÃO_REALIZADO", "REJEITADO", "DEVOLVIDO", "CANCELADO", "FAILED"].includes(rawStatus);
+
+  return {
+    provider: "efi",
+    idEnvio,
+    e2eId: res.e2eId ?? res.endToEndId,
+    rawStatus,
+    status: completed ? "COMPLETED" : failed ? "FAILED" : "PROCESSING",
+    paidAt: res.horario?.liquidacao,
+  };
 }
 
 // Consulta status de uma cobrança Pix (CONCLUIDA = paga).

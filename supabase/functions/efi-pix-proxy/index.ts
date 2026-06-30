@@ -192,7 +192,7 @@ Deno.serve(async (req) => {
 
   try {
     const token = await getToken(api);
-    const client = getHttpClient();
+    const client = api === "pix" ? getHttpClient() : null;
     const url = `${baseUrl(api)}${path}`;
     const res = await fetch(url, {
       method,
@@ -202,7 +202,7 @@ Deno.serve(async (req) => {
       },
       body: body ? JSON.stringify(body) : undefined,
       // @ts-ignore - Deno
-      client,
+      ...(client ? { client } : {}),
     });
     const text = await res.text();
     let parsed: unknown = null;

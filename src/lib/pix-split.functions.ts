@@ -415,6 +415,9 @@ export const generateBoletoCharge = createServerFn({ method: "POST" })
           phone: ctx.tenant.phone ?? undefined,
         },
         description: `Aluguel Nexo - parcela ${(ctx.inst as any).due_date}`,
+        finePercent: Number((ctx.inst as any)?.contracts?.late_fee_percent ?? 0) || undefined,
+        monthlyInterestPercent:
+          Number((ctx.inst as any)?.contracts?.daily_interest_percent ?? 0) || undefined,
       });
 
       // Agenda repasse D+1 da imobiliária/proprietário

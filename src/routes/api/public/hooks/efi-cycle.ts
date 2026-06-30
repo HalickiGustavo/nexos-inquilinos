@@ -6,7 +6,11 @@ export const Route = createFileRoute("/api/public/hooks/efi-cycle")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const provided = request.headers.get("apikey") ?? request.headers.get("x-cron-secret");
+        const auth = request.headers.get("authorization") ?? "";
+        const provided =
+          request.headers.get("apikey") ??
+          request.headers.get("x-cron-secret") ??
+          (auth.toLowerCase().startsWith("bearer ") ? auth.slice(7).trim() : null);
         const candidates = [
           process.env.SUPABASE_ANON_KEY,
           process.env.SUPABASE_PUBLISHABLE_KEY,

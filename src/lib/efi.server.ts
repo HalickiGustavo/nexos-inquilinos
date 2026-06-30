@@ -52,6 +52,12 @@ export type BoletoChargeInput = {
     phone?: string;
   };
   description: string;
+  /** Percentual de multa por atraso (ex.: 2 = 2%). */
+  finePercent?: number;
+  /** Percentual de juros AO MÊS (ex.: 1 = 1% a.m.). Convertido para diário. */
+  monthlyInterestPercent?: number;
+  /** URL absoluta para receber webhook de pagamento do boleto (opcional). */
+  notificationUrl?: string;
 };
 
 export type BoletoChargeResult = {

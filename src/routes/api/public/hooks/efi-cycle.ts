@@ -6,9 +6,13 @@ export const Route = createFileRoute("/api/public/hooks/efi-cycle")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const expected = process.env.SUPABASE_ANON_KEY;
-        const provided = request.headers.get("apikey");
-        if (!expected || provided !== expected) {
+        const provided = request.headers.get("apikey") ?? request.headers.get("x-cron-secret");
+        const candidates = [
+          process.env.SUPABASE_ANON_KEY,
+          process.env.SUPABASE_PUBLISHABLE_KEY,
+          process.env.CRON_SECRET,
+        ].filter(Boolean) as string[];
+        if (!provided || !candidates.includes(provided)) {
           return new Response("Unauthorized", { status: 401 });
         }
         try {

@@ -21,6 +21,8 @@ export function PixSplitConfigPanel() {
 
   const [agencyKey, setAgencyKey] = useState("");
   const [agencyType, setAgencyType] = useState("CNPJ");
+  const [agencyDocument, setAgencyDocument] = useState("");
+  const [agencyEfiAccount, setAgencyEfiAccount] = useState("");
 
   useEffect(() => {
     if (!user?.id) return;
@@ -28,11 +30,13 @@ export function PixSplitConfigPanel() {
       setLoading(true);
       const { data } = await supabase
         .from("agency_settings")
-        .select("agency_pix_key, agency_pix_key_type")
+        .select("agency_pix_key, agency_pix_key_type, agency_document, agency_efi_account_number")
         .eq("manager_user_id", user.id)
         .maybeSingle();
       setAgencyKey(data?.agency_pix_key ?? "");
       setAgencyType(data?.agency_pix_key_type ?? "CNPJ");
+      setAgencyDocument((data as any)?.agency_document ?? "");
+      setAgencyEfiAccount((data as any)?.agency_efi_account_number ?? "");
       setLoading(false);
     })();
   }, [user?.id]);
@@ -47,6 +51,8 @@ export function PixSplitConfigPanel() {
           manager_user_id: user.id,
           agency_pix_key: agencyKey.trim() || null,
           agency_pix_key_type: agencyType,
+          agency_document: agencyDocument.replace(/\D/g, "") || null,
+          agency_efi_account_number: agencyEfiAccount.replace(/\D/g, "") || null,
         } as any,
         { onConflict: "manager_user_id" },
       );
@@ -108,12 +114,30 @@ export function PixSplitConfigPanel() {
           <Button onClick={saveAgency} disabled={saving} size="sm">
             {saving && <Loader2 className="size-3.5 mr-2 animate-spin" />}Salvar
           </Button>
+          <div className="space-y-1 sm:col-span-2">
+            <Label className="text-xs">CPF/CNPJ da conta Efí</Label>
+            <Input
+              value={agencyDocument}
+              onChange={(e) => setAgencyDocument(e.target.value)}
+              placeholder="Documento vinculado à conta Efí"
+              inputMode="numeric"
+            />
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs">Conta Efí</Label>
+            <Input
+              value={agencyEfiAccount}
+              onChange={(e) => setAgencyEfiAccount(e.target.value.replace(/\D/g, ""))}
+              placeholder="Número"
+              inputMode="numeric"
+            />
+          </div>
         </div>
       )}
 
       <p className="text-xs text-muted-foreground">
-        Cada proprietário cadastra a própria chave Pix na aba <strong>Saldo e Saque</strong> dele.
-        O sistema busca automaticamente pelo proprietário vinculado ao imóvel ao gerar o Pix do inquilino.
+        Para split nativo Efí, cada recebedor precisa informar a conta Efí e o CPF/CNPJ vinculado a ela.
+        Chave Pix externa continua sendo usada no fallback de repasse automático.
       </p>
     </Card>
   );

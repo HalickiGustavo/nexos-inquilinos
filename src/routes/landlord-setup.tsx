@@ -35,7 +35,7 @@ function LandlordSetup() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("profiles")
-        .select("pix_key, pix_key_type")
+        .select("pix_key, pix_key_type, efi_account_number")
         .eq("id", user!.id)
         .maybeSingle();
       if (error) throw error;
@@ -45,11 +45,13 @@ function LandlordSetup() {
 
   const [pixKeyType, setPixKeyType] = useState<"CPF" | "CNPJ" | "EMAIL" | "PHONE" | "EVP">("CPF");
   const [pixKey, setPixKey] = useState("");
+  const [efiAccountNumber, setEfiAccountNumber] = useState("");
 
   useEffect(() => {
     if (profile) {
       if (profile.pix_key_type) setPixKeyType(profile.pix_key_type as any);
       if (profile.pix_key) setPixKey(profile.pix_key);
+      if ((profile as any).efi_account_number) setEfiAccountNumber((profile as any).efi_account_number);
     }
   }, [profile]);
 
@@ -61,11 +63,13 @@ function LandlordSetup() {
     ev.preventDefault();
     if (!user) return;
     if (!pixKey.trim()) return toast.error("Informe a chave PIX para recebimento");
+    if (!efiAccountNumber.trim()) return toast.error("Informe o número da sua conta Efí para split nativo");
 
     setBusy(true);
     const { error } = await supabase.from("profiles").update({
       pix_key: pixKey.trim(),
       pix_key_type: pixKeyType,
+      efi_account_number: efiAccountNumber.trim(),
     } as any).eq("id", user.id);
     if (!error) {
       await supabase.from("properties").update({
@@ -119,6 +123,16 @@ function LandlordSetup() {
           <div className="space-y-2">
             <Label>Chave PIX *</Label>
             <Input required value={pixKey} onChange={(e) => setPixKey(e.target.value)} placeholder="chave para recebimento" />
+          </div>
+          <div className="space-y-2">
+            <Label>Conta Efí *</Label>
+            <Input
+              required
+              value={efiAccountNumber}
+              onChange={(e) => setEfiAccountNumber(e.target.value.replace(/\D/g, ""))}
+              placeholder="número da conta Efí"
+              inputMode="numeric"
+            />
           </div>
 
           <Button type="submit" disabled={busy} className="w-full">

@@ -46,6 +46,8 @@ export type PixDebugInfo = {
     hasOwnerPixKey: boolean;
     ownerPixKeyType: string | null;
     ownerPixKeyMasked: string | null;
+    hasOwnerEfiAccount: boolean;
+    hasAgencyEfiAccount: boolean;
     hasNexoPixKey: boolean;
   };
 };
@@ -119,6 +121,8 @@ function buildPixDebug(error: unknown, installmentId: string, txid?: string, ctx
           hasOwnerPixKey: Boolean(ctx.ownerPixKey),
           ownerPixKeyType: ctx.ownerPixKeyType,
           ownerPixKeyMasked: maskPixKey(ctx.ownerPixKey),
+          hasOwnerEfiAccount: Boolean(ctx.ownerEfiAccountNumber),
+          hasAgencyEfiAccount: Boolean(ctx.agency?.agency_efi_account_number),
           hasNexoPixKey: Boolean(ctx.nexoKey),
         }
       : undefined,
@@ -150,7 +154,7 @@ async function loadContext(supabase: any, installmentId: string) {
         .maybeSingle(),
       supabaseAdmin
         .from("agency_settings")
-        .select("agency_pix_key, agency_pix_key_type")
+        .select("agency_pix_key, agency_pix_key_type, agency_efi_account_number, agency_document")
         .eq("manager_user_id", managerUserId)
         .maybeSingle(),
       supabaseAdmin
@@ -171,15 +175,19 @@ async function loadContext(supabase: any, installmentId: string) {
   // Mantém compat com properties.owner_pix_key como fallback se ainda não houver vínculo.
   let ownerPixKey: string | null = null;
   let ownerPixKeyType: string | null = null;
+  let ownerDocument: string | null = null;
+  let ownerEfiAccountNumber: string | null = null;
   if ((prop as any)?.landlord_id) {
     const { data: landlordProfile } = await supabaseAdmin
       .from("profiles")
-      .select("pix_key, pix_key_type")
+      .select("pix_key, pix_key_type, document, efi_account_number")
       .eq("id", (prop as any).landlord_id)
       .maybeSingle();
     ownerPixKey = (landlordProfile as any)?.pix_key ?? null;
     const t = (landlordProfile as any)?.pix_key_type as string | null;
     ownerPixKeyType = t ? t.toUpperCase() : null;
+    ownerDocument = (landlordProfile as any)?.document ?? null;
+    ownerEfiAccountNumber = (landlordProfile as any)?.efi_account_number ?? null;
   }
   if (!ownerPixKey) {
     ownerPixKey = (prop as any)?.owner_pix_key ?? null;
@@ -219,6 +227,8 @@ async function loadContext(supabase: any, installmentId: string) {
     nexoKeyType: NEXO_MASTER_PIX_KEY_TYPE,
     ownerPixKey,
     ownerPixKeyType,
+    ownerDocument,
+    ownerEfiAccountNumber,
     nexoAmount,
     agencyAmount,
     ownerAmount,
@@ -261,6 +271,8 @@ export const generateTripleSplitPix = createServerFn({ method: "POST" })
                 pixKeyType: (ctx.agency.agency_pix_key_type as any) || "EVP",
                 amount: ctx.agencyAmount,
                 name: "IMOBILIARIA",
+                document: (ctx.agency as any)?.agency_document ?? null,
+                efiAccountNumber: (ctx.agency as any)?.agency_efi_account_number ?? null,
               }
             : undefined,
           owner: ctx.ownerPixKey
@@ -269,6 +281,8 @@ export const generateTripleSplitPix = createServerFn({ method: "POST" })
                 pixKeyType: (ctx.ownerPixKeyType as any) || "EVP",
                 amount: ctx.ownerAmount,
                 name: "PROPRIETARIO",
+                document: ctx.ownerDocument,
+                efiAccountNumber: ctx.ownerEfiAccountNumber,
               }
             : undefined,
         },

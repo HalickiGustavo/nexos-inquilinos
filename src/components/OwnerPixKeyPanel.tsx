@@ -26,6 +26,7 @@ export function OwnerPixKeyPanel() {
   const [saving, setSaving] = useState(false);
   const [pixKey, setPixKey] = useState("");
   const [pixKeyType, setPixKeyType] = useState<KeyType>("cpf");
+  const [efiAccountNumber, setEfiAccountNumber] = useState("");
 
   useEffect(() => {
     if (!user?.id) return;
@@ -33,11 +34,12 @@ export function OwnerPixKeyPanel() {
       setLoading(true);
       const { data } = await supabase
         .from("profiles")
-        .select("pix_key, pix_key_type")
+        .select("pix_key, pix_key_type, efi_account_number")
         .eq("id", user.id)
         .maybeSingle();
       setPixKey(data?.pix_key ?? "");
       if (data?.pix_key_type) setPixKeyType(data.pix_key_type as any);
+      setEfiAccountNumber((data as any)?.efi_account_number ?? "");
       setLoading(false);
     })();
   }, [user?.id]);
@@ -45,10 +47,11 @@ export function OwnerPixKeyPanel() {
   const save = async () => {
     if (!user?.id) return;
     if (!pixKey.trim()) return toast.error("Informe sua chave PIX para receber os repasses.");
+    if (!efiAccountNumber.trim()) return toast.error("Informe o número da sua conta Efí para usar split nativo.");
     setSaving(true);
     const { error } = await supabase
       .from("profiles")
-      .update({ pix_key: pixKey.trim(), pix_key_type: pixKeyType } as any)
+      .update({ pix_key: pixKey.trim(), pix_key_type: pixKeyType, efi_account_number: efiAccountNumber.trim() } as any)
       .eq("id", user.id);
     if (!error) {
       // Propaga para todos os imóveis vinculados (autônomo: user_id; convidado: landlord_id)
@@ -100,13 +103,22 @@ export function OwnerPixKeyPanel() {
                 placeholder="CPF, CNPJ, e-mail, telefone ou chave aleatória"
               />
             </div>
+            <div className="space-y-1 sm:col-span-2">
+              <Label className="text-xs">Conta Efí</Label>
+              <Input
+                value={efiAccountNumber}
+                onChange={(e) => setEfiAccountNumber(e.target.value.replace(/\D/g, ""))}
+                placeholder="Número da conta Efí do proprietário"
+                inputMode="numeric"
+              />
+            </div>
             <Button onClick={save} disabled={saving} size="sm">
               {saving && <Loader2 className="size-3.5 mr-2 animate-spin" />}Salvar
             </Button>
           </div>
           <div className="flex items-start gap-2 text-xs text-muted-foreground">
             <ShieldCheck className="size-3.5 mt-0.5 text-emerald-500 shrink-0" />
-            <span>NEXO retém apenas a taxa de serviço; o restante cai direto na sua chave PIX.</span>
+            <span>Para split nativo Efí, o favorecido precisa ter uma conta Efí; a chave Pix sozinha não é aceita pela API de split.</span>
           </div>
         </>
       )}

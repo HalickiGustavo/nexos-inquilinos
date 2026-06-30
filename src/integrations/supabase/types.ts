@@ -16,6 +16,8 @@ export type Database = {
     Tables: {
       agency_settings: {
         Row: {
+          agency_document: string | null
+          agency_efi_account_number: string | null
           agency_pix_key: string | null
           agency_pix_key_type: string | null
           created_at: string
@@ -27,6 +29,8 @@ export type Database = {
           webhook_token: string
         }
         Insert: {
+          agency_document?: string | null
+          agency_efi_account_number?: string | null
           agency_pix_key?: string | null
           agency_pix_key_type?: string | null
           created_at?: string
@@ -38,6 +42,8 @@ export type Database = {
           webhook_token?: string
         }
         Update: {
+          agency_document?: string | null
+          agency_efi_account_number?: string | null
           agency_pix_key?: string | null
           agency_pix_key_type?: string | null
           created_at?: string
@@ -1127,6 +1133,7 @@ export type Database = {
           created_at: string
           document: string | null
           document_type: string | null
+          efi_account_number: string | null
           email: string | null
           full_name: string | null
           id: string
@@ -1151,6 +1158,7 @@ export type Database = {
           created_at?: string
           document?: string | null
           document_type?: string | null
+          efi_account_number?: string | null
           email?: string | null
           full_name?: string | null
           id: string
@@ -1175,6 +1183,7 @@ export type Database = {
           created_at?: string
           document?: string | null
           document_type?: string | null
+          efi_account_number?: string | null
           email?: string | null
           full_name?: string | null
           id?: string

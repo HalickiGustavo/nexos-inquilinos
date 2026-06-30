@@ -108,8 +108,11 @@ export const Route = createFileRoute("/api/public/efi-webhook")({
             }
           }
         } catch (e: any) {
-          console.error("[efi-webhook] erro:", e);
-          return new Response(JSON.stringify({ ok: false, error: e?.message }), { status: 500 });
+          // Nunca propagar erro de repasse: o evento já foi persistido (ou
+          // tentado) e a Efí precisa receber 200 para não reenviar em loop.
+          // Falhas de repasse ficam registradas em efi_payouts.status=failed
+          // e serão reprocessadas pelo cron D+1.
+          console.error("[efi-webhook] erro pós-persistência (ignorado):", e);
         }
 
         return new Response(JSON.stringify({ ok: true }), {

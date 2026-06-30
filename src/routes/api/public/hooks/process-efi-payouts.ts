@@ -6,9 +6,17 @@ export const Route = createFileRoute("/api/public/hooks/process-efi-payouts")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const expected = process.env.SUPABASE_ANON_KEY;
-        const provided = request.headers.get("apikey");
-        if (!expected || provided !== expected) {
+        const auth = request.headers.get("authorization") ?? "";
+        const provided =
+          request.headers.get("apikey") ??
+          request.headers.get("x-cron-secret") ??
+          (auth.toLowerCase().startsWith("bearer ") ? auth.slice(7).trim() : null);
+        const candidates = [
+          process.env.SUPABASE_ANON_KEY,
+          process.env.SUPABASE_PUBLISHABLE_KEY,
+          process.env.CRON_SECRET,
+        ].filter(Boolean) as string[];
+        if (!provided || !candidates.includes(provided)) {
           return new Response("Unauthorized", { status: 401 });
         }
 

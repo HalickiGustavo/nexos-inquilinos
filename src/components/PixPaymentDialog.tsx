@@ -248,26 +248,16 @@ export function PixPaymentDialog({
               </Badge>
             </div>
 
-            {!boletoUrl && !boletoLoading && (
-              <Button className="w-full" onClick={handleGenerateBoleto}>
-                <FileText className="size-4 mr-2" /> Gerar Boleto
-              </Button>
-            )}
-
-            {boletoLoading && (
-              <div className="flex flex-col items-center justify-center py-10 text-muted-foreground">
-                <Loader2 className="size-8 animate-spin mb-3 text-primary" />
-                <p className="text-sm">Emitindo boleto na Efí...</p>
+            {!boletoUrl && (
+              <div className="flex flex-col items-center justify-center py-8 text-center gap-2 rounded-lg border border-dashed bg-muted/30">
+                <Clock className="size-7 text-muted-foreground" />
+                <p className="text-sm font-medium">Boleto ainda não disponível</p>
+                <p className="text-xs text-muted-foreground max-w-xs">
+                  O boleto desta parcela é emitido automaticamente 15 dias antes do vencimento ({formatDate(installment.due_date)}). Enquanto isso, use o Pix.
+                </p>
               </div>
             )}
 
-            {boletoError && (
-              <div className="flex flex-col items-center justify-center py-6 text-center">
-                <AlertCircle className="size-7 text-destructive mb-2" />
-                <p className="text-sm font-medium text-destructive">Não foi possível gerar o boleto</p>
-                <p className="text-xs text-muted-foreground mt-1">{boletoError}</p>
-              </div>
-            )}
 
             {boletoUrl && (
               <div className="space-y-3">

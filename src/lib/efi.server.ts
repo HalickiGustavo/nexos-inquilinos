@@ -328,89 +328,14 @@ export async function createSplitCharge(input: SplitChargeInput): Promise<SplitC
     return { provider: "mock", txid: input.txid, pixPayload: payload, qrCodeBase64: qr };
   }
 
-  // Produção — Split NATIVO da Efí (dinheiro cai já dividido nas contas dos
-  // recebedores no momento da liquidação Pix).
+  // Produção — modelo "tudo na Nexo + repasse Pix".
   //
-  // Fluxo Efí (3 passos):
-  //   1) POST /v2/gn/split/config       → cria configuração e devolve {id}
-  //   2) PUT  /v2/cob/:txid              → cria a cobrança Pix (sem split inline)
-  //   3) PUT  /v2/gn/split/vinculo/cob/:txid/:idConfig → vincula split à cobrança
-  //
-  // Os recebedores (imobiliária / proprietário) precisam ter conta digital Efí.
-  // A Efí identifica o favorecido por `conta` + CPF/CNPJ, não por chave Pix.
+  // Toda a cobrança cai 100% na conta Efí da Nexo. O split entre
+  // proprietário/imobiliária é feito depois via `sendPix` (instantâneo no
+  // webhook/polling, com fallback D+1 pelo cron). Isso evita a exigência da
+  // Efí de conta digital + CPF/CNPJ para split nativo.
   const nexoKey = process.env.EFI_PIX_KEY || input.receivers.nexo.pixKey;
 
-  // Monta os "repasses" (favorecidos diferentes da Nexo) em valor fixo.
-  // Importante: o split nativo da Efí NÃO aceita chave Pix como favorecido.
-  // Ele exige uma conta digital Efí (`conta`) + CPF/CNPJ dessa conta.
-  const repasses: Array<{
-    favorecido: { cpf?: string; cnpj?: string; conta: string };
-    tipo: "fixo" | "porcentagem";
-    valor: string;
-  }> = [];
-  if (input.receivers.agency?.pixKey && input.receivers.agency.amount > 0) {
-    repasses.push({
-      favorecido: buildEfiSplitFavorecido(input.receivers.agency, "imobiliária"),
-      tipo: "fixo",
-      valor: formatEfiMoney(input.receivers.agency.amount),
-    });
-  }
-  if (input.receivers.owner?.pixKey && input.receivers.owner.amount > 0) {
-    repasses.push({
-      favorecido: buildEfiSplitFavorecido(input.receivers.owner, "proprietário"),
-      tipo: "fixo",
-      valor: formatEfiMoney(input.receivers.owner.amount),
-    });
-  }
-  if (repasses.length === 0 && input.totalValue > input.receivers.nexo.amount) {
-    throw new Error("Não há favorecido válido para o split nativo da Efí. Cadastre os dados de repasse do proprietário/imobiliária.");
-  }
-
-  // Nexo (recebedor principal) fica com `minhaParte`.
-  const minhaParte = {
-    tipo: "fixo" as const,
-    valor: formatEfiMoney(input.receivers.nexo.amount),
-  };
-
-  console.info("[efi] split config payload", {
-    txid: input.txid,
-    total: formatEfiMoney(input.totalValue),
-    minhaParte,
-    repasses: repasses.map((r) => ({
-      tipo: r.tipo,
-      valor: r.valor,
-      favorecido: {
-        conta: r.favorecido.conta ? "***" : undefined,
-        cpf: r.favorecido.cpf ? `${r.favorecido.cpf.slice(0, 3)}***${r.favorecido.cpf.slice(-2)}` : undefined,
-        cnpj: r.favorecido.cnpj ? `${r.favorecido.cnpj.slice(0, 3)}***${r.favorecido.cnpj.slice(-2)}` : undefined,
-      },
-    })),
-  });
-
-  // 1) Cria a configuração de split antes da cobrança. Assim, se a Efí
-  // recusar conta/documento/schema, não fica uma cobrança órfã sem split.
-  let idConfig: string | null = null;
-  if (repasses.length > 0) {
-    const configBody = {
-        descricao: `NEXO split ${input.txid}`.slice(0, 140),
-        lancamento: { imediato: true },
-        split: {
-          divisaoTarifa: "assumir_total",
-          minhaParte,
-          repasses,
-        },
-      };
-    const config = await efiFetch("pix", `/v2/gn/split/config`, {
-      method: "POST",
-      body: configBody,
-    });
-    idConfig = String(config?.id ?? config?.identificador ?? config?.split?.id ?? "");
-    if (!idConfig) {
-      throw new Error("Efí não devolveu id da config de split.");
-    }
-  }
-
-  // 2) Cria a cobrança Pix na conta Nexo.
   const cob = await efiFetch("pix", `/v2/cob/${input.txid}`, {
     method: "PUT",
     body: {
@@ -420,26 +345,6 @@ export async function createSplitCharge(input: SplitChargeInput): Promise<SplitC
       solicitacaoPagador: input.description.slice(0, 140),
     },
   });
-
-  // 3) Vincula a config de split à cobrança.
-  if (idConfig) {
-    try {
-      await efiFetch("pix", `/v2/gn/split/vinculo/cob/${input.txid}/${idConfig}`, {
-        method: "PUT",
-      });
-    } catch (splitErr: any) {
-      // Mantém a cobrança viva mesmo se o vínculo falhar — operador pode
-      // reprocessar via repasse D+1. Anexa contexto ao erro original.
-      const debug = (splitErr as any)?.efiDebug ?? {};
-      console.error("[efi] split vinculo falhou — cobrança seguirá sem split nativo", {
-        txid: input.txid,
-        repasses,
-        minhaParte,
-        debug,
-      });
-      throw splitErr;
-    }
-  }
 
   const locLocation = cob.loc?.location ?? cob.location;
   if (locLocation) {
@@ -468,6 +373,7 @@ export async function createSplitCharge(input: SplitChargeInput): Promise<SplitC
     qrCodeBase64: (qr.imagemQrcode || "").replace(/^data:image\/png;base64,/, ""),
   };
 }
+
 
 // =====================================================================
 // BOLETO (cai 100% na conta Efí da Nexo; repasse via sendPix D+1)

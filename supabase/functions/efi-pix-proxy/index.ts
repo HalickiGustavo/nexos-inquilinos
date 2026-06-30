@@ -29,9 +29,16 @@ function baseUrl(api: Api): string {
       ? "https://pix-h.api.efipay.com.br"
       : "https://pix.api.efipay.com.br";
   }
+  // API Cobranças (boleto). NÃO inclui /v1 no base; o caller passa o path
+  // completo (`/v1/charge/one-step`, etc).
   return EFI_ENV === "sandbox"
-    ? "https://sandbox.gerencianet.com.br/v1"
-    : "https://api.gerencianet.com.br/v1";
+    ? "https://cobrancas-h.api.efipay.com.br"
+    : "https://cobrancas.api.efipay.com.br";
+}
+
+// Endpoint OAuth diverge por API: Pix usa /oauth/token, Cobranças usa /v1/authorize.
+function oauthPath(api: Api): string {
+  return api === "pix" ? "/oauth/token" : "/v1/authorize";
 }
 
 // ---------------------------------------------------------------------------

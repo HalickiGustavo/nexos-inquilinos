@@ -60,6 +60,7 @@ import { Route as ApiPublicHooksSendMaintenanceResponseRemindersRouteImport } fr
 import { Route as ApiPublicHooksProcessScheduledInvoicesRouteImport } from './routes/api/public/hooks/process-scheduled-invoices'
 import { Route as ApiPublicHooksProcessLandlordPayoutsRouteImport } from './routes/api/public/hooks/process-landlord-payouts'
 import { Route as ApiPublicHooksProcessEfiPayoutsRouteImport } from './routes/api/public/hooks/process-efi-payouts'
+import { Route as ApiPublicHooksEfiRegisterWebhookRouteImport } from './routes/api/public/hooks/efi-register-webhook'
 import { Route as ApiPublicHooksEfiCycleRouteImport } from './routes/api/public/hooks/efi-cycle'
 import { Route as ManagerManagerConfiguracoesRoletaRouteImport } from './routes/_manager/manager.configuracoes.roleta'
 import { Route as AuthenticatedAdminConfiguracoesSubcontaRouteImport } from './routes/_authenticated/admin.configuracoes.subconta'
@@ -339,6 +340,12 @@ const ApiPublicHooksProcessEfiPayoutsRoute =
     path: '/api/public/hooks/process-efi-payouts',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksEfiRegisterWebhookRoute =
+  ApiPublicHooksEfiRegisterWebhookRouteImport.update({
+    id: '/api/public/hooks/efi-register-webhook',
+    path: '/api/public/hooks/efi-register-webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksEfiCycleRoute = ApiPublicHooksEfiCycleRouteImport.update({
   id: '/api/public/hooks/efi-cycle',
   path: '/api/public/hooks/efi-cycle',
@@ -414,6 +421,7 @@ export interface FileRoutesByFullPath {
   '/admin/configuracoes/subconta': typeof AuthenticatedAdminConfiguracoesSubcontaRoute
   '/manager/configuracoes/roleta': typeof ManagerManagerConfiguracoesRoletaRoute
   '/api/public/hooks/efi-cycle': typeof ApiPublicHooksEfiCycleRoute
+  '/api/public/hooks/efi-register-webhook': typeof ApiPublicHooksEfiRegisterWebhookRoute
   '/api/public/hooks/process-efi-payouts': typeof ApiPublicHooksProcessEfiPayoutsRoute
   '/api/public/hooks/process-landlord-payouts': typeof ApiPublicHooksProcessLandlordPayoutsRoute
   '/api/public/hooks/process-scheduled-invoices': typeof ApiPublicHooksProcessScheduledInvoicesRoute
@@ -469,6 +477,7 @@ export interface FileRoutesByTo {
   '/admin/configuracoes/subconta': typeof AuthenticatedAdminConfiguracoesSubcontaRoute
   '/manager/configuracoes/roleta': typeof ManagerManagerConfiguracoesRoletaRoute
   '/api/public/hooks/efi-cycle': typeof ApiPublicHooksEfiCycleRoute
+  '/api/public/hooks/efi-register-webhook': typeof ApiPublicHooksEfiRegisterWebhookRoute
   '/api/public/hooks/process-efi-payouts': typeof ApiPublicHooksProcessEfiPayoutsRoute
   '/api/public/hooks/process-landlord-payouts': typeof ApiPublicHooksProcessLandlordPayoutsRoute
   '/api/public/hooks/process-scheduled-invoices': typeof ApiPublicHooksProcessScheduledInvoicesRoute
@@ -528,6 +537,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/configuracoes/subconta': typeof AuthenticatedAdminConfiguracoesSubcontaRoute
   '/_manager/manager/configuracoes/roleta': typeof ManagerManagerConfiguracoesRoletaRoute
   '/api/public/hooks/efi-cycle': typeof ApiPublicHooksEfiCycleRoute
+  '/api/public/hooks/efi-register-webhook': typeof ApiPublicHooksEfiRegisterWebhookRoute
   '/api/public/hooks/process-efi-payouts': typeof ApiPublicHooksProcessEfiPayoutsRoute
   '/api/public/hooks/process-landlord-payouts': typeof ApiPublicHooksProcessLandlordPayoutsRoute
   '/api/public/hooks/process-scheduled-invoices': typeof ApiPublicHooksProcessScheduledInvoicesRoute
@@ -585,6 +595,7 @@ export interface FileRouteTypes {
     | '/admin/configuracoes/subconta'
     | '/manager/configuracoes/roleta'
     | '/api/public/hooks/efi-cycle'
+    | '/api/public/hooks/efi-register-webhook'
     | '/api/public/hooks/process-efi-payouts'
     | '/api/public/hooks/process-landlord-payouts'
     | '/api/public/hooks/process-scheduled-invoices'
@@ -640,6 +651,7 @@ export interface FileRouteTypes {
     | '/admin/configuracoes/subconta'
     | '/manager/configuracoes/roleta'
     | '/api/public/hooks/efi-cycle'
+    | '/api/public/hooks/efi-register-webhook'
     | '/api/public/hooks/process-efi-payouts'
     | '/api/public/hooks/process-landlord-payouts'
     | '/api/public/hooks/process-scheduled-invoices'
@@ -698,6 +710,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/configuracoes/subconta'
     | '/_manager/manager/configuracoes/roleta'
     | '/api/public/hooks/efi-cycle'
+    | '/api/public/hooks/efi-register-webhook'
     | '/api/public/hooks/process-efi-payouts'
     | '/api/public/hooks/process-landlord-payouts'
     | '/api/public/hooks/process-scheduled-invoices'
@@ -721,6 +734,7 @@ export interface RootRouteChildren {
   ApiPublicAsaasWebhookRoute: typeof ApiPublicAsaasWebhookRoute
   ApiPublicEfiWebhookRoute: typeof ApiPublicEfiWebhookRoute
   ApiPublicHooksEfiCycleRoute: typeof ApiPublicHooksEfiCycleRoute
+  ApiPublicHooksEfiRegisterWebhookRoute: typeof ApiPublicHooksEfiRegisterWebhookRoute
   ApiPublicHooksProcessEfiPayoutsRoute: typeof ApiPublicHooksProcessEfiPayoutsRoute
   ApiPublicHooksProcessLandlordPayoutsRoute: typeof ApiPublicHooksProcessLandlordPayoutsRoute
   ApiPublicHooksProcessScheduledInvoicesRoute: typeof ApiPublicHooksProcessScheduledInvoicesRoute
@@ -1091,6 +1105,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksProcessEfiPayoutsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/efi-register-webhook': {
+      id: '/api/public/hooks/efi-register-webhook'
+      path: '/api/public/hooks/efi-register-webhook'
+      fullPath: '/api/public/hooks/efi-register-webhook'
+      preLoaderRoute: typeof ApiPublicHooksEfiRegisterWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/efi-cycle': {
       id: '/api/public/hooks/efi-cycle'
       path: '/api/public/hooks/efi-cycle'
@@ -1244,6 +1265,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicAsaasWebhookRoute: ApiPublicAsaasWebhookRoute,
   ApiPublicEfiWebhookRoute: ApiPublicEfiWebhookRoute,
   ApiPublicHooksEfiCycleRoute: ApiPublicHooksEfiCycleRoute,
+  ApiPublicHooksEfiRegisterWebhookRoute: ApiPublicHooksEfiRegisterWebhookRoute,
   ApiPublicHooksProcessEfiPayoutsRoute: ApiPublicHooksProcessEfiPayoutsRoute,
   ApiPublicHooksProcessLandlordPayoutsRoute:
     ApiPublicHooksProcessLandlordPayoutsRoute,
@@ -1262,13 +1284,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

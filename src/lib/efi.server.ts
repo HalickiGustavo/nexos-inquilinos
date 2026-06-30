@@ -252,13 +252,13 @@ function efiRuntimeFlags(api: "pix" | "boleto") {
 async function efiFetch(
   api: "pix" | "boleto",
   path: string,
-  init: { method: string; body?: any },
+  init: { method: string; body?: any; headers?: Record<string, string> },
 ): Promise<any> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   let invoked: { data: any; error: any };
   try {
     invoked = await supabaseAdmin.functions.invoke("efi-pix-proxy", {
-      body: { api, path, method: init.method, body: init.body },
+      body: { api, path, method: init.method, body: init.body, headers: init.headers },
     });
   } catch (error) {
     const debug = {

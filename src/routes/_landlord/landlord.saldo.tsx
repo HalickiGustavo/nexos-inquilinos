@@ -37,6 +37,7 @@ function LandlordSaldo() {
 
   const [pixKey, setPixKey] = useState("");
   const [pixType, setPixType] = useState<PixKeyType>("cpf");
+  const [efiAccountNumber, setEfiAccountNumber] = useState("");
   const [savingKey, setSavingKey] = useState(false);
 
   const [open, setOpen] = useState(false);
@@ -50,15 +51,21 @@ function LandlordSaldo() {
   async function savePix() {
     if (!user?.id) return;
     if (!pixKey.trim()) { toast.error("Informe a chave PIX."); return; }
+    if (!efiAccountNumber.trim() && !(profile as any)?.efi_account_number) { toast.error("Informe a conta Efí para split nativo."); return; }
     setSavingKey(true);
     try {
       const { error } = await supabase.from("profiles")
-        .update({ pix_key: pixKey.trim(), pix_key_type: pixType })
+        .update({
+          pix_key: pixKey.trim(),
+          pix_key_type: pixType,
+          efi_account_number: efiAccountNumber.trim() || (profile as any)?.efi_account_number || null,
+        } as any)
         .eq("id", user.id);
       if (error) throw error;
       toast.success("Chave PIX salva!");
       qc.invalidateQueries({ queryKey: ["landlord", "profile"] });
       setPixKey("");
+      setEfiAccountNumber("");
     } catch (err: any) {
       toast.error(err?.message || "Erro ao salvar.");
     } finally {
@@ -167,7 +174,7 @@ function LandlordSaldo() {
         </h2>
         <p className="text-sm text-muted-foreground mb-4">
           {profile?.pix_key
-            ? <>Chave atual: <strong className="text-foreground">{profile.pix_key}</strong> ({profile.pix_key_type})</>
+            ? <>Chave atual: <strong className="text-foreground">{profile.pix_key}</strong> ({profile.pix_key_type}) • Conta Efí: <strong className="text-foreground">{(profile as any).efi_account_number || "não cadastrada"}</strong></>
             : "Você ainda não cadastrou uma chave PIX."}
         </p>
         <div className="grid grid-cols-1 md:grid-cols-[160px_1fr_auto] gap-2">
@@ -183,10 +190,19 @@ function LandlordSaldo() {
           </Select>
           <Input value={pixKey} onChange={(e) => setPixKey(e.target.value)}
             placeholder={profile?.pix_key || "Digite a nova chave"} />
+          <Input
+            value={efiAccountNumber}
+            onChange={(e) => setEfiAccountNumber(e.target.value.replace(/\D/g, ""))}
+            placeholder={(profile as any)?.efi_account_number || "Conta Efí"}
+            inputMode="numeric"
+          />
           <Button onClick={savePix} disabled={savingKey || !pixKey.trim()}>
             {savingKey ? <Loader2 className="size-4 animate-spin" /> : "Salvar"}
           </Button>
         </div>
+        <p className="text-xs text-muted-foreground mt-3">
+          O split nativo da Efí exige que o proprietário tenha uma conta Efí; a chave Pix sozinha não basta para dividir na liquidação.
+        </p>
       </Card>
 
       {/* Histórico de saques */}

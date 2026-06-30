@@ -12,11 +12,15 @@
  *    falhou ou o webhook nunca chegou).
  */
 
-type PayoutAttempt = { recipient: "agency" | "owner"; ok: boolean; error?: string };
+type PayoutAttempt = { recipient: "agency" | "owner"; ok: boolean; pending?: boolean; error?: string };
 
-async function dispatchSplitPayout(split: any): Promise<{ ok: boolean; error?: string; attempts: PayoutAttempt[] }> {
+function buildIdEnvio(splitId: string, recipient: "agency" | "owner") {
+  return `nx${String(splitId).replace(/-/g, "").slice(0, 20)}${recipient.slice(0, 2)}`;
+}
+
+async function dispatchSplitPayout(split: any): Promise<{ ok: boolean; pending: boolean; error?: string; attempts: PayoutAttempt[] }> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { sendPix } = await import("./efi.server");
+  const { fetchSentPixByIdEnvio, sendPix } = await import("./efi.server");
 
   const targets: Array<{ recipient: "agency" | "owner"; pixKey: string | null; amount: number }> = [
     { recipient: "agency", pixKey: split.agency_pix_key, amount: Number(split.agency_amount) },
@@ -25,12 +29,16 @@ async function dispatchSplitPayout(split: any): Promise<{ ok: boolean; error?: s
 
   const attempts: PayoutAttempt[] = [];
   let allOk = true;
+  let hasPending = false;
   let lastErr: string | null = null;
 
   for (const t of targets) {
     if (!t.pixKey || t.amount <= 0) continue;
 
-    // Idempotência por destinatário: se já existe repasse não-falho, pula.
+    const idEnvio = buildIdEnvio(split.id, t.recipient);
+
+    // Idempotência por destinatário: se já existe repasse concluído, pula; se
+    // ainda está processando, consulta a Efí antes de considerar concluído.
     const { data: existing } = await supabaseAdmin
       .from("efi_payouts")
       .select("id, status")
@@ -39,8 +47,45 @@ async function dispatchSplitPayout(split: any): Promise<{ ok: boolean; error?: s
       .in("status", ["pending", "processing", "mock_sent", "paid", "completed"])
       .maybeSingle();
     if (existing) {
-      attempts.push({ recipient: t.recipient, ok: true });
-      continue;
+      if (["mock_sent", "paid", "completed"].includes(existing.status)) {
+        attempts.push({ recipient: t.recipient, ok: true });
+        continue;
+      }
+
+      try {
+        const status = await fetchSentPixByIdEnvio(idEnvio);
+        if (status.status === "COMPLETED") {
+          await supabaseAdmin
+            .from("efi_payouts")
+            .update({
+              e2e_id: status.e2eId,
+              status: "completed",
+              paid_at: status.paidAt ?? new Date().toISOString(),
+              error: null,
+            })
+            .eq("id", existing.id);
+          attempts.push({ recipient: t.recipient, ok: true });
+          continue;
+        }
+        if (status.status === "FAILED") {
+          await supabaseAdmin
+            .from("efi_payouts")
+            .update({ status: "failed", error: `Efí confirmou falha no envio Pix (${status.rawStatus})` })
+            .eq("id", existing.id);
+        } else {
+          allOk = false;
+          hasPending = true;
+          lastErr = `Repasse Pix ainda em processamento na Efí (${status.rawStatus || "sem status"})`;
+          attempts.push({ recipient: t.recipient, ok: false, pending: true, error: lastErr });
+          continue;
+        }
+      } catch (innerErr: any) {
+        allOk = false;
+        hasPending = true;
+        lastErr = `Aguardando confirmação real do repasse Pix na Efí: ${innerErr?.message ?? String(innerErr)}`;
+        attempts.push({ recipient: t.recipient, ok: false, pending: true, error: lastErr });
+        continue;
+      }
     }
 
     // 1) Cria registro PENDING antes de chamar a API (auditoria + retry).
@@ -64,7 +109,6 @@ async function dispatchSplitPayout(split: any): Promise<{ ok: boolean; error?: s
       continue;
     }
 
-    const idEnvio = `nx${String(split.id).replace(/-/g, "").slice(0, 20)}${t.recipient.slice(0, 2)}`;
     try {
       const res = await sendPix({
         idEnvio,
@@ -72,17 +116,27 @@ async function dispatchSplitPayout(split: any): Promise<{ ok: boolean; error?: s
         pixKey: t.pixKey,
         description: `Repasse Nexo - ${t.recipient === "agency" ? "Administracao" : "Proprietario"}`,
       });
-      // 2) Sucesso: COMPLETED + e2eId.
+      // 2) A Efí pode retornar apenas EM_PROCESSAMENTO. Só marcamos como
+      // completed quando houver liquidação real/REALIZADO; caso contrário fica
+      // processing até webhook/consulta confirmar.
+      const completed = res.status === "COMPLETED" || res.status === "MOCK";
       await supabaseAdmin
         .from("efi_payouts")
         .update({
           e2e_id: res.e2eId,
-          status: res.status === "MOCK" ? "mock_sent" : "completed",
-          paid_at: new Date().toISOString(),
+          status: res.status === "MOCK" ? "mock_sent" : completed ? "completed" : "processing",
+          paid_at: completed ? new Date().toISOString() : null,
           error: null,
         })
         .eq("id", pendingRow.id);
-      attempts.push({ recipient: t.recipient, ok: true });
+      if (completed) {
+        attempts.push({ recipient: t.recipient, ok: true });
+      } else {
+        allOk = false;
+        hasPending = true;
+        lastErr = "Repasse Pix enviado para a Efí e aguardando confirmação de liquidação.";
+        attempts.push({ recipient: t.recipient, ok: false, pending: true, error: lastErr });
+      }
     } catch (innerErr: any) {
       // 3) Falha: FAILED + mensagem completa; permanece elegível p/ retry.
       allOk = false;
@@ -98,7 +152,7 @@ async function dispatchSplitPayout(split: any): Promise<{ ok: boolean; error?: s
     }
   }
 
-  const out: { ok: boolean; error?: string; attempts: PayoutAttempt[] } = { ok: allOk, attempts };
+  const out: { ok: boolean; pending: boolean; error?: string; attempts: PayoutAttempt[] } = { ok: allOk, pending: hasPending, attempts };
   if (lastErr) out.error = lastErr;
   return out;
 }
@@ -135,6 +189,17 @@ export async function runInstantPayoutForSplit(
     return { ok: true, claimed: true };
   }
 
+  if (result.pending) {
+    await supabaseAdmin
+      .from("pix_splits")
+      .update({
+        payout_status: "processing",
+        payout_error: result.error ?? "Repasse Pix aguardando confirmação real da Efí",
+      })
+      .eq("id", splitId);
+    return { ok: false, claimed: true, error: result.error };
+  }
+
   // Falha — reagenda para o cron D+1 reprocessar
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
@@ -166,7 +231,7 @@ export async function runProcessEfiBoletoPayouts(): Promise<{
     .select("id")
     .in("charge_type", ["pix", "boleto"])
     .eq("status", "paid")
-    .eq("payout_status", "scheduled")
+    .in("payout_status", ["scheduled", "processing"])
     .lte("payout_scheduled_for", today)
     .limit(50);
 

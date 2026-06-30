@@ -122,6 +122,7 @@ async function getToken(api: Api): Promise<string> {
           "pix.write",
           "pix.read",
           "pix.send",
+          "gn.pix.send.read",
           "loterias.read",
           "webhook.write",
           "webhook.read",

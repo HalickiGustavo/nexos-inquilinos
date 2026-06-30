@@ -34,6 +34,8 @@ export const Route = createFileRoute("/api/public/efi-webhook")({
         // Efí Pix: payload.pix = [{ txid, valor, endToEndId, ... }]
         // Efí Boleto: payload.notification ou { event: 'charge.paid', charge_id }
         try {
+          const { runInstantPayoutForSplit } = await import("@/lib/efi-payouts.server");
+
           // ---------------- PIX recebido ----------------
           const pixEvents: Array<any> = Array.isArray(payload?.pix) ? payload.pix : [];
           for (const evt of pixEvents) {
@@ -41,29 +43,32 @@ export const Route = createFileRoute("/api/public/efi-webhook")({
             if (!txid) continue;
             const { data: split } = await supabaseAdmin
               .from("pix_splits")
-              .select("id, installment_id, charge_type, payout_scheduled_for")
+              .select("id, installment_id, charge_type, payout_scheduled_for, status")
               .eq("psp_txid", txid)
               .maybeSingle();
             if (!split) continue;
 
-            // Pix cai 100% na conta Nexo (Efí não aceita split inline em PUT /v2/cob).
-            // Agendamos o repasse para imobiliária/proprietário no próximo ciclo do cron.
-            const tomorrow = new Date();
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            await supabaseAdmin
-              .from("pix_splits")
-              .update({
-                status: "paid",
-                paid_at: new Date().toISOString(),
-                payout_status: "scheduled",
-                payout_scheduled_for:
-                  split.payout_scheduled_for ?? tomorrow.toISOString().slice(0, 10),
-              })
-              .eq("id", split.id);
-            await supabaseAdmin
-              .from("installments")
-              .update({ status: "pago", payment_date: new Date().toISOString() })
-              .eq("id", split.installment_id);
+            if (split.status !== "paid") {
+              const today = new Date().toISOString().slice(0, 10);
+              await supabaseAdmin
+                .from("pix_splits")
+                .update({
+                  status: "paid",
+                  paid_at: new Date().toISOString(),
+                  payout_status: "scheduled",
+                  payout_scheduled_for: today,
+                })
+                .eq("id", split.id);
+              await supabaseAdmin
+                .from("installments")
+                .update({ status: "pago", payment_date: new Date().toISOString() })
+                .eq("id", split.installment_id);
+            }
+
+            // Dispara repasse instantâneo (idempotente via claim atômico).
+            await runInstantPayoutForSplit(split.id).catch((err) =>
+              console.error("[efi-webhook] instant payout failed", split.id, err),
+            );
           }
 
           // ---------------- BOLETO pago ----------------
@@ -82,22 +87,24 @@ export const Route = createFileRoute("/api/public/efi-webhook")({
               .maybeSingle();
 
             if (split) {
-              const tomorrow = new Date();
-              tomorrow.setDate(tomorrow.getDate() + 1);
+              const today = new Date().toISOString().slice(0, 10);
               await supabaseAdmin
                 .from("pix_splits")
                 .update({
                   status: "paid",
                   paid_at: new Date().toISOString(),
                   payout_status: "scheduled",
-                  payout_scheduled_for:
-                    split.payout_scheduled_for ?? tomorrow.toISOString().slice(0, 10),
+                  payout_scheduled_for: today,
                 })
                 .eq("id", split.id);
               await supabaseAdmin
                 .from("installments")
                 .update({ status: "pago", payment_date: new Date().toISOString() })
                 .eq("id", split.installment_id);
+
+              await runInstantPayoutForSplit(split.id).catch((err) =>
+                console.error("[efi-webhook] instant boleto payout failed", split.id, err),
+              );
             }
           }
         } catch (e: any) {

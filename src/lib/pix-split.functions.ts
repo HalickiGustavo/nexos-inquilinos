@@ -351,21 +351,26 @@ export const checkPixPayment = createServerFn({ method: "POST" })
       const cob = await fetchPixCob(split.psp_txid);
       const status = String(cob?.status ?? "").toUpperCase();
       if (status === "CONCLUIDA") {
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
+        const today = new Date().toISOString().slice(0, 10);
         await supabaseAdmin
           .from("pix_splits")
           .update({
             status: "paid",
             paid_at: new Date().toISOString(),
             payout_status: "scheduled",
-            payout_scheduled_for: tomorrow.toISOString().slice(0, 10),
+            payout_scheduled_for: today,
           })
           .eq("id", split.id);
         await supabaseAdmin
           .from("installments")
           .update({ status: "pago", payment_date: new Date().toISOString() })
           .eq("id", data.installmentId);
+
+        // Dispara repasse instantâneo (claim atômico garante idempotência com o webhook).
+        const { runInstantPayoutForSplit } = await import("./efi-payouts.server");
+        runInstantPayoutForSplit(split.id).catch((err) =>
+          console.error("[checkPixPayment] instant payout failed", split.id, err),
+        );
         return { paid: true, status };
       }
       return { paid: false, status };

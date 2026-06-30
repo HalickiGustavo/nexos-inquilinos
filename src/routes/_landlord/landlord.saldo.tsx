@@ -50,15 +50,17 @@ function LandlordSaldo() {
 
   async function savePix() {
     if (!user?.id) return;
-    if (!pixKey.trim()) { toast.error("Informe a chave PIX."); return; }
-    if (!efiAccountNumber.trim() && !(profile as any)?.efi_account_number) { toast.error("Informe a conta Efí para split nativo."); return; }
+    const nextPixKey = pixKey.trim() || profile?.pix_key || "";
+    const nextEfiAccount = efiAccountNumber.trim() || (profile as any)?.efi_account_number || "";
+    if (!nextPixKey) { toast.error("Informe a chave PIX."); return; }
+    if (!nextEfiAccount) { toast.error("Informe a conta Efí para split nativo."); return; }
     setSavingKey(true);
     try {
       const { error } = await supabase.from("profiles")
         .update({
-          pix_key: pixKey.trim(),
+          pix_key: nextPixKey,
           pix_key_type: pixType,
-          efi_account_number: efiAccountNumber.trim() || (profile as any)?.efi_account_number || null,
+          efi_account_number: nextEfiAccount,
         } as any)
         .eq("id", user.id);
       if (error) throw error;
@@ -177,7 +179,7 @@ function LandlordSaldo() {
             ? <>Chave atual: <strong className="text-foreground">{profile.pix_key}</strong> ({profile.pix_key_type}) • Conta Efí: <strong className="text-foreground">{(profile as any).efi_account_number || "não cadastrada"}</strong></>
             : "Você ainda não cadastrou uma chave PIX."}
         </p>
-        <div className="grid grid-cols-1 md:grid-cols-[160px_1fr_auto] gap-2">
+        <div className="grid grid-cols-1 md:grid-cols-[160px_1fr_160px_auto] gap-2">
           <Select value={effectiveType} onValueChange={(v) => setPixType(v as PixKeyType)}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
@@ -196,7 +198,7 @@ function LandlordSaldo() {
             placeholder={(profile as any)?.efi_account_number || "Conta Efí"}
             inputMode="numeric"
           />
-          <Button onClick={savePix} disabled={savingKey || !pixKey.trim()}>
+          <Button onClick={savePix} disabled={savingKey || (!pixKey.trim() && !efiAccountNumber.trim())}>
             {savingKey ? <Loader2 className="size-4 animate-spin" /> : "Salvar"}
           </Button>
         </div>

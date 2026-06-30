@@ -391,9 +391,7 @@ export async function createSplitCharge(input: SplitChargeInput): Promise<SplitC
   // recusar conta/documento/schema, não fica uma cobrança órfã sem split.
   let idConfig: string | null = null;
   if (repasses.length > 0) {
-    const config = await efiFetch("pix", `/v2/gn/split/config`, {
-      method: "POST",
-      body: {
+    const configBody = {
         descricao: `NEXO split ${input.txid}`.slice(0, 140),
         lancamento: { imediato: true },
         split: {
@@ -401,7 +399,10 @@ export async function createSplitCharge(input: SplitChargeInput): Promise<SplitC
           minhaParte,
           repasses,
         },
-      },
+      };
+    const config = await efiFetch("pix", `/v2/gn/split/config`, {
+      method: "POST",
+      body: configBody,
     });
     idConfig = String(config?.id ?? config?.identificador ?? config?.split?.id ?? "");
     if (!idConfig) {

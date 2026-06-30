@@ -172,7 +172,7 @@ export async function runInstantPayoutForSplit(
     .from("pix_splits")
     .update({ payout_status: "processing" })
     .eq("id", splitId)
-    .eq("payout_status", "scheduled")
+    .in("payout_status", ["scheduled", "processing"])
     .select("*")
     .maybeSingle();
 

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Copy, Download, QrCode, Loader2, AlertCircle, FileText, CheckCircle2 } from "lucide-react";
+import { Copy, Download, QrCode, Loader2, AlertCircle, FileText, CheckCircle2, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatBRL, formatDate } from "@/lib/format";
-import { generateBoletoCharge, checkPixPayment } from "@/lib/pix-split.functions";
+import { checkPixPayment } from "@/lib/pix-split.functions";
 
 
 

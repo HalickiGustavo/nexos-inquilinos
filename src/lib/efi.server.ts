@@ -332,8 +332,8 @@ export async function createSplitCharge(input: SplitChargeInput): Promise<SplitC
   //   2) PUT  /v2/cob/:txid              → cria a cobrança Pix (sem split inline)
   //   3) PUT  /v2/gn/split/vinculo/cob/:txid/:idConfig → vincula split à cobrança
   //
-  // Os recebedores (imobiliária / proprietário) precisam estar cadastrados
-  // como "destinatários" na conta Efí, identificados pela própria chave Pix.
+  // Os recebedores (imobiliária / proprietário) precisam ter conta digital Efí.
+  // A Efí identifica o favorecido por `conta` + CPF/CNPJ, não por chave Pix.
   const nexoKey = process.env.EFI_PIX_KEY || input.receivers.nexo.pixKey;
 
   // Monta os "repasses" (favorecidos diferentes da Nexo) em valor fixo.

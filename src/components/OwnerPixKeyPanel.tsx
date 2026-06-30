@@ -116,8 +116,3 @@ export function OwnerPixKeyPanel() {
     </Card>
   );
 }
-        </>
-      )}
-    </Card>
-  );
-}

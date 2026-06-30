@@ -74,7 +74,7 @@ export function OwnerPixKeyPanel() {
         <div className="flex-1">
           <h2 className="text-lg font-semibold">Sua chave PIX para recebimento</h2>
           <p className="text-sm text-muted-foreground">
-            Os aluguéis pagos pelos inquilinos são repassados automaticamente via PIX (D+1) para esta chave.
+            Assim que o inquilino paga, o valor é repassado <b>na hora</b> via PIX para esta chave (a Nexo recebe e dispara o PIX automaticamente em segundos).
           </p>
         </div>
       </header>

@@ -24,6 +24,23 @@ export const Route = createFileRoute("/api/public/efi-webhook")({
 
         const { verifyEfiWebhookSignature, isEfiProductionMode } = await import("@/lib/efi.server");
 
+        // Validação inicial da Efí: envia POST com `{"evento":"teste"}` e SEM
+        // header de assinatura. Sem essa exceção, ela cai no 401 e o cadastro
+        // do webhook falha com `webhook_invalido`.
+        let earlyParsed: any = null;
+        try { earlyParsed = JSON.parse(raw); } catch { /* segue como string */ }
+        const isEfiHandshake =
+          !sig &&
+          earlyParsed &&
+          typeof earlyParsed === "object" &&
+          (earlyParsed.evento === "teste" || earlyParsed.test === true) &&
+          !Array.isArray(earlyParsed.pix) &&
+          !earlyParsed.event &&
+          !earlyParsed.notification;
+        if (isEfiHandshake) {
+          return new Response("ok", { status: 200 });
+        }
+
         // Em modo mock (sem HMAC configurado) ainda aceitamos para facilitar
         // testes locais, mas só em ambiente não-produção.
         if (isEfiProductionMode() && !verifyEfiWebhookSignature(raw, sig)) {

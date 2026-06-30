@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Copy, Download, QrCode, Loader2, AlertCircle, FileText, CheckCircle2 } from "lucide-react";
+import { Copy, Download, QrCode, Loader2, AlertCircle, FileText, CheckCircle2, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatBRL, formatDate } from "@/lib/format";
-import { generateBoletoCharge, checkPixPayment } from "@/lib/pix-split.functions";
+import { checkPixPayment } from "@/lib/pix-split.functions";
 
 
 
@@ -29,12 +29,9 @@ export function PixPaymentDialog({
   onPaid?: () => void;
 }) {
   const [copying, setCopying] = useState(false);
-  const [boletoLoading, setBoletoLoading] = useState(false);
-  const [boletoUrl, setBoletoUrl] = useState<string | null>(installment?.boleto_url ?? null);
-  const [boletoBarcode, setBoletoBarcode] = useState<string | null>(installment?.boleto_barcode ?? installment?.barcode ?? null);
-  const [boletoError, setBoletoError] = useState<string | null>(null);
+  const boletoUrl: string | null = installment?.boleto_url ?? null;
+  const boletoBarcode: string | null = installment?.boleto_barcode ?? installment?.barcode ?? null;
   const [paid, setPaid] = useState(false);
-  const genBoleto = useServerFn(generateBoletoCharge);
   const checkPaid = useServerFn(checkPixPayment);
   const onPaidRef = useRef(onPaid);
   onPaidRef.current = onPaid;
@@ -88,28 +85,6 @@ export function PixPaymentDialog({
     }
   };
 
-  const handleGenerateBoleto = async () => {
-    if (!installment?.id) return;
-    setBoletoLoading(true);
-    setBoletoError(null);
-    try {
-      const res: any = await genBoleto({ data: { installmentId: installment.id } });
-      if (!res?.ok) {
-        setBoletoError(res?.error ?? "Falha ao gerar boleto.");
-        toast.error(res?.error ?? "Falha ao gerar boleto.");
-        return;
-      }
-      setBoletoUrl(res.url);
-      setBoletoBarcode(res.barcode);
-      toast.success("Boleto gerado com sucesso!");
-    } catch (e: any) {
-      const msg = e?.message ?? "Falha ao gerar boleto.";
-      setBoletoError(msg);
-      toast.error(msg);
-    } finally {
-      setBoletoLoading(false);
-    }
-  };
 
   const copyBarcode = async () => {
     if (!boletoBarcode) return;
@@ -273,26 +248,16 @@ export function PixPaymentDialog({
               </Badge>
             </div>
 
-            {!boletoUrl && !boletoLoading && (
-              <Button className="w-full" onClick={handleGenerateBoleto}>
-                <FileText className="size-4 mr-2" /> Gerar Boleto
-              </Button>
-            )}
-
-            {boletoLoading && (
-              <div className="flex flex-col items-center justify-center py-10 text-muted-foreground">
-                <Loader2 className="size-8 animate-spin mb-3 text-primary" />
-                <p className="text-sm">Emitindo boleto na Efí...</p>
+            {!boletoUrl && (
+              <div className="flex flex-col items-center justify-center py-8 text-center gap-2 rounded-lg border border-dashed bg-muted/30">
+                <Clock className="size-7 text-muted-foreground" />
+                <p className="text-sm font-medium">Boleto ainda não disponível</p>
+                <p className="text-xs text-muted-foreground max-w-xs">
+                  O boleto desta parcela é emitido automaticamente 15 dias antes do vencimento ({formatDate(installment.due_date)}). Enquanto isso, use o Pix.
+                </p>
               </div>
             )}
 
-            {boletoError && (
-              <div className="flex flex-col items-center justify-center py-6 text-center">
-                <AlertCircle className="size-7 text-destructive mb-2" />
-                <p className="text-sm font-medium text-destructive">Não foi possível gerar o boleto</p>
-                <p className="text-xs text-muted-foreground mt-1">{boletoError}</p>
-              </div>
-            )}
 
             {boletoUrl && (
               <div className="space-y-3">

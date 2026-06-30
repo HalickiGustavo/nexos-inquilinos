@@ -7,12 +7,20 @@ import { z } from "zod";
 export const Route = createFileRoute("/api/public/efi-webhook")({
   server: {
     handlers: {
+      // Efí valida a URL do webhook fazendo uma chamada GET/POST sem corpo.
+      // Precisa responder 2xx senão recusa o cadastro com `webhook_invalido`.
+      GET: async () => new Response("ok", { status: 200 }),
       POST: async ({ request }) => {
         const raw = await request.text();
         const sig =
           request.headers.get("x-signature") ??
           request.headers.get("x-efi-signature") ??
           request.headers.get("signature");
+
+        // Ping de validação da Efí (sem corpo, sem assinatura) — responder 200.
+        if (!raw || raw.trim() === "" || raw.trim() === "{}") {
+          return new Response("ok", { status: 200 });
+        }
 
         const { verifyEfiWebhookSignature, isEfiProductionMode } = await import("@/lib/efi.server");
 

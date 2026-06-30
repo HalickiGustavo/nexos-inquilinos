@@ -172,7 +172,7 @@ Deno.serve(async (req) => {
     return new Response("Method not allowed", { status: 405, headers: corsHeaders });
   }
 
-  let payload: { api?: Api; path?: string; method?: string; body?: unknown };
+  let payload: { api?: Api; path?: string; method?: string; body?: unknown; headers?: Record<string, string> };
   try {
     payload = await req.json();
   } catch {
@@ -182,7 +182,7 @@ Deno.serve(async (req) => {
     );
   }
 
-  const { api, path, method = "GET", body } = payload;
+  const { api, path, method = "GET", body, headers: extraHeaders } = payload;
   if (!api || (api !== "pix" && api !== "boleto") || !path) {
     return Response.json(
       { ok: false, status: 400, error: "Parâmetros api/path obrigatórios." },
@@ -199,6 +199,7 @@ Deno.serve(async (req) => {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
+        ...(extraHeaders ?? {}),
       },
       body: body ? JSON.stringify(body) : undefined,
       // @ts-ignore - Deno

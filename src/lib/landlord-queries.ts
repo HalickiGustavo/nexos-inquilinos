@@ -97,7 +97,7 @@ export function useLandlordProfile() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("profiles")
-        .select("id, full_name, email, pix_key, pix_key_type")
+        .select("id, full_name, email, pix_key, pix_key_type, efi_account_number")
         .eq("id", user!.id)
         .maybeSingle();
       if (error) throw error;

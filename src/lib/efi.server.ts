@@ -52,6 +52,12 @@ export type BoletoChargeInput = {
     phone?: string;
   };
   description: string;
+  /** Percentual de multa por atraso (ex.: 2 = 2%). */
+  finePercent?: number;
+  /** Percentual de juros AO MÊS (ex.: 1 = 1% a.m.). Convertido para diário. */
+  monthlyInterestPercent?: number;
+  /** URL absoluta para receber webhook de pagamento do boleto (opcional). */
+  notificationUrl?: string;
 };
 
 export type BoletoChargeResult = {
@@ -386,10 +392,35 @@ export async function createBoletoCharge(input: BoletoChargeInput): Promise<Bole
     );
   }
 
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(input.dueDate)) {
+    throw new Error(`dueDate inválido para boleto Efí (esperado YYYY-MM-DD): ${input.dueDate}`);
+  }
+
   const docDigits = input.customer.document.replace(/\D/g, "");
   const isCnpj = docDigits.length === 14;
+  if (!isCnpj && docDigits.length !== 11) {
+    throw new Error(`CPF/CNPJ inválido para boleto: ${docDigits.length} dígitos.`);
+  }
 
-  const body = {
+  // Efí espera percentual * 100 (200 = 2,00%). Juros: convertemos a.m. -> diário.
+  const fineUnits =
+    input.finePercent && input.finePercent > 0 ? Math.round(input.finePercent * 100) : undefined;
+  const dailyInterestPct =
+    input.monthlyInterestPercent && input.monthlyInterestPercent > 0
+      ? input.monthlyInterestPercent / 30
+      : undefined;
+  const interestUnits =
+    dailyInterestPct !== undefined ? Math.round(dailyInterestPct * 100) : undefined;
+
+  const configurations =
+    fineUnits || interestUnits
+      ? {
+          ...(fineUnits ? { fine: fineUnits } : {}),
+          ...(interestUnits ? { interest: { value: interestUnits, type: "daily" as const } } : {}),
+        }
+      : undefined;
+
+  const body: any = {
     items: [
       { name: input.description.slice(0, 60), value: Math.round(input.totalValue * 100), amount: 1 },
     ],
@@ -401,15 +432,17 @@ export async function createBoletoCharge(input: BoletoChargeInput): Promise<Bole
           name: input.customer.name,
           email: input.customer.email,
           phone_number: (input.customer.phone || "").replace(/\D/g, "") || undefined,
-          [isCnpj ? "juridical_person" : "cpf"]: isCnpj
-            ? { corporate_name: input.customer.name, cnpj: docDigits }
-            : (docDigits as any),
+          ...(isCnpj
+            ? { juridical_person: { corporate_name: input.customer.name, cnpj: docDigits } }
+            : { cpf: docDigits }),
         },
+        ...(configurations ? { configurations } : {}),
       },
     },
+    ...(input.notificationUrl ? { metadata: { notification_url: input.notificationUrl } } : {}),
   };
 
-  const created = await efiFetch("boleto", "/charge/one-step", { method: "POST", body });
+  const created = await efiFetch("boleto", "/v1/charge/one-step", { method: "POST", body });
   const data = created.data ?? created;
   return {
     provider: "efi",

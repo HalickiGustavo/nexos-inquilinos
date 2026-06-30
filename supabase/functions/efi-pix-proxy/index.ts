@@ -29,9 +29,16 @@ function baseUrl(api: Api): string {
       ? "https://pix-h.api.efipay.com.br"
       : "https://pix.api.efipay.com.br";
   }
+  // API Cobranças (boleto). NÃO inclui /v1 no base; o caller passa o path
+  // completo (`/v1/charge/one-step`, etc).
   return EFI_ENV === "sandbox"
-    ? "https://sandbox.gerencianet.com.br/v1"
-    : "https://api.gerencianet.com.br/v1";
+    ? "https://cobrancas-h.api.efipay.com.br"
+    : "https://cobrancas.api.efipay.com.br";
+}
+
+// Endpoint OAuth diverge por API: Pix usa /oauth/token, Cobranças usa /v1/authorize.
+function oauthPath(api: Api): string {
+  return api === "pix" ? "/oauth/token" : "/v1/authorize";
 }
 
 // ---------------------------------------------------------------------------
@@ -103,9 +110,8 @@ async function getToken(api: Api): Promise<string> {
     throw new Error("EFI_CLIENT_ID/EFI_CLIENT_SECRET não configurados na edge function.");
   }
   const basic = btoa(`${CLIENT_ID}:${CLIENT_SECRET}`);
-  const client = getHttpClient();
-  // Escopos exigidos pela Efí. Sem `location.read`, GET /v2/loc/:id/qrcode
-  // retorna 403 insufficient_scope mesmo com credenciais válidas.
+  // mTLS é obrigatório no Pix; a API Cobranças (boleto) usa apenas Basic Auth.
+  const client = api === "pix" ? getHttpClient() : null;
   const scope =
     api === "pix"
       ? [
@@ -128,7 +134,7 @@ async function getToken(api: Api): Promise<string> {
           "gn.split.read",
         ].join(" ")
       : "";
-  const res = await fetch(`${baseUrl(api)}/oauth/token`, {
+  const res = await fetch(`${baseUrl(api)}${oauthPath(api)}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -136,7 +142,7 @@ async function getToken(api: Api): Promise<string> {
     },
     body: JSON.stringify(scope ? { grant_type: "client_credentials", scope } : { grant_type: "client_credentials" }),
     // @ts-ignore - Deno fetch aceita client
-    client,
+    ...(client ? { client } : {}),
   });
   const text = await res.text();
   if (!res.ok) {
@@ -186,7 +192,7 @@ Deno.serve(async (req) => {
 
   try {
     const token = await getToken(api);
-    const client = getHttpClient();
+    const client = api === "pix" ? getHttpClient() : null;
     const url = `${baseUrl(api)}${path}`;
     const res = await fetch(url, {
       method,
@@ -196,7 +202,7 @@ Deno.serve(async (req) => {
       },
       body: body ? JSON.stringify(body) : undefined,
       // @ts-ignore - Deno
-      client,
+      ...(client ? { client } : {}),
     });
     const text = await res.text();
     let parsed: unknown = null;

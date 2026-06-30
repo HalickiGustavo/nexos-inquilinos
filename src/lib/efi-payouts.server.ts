@@ -78,7 +78,7 @@ async function dispatchSplitPayout(split: any): Promise<{ ok: boolean; error?: s
     }
   }
 
-  return { ok: allOk, error: lastErr ?? undefined, attempts };
+  return { ok: allOk, error: lastErr ?? undefined, attempts } as { ok: boolean; error?: string; attempts: PayoutAttempt[] };
 }
 
 /**

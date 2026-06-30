@@ -182,7 +182,19 @@ Deno.serve(async (req) => {
     );
   }
 
-  const { api, path, method = "GET", body, headers: extraHeaders } = payload;
+  const { api, method = "GET", body, headers: extraHeaders } = payload;
+  let path = payload.path;
+  // Substitui $EFI_PIX_KEY no path pela chave configurada no env do proxy.
+  if (path && path.includes("$EFI_PIX_KEY")) {
+    const k = Deno.env.get("EFI_PIX_KEY") || "";
+    if (!k) {
+      return Response.json(
+        { ok: false, status: 500, error: "EFI_PIX_KEY ausente no proxy." },
+        { status: 200, headers: corsHeaders },
+      );
+    }
+    path = path.replaceAll("$EFI_PIX_KEY", encodeURIComponent(k));
+  }
   if (!api || (api !== "pix" && api !== "boleto") || !path) {
     return Response.json(
       { ok: false, status: 400, error: "Parâmetros api/path obrigatórios." },

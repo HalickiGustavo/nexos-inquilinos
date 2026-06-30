@@ -103,23 +103,19 @@ export function OwnerPixKeyPanel() {
                 placeholder="CPF, CNPJ, e-mail, telefone ou chave aleatória"
               />
             </div>
-            <div className="space-y-1 sm:col-span-2">
-              <Label className="text-xs">Conta Efí</Label>
-              <Input
-                value={efiAccountNumber}
-                onChange={(e) => setEfiAccountNumber(e.target.value.replace(/\D/g, ""))}
-                placeholder="Número da conta Efí do proprietário"
-                inputMode="numeric"
-              />
-            </div>
             <Button onClick={save} disabled={saving} size="sm">
               {saving && <Loader2 className="size-3.5 mr-2 animate-spin" />}Salvar
             </Button>
           </div>
           <div className="flex items-start gap-2 text-xs text-muted-foreground">
             <ShieldCheck className="size-3.5 mt-0.5 text-emerald-500 shrink-0" />
-            <span>Para split nativo Efí, o favorecido precisa ter uma conta Efí; a chave Pix sozinha não é aceita pela API de split.</span>
+            <span>Repasse instantâneo: a Nexo recebe o aluguel e envia PIX para esta chave em segundos após a confirmação do pagamento.</span>
           </div>
+        </>
+      )}
+    </Card>
+  );
+}
         </>
       )}
     </Card>

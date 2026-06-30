@@ -110,9 +110,8 @@ async function getToken(api: Api): Promise<string> {
     throw new Error("EFI_CLIENT_ID/EFI_CLIENT_SECRET não configurados na edge function.");
   }
   const basic = btoa(`${CLIENT_ID}:${CLIENT_SECRET}`);
-  const client = getHttpClient();
-  // Escopos exigidos pela Efí. Sem `location.read`, GET /v2/loc/:id/qrcode
-  // retorna 403 insufficient_scope mesmo com credenciais válidas.
+  // mTLS é obrigatório no Pix; a API Cobranças (boleto) usa apenas Basic Auth.
+  const client = api === "pix" ? getHttpClient() : null;
   const scope =
     api === "pix"
       ? [
@@ -135,7 +134,7 @@ async function getToken(api: Api): Promise<string> {
           "gn.split.read",
         ].join(" ")
       : "";
-  const res = await fetch(`${baseUrl(api)}/oauth/token`, {
+  const res = await fetch(`${baseUrl(api)}${oauthPath(api)}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -143,7 +142,7 @@ async function getToken(api: Api): Promise<string> {
     },
     body: JSON.stringify(scope ? { grant_type: "client_credentials", scope } : { grant_type: "client_credentials" }),
     // @ts-ignore - Deno fetch aceita client
-    client,
+    ...(client ? { client } : {}),
   });
   const text = await res.text();
   if (!res.ok) {

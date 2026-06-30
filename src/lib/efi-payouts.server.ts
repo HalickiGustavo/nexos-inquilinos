@@ -74,7 +74,7 @@ async function dispatchSplitPayout(split: any): Promise<{ ok: boolean; error?: s
         status: "failed",
         error: lastErr,
       });
-      attempts.push({ recipient: t.recipient, ok: false, error: lastErr });
+      attempts.push({ recipient: t.recipient, ok: false, error: lastErr ?? undefined });
     }
   }
 

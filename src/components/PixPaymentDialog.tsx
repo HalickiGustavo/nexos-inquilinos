@@ -29,12 +29,9 @@ export function PixPaymentDialog({
   onPaid?: () => void;
 }) {
   const [copying, setCopying] = useState(false);
-  const [boletoLoading, setBoletoLoading] = useState(false);
-  const [boletoUrl, setBoletoUrl] = useState<string | null>(installment?.boleto_url ?? null);
-  const [boletoBarcode, setBoletoBarcode] = useState<string | null>(installment?.boleto_barcode ?? installment?.barcode ?? null);
-  const [boletoError, setBoletoError] = useState<string | null>(null);
+  const boletoUrl: string | null = installment?.boleto_url ?? null;
+  const boletoBarcode: string | null = installment?.boleto_barcode ?? installment?.barcode ?? null;
   const [paid, setPaid] = useState(false);
-  const genBoleto = useServerFn(generateBoletoCharge);
   const checkPaid = useServerFn(checkPixPayment);
   const onPaidRef = useRef(onPaid);
   onPaidRef.current = onPaid;

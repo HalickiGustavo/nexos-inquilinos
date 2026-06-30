@@ -24,20 +24,20 @@ export const Route = createFileRoute("/api/public/efi-webhook")({
 
         const { verifyEfiWebhookSignature, isEfiProductionMode } = await import("@/lib/efi.server");
 
-        // Validação inicial da Efí: envia POST com `{"evento":"teste"}` e SEM
-        // header de assinatura. Sem essa exceção, ela cai no 401 e o cadastro
-        // do webhook falha com `webhook_invalido`.
+        // Validação inicial da Efí: envia POST sem header de assinatura. Sem
+        // essa exceção, ela cai no 401 e o cadastro do webhook falha com
+        // `webhook_invalido`. Aceitamos apenas se não houver payload
+        // acionável (`pix`/`event`/`notification`) — eventos reais sempre vêm
+        // com assinatura HMAC.
         let earlyParsed: any = null;
         try { earlyParsed = JSON.parse(raw); } catch { /* segue como string */ }
-        const isEfiHandshake =
-          !sig &&
-          earlyParsed &&
-          typeof earlyParsed === "object" &&
-          (earlyParsed.evento === "teste" || earlyParsed.test === true) &&
-          !Array.isArray(earlyParsed.pix) &&
-          !earlyParsed.event &&
-          !earlyParsed.notification;
-        if (isEfiHandshake) {
+        const hasActionable =
+          earlyParsed && typeof earlyParsed === "object" && (
+            Array.isArray(earlyParsed.pix) ||
+            Boolean(earlyParsed.event) ||
+            Boolean(earlyParsed.notification)
+          );
+        if (!sig && !hasActionable) {
           return new Response("ok", { status: 200 });
         }
 

@@ -128,6 +128,10 @@ function buildEfiSplitFavorecido(party: SplitParty, label: string): { cpf?: stri
   );
 }
 
+function formatEfiMoney(value: number): string {
+  return Number(value).toFixed(2);
+}
+
 function buildBrCode(opts: {
   pixKey: string;
   amount: number;
@@ -348,14 +352,14 @@ export async function createSplitCharge(input: SplitChargeInput): Promise<SplitC
     repasses.push({
       favorecido: buildEfiSplitFavorecido(input.receivers.agency, "imobiliária"),
       tipo: "fixo",
-      valor: input.receivers.agency.amount.toFixed(2),
+      valor: formatEfiMoney(input.receivers.agency.amount),
     });
   }
   if (input.receivers.owner?.pixKey && input.receivers.owner.amount > 0) {
     repasses.push({
       favorecido: buildEfiSplitFavorecido(input.receivers.owner, "proprietário"),
       tipo: "fixo",
-      valor: input.receivers.owner.amount.toFixed(2),
+      valor: formatEfiMoney(input.receivers.owner.amount),
     });
   }
   if (repasses.length === 0 && input.totalValue > input.receivers.nexo.amount) {
@@ -365,8 +369,23 @@ export async function createSplitCharge(input: SplitChargeInput): Promise<SplitC
   // Nexo (recebedor principal) fica com `minhaParte`.
   const minhaParte = {
     tipo: "fixo" as const,
-    valor: input.receivers.nexo.amount.toFixed(2),
+    valor: formatEfiMoney(input.receivers.nexo.amount),
   };
+
+  console.info("[efi] split config payload", {
+    txid: input.txid,
+    total: formatEfiMoney(input.totalValue),
+    minhaParte,
+    repasses: repasses.map((r) => ({
+      tipo: r.tipo,
+      valor: r.valor,
+      favorecido: {
+        conta: r.favorecido.conta ? "***" : undefined,
+        cpf: r.favorecido.cpf ? `${r.favorecido.cpf.slice(0, 3)}***${r.favorecido.cpf.slice(-2)}` : undefined,
+        cnpj: r.favorecido.cnpj ? `${r.favorecido.cnpj.slice(0, 3)}***${r.favorecido.cnpj.slice(-2)}` : undefined,
+      },
+    })),
+  });
 
   // 1) Cria a configuração de split antes da cobrança. Assim, se a Efí
   // recusar conta/documento/schema, não fica uma cobrança órfã sem split.

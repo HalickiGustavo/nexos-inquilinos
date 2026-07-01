@@ -111,7 +111,7 @@ export const updateTenantProfile = createServerFn({ method: "POST" })
     if (patch.full_name) profilePatch.full_name = patch.full_name;
     if (patch.email !== undefined) profilePatch.email = patch.email;
     if (Object.keys(profilePatch).length > 0) {
-      await supabaseAdmin.from("profiles").update(profilePatch).eq("id", context.userId);
+      await supabaseAdmin.from("profiles").update(profilePatch as any).eq("id", context.userId);
     }
 
     return { ok: true, updated: 1 };

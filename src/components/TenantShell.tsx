@@ -1,5 +1,5 @@
 import { Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
-import { Home, Wallet, FileText, Wrench, Bell, LogOut } from "lucide-react";
+import { Home, Wallet, FileText, Wrench, Bell, LogOut, User } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -15,6 +15,7 @@ const tenantNav: ReadonlyArray<{ to: string; label: string; icon: typeof Home; e
   { to: "/tenant/contrato", label: "Contrato", icon: FileText, tour: "nav-tenant-contrato" },
   { to: "/tenant/manutencoes", label: "Manutenções", icon: Wrench, tour: "nav-tenant-manutencoes" },
   { to: "/tenant/alertas", label: "Alertas", icon: Bell, tour: "nav-tenant-alertas" },
+  { to: "/tenant/perfil", label: "Perfil", icon: User, tour: "nav-tenant-perfil" },
 ];
 
 export function TenantShell() {

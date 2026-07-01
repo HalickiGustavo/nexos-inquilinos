@@ -36,8 +36,7 @@ export function PixPaymentDialog({
   const onPaidRef = useRef(onPaid);
   onPaidRef.current = onPaid;
 
-  // Polling: enquanto o diálogo está aberto com Pix gerado, consulta a Efí
-  // a cada 5s para detectar pagamento (fallback ao webhook).
+  // Polling: a cada 5s consulta o backend para detectar confirmação do Pix.
   useEffect(() => {
     if (!open || !installment?.id || !installment?.pix_payload || paid) return;
     let cancelled = false;

@@ -193,7 +193,7 @@ Deno.serve(async (req) => {
   let path = payload.path;
   // Substitui $EFI_PIX_KEY no path pela chave configurada no env do proxy.
   if (path && path.includes("$EFI_PIX_KEY")) {
-    const k = Deno.env.get("EFI_PIX_KEY") || "";
+    const k = pick("EFI_PIX_KEY");
     if (!k) {
       return Response.json(
         { ok: false, status: 500, error: "EFI_PIX_KEY ausente no proxy." },

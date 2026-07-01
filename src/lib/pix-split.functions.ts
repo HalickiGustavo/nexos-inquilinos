@@ -24,7 +24,7 @@ export type TripleSplitResult =
         ownerKey: string | null;
       };
     }
-  | { ok: false; error: string; debug?: unknown };
+  | { ok: false; error: string; debug?: string | null };
 
 export type BoletoResult =
   | {

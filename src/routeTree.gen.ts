@@ -29,6 +29,7 @@ import { Route as AuthenticatedContaCorrenteRouteImport } from './routes/_authen
 import { Route as ManagerManagerIndexRouteImport } from './routes/_manager/manager.index'
 import { Route as LandlordLandlordIndexRouteImport } from './routes/_landlord/landlord.index'
 import { Route as AuthenticatedTenantIndexRouteImport } from './routes/_authenticated/tenant.index'
+import { Route as ApiPublicStarkWebhookRouteImport } from './routes/api/public/stark-webhook'
 import { Route as ApiPublicAsaasWebhookRouteImport } from './routes/api/public/asaas-webhook'
 import { Route as ManagerManagerVistoriasRouteImport } from './routes/_manager/manager.vistorias'
 import { Route as ManagerManagerProprietariosRouteImport } from './routes/_manager/manager.proprietarios'
@@ -57,7 +58,9 @@ import { Route as ApiPublicWebhooksLeadsRouteImport } from './routes/api/public/
 import { Route as ApiPublicListingsXmlRouteImport } from './routes/api/public/listings.xml'
 import { Route as ApiPublicHooksSendTenantRemindersRouteImport } from './routes/api/public/hooks/send-tenant-reminders'
 import { Route as ApiPublicHooksSendMaintenanceResponseRemindersRouteImport } from './routes/api/public/hooks/send-maintenance-response-reminders'
+import { Route as ApiPublicHooksReconcileStarkChargesRouteImport } from './routes/api/public/hooks/reconcile-stark-charges'
 import { Route as ApiPublicHooksProcessScheduledInvoicesRouteImport } from './routes/api/public/hooks/process-scheduled-invoices'
+import { Route as ApiPublicHooksProcessPayoutQueueRouteImport } from './routes/api/public/hooks/process-payout-queue'
 import { Route as ApiPublicHooksProcessLandlordPayoutsRouteImport } from './routes/api/public/hooks/process-landlord-payouts'
 import { Route as ManagerManagerConfiguracoesRoletaRouteImport } from './routes/_manager/manager.configuracoes.roleta'
 import { Route as AuthenticatedAdminConfiguracoesSubcontaRouteImport } from './routes/_authenticated/admin.configuracoes.subconta'
@@ -165,6 +168,11 @@ const AuthenticatedTenantIndexRoute =
     path: '/tenant/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const ApiPublicStarkWebhookRoute = ApiPublicStarkWebhookRouteImport.update({
+  id: '/api/public/stark-webhook',
+  path: '/api/public/stark-webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicAsaasWebhookRoute = ApiPublicAsaasWebhookRouteImport.update({
   id: '/api/public/asaas-webhook',
   path: '/api/public/asaas-webhook',
@@ -320,10 +328,22 @@ const ApiPublicHooksSendMaintenanceResponseRemindersRoute =
     path: '/api/public/hooks/send-maintenance-response-reminders',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksReconcileStarkChargesRoute =
+  ApiPublicHooksReconcileStarkChargesRouteImport.update({
+    id: '/api/public/hooks/reconcile-stark-charges',
+    path: '/api/public/hooks/reconcile-stark-charges',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksProcessScheduledInvoicesRoute =
   ApiPublicHooksProcessScheduledInvoicesRouteImport.update({
     id: '/api/public/hooks/process-scheduled-invoices',
     path: '/api/public/hooks/process-scheduled-invoices',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicHooksProcessPayoutQueueRoute =
+  ApiPublicHooksProcessPayoutQueueRouteImport.update({
+    id: '/api/public/hooks/process-payout-queue',
+    path: '/api/public/hooks/process-payout-queue',
     getParentRoute: () => rootRouteImport,
   } as any)
 const ApiPublicHooksProcessLandlordPayoutsRoute =
@@ -396,13 +416,16 @@ export interface FileRoutesByFullPath {
   '/manager/proprietarios': typeof ManagerManagerProprietariosRoute
   '/manager/vistorias': typeof ManagerManagerVistoriasRoute
   '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
+  '/api/public/stark-webhook': typeof ApiPublicStarkWebhookRoute
   '/tenant/': typeof AuthenticatedTenantIndexRoute
   '/landlord/': typeof LandlordLandlordIndexRoute
   '/manager/': typeof ManagerManagerIndexRoute
   '/admin/configuracoes/subconta': typeof AuthenticatedAdminConfiguracoesSubcontaRoute
   '/manager/configuracoes/roleta': typeof ManagerManagerConfiguracoesRoletaRoute
   '/api/public/hooks/process-landlord-payouts': typeof ApiPublicHooksProcessLandlordPayoutsRoute
+  '/api/public/hooks/process-payout-queue': typeof ApiPublicHooksProcessPayoutQueueRoute
   '/api/public/hooks/process-scheduled-invoices': typeof ApiPublicHooksProcessScheduledInvoicesRoute
+  '/api/public/hooks/reconcile-stark-charges': typeof ApiPublicHooksReconcileStarkChargesRoute
   '/api/public/hooks/send-maintenance-response-reminders': typeof ApiPublicHooksSendMaintenanceResponseRemindersRoute
   '/api/public/hooks/send-tenant-reminders': typeof ApiPublicHooksSendTenantRemindersRoute
   '/api/public/listings/xml': typeof ApiPublicListingsXmlRoute
@@ -449,13 +472,16 @@ export interface FileRoutesByTo {
   '/manager/proprietarios': typeof ManagerManagerProprietariosRoute
   '/manager/vistorias': typeof ManagerManagerVistoriasRoute
   '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
+  '/api/public/stark-webhook': typeof ApiPublicStarkWebhookRoute
   '/tenant': typeof AuthenticatedTenantIndexRoute
   '/landlord': typeof LandlordLandlordIndexRoute
   '/manager': typeof ManagerManagerIndexRoute
   '/admin/configuracoes/subconta': typeof AuthenticatedAdminConfiguracoesSubcontaRoute
   '/manager/configuracoes/roleta': typeof ManagerManagerConfiguracoesRoletaRoute
   '/api/public/hooks/process-landlord-payouts': typeof ApiPublicHooksProcessLandlordPayoutsRoute
+  '/api/public/hooks/process-payout-queue': typeof ApiPublicHooksProcessPayoutQueueRoute
   '/api/public/hooks/process-scheduled-invoices': typeof ApiPublicHooksProcessScheduledInvoicesRoute
+  '/api/public/hooks/reconcile-stark-charges': typeof ApiPublicHooksReconcileStarkChargesRoute
   '/api/public/hooks/send-maintenance-response-reminders': typeof ApiPublicHooksSendMaintenanceResponseRemindersRoute
   '/api/public/hooks/send-tenant-reminders': typeof ApiPublicHooksSendTenantRemindersRoute
   '/api/public/listings/xml': typeof ApiPublicListingsXmlRoute
@@ -506,13 +532,16 @@ export interface FileRoutesById {
   '/_manager/manager/proprietarios': typeof ManagerManagerProprietariosRoute
   '/_manager/manager/vistorias': typeof ManagerManagerVistoriasRoute
   '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
+  '/api/public/stark-webhook': typeof ApiPublicStarkWebhookRoute
   '/_authenticated/tenant/': typeof AuthenticatedTenantIndexRoute
   '/_landlord/landlord/': typeof LandlordLandlordIndexRoute
   '/_manager/manager/': typeof ManagerManagerIndexRoute
   '/_authenticated/admin/configuracoes/subconta': typeof AuthenticatedAdminConfiguracoesSubcontaRoute
   '/_manager/manager/configuracoes/roleta': typeof ManagerManagerConfiguracoesRoletaRoute
   '/api/public/hooks/process-landlord-payouts': typeof ApiPublicHooksProcessLandlordPayoutsRoute
+  '/api/public/hooks/process-payout-queue': typeof ApiPublicHooksProcessPayoutQueueRoute
   '/api/public/hooks/process-scheduled-invoices': typeof ApiPublicHooksProcessScheduledInvoicesRoute
+  '/api/public/hooks/reconcile-stark-charges': typeof ApiPublicHooksReconcileStarkChargesRoute
   '/api/public/hooks/send-maintenance-response-reminders': typeof ApiPublicHooksSendMaintenanceResponseRemindersRoute
   '/api/public/hooks/send-tenant-reminders': typeof ApiPublicHooksSendTenantRemindersRoute
   '/api/public/listings/xml': typeof ApiPublicListingsXmlRoute
@@ -561,13 +590,16 @@ export interface FileRouteTypes {
     | '/manager/proprietarios'
     | '/manager/vistorias'
     | '/api/public/asaas-webhook'
+    | '/api/public/stark-webhook'
     | '/tenant/'
     | '/landlord/'
     | '/manager/'
     | '/admin/configuracoes/subconta'
     | '/manager/configuracoes/roleta'
     | '/api/public/hooks/process-landlord-payouts'
+    | '/api/public/hooks/process-payout-queue'
     | '/api/public/hooks/process-scheduled-invoices'
+    | '/api/public/hooks/reconcile-stark-charges'
     | '/api/public/hooks/send-maintenance-response-reminders'
     | '/api/public/hooks/send-tenant-reminders'
     | '/api/public/listings/xml'
@@ -614,13 +646,16 @@ export interface FileRouteTypes {
     | '/manager/proprietarios'
     | '/manager/vistorias'
     | '/api/public/asaas-webhook'
+    | '/api/public/stark-webhook'
     | '/tenant'
     | '/landlord'
     | '/manager'
     | '/admin/configuracoes/subconta'
     | '/manager/configuracoes/roleta'
     | '/api/public/hooks/process-landlord-payouts'
+    | '/api/public/hooks/process-payout-queue'
     | '/api/public/hooks/process-scheduled-invoices'
+    | '/api/public/hooks/reconcile-stark-charges'
     | '/api/public/hooks/send-maintenance-response-reminders'
     | '/api/public/hooks/send-tenant-reminders'
     | '/api/public/listings/xml'
@@ -670,13 +705,16 @@ export interface FileRouteTypes {
     | '/_manager/manager/proprietarios'
     | '/_manager/manager/vistorias'
     | '/api/public/asaas-webhook'
+    | '/api/public/stark-webhook'
     | '/_authenticated/tenant/'
     | '/_landlord/landlord/'
     | '/_manager/manager/'
     | '/_authenticated/admin/configuracoes/subconta'
     | '/_manager/manager/configuracoes/roleta'
     | '/api/public/hooks/process-landlord-payouts'
+    | '/api/public/hooks/process-payout-queue'
     | '/api/public/hooks/process-scheduled-invoices'
+    | '/api/public/hooks/reconcile-stark-charges'
     | '/api/public/hooks/send-maintenance-response-reminders'
     | '/api/public/hooks/send-tenant-reminders'
     | '/api/public/listings/xml'
@@ -695,8 +733,11 @@ export interface RootRouteChildren {
   ManagerSetupRoute: typeof ManagerSetupRoute
   TenantSetupRoute: typeof TenantSetupRoute
   ApiPublicAsaasWebhookRoute: typeof ApiPublicAsaasWebhookRoute
+  ApiPublicStarkWebhookRoute: typeof ApiPublicStarkWebhookRoute
   ApiPublicHooksProcessLandlordPayoutsRoute: typeof ApiPublicHooksProcessLandlordPayoutsRoute
+  ApiPublicHooksProcessPayoutQueueRoute: typeof ApiPublicHooksProcessPayoutQueueRoute
   ApiPublicHooksProcessScheduledInvoicesRoute: typeof ApiPublicHooksProcessScheduledInvoicesRoute
+  ApiPublicHooksReconcileStarkChargesRoute: typeof ApiPublicHooksReconcileStarkChargesRoute
   ApiPublicHooksSendMaintenanceResponseRemindersRoute: typeof ApiPublicHooksSendMaintenanceResponseRemindersRoute
   ApiPublicHooksSendTenantRemindersRoute: typeof ApiPublicHooksSendTenantRemindersRoute
   ApiPublicListingsXmlRoute: typeof ApiPublicListingsXmlRoute
@@ -846,6 +887,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/tenant/'
       preLoaderRoute: typeof AuthenticatedTenantIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
+    }
+    '/api/public/stark-webhook': {
+      id: '/api/public/stark-webhook'
+      path: '/api/public/stark-webhook'
+      fullPath: '/api/public/stark-webhook'
+      preLoaderRoute: typeof ApiPublicStarkWebhookRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/public/asaas-webhook': {
       id: '/api/public/asaas-webhook'
@@ -1043,11 +1091,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksSendMaintenanceResponseRemindersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/reconcile-stark-charges': {
+      id: '/api/public/hooks/reconcile-stark-charges'
+      path: '/api/public/hooks/reconcile-stark-charges'
+      fullPath: '/api/public/hooks/reconcile-stark-charges'
+      preLoaderRoute: typeof ApiPublicHooksReconcileStarkChargesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/process-scheduled-invoices': {
       id: '/api/public/hooks/process-scheduled-invoices'
       path: '/api/public/hooks/process-scheduled-invoices'
       fullPath: '/api/public/hooks/process-scheduled-invoices'
       preLoaderRoute: typeof ApiPublicHooksProcessScheduledInvoicesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/process-payout-queue': {
+      id: '/api/public/hooks/process-payout-queue'
+      path: '/api/public/hooks/process-payout-queue'
+      fullPath: '/api/public/hooks/process-payout-queue'
+      preLoaderRoute: typeof ApiPublicHooksProcessPayoutQueueRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/hooks/process-landlord-payouts': {
@@ -1203,10 +1265,14 @@ const rootRouteChildren: RootRouteChildren = {
   ManagerSetupRoute: ManagerSetupRoute,
   TenantSetupRoute: TenantSetupRoute,
   ApiPublicAsaasWebhookRoute: ApiPublicAsaasWebhookRoute,
+  ApiPublicStarkWebhookRoute: ApiPublicStarkWebhookRoute,
   ApiPublicHooksProcessLandlordPayoutsRoute:
     ApiPublicHooksProcessLandlordPayoutsRoute,
+  ApiPublicHooksProcessPayoutQueueRoute: ApiPublicHooksProcessPayoutQueueRoute,
   ApiPublicHooksProcessScheduledInvoicesRoute:
     ApiPublicHooksProcessScheduledInvoicesRoute,
+  ApiPublicHooksReconcileStarkChargesRoute:
+    ApiPublicHooksReconcileStarkChargesRoute,
   ApiPublicHooksSendMaintenanceResponseRemindersRoute:
     ApiPublicHooksSendMaintenanceResponseRemindersRoute,
   ApiPublicHooksSendTenantRemindersRoute:

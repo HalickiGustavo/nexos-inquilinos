@@ -174,10 +174,10 @@ function LandlordSaldo() {
         </h2>
         <p className="text-sm text-muted-foreground mb-4">
           {profile?.pix_key
-            ? <>Chave atual: <strong className="text-foreground">{profile.pix_key}</strong> ({profile.pix_key_type}) • Conta Efí: <strong className="text-foreground">{(profile as any).efi_account_number || "não cadastrada"}</strong></>
+            ? <>Chave atual: <strong className="text-foreground">{profile.pix_key}</strong> ({profile.pix_key_type})</>
             : "Você ainda não cadastrou uma chave PIX."}
         </p>
-        <div className="grid grid-cols-1 md:grid-cols-[160px_1fr_160px_auto] gap-2">
+        <div className="grid grid-cols-1 md:grid-cols-[160px_1fr_auto] gap-2">
           <Select value={effectiveType} onValueChange={(v) => setPixType(v as PixKeyType)}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
@@ -190,19 +190,14 @@ function LandlordSaldo() {
           </Select>
           <Input value={pixKey} onChange={(e) => setPixKey(e.target.value)}
             placeholder={profile?.pix_key || "Digite a nova chave"} />
-          <Input
-            value={efiAccountNumber}
-            onChange={(e) => setEfiAccountNumber(e.target.value.replace(/\D/g, ""))}
-            placeholder={(profile as any)?.efi_account_number || "Conta Efí"}
-            inputMode="numeric"
-          />
-          <Button onClick={savePix} disabled={savingKey || (!pixKey.trim() && !efiAccountNumber.trim())}>
+          <Button onClick={savePix} disabled={savingKey || !pixKey.trim()}>
             {savingKey ? <Loader2 className="size-4 animate-spin" /> : "Salvar"}
           </Button>
         </div>
         <p className="text-xs text-muted-foreground mt-3">
-          O split nativo da Efí exige que o proprietário tenha uma conta Efí; a chave Pix sozinha não basta para dividir na liquidação.
+          O repasse é feito via Pix instantâneo direto pra essa chave assim que a Nexo confirma o recebimento do inquilino.
         </p>
+
       </Card>
 
       {/* Histórico de saques */}

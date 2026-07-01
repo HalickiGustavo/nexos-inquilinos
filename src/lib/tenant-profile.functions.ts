@@ -101,7 +101,7 @@ export const updateTenantProfile = createServerFn({ method: "POST" })
 
     const { error: uErr } = await supabaseAdmin
       .from("tenants")
-      .update(patch)
+      .update(patch as any)
       .eq("id", tenant.id)
       .eq("user_id_link", context.userId); // blindagem dupla
     if (uErr) throw new Error(uErr.message);

@@ -17,9 +17,15 @@ import forge from "https://esm.sh/node-forge@1.3.1";
 type Api = "pix" | "boleto";
 
 const EFI_ENV = (Deno.env.get("EFI_ENV") || "production").toLowerCase();
-const CLIENT_ID = Deno.env.get("EFI_CLIENT_ID") || "";
-const CLIENT_SECRET = Deno.env.get("EFI_CLIENT_SECRET") || "";
-const CERT_B64 = Deno.env.get("EFI_CERTIFICATE_BASE64") || "";
+const IS_SANDBOX = EFI_ENV === "sandbox" || EFI_ENV === "homologacao" || EFI_ENV === "homologation";
+// Em sandbox lê os secrets *_SANDBOX; em produção mantém os secrets originais.
+const pick = (name: string) =>
+  IS_SANDBOX
+    ? (Deno.env.get(`${name}_SANDBOX`) || Deno.env.get(name) || "")
+    : (Deno.env.get(name) || "");
+const CLIENT_ID = pick("EFI_CLIENT_ID");
+const CLIENT_SECRET = pick("EFI_CLIENT_SECRET");
+const CERT_B64 = pick("EFI_CERTIFICATE_BASE64");
 // Efí gera P12 SEM senha por padrão — sempre passamos string vazia.
 const CERT_PASS = "";
 
@@ -187,7 +193,7 @@ Deno.serve(async (req) => {
   let path = payload.path;
   // Substitui $EFI_PIX_KEY no path pela chave configurada no env do proxy.
   if (path && path.includes("$EFI_PIX_KEY")) {
-    const k = Deno.env.get("EFI_PIX_KEY") || "";
+    const k = pick("EFI_PIX_KEY");
     if (!k) {
       return Response.json(
         { ok: false, status: 500, error: "EFI_PIX_KEY ausente no proxy." },

@@ -48,6 +48,7 @@ import { Route as ManagerManagerAlertasRouteImport } from './routes/_manager/man
 import { Route as LandlordLandlordSaldoRouteImport } from './routes/_landlord/landlord.saldo'
 import { Route as LandlordLandlordManutencoesRouteImport } from './routes/_landlord/landlord.manutencoes'
 import { Route as LandlordLandlordFinanceiroRouteImport } from './routes/_landlord/landlord.financeiro'
+import { Route as AuthenticatedTenantPerfilRouteImport } from './routes/_authenticated/tenant.perfil'
 import { Route as AuthenticatedTenantManutencoesRouteImport } from './routes/_authenticated/tenant.manutencoes'
 import { Route as AuthenticatedTenantFinanceiroRouteImport } from './routes/_authenticated/tenant.financeiro'
 import { Route as AuthenticatedTenantContratoRouteImport } from './routes/_authenticated/tenant.contrato'
@@ -270,6 +271,12 @@ const LandlordLandlordFinanceiroRoute =
     path: '/landlord/financeiro',
     getParentRoute: () => LandlordRoute,
   } as any)
+const AuthenticatedTenantPerfilRoute =
+  AuthenticatedTenantPerfilRouteImport.update({
+    id: '/tenant/perfil',
+    path: '/tenant/perfil',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedTenantManutencoesRoute =
   AuthenticatedTenantManutencoesRouteImport.update({
     id: '/tenant/manutencoes',
@@ -396,6 +403,7 @@ export interface FileRoutesByFullPath {
   '/tenant/contrato': typeof AuthenticatedTenantContratoRoute
   '/tenant/financeiro': typeof AuthenticatedTenantFinanceiroRoute
   '/tenant/manutencoes': typeof AuthenticatedTenantManutencoesRoute
+  '/tenant/perfil': typeof AuthenticatedTenantPerfilRoute
   '/landlord/financeiro': typeof LandlordLandlordFinanceiroRoute
   '/landlord/manutencoes': typeof LandlordLandlordManutencoesRoute
   '/landlord/saldo': typeof LandlordLandlordSaldoRoute
@@ -452,6 +460,7 @@ export interface FileRoutesByTo {
   '/tenant/contrato': typeof AuthenticatedTenantContratoRoute
   '/tenant/financeiro': typeof AuthenticatedTenantFinanceiroRoute
   '/tenant/manutencoes': typeof AuthenticatedTenantManutencoesRoute
+  '/tenant/perfil': typeof AuthenticatedTenantPerfilRoute
   '/landlord/financeiro': typeof LandlordLandlordFinanceiroRoute
   '/landlord/manutencoes': typeof LandlordLandlordManutencoesRoute
   '/landlord/saldo': typeof LandlordLandlordSaldoRoute
@@ -512,6 +521,7 @@ export interface FileRoutesById {
   '/_authenticated/tenant/contrato': typeof AuthenticatedTenantContratoRoute
   '/_authenticated/tenant/financeiro': typeof AuthenticatedTenantFinanceiroRoute
   '/_authenticated/tenant/manutencoes': typeof AuthenticatedTenantManutencoesRoute
+  '/_authenticated/tenant/perfil': typeof AuthenticatedTenantPerfilRoute
   '/_landlord/landlord/financeiro': typeof LandlordLandlordFinanceiroRoute
   '/_landlord/landlord/manutencoes': typeof LandlordLandlordManutencoesRoute
   '/_landlord/landlord/saldo': typeof LandlordLandlordSaldoRoute
@@ -570,6 +580,7 @@ export interface FileRouteTypes {
     | '/tenant/contrato'
     | '/tenant/financeiro'
     | '/tenant/manutencoes'
+    | '/tenant/perfil'
     | '/landlord/financeiro'
     | '/landlord/manutencoes'
     | '/landlord/saldo'
@@ -626,6 +637,7 @@ export interface FileRouteTypes {
     | '/tenant/contrato'
     | '/tenant/financeiro'
     | '/tenant/manutencoes'
+    | '/tenant/perfil'
     | '/landlord/financeiro'
     | '/landlord/manutencoes'
     | '/landlord/saldo'
@@ -685,6 +697,7 @@ export interface FileRouteTypes {
     | '/_authenticated/tenant/contrato'
     | '/_authenticated/tenant/financeiro'
     | '/_authenticated/tenant/manutencoes'
+    | '/_authenticated/tenant/perfil'
     | '/_landlord/landlord/financeiro'
     | '/_landlord/landlord/manutencoes'
     | '/_landlord/landlord/saldo'
@@ -1021,6 +1034,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LandlordLandlordFinanceiroRouteImport
       parentRoute: typeof LandlordRoute
     }
+    '/_authenticated/tenant/perfil': {
+      id: '/_authenticated/tenant/perfil'
+      path: '/tenant/perfil'
+      fullPath: '/tenant/perfil'
+      preLoaderRoute: typeof AuthenticatedTenantPerfilRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/tenant/manutencoes': {
       id: '/_authenticated/tenant/manutencoes'
       path: '/tenant/manutencoes'
@@ -1165,6 +1185,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedTenantContratoRoute: typeof AuthenticatedTenantContratoRoute
   AuthenticatedTenantFinanceiroRoute: typeof AuthenticatedTenantFinanceiroRoute
   AuthenticatedTenantManutencoesRoute: typeof AuthenticatedTenantManutencoesRoute
+  AuthenticatedTenantPerfilRoute: typeof AuthenticatedTenantPerfilRoute
   AuthenticatedTenantIndexRoute: typeof AuthenticatedTenantIndexRoute
   AuthenticatedAdminConfiguracoesSubcontaRoute: typeof AuthenticatedAdminConfiguracoesSubcontaRoute
 }
@@ -1184,6 +1205,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedTenantContratoRoute: AuthenticatedTenantContratoRoute,
   AuthenticatedTenantFinanceiroRoute: AuthenticatedTenantFinanceiroRoute,
   AuthenticatedTenantManutencoesRoute: AuthenticatedTenantManutencoesRoute,
+  AuthenticatedTenantPerfilRoute: AuthenticatedTenantPerfilRoute,
   AuthenticatedTenantIndexRoute: AuthenticatedTenantIndexRoute,
   AuthenticatedAdminConfiguracoesSubcontaRoute:
     AuthenticatedAdminConfiguracoesSubcontaRoute,
@@ -1284,13 +1306,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

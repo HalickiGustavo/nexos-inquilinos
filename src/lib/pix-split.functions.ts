@@ -381,10 +381,14 @@ export const checkPixPayment = createServerFn({ method: "POST" })
           .eq("id", data.installmentId);
 
         // Dispara repasse instantâneo (claim atômico garante idempotência com o webhook).
+        // IMPORTANTE: precisa ser awaited — em Workers, promises pendentes
+        // são canceladas assim que a resposta é enviada.
         const { runInstantPayoutForSplit } = await import("./efi-payouts.server");
-        runInstantPayoutForSplit(split.id).catch((err) =>
-          console.error("[checkPixPayment] instant payout failed", split.id, err),
-        );
+        try {
+          await runInstantPayoutForSplit(split.id);
+        } catch (err) {
+          console.error("[checkPixPayment] instant payout failed", split.id, err);
+        }
         return { paid: true, status };
       }
       return { paid: false, status };

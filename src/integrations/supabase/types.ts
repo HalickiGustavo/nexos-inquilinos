@@ -17,7 +17,6 @@ export type Database = {
       agency_settings: {
         Row: {
           agency_document: string | null
-          agency_efi_account_number: string | null
           agency_pix_key: string | null
           agency_pix_key_type: string | null
           created_at: string
@@ -30,7 +29,6 @@ export type Database = {
         }
         Insert: {
           agency_document?: string | null
-          agency_efi_account_number?: string | null
           agency_pix_key?: string | null
           agency_pix_key_type?: string | null
           created_at?: string
@@ -43,7 +41,6 @@ export type Database = {
         }
         Update: {
           agency_document?: string | null
-          agency_efi_account_number?: string | null
           agency_pix_key?: string | null
           agency_pix_key_type?: string | null
           created_at?: string
@@ -437,59 +434,6 @@ export type Database = {
           },
         ]
       }
-      efi_payouts: {
-        Row: {
-          amount: number
-          created_at: string
-          e2e_id: string | null
-          error: string | null
-          id: string
-          paid_at: string | null
-          pix_key: string
-          pix_key_type: string | null
-          pix_split_id: string
-          recipient: string
-          status: string
-          user_id: string
-        }
-        Insert: {
-          amount: number
-          created_at?: string
-          e2e_id?: string | null
-          error?: string | null
-          id?: string
-          paid_at?: string | null
-          pix_key: string
-          pix_key_type?: string | null
-          pix_split_id: string
-          recipient: string
-          status?: string
-          user_id: string
-        }
-        Update: {
-          amount?: number
-          created_at?: string
-          e2e_id?: string | null
-          error?: string | null
-          id?: string
-          paid_at?: string | null
-          pix_key?: string
-          pix_key_type?: string | null
-          pix_split_id?: string
-          recipient?: string
-          status?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "efi_payouts_pix_split_id_fkey"
-            columns: ["pix_split_id"]
-            isOneToOne: false
-            referencedRelation: "pix_splits"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       inspections: {
         Row: {
           contract_id: string
@@ -620,6 +564,7 @@ export type Database = {
           payout_status: string
           pix_payload: string | null
           pix_qrcode: string | null
+          stark_charge_id: string | null
           status: Database["public"]["Enums"]["installment_status"]
           updated_at: string
           user_id: string
@@ -652,6 +597,7 @@ export type Database = {
           payout_status?: string
           pix_payload?: string | null
           pix_qrcode?: string | null
+          stark_charge_id?: string | null
           status?: Database["public"]["Enums"]["installment_status"]
           updated_at?: string
           user_id: string
@@ -684,6 +630,7 @@ export type Database = {
           payout_status?: string
           pix_payload?: string | null
           pix_qrcode?: string | null
+          stark_charge_id?: string | null
           status?: Database["public"]["Enums"]["installment_status"]
           updated_at?: string
           user_id?: string
@@ -702,6 +649,13 @@ export type Database = {
             columns: ["debt_agreement_id"]
             isOneToOne: false
             referencedRelation: "debt_agreements"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "installments_stark_charge_id_fkey"
+            columns: ["stark_charge_id"]
+            isOneToOne: false
+            referencedRelation: "stark_charges"
             referencedColumns: ["id"]
           },
         ]
@@ -1009,6 +963,87 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      payment_transfers: {
+        Row: {
+          amount: number
+          attempts: number
+          contract_id: string
+          created_at: string
+          description: string | null
+          error_message: string | null
+          external_id: string | null
+          id: string
+          installment_id: string
+          manager_user_id: string
+          next_retry_at: string | null
+          paid_at: string | null
+          pix_key: string | null
+          pix_key_type: string | null
+          recipient_type: Database["public"]["Enums"]["payment_recipient_type"]
+          recipient_user_id: string | null
+          stark_transfer_id: string | null
+          status: Database["public"]["Enums"]["payment_transfer_status"]
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          attempts?: number
+          contract_id: string
+          created_at?: string
+          description?: string | null
+          error_message?: string | null
+          external_id?: string | null
+          id?: string
+          installment_id: string
+          manager_user_id: string
+          next_retry_at?: string | null
+          paid_at?: string | null
+          pix_key?: string | null
+          pix_key_type?: string | null
+          recipient_type: Database["public"]["Enums"]["payment_recipient_type"]
+          recipient_user_id?: string | null
+          stark_transfer_id?: string | null
+          status?: Database["public"]["Enums"]["payment_transfer_status"]
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          attempts?: number
+          contract_id?: string
+          created_at?: string
+          description?: string | null
+          error_message?: string | null
+          external_id?: string | null
+          id?: string
+          installment_id?: string
+          manager_user_id?: string
+          next_retry_at?: string | null
+          paid_at?: string | null
+          pix_key?: string | null
+          pix_key_type?: string | null
+          recipient_type?: Database["public"]["Enums"]["payment_recipient_type"]
+          recipient_user_id?: string | null
+          stark_transfer_id?: string | null
+          status?: Database["public"]["Enums"]["payment_transfer_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_transfers_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_transfers_installment_id_fkey"
+            columns: ["installment_id"]
+            isOneToOne: false
+            referencedRelation: "installments"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       pix_splits: {
         Row: {
@@ -1361,6 +1396,113 @@ export type Database = {
           },
         ]
       }
+      stark_charges: {
+        Row: {
+          amount: number
+          boleto_barcode: string | null
+          boleto_line: string | null
+          boleto_pdf_url: string | null
+          brcode: string | null
+          created_at: string
+          due_date: string | null
+          external_id: string | null
+          id: string
+          installment_id: string
+          kind: Database["public"]["Enums"]["stark_charge_kind"]
+          manager_user_id: string
+          paid_at: string | null
+          qrcode_image_url: string | null
+          stark_boleto_id: string | null
+          stark_id: string | null
+          status: Database["public"]["Enums"]["stark_charge_status"]
+          txid: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          boleto_barcode?: string | null
+          boleto_line?: string | null
+          boleto_pdf_url?: string | null
+          brcode?: string | null
+          created_at?: string
+          due_date?: string | null
+          external_id?: string | null
+          id?: string
+          installment_id: string
+          kind?: Database["public"]["Enums"]["stark_charge_kind"]
+          manager_user_id: string
+          paid_at?: string | null
+          qrcode_image_url?: string | null
+          stark_boleto_id?: string | null
+          stark_id?: string | null
+          status?: Database["public"]["Enums"]["stark_charge_status"]
+          txid?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          boleto_barcode?: string | null
+          boleto_line?: string | null
+          boleto_pdf_url?: string | null
+          brcode?: string | null
+          created_at?: string
+          due_date?: string | null
+          external_id?: string | null
+          id?: string
+          installment_id?: string
+          kind?: Database["public"]["Enums"]["stark_charge_kind"]
+          manager_user_id?: string
+          paid_at?: string | null
+          qrcode_image_url?: string | null
+          stark_boleto_id?: string | null
+          stark_id?: string | null
+          status?: Database["public"]["Enums"]["stark_charge_status"]
+          txid?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stark_charges_installment_id_fkey"
+            columns: ["installment_id"]
+            isOneToOne: false
+            referencedRelation: "installments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stark_events: {
+        Row: {
+          created_at: string
+          error: string | null
+          event_id: string
+          id: string
+          log_type: string | null
+          processed_at: string | null
+          raw: Json
+          subscription: string
+        }
+        Insert: {
+          created_at?: string
+          error?: string | null
+          event_id: string
+          id?: string
+          log_type?: string | null
+          processed_at?: string | null
+          raw: Json
+          subscription: string
+        }
+        Update: {
+          created_at?: string
+          error?: string | null
+          event_id?: string
+          id?: string
+          log_type?: string | null
+          processed_at?: string | null
+          raw?: Json
+          subscription?: string
+        }
+        Relationships: []
+      }
       tenants: {
         Row: {
           created_at: string
@@ -1473,9 +1615,18 @@ export type Database = {
         | "em_aberto"
       maintenance_responsible: "proprietario" | "inquilino"
       maintenance_status: "pendente" | "em_andamento" | "concluido"
+      payment_recipient_type: "nexo" | "agency" | "owner"
+      payment_transfer_status: "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED"
       property_status: "disponivel" | "alugado" | "manutencao"
       property_type: "casa" | "apartamento" | "comercial" | "terreno" | "outro"
       readjustment_index: "IGP-M" | "IPCA" | "INCC" | "nenhum"
+      stark_charge_kind: "pix" | "boleto" | "pix_boleto"
+      stark_charge_status:
+        | "created"
+        | "paid"
+        | "expired"
+        | "canceled"
+        | "failed"
       transaction_type: "Aluguel" | "Venda"
     }
     CompositeTypes: {
@@ -1618,9 +1769,13 @@ export const Constants = {
       ],
       maintenance_responsible: ["proprietario", "inquilino"],
       maintenance_status: ["pendente", "em_andamento", "concluido"],
+      payment_recipient_type: ["nexo", "agency", "owner"],
+      payment_transfer_status: ["PENDING", "PROCESSING", "COMPLETED", "FAILED"],
       property_status: ["disponivel", "alugado", "manutencao"],
       property_type: ["casa", "apartamento", "comercial", "terreno", "outro"],
       readjustment_index: ["IGP-M", "IPCA", "INCC", "nenhum"],
+      stark_charge_kind: ["pix", "boleto", "pix_boleto"],
+      stark_charge_status: ["created", "paid", "expired", "canceled", "failed"],
       transaction_type: ["Aluguel", "Venda"],
     },
   },

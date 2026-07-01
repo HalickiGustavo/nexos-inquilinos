@@ -65,7 +65,7 @@ function TenantFinanceiro() {
     if (i.pix_qrcode && i.pix_payload) return;
     setPixLoading(true);
     try {
-      // Split nativo Efí (Nexo + Imobiliária + Proprietário). Sem fallback Asaas.
+      // Split Pix (Nexo + Imobiliária + Proprietário).
       const res: any = await tripleSplit({ data: { installmentId: i.id } });
       if (!res?.ok) {
         setPixError(res?.error ?? "Não foi possível gerar o PIX no momento.");

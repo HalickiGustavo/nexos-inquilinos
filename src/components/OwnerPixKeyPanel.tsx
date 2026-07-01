@@ -26,7 +26,6 @@ export function OwnerPixKeyPanel() {
   const [saving, setSaving] = useState(false);
   const [pixKey, setPixKey] = useState("");
   const [pixKeyType, setPixKeyType] = useState<KeyType>("cpf");
-  const [efiAccountNumber, setEfiAccountNumber] = useState("");
 
   useEffect(() => {
     if (!user?.id) return;
@@ -34,12 +33,11 @@ export function OwnerPixKeyPanel() {
       setLoading(true);
       const { data } = await supabase
         .from("profiles")
-        .select("pix_key, pix_key_type, efi_account_number")
+        .select("pix_key, pix_key_type")
         .eq("id", user.id)
         .maybeSingle();
       setPixKey(data?.pix_key ?? "");
       if (data?.pix_key_type) setPixKeyType(data.pix_key_type as any);
-      setEfiAccountNumber((data as any)?.efi_account_number ?? "");
       setLoading(false);
     })();
   }, [user?.id]);
@@ -47,14 +45,12 @@ export function OwnerPixKeyPanel() {
   const save = async () => {
     if (!user?.id) return;
     if (!pixKey.trim()) return toast.error("Informe sua chave PIX para receber os repasses.");
-    if (!efiAccountNumber.trim()) return toast.error("Informe o número da sua conta Efí para usar split nativo.");
     setSaving(true);
     const { error } = await supabase
       .from("profiles")
-      .update({ pix_key: pixKey.trim(), pix_key_type: pixKeyType, efi_account_number: efiAccountNumber.trim() } as any)
+      .update({ pix_key: pixKey.trim(), pix_key_type: pixKeyType } as any)
       .eq("id", user.id);
     if (!error) {
-      // Propaga para todos os imóveis vinculados (autônomo: user_id; convidado: landlord_id)
       await supabase.from("properties").update({
         owner_pix_key: pixKey.trim(),
         owner_pix_key_type: pixKeyType.toUpperCase(),
@@ -74,7 +70,7 @@ export function OwnerPixKeyPanel() {
         <div className="flex-1">
           <h2 className="text-lg font-semibold">Sua chave PIX para recebimento</h2>
           <p className="text-sm text-muted-foreground">
-            Assim que o inquilino paga, o valor é repassado <b>na hora</b> via PIX para esta chave (a Nexo recebe e dispara o PIX automaticamente em segundos).
+            Assim que o inquilino paga, o valor é repassado <b>na hora</b> via PIX para esta chave.
           </p>
         </div>
       </header>

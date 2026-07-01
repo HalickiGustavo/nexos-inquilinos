@@ -17,7 +17,7 @@ import { useInstallments, useInvalidate, type Installment } from "@/lib/queries"
 import { formatBRL, formatDate, parseNumber } from "@/lib/format";
 import { generateAsaasCharge, updateAsaasChargeFee, simulateAsaasPayment } from "@/lib/asaas.functions";
 import { parseExpenses, expensesTotals } from "@/lib/variable-expenses";
-import { PainelRepasses } from "@/components/PainelRepasses";
+
 import { OwnerPixKeyPanel } from "@/components/OwnerPixKeyPanel";
 
 export const Route = createFileRoute("/_authenticated/financials")({
@@ -79,7 +79,7 @@ function FinancialsPage() {
 
       <OwnerPixKeyPanel />
 
-      <PainelRepasses />
+
 
 
 

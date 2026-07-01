@@ -46,7 +46,7 @@ export async function runSweepPaidEfiCharges(): Promise<SweepResult> {
           .from("installments")
           .update({ status: "pago", payment_date: nowIso })
           .eq("id", row.installment_id);
-        runInstantPayoutForSplit(row.id).catch((e) => console.error("[sweep] payout fail", row.id, e));
+        try { await runInstantPayoutForSplit(row.id); } catch (e) { console.error("[sweep] payout fail", row.id, e); }
         paidCount++;
         details.push({ split_id: row.id, installment_id: row.installment_id, ok: true, paid: true, status });
       } else {

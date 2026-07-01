@@ -51,16 +51,13 @@ function LandlordSaldo() {
   async function savePix() {
     if (!user?.id) return;
     const nextPixKey = pixKey.trim() || profile?.pix_key || "";
-    const nextEfiAccount = efiAccountNumber.trim() || (profile as any)?.efi_account_number || "";
     if (!nextPixKey) { toast.error("Informe a chave PIX."); return; }
-    if (!nextEfiAccount) { toast.error("Informe a conta Efí para split nativo."); return; }
     setSavingKey(true);
     try {
       const { error } = await supabase.from("profiles")
         .update({
           pix_key: nextPixKey,
           pix_key_type: pixType,
-          efi_account_number: nextEfiAccount,
         } as any)
         .eq("id", user.id);
       if (error) throw error;
@@ -74,6 +71,7 @@ function LandlordSaldo() {
       setSavingKey(false);
     }
   }
+
 
   async function requestWithdrawal() {
     if (!user?.id) return;

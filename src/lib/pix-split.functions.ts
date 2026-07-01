@@ -130,7 +130,7 @@ export const generateTripleSplitPix = createServerFn({ method: "POST" })
         },
       };
     } catch (e: any) {
-      return { ok: false, error: e?.message ?? String(e), debug: e?.body ?? null };
+      return { ok: false, error: e?.message ?? String(e), debug: e?.body ? JSON.stringify(e.body).slice(0, 2000) : null };
     }
   });
 

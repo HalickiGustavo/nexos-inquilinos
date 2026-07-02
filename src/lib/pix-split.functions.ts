@@ -108,9 +108,9 @@ export const generateTripleSplitPix = createServerFn({ method: "POST" })
           error: "Parcela vencida — o pagamento deve ser feito por Boleto, não por PIX.",
         };
       }
-      // Stark aceita ISO 8601 completo com timezone para o campo `due` da Invoice.
-      // Enviamos 23:59:59-03:00 (fim do dia BRT) para casar com o comportamento esperado.
-      const dueIso = `${isoMatch[1]}-${isoMatch[2]}-${isoMatch[3]}T23:59:59-03:00`;
+      // A API da Stark valida `due` como ISO UTC explícito. Offsets locais como
+      // `-03:00` podem ser rejeitados com invalidDate em alguns endpoints/ambientes.
+      const dueIso = dueEnd.toISOString().replace("Z", "+00:00");
 
 
       const invoice = await createInvoice({

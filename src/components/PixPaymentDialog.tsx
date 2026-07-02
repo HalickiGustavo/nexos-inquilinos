@@ -98,7 +98,7 @@ export function PixPaymentDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-sm max-h-[85vh] overflow-y-auto p-4 sm:p-5">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <QrCode className="size-5 text-primary" /> Pagar este aluguel

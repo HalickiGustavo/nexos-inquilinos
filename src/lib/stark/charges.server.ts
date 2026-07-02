@@ -32,7 +32,7 @@ export type StarkDynamicBrcode = {
 export async function createDynamicPix(input: CreateDynamicPixInput) {
   const external = `inst-${input.installmentId}-${Date.now()}`;
   const body = {
-    dynamicBrcodes: [
+    brcodes: [
       {
         amount: Math.round(input.amount * 100), // centavos
         expiration: input.expirationSeconds ?? 86400,
@@ -41,12 +41,12 @@ export async function createDynamicPix(input: CreateDynamicPixInput) {
       },
     ],
   };
-  const res = await starkFetch<{ dynamicBrcodes: StarkDynamicBrcode[] }>({
+  const res = await starkFetch<{ brcodes: StarkDynamicBrcode[] }>({
     method: "POST",
     path: "/dynamic-brcode",
     body,
   });
-  const created = res.dynamicBrcodes?.[0];
+  const created = res.brcodes?.[0];
   if (!created) throw new Error("dynamic-brcode: resposta vazia");
   return { ...created, externalId: external, txid: randomTxid() };
 }

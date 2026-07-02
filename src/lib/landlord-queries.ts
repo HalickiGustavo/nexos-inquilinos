@@ -64,10 +64,11 @@ export function useLandlordMaintenances() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("maintenances")
-        .select("*, property:properties(*)")
+        .select("*, property:properties(*), contract:contracts(id, start_date, end_date, rent_amount, active, tenant:tenants(id, full_name))")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data ?? [];
+
     },
   });
 }

@@ -112,9 +112,15 @@ function TenantManutencoes() {
               </div>
               <Card className="p-4 space-y-3">
                 <p className="font-semibold">{current.title}</p>
+                {current.contract && (
+                  <Badge variant="secondary" className="text-[10px] font-normal">
+                    Contrato · {formatDate(current.contract.start_date)} → {formatDate(current.contract.end_date)}
+                  </Badge>
+                )}
                 {current.description && (
                   <p className="text-sm text-muted-foreground">{current.description}</p>
                 )}
+
                 {current.evidence_urls?.length > 0 && (
                   <div className="space-y-1.5">
                     <p className="text-xs text-muted-foreground">Evidências enviadas</p>

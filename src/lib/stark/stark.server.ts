@@ -19,6 +19,19 @@ export function isStarkConfigured() {
   return !!(process.env.STARK_PROJECT_ID && process.env.STARK_PRIVATE_KEY);
 }
 
+function normalizeStarkAccessId(raw: string) {
+  const value = raw.trim().replace(/^['"]|['"]$/g, "").trim();
+
+  if (/^\d+$/.test(value)) return `project/${value}`;
+  if (/^project\/\d+$/i.test(value)) return value.toLowerCase();
+  if (/^organization\/\d+$/i.test(value)) return value.toLowerCase();
+  if (/^organization\/\d+\/workspace\/\d+$/i.test(value)) return value.toLowerCase();
+
+  throw new Error(
+    "STARK_PROJECT_ID inválido. Use apenas o ID numérico do Project, ou project/<id>, organization/<id>, organization/<id>/workspace/<id>.",
+  );
+}
+
 function getPrivateKey(): PrivateKey {
   const raw = process.env.STARK_PRIVATE_KEY;
   if (!raw) throw new Error("STARK_PRIVATE_KEY not set");
@@ -41,11 +54,7 @@ export async function starkFetch<T = any>(opts: StarkRequestOptions): Promise<T>
     throw new Error("Stark Bank não configurado (defina STARK_PROJECT_ID e STARK_PRIVATE_KEY)");
   }
   const method = opts.method ?? "GET";
-  const rawId = (process.env.STARK_PROJECT_ID || "").trim();
-  // Aceita id puro, "project/<id>" ou "organization/<id>" — normaliza.
-  const accessId = /^(project|organization)\//i.test(rawId)
-    ? rawId.replace(/^(project|organization)\//i, (m) => m.toLowerCase())
-    : `project/${rawId}`;
+  const accessId = normalizeStarkAccessId(process.env.STARK_PROJECT_ID || "");
   const accessTime = unixTime();
 
   let url = `${starkHost()}${opts.path}`;

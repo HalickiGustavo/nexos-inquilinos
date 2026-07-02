@@ -199,6 +199,7 @@ function NewRequestDialog({ onDone }: { onDone: () => void }) {
         user_id: contract.user_id,
         tenant_id: tenant.id,
         property_id: contract.property_id,
+        contract_id: contract.id,
         title: form.title,
         description: `[${form.category.toUpperCase()}] ${form.description}`,
         cost: 0,
@@ -207,6 +208,7 @@ function NewRequestDialog({ onDone }: { onDone: () => void }) {
         evidence_urls: evidence,
       } as any);
       if (error) throw error;
+
     },
     onSuccess: () => {
       toast.success("Chamado aberto!");

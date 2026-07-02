@@ -42,9 +42,22 @@ function LandlordMaintenances() {
                   <p className="text-xs text-muted-foreground truncate mt-0.5">
                     {m.property?.nickname || m.property?.address || "—"}
                   </p>
+                  {m.contract && (
+                    <div className="mt-1.5 flex items-center gap-1.5 flex-wrap">
+                      <Badge variant="secondary" className="text-[10px] font-normal">
+                        Contrato · {m.contract.tenant?.full_name ?? "inquilino"}
+                      </Badge>
+                      {m.contract.active && (
+                        <Badge variant="outline" className="text-[10px] font-normal border-emerald-500/40 text-emerald-400">
+                          vigente
+                        </Badge>
+                      )}
+                    </div>
+                  )}
                 </div>
                 <StatusBadge status={m.status} />
               </div>
+
 
               {m.description && (
                 <p className="text-sm text-muted-foreground line-clamp-3">{m.description}</p>

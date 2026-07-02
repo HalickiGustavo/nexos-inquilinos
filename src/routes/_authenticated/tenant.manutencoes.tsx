@@ -112,9 +112,15 @@ function TenantManutencoes() {
               </div>
               <Card className="p-4 space-y-3">
                 <p className="font-semibold">{current.title}</p>
+                {current.contract && (
+                  <Badge variant="secondary" className="text-[10px] font-normal">
+                    Contrato · {formatDate(current.contract.start_date)} → {formatDate(current.contract.end_date)}
+                  </Badge>
+                )}
                 {current.description && (
                   <p className="text-sm text-muted-foreground">{current.description}</p>
                 )}
+
                 {current.evidence_urls?.length > 0 && (
                   <div className="space-y-1.5">
                     <p className="text-xs text-muted-foreground">Evidências enviadas</p>
@@ -199,6 +205,7 @@ function NewRequestDialog({ onDone }: { onDone: () => void }) {
         user_id: contract.user_id,
         tenant_id: tenant.id,
         property_id: contract.property_id,
+        contract_id: contract.id,
         title: form.title,
         description: `[${form.category.toUpperCase()}] ${form.description}`,
         cost: 0,
@@ -207,6 +214,7 @@ function NewRequestDialog({ onDone }: { onDone: () => void }) {
         evidence_urls: evidence,
       } as any);
       if (error) throw error;
+
     },
     onSuccess: () => {
       toast.success("Chamado aberto!");

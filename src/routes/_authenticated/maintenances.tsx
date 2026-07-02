@@ -94,6 +94,18 @@ function MaintenanceCard({ item }: { item: any }) {
         <Badge variant="outline" className="capitalize text-xs">{item.responsible}</Badge>
       </div>
       <p className="text-xs text-muted-foreground mt-1">{item.property?.nickname}</p>
+      {item.contract && (
+        <div className="mt-1.5 flex items-center gap-1.5 flex-wrap">
+          <Badge variant="secondary" className="text-[10px] font-normal">
+            Contrato · {item.contract.tenant?.full_name ?? "—"}
+          </Badge>
+          {item.contract.active && (
+            <Badge variant="outline" className="text-[10px] font-normal border-primary/40 text-primary">
+              vigente
+            </Badge>
+          )}
+        </div>
+      )}
       {item.description && <p className="text-sm mt-2 text-muted-foreground line-clamp-3">{item.description}</p>}
       {item.evidence_urls?.length > 0 && (
         <div className="mt-3">
@@ -104,6 +116,7 @@ function MaintenanceCard({ item }: { item: any }) {
         <span className="font-semibold text-primary">{formatBRL(Number(item.cost))}</span>
         {item.scheduled_date && <span className="text-xs text-muted-foreground">{formatDate(item.scheduled_date)}</span>}
       </div>
+
       <div className="flex gap-2 mt-3">
         <Select
           value={item.status}

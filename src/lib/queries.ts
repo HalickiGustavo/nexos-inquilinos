@@ -80,7 +80,7 @@ export function useMaintenances() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("maintenances")
-        .select("*, property:properties(*)")
+        .select("*, property:properties(*), contract:contracts(id, start_date, end_date, rent_amount, active, tenant:tenants(id, full_name))")
         .order("created_at", { ascending: false })
         .limit(500);
       if (error) throw error;
@@ -88,6 +88,7 @@ export function useMaintenances() {
     },
   });
 }
+
 
 export function useInvalidate() {
   const qc = useQueryClient();

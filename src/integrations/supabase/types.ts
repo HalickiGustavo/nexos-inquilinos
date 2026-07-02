@@ -842,6 +842,7 @@ export type Database = {
           budget_rent_deduction: boolean
           budget_status: string
           completed_date: string | null
+          contract_id: string | null
           cost: number
           created_at: string
           description: string | null
@@ -865,6 +866,7 @@ export type Database = {
           budget_rent_deduction?: boolean
           budget_status?: string
           completed_date?: string | null
+          contract_id?: string | null
           cost?: number
           created_at?: string
           description?: string | null
@@ -888,6 +890,7 @@ export type Database = {
           budget_rent_deduction?: boolean
           budget_status?: string
           completed_date?: string | null
+          contract_id?: string | null
           cost?: number
           created_at?: string
           description?: string | null
@@ -904,6 +907,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "maintenances_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "maintenances_property_id_fkey"
             columns: ["property_id"]

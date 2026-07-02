@@ -61,6 +61,7 @@ import { Route as ApiPublicHooksSendMaintenanceResponseRemindersRouteImport } fr
 import { Route as ApiPublicHooksRegisterStarkWebhookRouteImport } from './routes/api/public/hooks/register-stark-webhook'
 import { Route as ApiPublicHooksReconcileStarkChargesRouteImport } from './routes/api/public/hooks/reconcile-stark-charges'
 import { Route as ApiPublicHooksProcessPayoutQueueRouteImport } from './routes/api/public/hooks/process-payout-queue'
+import { Route as ApiPublicHooksIssueSingleBoletoRouteImport } from './routes/api/public/hooks/issue-single-boleto'
 import { Route as ApiPublicHooksGenerateUpcomingBoletosRouteImport } from './routes/api/public/hooks/generate-upcoming-boletos'
 import { Route as ManagerManagerConfiguracoesRoletaRouteImport } from './routes/_manager/manager.configuracoes.roleta'
 import { Route as AuthenticatedAdminConfiguracoesSubcontaRouteImport } from './routes/_authenticated/admin.configuracoes.subconta'
@@ -347,6 +348,12 @@ const ApiPublicHooksProcessPayoutQueueRoute =
     path: '/api/public/hooks/process-payout-queue',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksIssueSingleBoletoRoute =
+  ApiPublicHooksIssueSingleBoletoRouteImport.update({
+    id: '/api/public/hooks/issue-single-boleto',
+    path: '/api/public/hooks/issue-single-boleto',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksGenerateUpcomingBoletosRoute =
   ApiPublicHooksGenerateUpcomingBoletosRouteImport.update({
     id: '/api/public/hooks/generate-upcoming-boletos',
@@ -423,6 +430,7 @@ export interface FileRoutesByFullPath {
   '/admin/configuracoes/subconta': typeof AuthenticatedAdminConfiguracoesSubcontaRoute
   '/manager/configuracoes/roleta': typeof ManagerManagerConfiguracoesRoletaRoute
   '/api/public/hooks/generate-upcoming-boletos': typeof ApiPublicHooksGenerateUpcomingBoletosRoute
+  '/api/public/hooks/issue-single-boleto': typeof ApiPublicHooksIssueSingleBoletoRoute
   '/api/public/hooks/process-payout-queue': typeof ApiPublicHooksProcessPayoutQueueRoute
   '/api/public/hooks/reconcile-stark-charges': typeof ApiPublicHooksReconcileStarkChargesRoute
   '/api/public/hooks/register-stark-webhook': typeof ApiPublicHooksRegisterStarkWebhookRoute
@@ -479,6 +487,7 @@ export interface FileRoutesByTo {
   '/admin/configuracoes/subconta': typeof AuthenticatedAdminConfiguracoesSubcontaRoute
   '/manager/configuracoes/roleta': typeof ManagerManagerConfiguracoesRoletaRoute
   '/api/public/hooks/generate-upcoming-boletos': typeof ApiPublicHooksGenerateUpcomingBoletosRoute
+  '/api/public/hooks/issue-single-boleto': typeof ApiPublicHooksIssueSingleBoletoRoute
   '/api/public/hooks/process-payout-queue': typeof ApiPublicHooksProcessPayoutQueueRoute
   '/api/public/hooks/reconcile-stark-charges': typeof ApiPublicHooksReconcileStarkChargesRoute
   '/api/public/hooks/register-stark-webhook': typeof ApiPublicHooksRegisterStarkWebhookRoute
@@ -539,6 +548,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/configuracoes/subconta': typeof AuthenticatedAdminConfiguracoesSubcontaRoute
   '/_manager/manager/configuracoes/roleta': typeof ManagerManagerConfiguracoesRoletaRoute
   '/api/public/hooks/generate-upcoming-boletos': typeof ApiPublicHooksGenerateUpcomingBoletosRoute
+  '/api/public/hooks/issue-single-boleto': typeof ApiPublicHooksIssueSingleBoletoRoute
   '/api/public/hooks/process-payout-queue': typeof ApiPublicHooksProcessPayoutQueueRoute
   '/api/public/hooks/reconcile-stark-charges': typeof ApiPublicHooksReconcileStarkChargesRoute
   '/api/public/hooks/register-stark-webhook': typeof ApiPublicHooksRegisterStarkWebhookRoute
@@ -597,6 +607,7 @@ export interface FileRouteTypes {
     | '/admin/configuracoes/subconta'
     | '/manager/configuracoes/roleta'
     | '/api/public/hooks/generate-upcoming-boletos'
+    | '/api/public/hooks/issue-single-boleto'
     | '/api/public/hooks/process-payout-queue'
     | '/api/public/hooks/reconcile-stark-charges'
     | '/api/public/hooks/register-stark-webhook'
@@ -653,6 +664,7 @@ export interface FileRouteTypes {
     | '/admin/configuracoes/subconta'
     | '/manager/configuracoes/roleta'
     | '/api/public/hooks/generate-upcoming-boletos'
+    | '/api/public/hooks/issue-single-boleto'
     | '/api/public/hooks/process-payout-queue'
     | '/api/public/hooks/reconcile-stark-charges'
     | '/api/public/hooks/register-stark-webhook'
@@ -712,6 +724,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/configuracoes/subconta'
     | '/_manager/manager/configuracoes/roleta'
     | '/api/public/hooks/generate-upcoming-boletos'
+    | '/api/public/hooks/issue-single-boleto'
     | '/api/public/hooks/process-payout-queue'
     | '/api/public/hooks/reconcile-stark-charges'
     | '/api/public/hooks/register-stark-webhook'
@@ -735,6 +748,7 @@ export interface RootRouteChildren {
   TenantSetupRoute: typeof TenantSetupRoute
   ApiPublicStarkWebhookRoute: typeof ApiPublicStarkWebhookRoute
   ApiPublicHooksGenerateUpcomingBoletosRoute: typeof ApiPublicHooksGenerateUpcomingBoletosRoute
+  ApiPublicHooksIssueSingleBoletoRoute: typeof ApiPublicHooksIssueSingleBoletoRoute
   ApiPublicHooksProcessPayoutQueueRoute: typeof ApiPublicHooksProcessPayoutQueueRoute
   ApiPublicHooksReconcileStarkChargesRoute: typeof ApiPublicHooksReconcileStarkChargesRoute
   ApiPublicHooksRegisterStarkWebhookRoute: typeof ApiPublicHooksRegisterStarkWebhookRoute
@@ -1113,6 +1127,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksProcessPayoutQueueRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/issue-single-boleto': {
+      id: '/api/public/hooks/issue-single-boleto'
+      path: '/api/public/hooks/issue-single-boleto'
+      fullPath: '/api/public/hooks/issue-single-boleto'
+      preLoaderRoute: typeof ApiPublicHooksIssueSingleBoletoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/generate-upcoming-boletos': {
       id: '/api/public/hooks/generate-upcoming-boletos'
       path: '/api/public/hooks/generate-upcoming-boletos'
@@ -1268,6 +1289,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicStarkWebhookRoute: ApiPublicStarkWebhookRoute,
   ApiPublicHooksGenerateUpcomingBoletosRoute:
     ApiPublicHooksGenerateUpcomingBoletosRoute,
+  ApiPublicHooksIssueSingleBoletoRoute: ApiPublicHooksIssueSingleBoletoRoute,
   ApiPublicHooksProcessPayoutQueueRoute: ApiPublicHooksProcessPayoutQueueRoute,
   ApiPublicHooksReconcileStarkChargesRoute:
     ApiPublicHooksReconcileStarkChargesRoute,
@@ -1287,13 +1309,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

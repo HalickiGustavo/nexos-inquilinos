@@ -55,6 +55,7 @@ import { Route as AuthenticatedTenantAlertasRouteImport } from './routes/_authen
 import { Route as AuthenticatedAdminIntegracoesRouteImport } from './routes/_authenticated/admin.integracoes'
 import { Route as ApiPublicWebhooksLeadsRouteImport } from './routes/api/public/webhooks/leads'
 import { Route as ApiPublicListingsXmlRouteImport } from './routes/api/public/listings.xml'
+import { Route as ApiPublicHooksSyncCronSecretRouteImport } from './routes/api/public/hooks/sync-cron-secret'
 import { Route as ApiPublicHooksStarkE2eSandboxRouteImport } from './routes/api/public/hooks/stark-e2e-sandbox'
 import { Route as ApiPublicHooksSendTenantRemindersRouteImport } from './routes/api/public/hooks/send-tenant-reminders'
 import { Route as ApiPublicHooksSendMaintenanceResponseRemindersRouteImport } from './routes/api/public/hooks/send-maintenance-response-reminders'
@@ -312,6 +313,12 @@ const ApiPublicListingsXmlRoute = ApiPublicListingsXmlRouteImport.update({
   path: '/api/public/listings/xml',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicHooksSyncCronSecretRoute =
+  ApiPublicHooksSyncCronSecretRouteImport.update({
+    id: '/api/public/hooks/sync-cron-secret',
+    path: '/api/public/hooks/sync-cron-secret',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksStarkE2eSandboxRoute =
   ApiPublicHooksStarkE2eSandboxRouteImport.update({
     id: '/api/public/hooks/stark-e2e-sandbox',
@@ -437,6 +444,7 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/send-maintenance-response-reminders': typeof ApiPublicHooksSendMaintenanceResponseRemindersRoute
   '/api/public/hooks/send-tenant-reminders': typeof ApiPublicHooksSendTenantRemindersRoute
   '/api/public/hooks/stark-e2e-sandbox': typeof ApiPublicHooksStarkE2eSandboxRoute
+  '/api/public/hooks/sync-cron-secret': typeof ApiPublicHooksSyncCronSecretRoute
   '/api/public/listings/xml': typeof ApiPublicListingsXmlRoute
   '/api/public/webhooks/leads': typeof ApiPublicWebhooksLeadsRoute
   '/api/v1/integrations/$orgSlug/leads': typeof ApiV1IntegrationsOrgSlugLeadsRoute
@@ -494,6 +502,7 @@ export interface FileRoutesByTo {
   '/api/public/hooks/send-maintenance-response-reminders': typeof ApiPublicHooksSendMaintenanceResponseRemindersRoute
   '/api/public/hooks/send-tenant-reminders': typeof ApiPublicHooksSendTenantRemindersRoute
   '/api/public/hooks/stark-e2e-sandbox': typeof ApiPublicHooksStarkE2eSandboxRoute
+  '/api/public/hooks/sync-cron-secret': typeof ApiPublicHooksSyncCronSecretRoute
   '/api/public/listings/xml': typeof ApiPublicListingsXmlRoute
   '/api/public/webhooks/leads': typeof ApiPublicWebhooksLeadsRoute
   '/api/v1/integrations/$orgSlug/leads': typeof ApiV1IntegrationsOrgSlugLeadsRoute
@@ -555,6 +564,7 @@ export interface FileRoutesById {
   '/api/public/hooks/send-maintenance-response-reminders': typeof ApiPublicHooksSendMaintenanceResponseRemindersRoute
   '/api/public/hooks/send-tenant-reminders': typeof ApiPublicHooksSendTenantRemindersRoute
   '/api/public/hooks/stark-e2e-sandbox': typeof ApiPublicHooksStarkE2eSandboxRoute
+  '/api/public/hooks/sync-cron-secret': typeof ApiPublicHooksSyncCronSecretRoute
   '/api/public/listings/xml': typeof ApiPublicListingsXmlRoute
   '/api/public/webhooks/leads': typeof ApiPublicWebhooksLeadsRoute
   '/api/v1/integrations/$orgSlug/leads': typeof ApiV1IntegrationsOrgSlugLeadsRoute
@@ -614,6 +624,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/send-maintenance-response-reminders'
     | '/api/public/hooks/send-tenant-reminders'
     | '/api/public/hooks/stark-e2e-sandbox'
+    | '/api/public/hooks/sync-cron-secret'
     | '/api/public/listings/xml'
     | '/api/public/webhooks/leads'
     | '/api/v1/integrations/$orgSlug/leads'
@@ -671,6 +682,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/send-maintenance-response-reminders'
     | '/api/public/hooks/send-tenant-reminders'
     | '/api/public/hooks/stark-e2e-sandbox'
+    | '/api/public/hooks/sync-cron-secret'
     | '/api/public/listings/xml'
     | '/api/public/webhooks/leads'
     | '/api/v1/integrations/$orgSlug/leads'
@@ -731,6 +743,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/send-maintenance-response-reminders'
     | '/api/public/hooks/send-tenant-reminders'
     | '/api/public/hooks/stark-e2e-sandbox'
+    | '/api/public/hooks/sync-cron-secret'
     | '/api/public/listings/xml'
     | '/api/public/webhooks/leads'
     | '/api/v1/integrations/$orgSlug/leads'
@@ -755,6 +768,7 @@ export interface RootRouteChildren {
   ApiPublicHooksSendMaintenanceResponseRemindersRoute: typeof ApiPublicHooksSendMaintenanceResponseRemindersRoute
   ApiPublicHooksSendTenantRemindersRoute: typeof ApiPublicHooksSendTenantRemindersRoute
   ApiPublicHooksStarkE2eSandboxRoute: typeof ApiPublicHooksStarkE2eSandboxRoute
+  ApiPublicHooksSyncCronSecretRoute: typeof ApiPublicHooksSyncCronSecretRoute
   ApiPublicListingsXmlRoute: typeof ApiPublicListingsXmlRoute
   ApiPublicWebhooksLeadsRoute: typeof ApiPublicWebhooksLeadsRoute
   ApiV1IntegrationsOrgSlugLeadsRoute: typeof ApiV1IntegrationsOrgSlugLeadsRoute
@@ -1085,6 +1099,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicListingsXmlRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/sync-cron-secret': {
+      id: '/api/public/hooks/sync-cron-secret'
+      path: '/api/public/hooks/sync-cron-secret'
+      fullPath: '/api/public/hooks/sync-cron-secret'
+      preLoaderRoute: typeof ApiPublicHooksSyncCronSecretRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/stark-e2e-sandbox': {
       id: '/api/public/hooks/stark-e2e-sandbox'
       path: '/api/public/hooks/stark-e2e-sandbox'
@@ -1300,6 +1321,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksSendTenantRemindersRoute:
     ApiPublicHooksSendTenantRemindersRoute,
   ApiPublicHooksStarkE2eSandboxRoute: ApiPublicHooksStarkE2eSandboxRoute,
+  ApiPublicHooksSyncCronSecretRoute: ApiPublicHooksSyncCronSecretRoute,
   ApiPublicListingsXmlRoute: ApiPublicListingsXmlRoute,
   ApiPublicWebhooksLeadsRoute: ApiPublicWebhooksLeadsRoute,
   ApiV1IntegrationsOrgSlugLeadsRoute: ApiV1IntegrationsOrgSlugLeadsRoute,
@@ -1309,3 +1331,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

@@ -41,8 +41,11 @@ export async function starkFetch<T = any>(opts: StarkRequestOptions): Promise<T>
     throw new Error("Stark Bank não configurado (defina STARK_PROJECT_ID e STARK_PRIVATE_KEY)");
   }
   const method = opts.method ?? "GET";
-  const projectId = process.env.STARK_PROJECT_ID!;
-  const accessId = `project/${projectId}`;
+  const rawId = (process.env.STARK_PROJECT_ID || "").trim();
+  // Aceita id puro, "project/<id>" ou "organization/<id>" — normaliza.
+  const accessId = /^(project|organization)\//i.test(rawId)
+    ? rawId.replace(/^(project|organization)\//i, (m) => m.toLowerCase())
+    : `project/${rawId}`;
   const accessTime = unixTime();
 
   let url = `${starkHost()}${opts.path}`;

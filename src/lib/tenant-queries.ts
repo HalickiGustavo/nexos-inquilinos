@@ -67,9 +67,10 @@ export function useTenantMaintenances() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("maintenances")
-        .select("*, property:properties(nickname)")
+        .select("*, property:properties(nickname), contract:contracts(id, start_date, end_date, rent_amount, active)")
         .eq("tenant_id", tenant!.id)
         .order("created_at", { ascending: false });
+
       if (error) throw error;
       return data ?? [];
     },

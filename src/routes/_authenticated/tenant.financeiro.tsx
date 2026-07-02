@@ -235,7 +235,7 @@ function TenantFinanceiro() {
                         className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold shadow-md"
                         onClick={() => openPix(i)}
                       >
-                        <QrCode className="size-5 mr-2" /> Pagar com PIX — {formatBRL(totalDue)}
+                        <QrCode className="size-5 mr-2" /> Pagar Parcela — {formatBRL(totalDue)}
                       </Button>
                       {i.boleto_url ? (
                         <Button variant="outline" className="w-full" asChild>

@@ -41,6 +41,10 @@ function normalizeDoc(s: string | null | undefined) {
   return (s ?? "").replace(/\D/g, "");
 }
 
+function toStarkUtcDue(date: Date) {
+  return date.toISOString().replace(/\.\d{3}Z$/, "+00:00");
+}
+
 export const generateTripleSplitPix = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => inputSchema.parse(d))
@@ -108,23 +112,33 @@ export const generateTripleSplitPix = createServerFn({ method: "POST" })
           error: "Parcela vencida — o pagamento deve ser feito por Boleto, não por PIX.",
         };
       }
-      // A API da Stark valida `due` como ISO UTC explícito. Offsets locais como
-      // `-03:00` podem ser rejeitados com invalidDate em alguns endpoints/ambientes.
-      const dueIso = dueEnd.toISOString().replace("Z", "+00:00");
+      const dueDate = `${isoMatch[1]}-${isoMatch[2]}-${isoMatch[3]}`;
+      // A Stark recomenda data simples para cobranças agendadas com juros/multa.
+      // Mantemos UTC ISO como fallback para ambientes que exigem datetime.
+      const dueUtcIso = toStarkUtcDue(dueEnd);
 
 
-      const invoice = await createInvoice({
+      const invoiceInput = {
         installmentId: data.installmentId,
         amount: total,
         payer: { taxId: payerDoc, name: payerName },
-        due: dueIso,
+        due: dueDate,
         expirationSeconds: 86400,
         fine: 2,
         interest: 1,
         descriptions: [
           { key: "Aluguel", value: `Parcela ${data.installmentId.slice(0, 8)}` },
         ],
-      });
+      };
+
+      let invoice;
+      try {
+        invoice = await createInvoice(invoiceInput);
+      } catch (err: any) {
+        const invalidDue = JSON.stringify(err?.body ?? err?.message ?? err).includes("due");
+        if (!invalidDue) throw err;
+        invoice = await createInvoice({ ...invoiceInput, due: dueUtcIso });
+      }
 
       await supabaseAdmin.from("stark_charges").upsert({
         installment_id: data.installmentId,

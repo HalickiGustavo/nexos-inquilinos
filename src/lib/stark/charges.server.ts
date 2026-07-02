@@ -1,74 +1,125 @@
-// Cria cobranças Stark (PIX dinâmico e Boleto) e persiste em stark_charges.
+// Cria cobranças Stark (Invoice — dynamic Pix reconciliado — e Boleto)
+// seguindo a documentação oficial: https://starkbank.com/docs/api
+//
+// Escolhemos Invoice em vez de DynamicBrcode porque Invoice é a cobrança
+// PIX dinâmica RECONCILIADA (a Stark casa pagamento ↔ cobrança e dispara
+// evento `invoice` com status='paid' via webhook — sem precisar consultar
+// Deposits pelo tag `dynamic-brcode/{uuid}`).
 
-import { starkFetch } from "./stark.server";
+import { starkFetch, starkHost } from "./stark.server";
 
-function randomTxid(prefix = "NEXO") {
-  const rand = Array.from(crypto.getRandomValues(new Uint8Array(16)))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-  return (prefix + rand).slice(0, 32).toLowerCase();
-}
-
-export type CreateDynamicPixInput = {
+export type CreateInvoiceInput = {
   installmentId: string;
-  amount: number;
-  expirationSeconds?: number; // default 86400
+  amount: number;                 // reais
+  payer: {
+    taxId: string;                // CPF/CNPJ (com ou sem máscara)
+    name: string;
+  };
+  due?: string;                   // ISO date (YYYY-MM-DD) ou datetime
+  expirationSeconds?: number;     // após due
+  fine?: number;                  // %
+  interest?: number;              // % ao mês
+  descriptions?: Array<{ key: string; value: string }>;
   tags?: string[];
-  description?: string;
 };
 
-export type StarkDynamicBrcode = {
+export type StarkInvoice = {
   id: string;
-  uuid: string;
   amount: number;
+  due: string;
   expiration: number;
-  brcode: string;   // copia e cola
-  pictureUrl?: string;
-  status: string;
+  taxId: string;
+  name: string;
+  brcode: string;                 // copia-e-cola PIX
+  link: string;                   // URL pública da fatura
+  status: "created" | "paid" | "canceled" | "overdue" | "voided";
+  pdf?: string;
+  descriptions?: Array<{ key: string; value: string }>;
+  tags?: string[];
   created: string;
   updated: string;
 };
 
-export async function createDynamicPix(input: CreateDynamicPixInput) {
-  const external = `inst-${input.installmentId}-${Date.now()}`;
-  const body = {
-    brcodes: [
-      {
-        amount: Math.round(input.amount * 100), // centavos
-        expiration: input.expirationSeconds ?? 86400,
-        tags: input.tags ?? [`installment:${input.installmentId}`],
-        externalId: external,
-      },
-    ],
-  };
-  const res = await starkFetch<{ brcodes: StarkDynamicBrcode[] }>({
-    method: "POST",
-    path: "/dynamic-brcode",
-    body,
-  });
-  const created = res.brcodes?.[0];
-  if (!created) throw new Error("dynamic-brcode: resposta vazia");
-  return { ...created, externalId: external, txid: randomTxid() };
+function randomExternalId(prefix: string, installmentId: string) {
+  const rand = Array.from(crypto.getRandomValues(new Uint8Array(6)))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+  return `${prefix}-${installmentId}-${rand}`;
 }
+
+export async function createInvoice(input: CreateInvoiceInput) {
+  const external = randomExternalId("inv", input.installmentId);
+  const invoice: Record<string, unknown> = {
+    amount: Math.round(input.amount * 100),
+    taxId: input.payer.taxId,
+    name: input.payer.name,
+    tags: input.tags ?? [`installment:${input.installmentId}`, `external:${external}`],
+  };
+  if (input.due) invoice.due = input.due;
+  if (input.expirationSeconds) invoice.expiration = input.expirationSeconds;
+  if (input.fine !== undefined) invoice.fine = input.fine;
+  if (input.interest !== undefined) invoice.interest = input.interest;
+  if (input.descriptions?.length) invoice.descriptions = input.descriptions;
+
+  const res = await starkFetch<{ invoices: StarkInvoice[] }>({
+    method: "POST",
+    path: "/invoice",
+    body: { invoices: [invoice] },
+  });
+  const created = res.invoices?.[0];
+  if (!created) throw new Error("invoice: resposta vazia");
+  return { ...created, externalId: external };
+}
+
+export async function getInvoice(id: string) {
+  return starkFetch<{ invoice: StarkInvoice }>({
+    method: "GET",
+    path: `/invoice/${id}`,
+  });
+}
+
+// Endpoint oficial retorna o PNG do QR Code diretamente (image/png).
+// Fazemos fetch bruto porque starkFetch parseia JSON.
+export async function getInvoiceQrCodePng(id: string): Promise<Uint8Array> {
+  const { Ecdsa, PrivateKey } = await import("starkbank-ecdsa");
+  const raw = (process.env.STARK_PROJECT_ID || "").trim();
+  const accessId = /^(project|organization)\//i.test(raw) ? raw : `project/${raw}`;
+  const accessTime = Math.floor(Date.now() / 1000).toString();
+  const path = `/invoice/${id}/qrcode`;
+  const message = `${accessId}:${accessTime}:`;
+  const privateKey = PrivateKey.fromPem(process.env.STARK_PRIVATE_KEY!);
+  const signature = Ecdsa.sign(message, privateKey).toBase64();
+
+  const res = await fetch(`${starkHost()}${path}?size=320`, {
+    method: "GET",
+    headers: {
+      "Access-Id": accessId,
+      "Access-Time": accessTime,
+      "Access-Signature": signature,
+      Accept: "image/png",
+      "User-Agent": "Nexo/1.0",
+    },
+  });
+  if (!res.ok) {
+    const t = await res.text().catch(() => "");
+    throw new Error(`invoice qrcode ${res.status}: ${t.slice(0, 200)}`);
+  }
+  return new Uint8Array(await res.arrayBuffer());
+}
+
+// ---------------- Boleto ----------------
 
 export type StarkBoleto = {
   id: string;
   amount: number;
   name: string;
   taxId: string;
-  streetLine1: string;
-  streetLine2?: string;
-  district: string;
-  city: string;
-  stateCode: string;
-  zipCode: string;
   due: string;
   fine: number;
   interest: number;
-  ourNumber?: string;
   line: string;
   barCode: string;
-  status: string;
+  status: "created" | "paid" | "canceled" | "overdue" | "registered";
   transactionIds?: string[];
   created: string;
   pdf?: string;
@@ -77,10 +128,10 @@ export type StarkBoleto = {
 export type CreateBoletoInput = {
   installmentId: string;
   amount: number;
-  due: string; // YYYY-MM-DD
+  due: string;                    // YYYY-MM-DD
   payer: {
     name: string;
-    taxId: string;      // CPF/CNPJ com máscara
+    taxId: string;
     streetLine1: string;
     streetLine2?: string;
     district: string;
@@ -89,12 +140,13 @@ export type CreateBoletoInput = {
     zipCode: string;
   };
   descriptions?: Array<{ text: string; amount?: number }>;
-  fine?: number;      // %
-  interest?: number;  // % ao mês
+  fine?: number;                  // %
+  interest?: number;              // % ao mês
   tags?: string[];
 };
 
 export async function createBoleto(input: CreateBoletoInput) {
+  const external = randomExternalId("bol", input.installmentId);
   const body = {
     boletos: [
       {
@@ -111,7 +163,7 @@ export async function createBoleto(input: CreateBoletoInput) {
         fine: input.fine ?? 2,
         interest: input.interest ?? 1,
         descriptions: input.descriptions ?? [],
-        tags: input.tags ?? [`installment:${input.installmentId}`],
+        tags: input.tags ?? [`installment:${input.installmentId}`, `external:${external}`],
       },
     ],
   };
@@ -122,22 +174,7 @@ export async function createBoleto(input: CreateBoletoInput) {
   });
   const created = res.boletos?.[0];
   if (!created) throw new Error("boleto: resposta vazia");
-  return created;
-}
-
-export async function getBoletoPdfUrl(boletoId: string) {
-  // O PDF é acessível via GET /boleto/{id}/pdf (redirect). Usamos endpoint direto.
-  return `${(process.env.STARK_ENVIRONMENT || "sandbox").toLowerCase() === "production"
-    ? "https://api.starkbank.com/v2"
-    : "https://sandbox.api.starkbank.com/v2"}/boleto/${boletoId}/pdf`;
-}
-
-// Consulta status para reconciliação
-export async function getDynamicBrcode(id: string) {
-  return starkFetch<{ dynamicBrcode: StarkDynamicBrcode }>({
-    method: "GET",
-    path: `/dynamic-brcode/${id}`,
-  });
+  return { ...created, externalId: external };
 }
 
 export async function getBoleto(id: string) {
@@ -145,4 +182,8 @@ export async function getBoleto(id: string) {
     method: "GET",
     path: `/boleto/${id}`,
   });
+}
+
+export function getBoletoPdfUrl(boletoId: string) {
+  return `${starkHost()}/boleto/${boletoId}/pdf`;
 }

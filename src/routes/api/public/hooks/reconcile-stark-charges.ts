@@ -8,7 +8,7 @@ export const Route = createFileRoute("/api/public/hooks/reconcile-stark-charges"
       POST: async () => {
         try {
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-          const { getDynamicBrcode, getBoleto } = await import("@/lib/stark/charges.server");
+          const { getInvoice, getBoleto } = await import("@/lib/stark/charges.server");
           const { confirmChargePaid } = await import("@/lib/stark/webhook.server");
 
           const { data } = await supabaseAdmin
@@ -28,14 +28,14 @@ export const Route = createFileRoute("/api/public/hooks/reconcile-stark-charges"
                   paid++;
                 }
               } else {
-                const res = await getDynamicBrcode(c.stark_id);
-                if (res.dynamicBrcode?.status === "paid") {
+                const res = await getInvoice(c.stark_id);
+                if (res.invoice?.status === "paid") {
                   await confirmChargePaid({ starkId: c.stark_id, kind: "pix" });
                   paid++;
                 }
               }
-            } catch (e) {
-              // ignora, próxima janela tenta de novo
+            } catch {
+              /* próxima janela tenta de novo */
             }
           }
           return Response.json({ ok: true, scanned: data?.length ?? 0, confirmed: paid });

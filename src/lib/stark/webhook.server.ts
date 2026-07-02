@@ -1,7 +1,10 @@
 // WebhookService — valida assinatura, persiste evento cru, orquestra ações.
+// Assinaturas oficiais tratadas: `invoice`, `boleto`, `transfer`.
+// Referência: https://starkbank.com/docs/api#events
 
 import { verifyStarkSignature } from "./stark.server";
-import { getDynamicBrcode, getBoleto } from "./charges.server";
+import { getInvoice, getBoleto } from "./charges.server";
+import { getTransfer } from "./payouts.server";
 import { computeSplit } from "./split-engine";
 import { enqueueTransfersForSplit } from "./transfers.repo.server";
 
@@ -49,17 +52,23 @@ export async function handleStarkWebhook(rawBody: string, digitalSignature: stri
     return { ok: false, status: 500, error: insErr.message };
   }
   if (insErr) {
-    // já processado
     return { ok: true, duplicated: true };
   }
 
   try {
-    if (event.subscription === "dynamic-brcode" || event.subscription === "brcode-payment") {
-      await onBrcodePaid(event);
-    } else if (event.subscription === "boleto") {
-      await onBoletoPaid(event);
-    } else if (event.subscription === "pix-request") {
-      await onPixRequestUpdated(event);
+    switch (event.subscription) {
+      case "invoice":
+        await onInvoiceEvent(event);
+        break;
+      case "boleto":
+        await onBoletoEvent(event);
+        break;
+      case "transfer":
+        await onTransferEvent(event);
+        break;
+      default:
+        // ignoramos outras assinaturas
+        break;
     }
     await supabaseAdmin
       .from("stark_events")
@@ -75,35 +84,35 @@ export async function handleStarkWebhook(rawBody: string, digitalSignature: stri
   return { ok: true };
 }
 
-async function onBrcodePaid(event: any) {
-  const log = event.log ?? {};
-  const brcodeId = log?.brcode?.id ?? log?.payment?.brcode?.id ?? log?.brcodeId;
-  if (!brcodeId) return;
-  await confirmChargePaid({ starkId: brcodeId, kind: "pix" });
+async function onInvoiceEvent(event: any) {
+  const invoice = event?.log?.invoice;
+  const id = invoice?.id;
+  if (!id) return;
+  await confirmChargePaid({ starkId: id, kind: "pix" });
 }
 
-async function onBoletoPaid(event: any) {
-  const log = event.log ?? {};
-  const boletoId = log?.boleto?.id ?? log?.payment?.boleto?.id;
-  if (!boletoId) return;
-  await confirmChargePaid({ starkId: boletoId, kind: "boleto" });
+async function onBoletoEvent(event: any) {
+  const boleto = event?.log?.boleto;
+  const id = boleto?.id;
+  if (!id) return;
+  await confirmChargePaid({ starkId: id, kind: "boleto" });
 }
 
-async function onPixRequestUpdated(event: any) {
-  const log = event.log ?? {};
-  const req = log?.request ?? log?.pixRequest;
-  const id = req?.id;
+async function onTransferEvent(event: any) {
+  const transfer = event?.log?.transfer;
+  const id = transfer?.id;
   if (!id) return;
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  if (req.status === "success") {
+  if (transfer.status === "success") {
     await supabaseAdmin
       .from("payment_transfers")
       .update({ status: "COMPLETED", paid_at: new Date().toISOString() } as any)
       .eq("stark_transfer_id", id);
-  } else if (req.status === "failed") {
+  } else if (transfer.status === "failed") {
+    const reason = event?.log?.errors?.[0]?.message ?? "transfer failed";
     await supabaseAdmin
       .from("payment_transfers")
-      .update({ status: "FAILED", error_message: (req.reason ?? "failed").slice(0, 500) } as any)
+      .update({ status: "FAILED", error_message: String(reason).slice(0, 500) } as any)
       .eq("stark_transfer_id", id);
   }
 }
@@ -115,10 +124,10 @@ export async function confirmChargePaid(args: { starkId: string; kind: "pix" | "
   let paidConfirmed = false;
   let paidAmount = 0;
   if (args.kind === "pix") {
-    const res = await getDynamicBrcode(args.starkId).catch(() => null);
-    const st = res?.dynamicBrcode?.status;
+    const res = await getInvoice(args.starkId).catch(() => null);
+    const st = res?.invoice?.status;
     paidConfirmed = st === "paid";
-    paidAmount = (res?.dynamicBrcode?.amount ?? 0) / 100;
+    paidAmount = (res?.invoice?.amount ?? 0) / 100;
   } else {
     const res = await getBoleto(args.starkId).catch(() => null);
     const st = res?.boleto?.status;
@@ -127,13 +136,11 @@ export async function confirmChargePaid(args: { starkId: string; kind: "pix" | "
   }
   if (!paidConfirmed) return;
 
-  // Localiza a cobrança
   const { data: charge } = await supabaseAdmin
     .from("stark_charges")
     .select("*")
     .eq("stark_id", args.starkId)
     .maybeSingle();
-
   if (!charge) return;
 
   await supabaseAdmin
@@ -150,8 +157,10 @@ export async function confirmChargePaid(args: { starkId: string; kind: "pix" | "
     } as any)
     .eq("id", (charge as any).installment_id);
 
-  // Recalcula split e enfileira repasses
-  await enqueueSplitForInstallment((charge as any).installment_id, paidAmount || Number((charge as any).amount));
+  await enqueueSplitForInstallment(
+    (charge as any).installment_id,
+    paidAmount || Number((charge as any).amount),
+  );
 }
 
 export async function enqueueSplitForInstallment(installmentId: string, paidAmount: number) {
@@ -202,3 +211,6 @@ export async function enqueueSplitForInstallment(installmentId: string, paidAmou
     description: `Repasse parcela ${installmentId.slice(0, 8)}`,
   });
 }
+
+// Reexport para reconciliação
+export { getTransfer };

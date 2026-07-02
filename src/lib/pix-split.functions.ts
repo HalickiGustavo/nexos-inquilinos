@@ -1,6 +1,6 @@
 // Server functions da camada financeira (Stark Bank).
 // Mantém a API antiga (generateTripleSplitPix, checkPixPayment) para
-// preservar o front, mas a implementação agora usa Stark.
+// preservar o front, mas a implementação agora usa Invoice (Stark).
 
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
@@ -12,8 +12,8 @@ export type TripleSplitResult =
   | {
       ok: true;
       provider: "stark";
-      qrCodeBase64: string;    // (compat) — usado pelo <img src="data:..." />
-      pixPayload: string;      // brcode copia e cola
+      qrCodeBase64: string;
+      pixPayload: string;
       breakdown: {
         total: number;
         nexo: number;
@@ -37,12 +37,16 @@ export type BoletoResult =
     }
   | { ok: false; error: string };
 
+function normalizeDoc(s: string | null | undefined) {
+  return (s ?? "").replace(/\D/g, "");
+}
+
 export const generateTripleSplitPix = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => inputSchema.parse(d))
   .handler(async ({ data }): Promise<TripleSplitResult> => {
     try {
-      const { createDynamicPix } = await import("@/lib/stark/charges.server");
+      const { createInvoice, getInvoiceQrCodePng } = await import("@/lib/stark/charges.server");
       const { computeSplit } = await import("@/lib/stark/split-engine");
       const { isStarkConfigured } = await import("@/lib/stark/stark.server");
       if (!isStarkConfigured()) {
@@ -53,7 +57,7 @@ export const generateTripleSplitPix = createServerFn({ method: "POST" })
       const { data: inst, error } = await supabaseAdmin
         .from("installments")
         .select(
-          "id, amount, contract_id, contract:contracts(id, user_id, property:properties(id, landlord_id, default_management_fee_percent))",
+          "id, amount, due_date, contract_id, contract:contracts(id, user_id, tenant:tenants(id, full_name, document), property:properties(id, landlord_id, default_management_fee_percent))",
         )
         .eq("id", data.installmentId)
         .maybeSingle();
@@ -61,9 +65,16 @@ export const generateTripleSplitPix = createServerFn({ method: "POST" })
 
       const contract = (inst as any).contract;
       const property = contract?.property;
+      const tenant = contract?.tenant;
       const managerUserId = contract?.user_id;
       const landlordId: string | null = property?.landlord_id ?? null;
       const pct = Number(property?.default_management_fee_percent ?? 10);
+
+      const payerDoc = normalizeDoc(tenant?.document);
+      if (payerDoc.length < 11) {
+        return { ok: false, error: "Inquilino sem CPF/CNPJ cadastrado — necessário para emitir Invoice PIX." };
+      }
+      const payerName = String(tenant?.full_name ?? "Inquilino").slice(0, 100);
 
       const [{ data: platform }, { data: agency }, { data: ownerProfile }] = await Promise.all([
         supabaseAdmin.from("platform_settings").select("nexo_platform_pix_key, nexo_flat_fee").limit(1).maybeSingle(),
@@ -86,39 +97,41 @@ export const generateTripleSplitPix = createServerFn({ method: "POST" })
         nexoPixKey,
       });
 
-      const created = await createDynamicPix({
+      const invoice = await createInvoice({
         installmentId: data.installmentId,
         amount: total,
-        description: `Aluguel — ${property?.id ? "imóvel " + String(property.id).slice(0, 6) : "Nexo"}`,
+        payer: { taxId: payerDoc, name: payerName },
+        due: String((inst as any).due_date ?? new Date().toISOString().slice(0, 10)),
+        expirationSeconds: 86400,
+        fine: 2,
+        interest: 1,
+        descriptions: [
+          { key: "Aluguel", value: `Parcela ${data.installmentId.slice(0, 8)}` },
+        ],
       });
 
-      // Persiste a cobrança
       await supabaseAdmin.from("stark_charges").upsert({
         installment_id: data.installmentId,
         manager_user_id: managerUserId,
         kind: "pix",
         status: "created",
         amount: total,
-        txid: created.txid,
-        stark_id: created.id,
-        brcode: created.brcode,
-        qrcode_image_url: created.pictureUrl ?? null,
-        external_id: created.externalId,
+        txid: invoice.id,
+        stark_id: invoice.id,
+        brcode: invoice.brcode,
+        qrcode_image_url: invoice.link ?? null,
+        external_id: invoice.externalId,
       } as any, { onConflict: "external_id" } as any);
 
-      // Gera QR a partir do brcode via API pública de QR (fallback simples client-side)
-      // A UI usa <img src="data:image/png;base64,..."> — usamos endpoint quickchart p/ manter compat.
-      const qr = await fetch(
-        `https://api.qrserver.com/v1/create-qr-code/?size=320x320&data=${encodeURIComponent(created.brcode)}`,
-      );
-      const buf = new Uint8Array(await qr.arrayBuffer());
-      const b64 = btoa(String.fromCharCode(...buf));
+      // QR Code oficial da Stark (PNG binário)
+      const png = await getInvoiceQrCodePng(invoice.id);
+      const b64 = btoa(String.fromCharCode(...png));
 
       return {
         ok: true,
         provider: "stark",
         qrCodeBase64: b64,
-        pixPayload: created.brcode,
+        pixPayload: invoice.brcode,
         breakdown: {
           total: split.total,
           nexo: split.nexo.amount,
@@ -130,7 +143,11 @@ export const generateTripleSplitPix = createServerFn({ method: "POST" })
         },
       };
     } catch (e: any) {
-      return { ok: false, error: e?.message ?? String(e), debug: e?.body ? JSON.stringify(e.body).slice(0, 2000) : null };
+      return {
+        ok: false,
+        error: e?.message ?? String(e),
+        debug: e?.body ? JSON.stringify(e.body).slice(0, 2000) : null,
+      };
     }
   });
 
@@ -147,7 +164,6 @@ export const checkPixPayment = createServerFn({ method: "POST" })
         .maybeSingle();
       if ((inst as any)?.status === "pago") return { paid: true, status: "pago" };
 
-      // Se ainda não há webhook, tenta reconciliação ativa
       const { data: charge } = await supabaseAdmin
         .from("stark_charges")
         .select("stark_id")

@@ -108,7 +108,9 @@ export const generateTripleSplitPix = createServerFn({ method: "POST" })
           error: "Parcela vencida — o pagamento deve ser feito por Boleto, não por PIX.",
         };
       }
-      const dueIso = dueEnd.toISOString();
+      // Stark exige formato ISO com microssegundos e offset "+00:00" (não "Z").
+      // Ex.: "2021-05-12T15:23:26.000000+00:00"
+      const dueIso = dueEnd.toISOString().replace(/\.(\d{3})Z$/, ".$1000+00:00");
 
       const invoice = await createInvoice({
         installmentId: data.installmentId,

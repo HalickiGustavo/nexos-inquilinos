@@ -60,6 +60,7 @@ import { Route as ApiPublicHooksSendMaintenanceResponseRemindersRouteImport } fr
 import { Route as ApiPublicHooksRegisterStarkWebhookRouteImport } from './routes/api/public/hooks/register-stark-webhook'
 import { Route as ApiPublicHooksReconcileStarkChargesRouteImport } from './routes/api/public/hooks/reconcile-stark-charges'
 import { Route as ApiPublicHooksProcessPayoutQueueRouteImport } from './routes/api/public/hooks/process-payout-queue'
+import { Route as ApiPublicHooksGenerateUpcomingBoletosRouteImport } from './routes/api/public/hooks/generate-upcoming-boletos'
 import { Route as ManagerManagerConfiguracoesRoletaRouteImport } from './routes/_manager/manager.configuracoes.roleta'
 import { Route as AuthenticatedAdminConfiguracoesSubcontaRouteImport } from './routes/_authenticated/admin.configuracoes.subconta'
 import { Route as ApiV1IntegrationsOrgSlugListingsDotxmlRouteImport } from './routes/api/v1/integrations/$orgSlug/listings[.]xml'
@@ -339,6 +340,12 @@ const ApiPublicHooksProcessPayoutQueueRoute =
     path: '/api/public/hooks/process-payout-queue',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksGenerateUpcomingBoletosRoute =
+  ApiPublicHooksGenerateUpcomingBoletosRouteImport.update({
+    id: '/api/public/hooks/generate-upcoming-boletos',
+    path: '/api/public/hooks/generate-upcoming-boletos',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ManagerManagerConfiguracoesRoletaRoute =
   ManagerManagerConfiguracoesRoletaRouteImport.update({
     id: '/manager/configuracoes/roleta',
@@ -408,6 +415,7 @@ export interface FileRoutesByFullPath {
   '/manager/': typeof ManagerManagerIndexRoute
   '/admin/configuracoes/subconta': typeof AuthenticatedAdminConfiguracoesSubcontaRoute
   '/manager/configuracoes/roleta': typeof ManagerManagerConfiguracoesRoletaRoute
+  '/api/public/hooks/generate-upcoming-boletos': typeof ApiPublicHooksGenerateUpcomingBoletosRoute
   '/api/public/hooks/process-payout-queue': typeof ApiPublicHooksProcessPayoutQueueRoute
   '/api/public/hooks/reconcile-stark-charges': typeof ApiPublicHooksReconcileStarkChargesRoute
   '/api/public/hooks/register-stark-webhook': typeof ApiPublicHooksRegisterStarkWebhookRoute
@@ -462,6 +470,7 @@ export interface FileRoutesByTo {
   '/manager': typeof ManagerManagerIndexRoute
   '/admin/configuracoes/subconta': typeof AuthenticatedAdminConfiguracoesSubcontaRoute
   '/manager/configuracoes/roleta': typeof ManagerManagerConfiguracoesRoletaRoute
+  '/api/public/hooks/generate-upcoming-boletos': typeof ApiPublicHooksGenerateUpcomingBoletosRoute
   '/api/public/hooks/process-payout-queue': typeof ApiPublicHooksProcessPayoutQueueRoute
   '/api/public/hooks/reconcile-stark-charges': typeof ApiPublicHooksReconcileStarkChargesRoute
   '/api/public/hooks/register-stark-webhook': typeof ApiPublicHooksRegisterStarkWebhookRoute
@@ -520,6 +529,7 @@ export interface FileRoutesById {
   '/_manager/manager/': typeof ManagerManagerIndexRoute
   '/_authenticated/admin/configuracoes/subconta': typeof AuthenticatedAdminConfiguracoesSubcontaRoute
   '/_manager/manager/configuracoes/roleta': typeof ManagerManagerConfiguracoesRoletaRoute
+  '/api/public/hooks/generate-upcoming-boletos': typeof ApiPublicHooksGenerateUpcomingBoletosRoute
   '/api/public/hooks/process-payout-queue': typeof ApiPublicHooksProcessPayoutQueueRoute
   '/api/public/hooks/reconcile-stark-charges': typeof ApiPublicHooksReconcileStarkChargesRoute
   '/api/public/hooks/register-stark-webhook': typeof ApiPublicHooksRegisterStarkWebhookRoute
@@ -576,6 +586,7 @@ export interface FileRouteTypes {
     | '/manager/'
     | '/admin/configuracoes/subconta'
     | '/manager/configuracoes/roleta'
+    | '/api/public/hooks/generate-upcoming-boletos'
     | '/api/public/hooks/process-payout-queue'
     | '/api/public/hooks/reconcile-stark-charges'
     | '/api/public/hooks/register-stark-webhook'
@@ -630,6 +641,7 @@ export interface FileRouteTypes {
     | '/manager'
     | '/admin/configuracoes/subconta'
     | '/manager/configuracoes/roleta'
+    | '/api/public/hooks/generate-upcoming-boletos'
     | '/api/public/hooks/process-payout-queue'
     | '/api/public/hooks/reconcile-stark-charges'
     | '/api/public/hooks/register-stark-webhook'
@@ -687,6 +699,7 @@ export interface FileRouteTypes {
     | '/_manager/manager/'
     | '/_authenticated/admin/configuracoes/subconta'
     | '/_manager/manager/configuracoes/roleta'
+    | '/api/public/hooks/generate-upcoming-boletos'
     | '/api/public/hooks/process-payout-queue'
     | '/api/public/hooks/reconcile-stark-charges'
     | '/api/public/hooks/register-stark-webhook'
@@ -708,6 +721,7 @@ export interface RootRouteChildren {
   ManagerSetupRoute: typeof ManagerSetupRoute
   TenantSetupRoute: typeof TenantSetupRoute
   ApiPublicStarkWebhookRoute: typeof ApiPublicStarkWebhookRoute
+  ApiPublicHooksGenerateUpcomingBoletosRoute: typeof ApiPublicHooksGenerateUpcomingBoletosRoute
   ApiPublicHooksProcessPayoutQueueRoute: typeof ApiPublicHooksProcessPayoutQueueRoute
   ApiPublicHooksReconcileStarkChargesRoute: typeof ApiPublicHooksReconcileStarkChargesRoute
   ApiPublicHooksRegisterStarkWebhookRoute: typeof ApiPublicHooksRegisterStarkWebhookRoute
@@ -1078,6 +1092,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksProcessPayoutQueueRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/generate-upcoming-boletos': {
+      id: '/api/public/hooks/generate-upcoming-boletos'
+      path: '/api/public/hooks/generate-upcoming-boletos'
+      fullPath: '/api/public/hooks/generate-upcoming-boletos'
+      preLoaderRoute: typeof ApiPublicHooksGenerateUpcomingBoletosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_manager/manager/configuracoes/roleta': {
       id: '/_manager/manager/configuracoes/roleta'
       path: '/manager/configuracoes/roleta'
@@ -1224,6 +1245,8 @@ const rootRouteChildren: RootRouteChildren = {
   ManagerSetupRoute: ManagerSetupRoute,
   TenantSetupRoute: TenantSetupRoute,
   ApiPublicStarkWebhookRoute: ApiPublicStarkWebhookRoute,
+  ApiPublicHooksGenerateUpcomingBoletosRoute:
+    ApiPublicHooksGenerateUpcomingBoletosRoute,
   ApiPublicHooksProcessPayoutQueueRoute: ApiPublicHooksProcessPayoutQueueRoute,
   ApiPublicHooksReconcileStarkChargesRoute:
     ApiPublicHooksReconcileStarkChargesRoute,

@@ -71,8 +71,9 @@ export async function issueBoletoForInstallment(installmentId: string): Promise<
   const taxId = normDoc(tenant.document);
   if (taxId.length < 11) return { ok: false, error: "Inquilino sem CPF/CNPJ" };
 
-  const zip = onlyDigits(property.zip_code);
-  if (zip.length !== 8) return { ok: false, error: "CEP do imóvel inválido" };
+  const zipDigits = onlyDigits(property.zip_code);
+  if (zipDigits.length !== 8) return { ok: false, error: "CEP do imóvel inválido" };
+  const zip = `${zipDigits.slice(0, 5)}-${zipDigits.slice(5)}`; // Stark exige @@@@@-@@@
   const stateCode = String(property.state ?? "").trim().toUpperCase().slice(0, 2);
   if (stateCode.length !== 2) return { ok: false, error: "Estado (UF) do imóvel ausente" };
   const city = String(property.city ?? "").trim();
@@ -95,25 +96,31 @@ export async function issueBoletoForInstallment(installmentId: string): Promise<
     return { ok: false, error: "Data de vencimento inválida" };
   }
 
-  const boleto = await createBoleto({
-    installmentId,
-    amount: total,
-    due: dueDate,
-    payer: {
-      name: String(tenant.full_name ?? "Inquilino").slice(0, 100),
-      taxId,
-      streetLine1: streetLine1.slice(0, 100),
-      district: district.slice(0, 100),
-      city: city.slice(0, 100),
-      stateCode,
-      zipCode: zip,
-    },
-    fine: 2,
-    interest: 1,
-    descriptions: [
-      { text: `Aluguel - Parcela ${installmentId.slice(0, 8)}` },
-    ],
-  });
+  let boleto;
+  try {
+    boleto = await createBoleto({
+      installmentId,
+      amount: total,
+      due: dueDate,
+      payer: {
+        name: String(tenant.full_name ?? "Inquilino").slice(0, 100),
+        taxId,
+        streetLine1: streetLine1.slice(0, 100),
+        district: district.slice(0, 100),
+        city: city.slice(0, 100),
+        stateCode,
+        zipCode: zip,
+      },
+      fine: 2,
+      interest: 1,
+      descriptions: [
+        { text: `Aluguel - Parcela ${installmentId.slice(0, 8)}` },
+      ],
+    });
+  } catch (e: any) {
+    return { ok: false, error: `Stark rejeitou boleto: ${e?.message ?? String(e)}` };
+  }
+
 
   const { getBoletoPdfUrl } = await import("./charges.server");
   const pdfUrl = getBoletoPdfUrl(boleto.id);

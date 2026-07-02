@@ -97,11 +97,24 @@ export const generateTripleSplitPix = createServerFn({ method: "POST" })
         nexoPixKey,
       });
 
+      // Stark exige due >= agora. Se a parcela venceu, empurra para +3 dias.
+      const dueDateStr = String((inst as any).due_date ?? "");
+      const isoMatch = dueDateStr.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      let dueIso: string;
+      const minFuture = new Date(Date.now() + 60 * 60 * 1000); // +1h de margem
+      if (isoMatch) {
+        // Vence 23:59:59 do dia (UTC-3 = fim do dia BRT)
+        const end = new Date(Date.UTC(+isoMatch[1], +isoMatch[2] - 1, +isoMatch[3], 23, 59, 59));
+        dueIso = (end.getTime() > minFuture.getTime() ? end : new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)).toISOString();
+      } else {
+        dueIso = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString();
+      }
+
       const invoice = await createInvoice({
         installmentId: data.installmentId,
         amount: total,
         payer: { taxId: payerDoc, name: payerName },
-        due: String((inst as any).due_date ?? new Date().toISOString().slice(0, 10)),
+        due: dueIso,
         expirationSeconds: 86400,
         fine: 2,
         interest: 1,

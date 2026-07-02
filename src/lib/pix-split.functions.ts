@@ -108,9 +108,10 @@ export const generateTripleSplitPix = createServerFn({ method: "POST" })
           error: "Parcela vencida — o pagamento deve ser feito por Boleto, não por PIX.",
         };
       }
-      // Stark exige formato ISO com microssegundos e offset "+00:00" (não "Z").
-      // Ex.: "2021-05-12T15:23:26.000000+00:00"
-      const dueIso = dueEnd.toISOString().replace(/\.(\d{3})Z$/, ".$1000+00:00");
+      // Stark aceita `due` como data (YYYY-MM-DD) para Invoices agendadas
+      // (docs: "use dates instead of datetimes on the 'due' field").
+      // Isso evita problemas de fuso/microssegundos com o parser da Stark.
+      const dueIso = `${isoMatch[1]}-${isoMatch[2]}-${isoMatch[3]}`;
 
       const invoice = await createInvoice({
         installmentId: data.installmentId,

@@ -61,11 +61,27 @@ export const generateTripleSplitPix = createServerFn({ method: "POST" })
       const { data: inst, error } = await supabaseAdmin
         .from("installments")
         .select(
-          "id, amount, due_date, contract_id, contract:contracts(id, user_id, tenant:tenants(id, full_name, document), property:properties(id, landlord_id, default_management_fee_percent))",
+          "id, amount, due_date, status, contract_id, contract:contracts(id, user_id, tenant:tenants(id, full_name, document), property:properties(id, landlord_id, default_management_fee_percent))",
         )
         .eq("id", data.installmentId)
         .maybeSingle();
       if (error || !inst) return { ok: false, error: "Parcela não encontrada" };
+      if ((inst as any).status === "pago") {
+        return { ok: false, error: "Parcela já paga — não é possível gerar nova cobrança." };
+      }
+
+      // Idempotência: reutiliza cobrança PIX ativa (created) da mesma parcela
+      // para evitar múltiplas invoices concorrentes que dupliquem confirmações.
+      const { data: existingCharge } = await supabaseAdmin
+        .from("stark_charges")
+        .select("stark_id, brcode, amount, external_id")
+        .eq("installment_id", data.installmentId)
+        .eq("kind", "pix")
+        .eq("status", "created")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
 
       const contract = (inst as any).contract;
       const property = contract?.property;

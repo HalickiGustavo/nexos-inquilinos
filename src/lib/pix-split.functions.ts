@@ -48,7 +48,7 @@ function toStarkUtcDue(date: Date) {
 export const generateTripleSplitPix = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => inputSchema.parse(d))
-  .handler(async ({ data }): Promise<TripleSplitResult> => {
+  .handler(async ({ data, context }): Promise<TripleSplitResult> => {
     try {
       const { createInvoice, getInvoiceQrCodePng } = await import("@/lib/stark/charges.server");
       const { computeSplit } = await import("@/lib/stark/split-engine");
@@ -56,6 +56,18 @@ export const generateTripleSplitPix = createServerFn({ method: "POST" })
       if (!isStarkConfigured()) {
         return { ok: false, error: "Stark Bank não configurado. Faltam STARK_PROJECT_ID/STARK_PRIVATE_KEY." };
       }
+
+      // Ownership check via RLS-scoped client — retorna null se o caller
+      // (manager/landlord/tenant) não tem visibilidade da parcela.
+      const { data: ownedInst, error: ownedErr } = await context.supabase
+        .from("installments")
+        .select("id")
+        .eq("id", data.installmentId)
+        .maybeSingle();
+      if (ownedErr || !ownedInst) {
+        return { ok: false, error: "Parcela não encontrada" };
+      }
+
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
       const { data: inst, error } = await supabaseAdmin
@@ -69,6 +81,7 @@ export const generateTripleSplitPix = createServerFn({ method: "POST" })
       if ((inst as any).status === "pago") {
         return { ok: false, error: "Parcela já paga — não é possível gerar nova cobrança." };
       }
+
 
       // Idempotência: reutiliza cobrança PIX ativa (created) da mesma parcela
       // para evitar múltiplas invoices concorrentes que dupliquem confirmações.

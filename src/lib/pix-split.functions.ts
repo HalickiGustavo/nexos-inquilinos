@@ -147,31 +147,55 @@ export const generateTripleSplitPix = createServerFn({ method: "POST" })
         ],
       };
 
-      let invoice;
-      try {
-        invoice = await createInvoice(invoiceInput);
-      } catch (err: any) {
-        const invalidDue = JSON.stringify(err?.body ?? err?.message ?? err).includes("due");
-        if (!invalidDue) throw err;
-        invoice = await createInvoice({ ...invoiceInput, due: dueUtcIso });
+      let invoice: any;
+      let externalId: string;
+
+      if (existingCharge && (existingCharge as any).stark_id) {
+        // Reconfirma status na Stark — se ainda 'created', reutiliza.
+        const { getInvoice } = await import("@/lib/stark/charges.server");
+        const cur = await getInvoice((existingCharge as any).stark_id).catch(() => null);
+        const st = cur?.invoice?.status;
+        if (st === "created") {
+          invoice = { id: (existingCharge as any).stark_id, brcode: (existingCharge as any).brcode ?? cur!.invoice.brcode, link: cur!.invoice.link };
+          externalId = (existingCharge as any).external_id;
+        } else if (st === "paid") {
+          // Confirma no DB e retorna erro claro.
+          const { confirmChargePaid } = await import("@/lib/stark/webhook.server");
+          await confirmChargePaid({ starkId: (existingCharge as any).stark_id, kind: "pix" });
+          return { ok: false, error: "Parcela já paga — não é possível gerar nova cobrança." };
+        } else {
+          // canceled/overdue/voided → marca no DB e segue para criar nova.
+          await supabaseAdmin
+            .from("stark_charges")
+            .update({ status: st ?? "canceled" } as any)
+            .eq("stark_id", (existingCharge as any).stark_id);
+        }
       }
 
-      await supabaseAdmin.from("stark_charges").upsert({
-        installment_id: data.installmentId,
-        manager_user_id: managerUserId,
-        kind: "pix",
-        status: "created",
-        amount: total,
-        txid: invoice.id,
-        stark_id: invoice.id,
-        brcode: invoice.brcode,
-        qrcode_image_url: invoice.link ?? null,
-        external_id: invoice.externalId,
-      } as any, { onConflict: "external_id" } as any);
+      if (!invoice) {
+        try {
+          invoice = await createInvoice(invoiceInput);
+        } catch (err: any) {
+          const invalidDue = JSON.stringify(err?.body ?? err?.message ?? err).includes("due");
+          if (!invalidDue) throw err;
+          invoice = await createInvoice({ ...invoiceInput, due: dueUtcIso });
+        }
+        externalId = invoice.externalId;
 
-      // QR Code oficial da Stark (PNG binário)
-      const png = await getInvoiceQrCodePng(invoice.id);
-      const b64 = btoa(String.fromCharCode(...png));
+        await supabaseAdmin.from("stark_charges").upsert({
+          installment_id: data.installmentId,
+          manager_user_id: managerUserId,
+          kind: "pix",
+          status: "created",
+          amount: total,
+          txid: invoice.id,
+          stark_id: invoice.id,
+          brcode: invoice.brcode,
+          qrcode_image_url: invoice.link ?? null,
+          external_id: externalId,
+        } as any, { onConflict: "external_id" } as any);
+      }
+
 
       return {
         ok: true,

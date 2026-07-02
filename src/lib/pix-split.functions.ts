@@ -108,10 +108,10 @@ export const generateTripleSplitPix = createServerFn({ method: "POST" })
           error: "Parcela vencida — o pagamento deve ser feito por Boleto, não por PIX.",
         };
       }
-      // Stark aceita `due` como data (YYYY-MM-DD) para Invoices agendadas
-      // (docs: "use dates instead of datetimes on the 'due' field").
-      // Isso evita problemas de fuso/microssegundos com o parser da Stark.
-      const dueIso = `${isoMatch[1]}-${isoMatch[2]}-${isoMatch[3]}`;
+      // Stark aceita ISO 8601 completo com timezone para o campo `due` da Invoice.
+      // Enviamos 23:59:59-03:00 (fim do dia BRT) para casar com o comportamento esperado.
+      const dueIso = `${isoMatch[1]}-${isoMatch[2]}-${isoMatch[3]}T23:59:59-03:00`;
+
 
       const invoice = await createInvoice({
         installmentId: data.installmentId,

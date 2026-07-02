@@ -97,18 +97,18 @@ export const generateTripleSplitPix = createServerFn({ method: "POST" })
         nexoPixKey,
       });
 
-      // Stark exige due >= agora. Se a parcela venceu, empurra para +3 dias.
+      // Stark exige due >= agora. Parcelas vencidas devem ser pagas via Boleto.
       const dueDateStr = String((inst as any).due_date ?? "");
       const isoMatch = dueDateStr.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-      let dueIso: string;
-      const minFuture = new Date(Date.now() + 60 * 60 * 1000); // +1h de margem
-      if (isoMatch) {
-        // Vence 23:59:59 do dia (UTC-3 = fim do dia BRT)
-        const end = new Date(Date.UTC(+isoMatch[1], +isoMatch[2] - 1, +isoMatch[3], 23, 59, 59));
-        dueIso = (end.getTime() > minFuture.getTime() ? end : new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)).toISOString();
-      } else {
-        dueIso = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString();
+      if (!isoMatch) return { ok: false, error: "Parcela sem data de vencimento válida." };
+      const dueEnd = new Date(Date.UTC(+isoMatch[1], +isoMatch[2] - 1, +isoMatch[3], 23, 59, 59));
+      if (dueEnd.getTime() <= Date.now() + 60 * 60 * 1000) {
+        return {
+          ok: false,
+          error: "Parcela vencida — o pagamento deve ser feito por Boleto, não por PIX.",
+        };
       }
+      const dueIso = dueEnd.toISOString();
 
       const invoice = await createInvoice({
         installmentId: data.installmentId,

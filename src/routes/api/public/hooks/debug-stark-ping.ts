@@ -4,16 +4,29 @@ export const Route = createFileRoute("/api/public/hooks/debug-stark-ping")({
   server: {
     handlers: {
       GET: async () => {
+        const raw = (process.env.STARK_PROJECT_ID || "").trim();
+        const accessId = /^(project|organization)\//i.test(raw)
+          ? raw.replace(/^(project|organization)\//i, (m) => m.toLowerCase())
+          : `project/${raw}`;
+        const masked = accessId.replace(/(.{6}).+(.{4})/, "$1***$2");
+        const hasPk = !!(process.env.STARK_PRIVATE_KEY || "").trim();
+        const env = process.env.STARK_ENVIRONMENT || "sandbox";
+
         const { starkFetch, starkHost } = await import("@/lib/stark/stark.server");
-        const attempts: any[] = [];
-        // Try get one invoice from list
+        const results: any[] = [];
         try {
-          const r = await starkFetch({ method: "GET", path: "/invoice", query: { limit: 3 } });
-          attempts.push({ ok: true, host: starkHost(), invoicesCount: (r as any)?.invoices?.length, first: (r as any)?.invoices?.[0] });
+          const r = await starkFetch({ method: "GET", path: "/invoice", query: { limit: 1 } });
+          results.push({ endpoint: "GET /invoice", ok: true, count: (r as any)?.invoices?.length });
         } catch (e: any) {
-          attempts.push({ ok: false, host: starkHost(), error: e?.message, body: e?.body });
+          results.push({ endpoint: "GET /invoice", ok: false, error: e?.message, body: e?.body });
         }
-        return Response.json({ attempts });
+        try {
+          const r = await starkFetch({ method: "GET", path: "/webhook" });
+          results.push({ endpoint: "GET /webhook", ok: true, count: (r as any)?.webhooks?.length, list: r });
+        } catch (e: any) {
+          results.push({ endpoint: "GET /webhook", ok: false, error: e?.message, body: e?.body });
+        }
+        return Response.json({ host: starkHost(), env, hasPk, accessId: masked, accessIdLen: accessId.length, results });
       },
     },
   },

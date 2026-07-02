@@ -196,6 +196,9 @@ export const generateTripleSplitPix = createServerFn({ method: "POST" })
         } as any, { onConflict: "external_id" } as any);
       }
 
+      // QR Code oficial da Stark (PNG binário) — busca sempre pelo id atual
+      const png = await getInvoiceQrCodePng(invoice.id);
+      const b64 = btoa(String.fromCharCode(...png));
 
       return {
         ok: true,

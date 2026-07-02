@@ -33,10 +33,16 @@ export const Route = createFileRoute("/api/public/hooks/generate-upcoming-boleto
           let issued = 0;
           const errors: Array<{ id: string; error: string }> = [];
           for (const row of (pending ?? []) as any[]) {
-            const r = await issueBoletoForInstallment(row.id);
-            if (r.ok && !r.alreadyExisted) issued++;
-            else if (!r.ok) errors.push({ id: row.id, error: r.error });
+            try {
+              const r = await issueBoletoForInstallment(row.id);
+              if (r.ok && !r.alreadyExisted) issued++;
+              else if (!r.ok) errors.push({ id: row.id, error: r.error });
+            } catch (e: any) {
+              // Nunca deixar erro de UMA parcela derrubar o cron inteiro.
+              errors.push({ id: row.id, error: e?.message ?? String(e) });
+            }
           }
+
 
           // 2) Reconciliação: verifica boletos ainda `created` para
           // detectar pagamentos perdidos (webhook falhou).

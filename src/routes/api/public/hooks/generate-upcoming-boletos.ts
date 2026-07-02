@@ -2,11 +2,14 @@
 // tenha um Boleto Stark emitido. Também reconcilia boletos já criados
 // (paid?) para não depender só do webhook.
 import { createFileRoute } from "@tanstack/react-router";
+import { requireCronAuth } from "@/lib/cron-auth.server";
 
 export const Route = createFileRoute("/api/public/hooks/generate-upcoming-boletos")({
   server: {
     handlers: {
-      POST: async () => {
+      POST: async ({ request }) => {
+        const unauth = requireCronAuth(request);
+        if (unauth) return unauth;
         try {
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
           const { issueBoletoForInstallment } = await import("@/lib/stark/boleto-issuer.server");

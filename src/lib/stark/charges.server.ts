@@ -90,7 +90,7 @@ export async function getInvoiceQrCodePng(id: string): Promise<Uint8Array> {
   const privateKey = PrivateKey.fromPem(process.env.STARK_PRIVATE_KEY!);
   const signature = Ecdsa.sign(message, privateKey).toBase64();
 
-  const res = await fetch(`${starkHost()}${path}?size=320`, {
+  const res = await fetch(`${starkHost()}${path}?size=10`, {
     method: "GET",
     headers: {
       "Access-Id": accessId,

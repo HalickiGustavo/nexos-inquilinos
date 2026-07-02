@@ -240,9 +240,18 @@ export const generateTripleSplitPix = createServerFn({ method: "POST" })
 export const checkPixPayment = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => inputSchema.parse(d))
-  .handler(async ({ data }): Promise<{ paid: boolean; status?: string }> => {
+  .handler(async ({ data, context }): Promise<{ paid: boolean; status?: string }> => {
     try {
+      // Ownership check via RLS-scoped client
+      const { data: owned, error: ownedErr } = await context.supabase
+        .from("installments")
+        .select("id")
+        .eq("id", data.installmentId)
+        .maybeSingle();
+      if (ownedErr || !owned) return { paid: false, status: "forbidden" };
+
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
       const { data: inst } = await supabaseAdmin
         .from("installments")
         .select("status")

@@ -60,8 +60,9 @@ function LoginPage() {
         aria-hidden
         style={{ background: "var(--gradient-hero)" }}
       >
-        <div className="absolute top-[-12%] left-[-8%] size-[420px] rounded-full bg-fuchsia-500/25 blur-[120px]" />
-        <div className="absolute bottom-[-15%] right-[-10%] size-[380px] rounded-full bg-violet-400/25 blur-[120px]" />
+        <div className="absolute top-[-12%] left-[-8%] size-[280px] sm:size-[420px] rounded-full bg-fuchsia-500/25 blur-[120px]" />
+        <div className="absolute bottom-[-15%] right-[-10%] size-[260px] sm:size-[380px] rounded-full bg-violet-400/25 blur-[120px]" />
+
         <div
           className="absolute inset-0 opacity-[0.07]"
           style={{

@@ -22,6 +22,7 @@ import { NexoLogo } from "@/components/NexoLogo";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { OnboardingTour } from "@/components/OnboardingTour";
 import { ownerTourSteps } from "@/lib/tour-steps";
+import { useWarmOwnerCache, useIdlePreloadRoutes } from "@/lib/prefetch";
 
 export const Route = createFileRoute("/_authenticated")({
   component: AuthLayout,

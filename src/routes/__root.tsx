@@ -110,7 +110,10 @@ function RootComponent() {
         gcTime: 5 * 60_000,
         refetchOnWindowFocus: false,
         refetchOnReconnect: false,
+        refetchOnMount: false,
         retry: 1,
+        // Only re-render components when the props they actually read change
+        notifyOnChangeProps: "all",
       },
     },
   }));

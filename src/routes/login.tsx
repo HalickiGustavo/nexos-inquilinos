@@ -56,7 +56,7 @@ function LoginPage() {
     <div className="relative min-h-screen grid lg:grid-cols-[1.05fr_1fr] overflow-x-hidden">
       {/* Fundo violeta com grade — visível em mobile/tablet */}
       <div
-        className="lg:hidden pointer-events-none absolute inset-0 -z-10"
+        className="lg:hidden pointer-events-none absolute inset-0 -z-10 overflow-hidden"
         aria-hidden
         style={{ background: "var(--gradient-hero)" }}
       >

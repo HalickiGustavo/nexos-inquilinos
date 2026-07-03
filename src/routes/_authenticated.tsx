@@ -22,6 +22,7 @@ import { NexoLogo } from "@/components/NexoLogo";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { OnboardingTour } from "@/components/OnboardingTour";
 import { ownerTourSteps } from "@/lib/tour-steps";
+import { useWarmOwnerCache, useIdlePreloadRoutes } from "@/lib/prefetch";
 
 export const Route = createFileRoute("/_authenticated")({
   component: AuthLayout,
@@ -38,11 +39,25 @@ const navItems = [
   
 ] as const;
 
+const OWNER_PREFETCH_PATHS = [
+  "/dashboard",
+  "/conta-corrente",
+  "/properties",
+  "/tenants",
+  "/contracts",
+  "/financials",
+  "/maintenances",
+];
+
 function AuthLayout() {
   const { user, loading, signOut } = useAuth();
   const { role, loading: roleLoading } = useUserRole();
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+
+  // Warm React Query cache + preload route chunks once the owner is authenticated
+  useWarmOwnerCache(!!user && role === "owner");
+  useIdlePreloadRoutes(OWNER_PREFETCH_PATHS, !!user && role === "owner");
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/login", replace: true });

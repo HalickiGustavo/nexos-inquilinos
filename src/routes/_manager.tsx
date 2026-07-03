@@ -29,7 +29,7 @@ const navItems: { to: string; label: string; icon: typeof LayoutDashboard; exact
   { to: "/manager/vistorias", label: "Vistorias", icon: ClipboardCheck, tour: "nav-manager-vistorias" },
   { to: "/manager/leads", label: "Leads (Portais)", icon: Inbox, tour: "nav-manager-leads" },
   { to: "/manager/configuracoes/roleta", label: "Roleta de Leads", icon: Shuffle, tour: "nav-manager-roleta" },
-  { to: "/manager/integracao", label: "Saldo e Saque", icon: Coins, tour: "nav-manager-integracao" },
+  
   { to: "/manager/portais", label: "Portais de Venda", icon: Globe, tour: "nav-manager-portais" },
   { to: "/manager/migrar-dados", label: "Migrar Dados", icon: Database, tour: "nav-manager-migrar-dados" },
   { to: "/manager/perfil", label: "Meu Perfil", icon: UserCog, tour: "nav-manager-perfil" },

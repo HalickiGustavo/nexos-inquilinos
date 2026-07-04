@@ -154,10 +154,14 @@ export const generateTripleSplitPix = createServerFn({ method: "POST" })
       const pct = Number(property?.default_management_fee_percent ?? 10);
 
       const payerDoc = normalizeDoc(tenant?.document);
-      if (payerDoc.length < 11) {
-        return { ok: false, error: "Inquilino sem CPF/CNPJ cadastrado — necessário para emitir Invoice PIX." };
+      const docError = validateTaxId(payerDoc);
+      if (docError) {
+        return { ok: false, error: `Inquilino sem CPF/CNPJ válido: ${docError} Atualize o cadastro do inquilino antes de gerar o PIX.` };
       }
-      const payerName = String(tenant?.full_name ?? "Inquilino").slice(0, 100);
+      const payerName = sanitizePayerName(String(tenant?.full_name ?? ""));
+      if (!payerName) {
+        return { ok: false, error: "Nome do inquilino é obrigatório (mínimo 2 letras) para emitir a cobrança PIX." };
+      }
 
       const [{ data: platform }, { data: agency }, { data: ownerProfile }] = await Promise.all([
         supabaseAdmin.from("platform_settings").select("nexo_platform_pix_key, nexo_flat_fee").limit(1).maybeSingle(),

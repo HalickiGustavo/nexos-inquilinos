@@ -92,9 +92,9 @@ export function TenantShell() {
               await signOut();
               navigate({ to: "/login", replace: true });
             }}
-            className="flex flex-col items-center justify-center gap-1 py-2.5 text-[11px] transition-colors text-muted-foreground hover:text-foreground min-w-0"
+            className="flex flex-col items-center justify-center gap-1 py-2 text-[11px] transition-colors text-muted-foreground hover:text-foreground min-w-0"
           >
-            <LogOut className="size-5 shrink-0" />
+            <LogOut className="size-[18px] shrink-0" />
             <span className="truncate font-medium">Sair</span>
           </button>
         </div>

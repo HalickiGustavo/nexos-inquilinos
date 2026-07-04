@@ -19,6 +19,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useInvalidate } from "@/lib/queries";
 import { EvidenceGrid } from "@/components/EvidenceUploader";
 import { formatBRL, formatDate, parseNumber, today } from "@/lib/format";
+import { logMaintenanceEvent } from "@/lib/maintenance-events";
 
 export type BudgetStatus = "nenhum" | "pendente" | "aprovado" | "recusado";
 
@@ -125,6 +126,13 @@ function SubmitBudgetDialog({
     setSaving(false);
     if (error) return toast.error(error.message);
     toast.success("Orçamento enviado ao proprietário");
+    await logMaintenanceEvent({
+      maintenanceId: item.id,
+      action: "budget_submitted",
+      actorRole: "tenant",
+      description: `Orçamento de ${formatBRL(parseNumber(amount))}${provider ? ` — ${provider}` : ""}.`,
+      metadata: { amount: parseNumber(amount), provider, notes },
+    });
     invalidate(["maintenances"]);
     onOpenChange(false);
   }
@@ -247,6 +255,25 @@ function DecideBudgetDialog({
         .eq("id", item.id);
       if (error) throw error;
 
+      await logMaintenanceEvent({
+        maintenanceId: item.id,
+        action: decision === "aprovado" ? "budget_approved" : "budget_rejected",
+        actorRole: "owner",
+        description:
+          decision === "aprovado"
+            ? `Orçamento de ${formatBRL(amount)} aprovado${deduct ? " (abatimento no próximo aluguel)" : ""}.`
+            : `Orçamento de ${formatBRL(amount)} recusado.`,
+        metadata: { amount, rent_deduction: deduct, applied_installment_id: appliedInstallmentId },
+      });
+      if (decision === "aprovado" && deduct && appliedInstallmentId) {
+        await logMaintenanceEvent({
+          maintenanceId: item.id,
+          action: "rent_deduction_applied",
+          actorRole: "owner",
+          description: `Abatimento de ${formatBRL(amount)} aplicado na próxima parcela.`,
+          metadata: { installment_id: appliedInstallmentId, amount },
+        });
+      }
       toast.success(
         decision === "aprovado"
           ? deduct

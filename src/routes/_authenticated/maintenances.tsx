@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Plus, Wrench, Trash2, MessageCircle } from "lucide-react";
+import { Plus, Wrench, Trash2, MessageCircle, History } from "lucide-react";
 import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,9 +16,11 @@ import { useAuth } from "@/lib/auth";
 import { useMaintenances, useProperties, useInvalidate, type Maintenance } from "@/lib/queries";
 import { MaintenanceChat } from "@/components/MaintenanceChat";
 import { MaintenanceBudgetPanel } from "@/components/MaintenanceBudgetPanel";
+import { MaintenanceTimeline } from "@/components/MaintenanceTimeline";
 import { EvidenceGrid } from "@/components/EvidenceUploader";
 import { formatBRL, formatDate, parseNumber } from "@/lib/format";
 import { useConfirm } from "@/components/ui/confirm";
+import { logMaintenanceEvent } from "@/lib/maintenance-events";
 
 export const Route = createFileRoute("/_authenticated/maintenances")({
   head: () => ({ meta: [{ title: "Manutenções — Nexo" }] }),
@@ -87,6 +89,8 @@ function MaintenancesPage() {
 function MaintenanceCard({ item }: { item: any }) {
   const invalidate = useInvalidate();
   const confirm = useConfirm();
+  const executionResponsible: "proprietario" | "inquilino" =
+    item.execution_responsible ?? "inquilino";
   return (
     <Card className="p-4 hover:shadow-md transition">
       <div className="flex items-start justify-between gap-2">
@@ -117,6 +121,37 @@ function MaintenanceCard({ item }: { item: any }) {
         {item.scheduled_date && <span className="text-xs text-muted-foreground">{formatDate(item.scheduled_date)}</span>}
       </div>
 
+      <div className="mt-3 flex items-center justify-between gap-2 text-xs">
+        <Label className="text-[11px] text-muted-foreground shrink-0">Executa</Label>
+        <Select
+          value={executionResponsible}
+          onValueChange={async (v) => {
+            const { error } = await supabase
+              .from("maintenances")
+              .update({ execution_responsible: v } as any)
+              .eq("id", item.id);
+            if (error) return toast.error(error.message);
+            toast.success("Responsável pela execução atualizado");
+            await logMaintenanceEvent({
+              maintenanceId: item.id,
+              action: "execution_responsible_set",
+              actorRole: "owner",
+              description: v === "proprietario"
+                ? "Proprietário assumirá a execução da manutenção."
+                : "Inquilino ficará responsável pela execução (fluxo de orçamento).",
+              metadata: { execution_responsible: v },
+            });
+            invalidate(["maintenances"]);
+          }}
+        >
+          <SelectTrigger className="h-7 text-xs w-[140px]"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="proprietario">Proprietário</SelectItem>
+            <SelectItem value="inquilino">Inquilino</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
       <div className="flex gap-2 mt-3">
         <Select
           value={item.status}
@@ -126,6 +161,13 @@ function MaintenanceCard({ item }: { item: any }) {
             const { error } = await supabase.from("maintenances").update(updates).eq("id", item.id);
             if (error) return toast.error(error.message);
             toast.success("Status atualizado");
+            await logMaintenanceEvent({
+              maintenanceId: item.id,
+              action: "status_changed",
+              actorRole: "owner",
+              description: `Status alterado para "${v}".`,
+              metadata: { status: v },
+            });
             invalidate(["maintenances"]);
           }}
         >
@@ -136,6 +178,21 @@ function MaintenanceCard({ item }: { item: any }) {
             <SelectItem value="concluido">Concluído</SelectItem>
           </SelectContent>
         </Select>
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button variant="outline" size="sm" title="Histórico / linha do tempo">
+              <History className="size-3.5" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent className="w-full sm:max-w-md overflow-y-auto">
+            <SheetHeader>
+              <SheetTitle>Histórico — {item.title}</SheetTitle>
+            </SheetHeader>
+            <div className="mt-4">
+              <MaintenanceTimeline maintenanceId={item.id} />
+            </div>
+          </SheetContent>
+        </Sheet>
         {item.tenant_id && (
           <Sheet>
             <SheetTrigger asChild>
@@ -193,7 +250,7 @@ function MaintenanceDialog({ onDone }: { onDone: () => void }) {
         onSubmit={async (e) => {
           e.preventDefault();
           if (!user) return;
-          const { error } = await supabase.from("maintenances").insert({
+          const { data: inserted, error } = await supabase.from("maintenances").insert({
             user_id: user.id,
             property_id: form.property_id,
             title: form.title,
@@ -202,9 +259,18 @@ function MaintenanceDialog({ onDone }: { onDone: () => void }) {
             status: form.status,
             responsible: form.responsible,
             scheduled_date: form.scheduled_date || null,
-          });
+          }).select("id").single();
           if (error) return toast.error(error.message);
           toast.success("Manutenção criada");
+          if (inserted?.id) {
+            await logMaintenanceEvent({
+              maintenanceId: inserted.id,
+              action: "created",
+              actorRole: "owner",
+              description: `Manutenção "${form.title}" registrada.`,
+              metadata: { property_id: form.property_id, responsible: form.responsible },
+            });
+          }
           invalidate(["maintenances"]);
           onDone();
         }}

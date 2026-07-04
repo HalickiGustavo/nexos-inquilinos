@@ -72,17 +72,17 @@ export function TenantShell() {
                 to={item.to as any}
                 data-tour={item.tour}
                 className={cn(
-                  "relative flex flex-col items-center justify-center gap-1 py-2.5 text-[11px] transition-colors min-w-0",
+                  "relative flex flex-col items-center justify-center gap-1 py-2 text-[11px] transition-colors min-w-0",
                   active ? "text-primary" : "text-muted-foreground hover:text-foreground",
                 )}
               >
                 {active && (
                   <span
-                    className="absolute top-0 left-1/2 -translate-x-1/2 h-0.5 w-8 rounded-full bg-primary shadow-[0_0_10px_var(--primary)]"
+                    className="absolute top-0 left-1/2 -translate-x-1/2 h-0.5 w-6 rounded-full bg-primary"
                     aria-hidden
                   />
                 )}
-                <Icon className={cn("size-5 shrink-0 transition-transform", active && "scale-110")} />
+                <Icon className={cn("size-[18px] shrink-0", active && "text-primary")} />
                 <span className="truncate max-w-full px-1 font-medium">{item.label}</span>
               </Link>
             );

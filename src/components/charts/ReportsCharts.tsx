@@ -1,0 +1,59 @@
+import {
+  ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid,
+  PieChart, Pie, Cell, Legend, LineChart, Line,
+} from "recharts";
+import { formatBRL, formatBRLCompact } from "@/lib/format";
+
+const CHART_COLORS = [
+  "hsl(var(--primary))",
+  "hsl(var(--chart-2, 210 70% 50%))",
+  "hsl(var(--chart-3, 45 90% 55%))",
+  "hsl(var(--chart-4, 340 75% 55%))",
+  "hsl(var(--chart-5, 160 60% 45%))",
+  "hsl(var(--chart-6, 280 65% 60%))",
+];
+
+export function RevenueBarChart({ data }: { data: Array<{ label: string; recebido: number; pendente: number }> }) {
+  return (
+    <ResponsiveContainer width="100%" height="100%">
+      <BarChart data={data}>
+        <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+        <XAxis dataKey="label" fontSize={12} />
+        <YAxis fontSize={12} tickFormatter={(v) => formatBRLCompact(v)} width={80} />
+        <Tooltip formatter={(v: number) => formatBRL(v)} />
+        <Legend />
+        <Bar dataKey="recebido" name="Recebido" fill={CHART_COLORS[0]} radius={[4, 4, 0, 0]} />
+        <Bar dataKey="pendente" name="Pendente" fill={CHART_COLORS[2]} radius={[4, 4, 0, 0]} />
+      </BarChart>
+    </ResponsiveContainer>
+  );
+}
+
+export function ExpensesPieChart({ data }: { data: Array<{ name: string; value: number }> }) {
+  return (
+    <ResponsiveContainer width="100%" height="100%">
+      <PieChart>
+        <Pie data={data} dataKey="value" nameKey="name" outerRadius={90} label={(e) => e.name}>
+          {data.map((_, i) => (
+            <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+          ))}
+        </Pie>
+        <Tooltip formatter={(v: number) => formatBRL(v)} />
+      </PieChart>
+    </ResponsiveContainer>
+  );
+}
+
+export function RevenueLineChart({ data }: { data: Array<{ label: string; recebido: number }> }) {
+  return (
+    <ResponsiveContainer width="100%" height="100%">
+      <LineChart data={data}>
+        <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+        <XAxis dataKey="label" fontSize={12} />
+        <YAxis fontSize={12} />
+        <Tooltip />
+        <Line type="monotone" dataKey="recebido" stroke={CHART_COLORS[0]} name="Recebido" />
+      </LineChart>
+    </ResponsiveContainer>
+  );
+}

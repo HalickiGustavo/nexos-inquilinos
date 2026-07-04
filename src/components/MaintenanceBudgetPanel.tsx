@@ -126,6 +126,13 @@ function SubmitBudgetDialog({
     setSaving(false);
     if (error) return toast.error(error.message);
     toast.success("Orçamento enviado ao proprietário");
+    await logMaintenanceEvent({
+      maintenanceId: item.id,
+      action: "budget_submitted",
+      actorRole: "tenant",
+      description: `Orçamento de ${formatBRL(parseNumber(amount))}${provider ? ` — ${provider}` : ""}.`,
+      metadata: { amount: parseNumber(amount), provider, notes },
+    });
     invalidate(["maintenances"]);
     onOpenChange(false);
   }

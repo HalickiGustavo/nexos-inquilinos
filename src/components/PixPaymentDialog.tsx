@@ -33,6 +33,7 @@ export function PixPaymentDialog({
 }) {
   const [copying, setCopying] = useState(false);
   const [paid, setPaid] = useState(false);
+  const [qrFallback, setQrFallback] = useState<string | null>(null);
   const checkPaid = useServerFn(checkPixPayment);
   const onPaidRef = useRef(onPaid);
   onPaidRef.current = onPaid;

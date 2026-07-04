@@ -180,7 +180,7 @@ export function PixPaymentDialog({
 
                   <div className="space-y-2">
                     <p className="text-[11px] uppercase tracking-wider text-muted-foreground">PIX Copia e Cola</p>
-                    <div className="flex items-stretch gap-2">
+                    <div className="flex items-stretch gap-2 min-w-0">
                       <div className="flex-1 min-w-0 rounded-md border border-border bg-muted/40 px-3 py-2">
                         <p className="font-mono text-[11px] leading-tight text-muted-foreground truncate">
                           {pixPayload}
@@ -224,7 +224,7 @@ export function PixPaymentDialog({
                   {boletoLine && (
                     <div className="space-y-2">
                       <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Linha digitável</p>
-                      <div className="flex items-stretch gap-2">
+                      <div className="flex items-stretch gap-2 min-w-0">
                         <div className="flex-1 min-w-0 rounded-md border border-border bg-muted/40 px-3 py-2">
                           <p className="font-mono text-[11px] leading-tight text-muted-foreground truncate">
                             {boletoLine}

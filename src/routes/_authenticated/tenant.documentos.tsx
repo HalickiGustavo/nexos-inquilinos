@@ -224,8 +224,8 @@ function TenantDocumentos() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                 {items.map((d) => {
                   const { Icon, tint } = iconOf(d.mime_type, d.file_ext);
-                  const uploaderName =
-                    d.uploader?.full_name ?? d.uploader?.email ?? "Imobiliária / Proprietário";
+                  const uploaderName = "Imobiliária / Proprietário";
+
                   return (
                     <Card key={d.id} className="p-3 min-w-0">
                       <div className="flex items-start gap-3 min-w-0">

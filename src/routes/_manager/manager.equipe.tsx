@@ -14,6 +14,7 @@ import { UserPlus, Copy, Users as UsersIcon, Briefcase, TrendingUp, Phone } from
 import { toast } from "sonner";
 import { formatBRL } from "@/lib/format";
 import { maskPhone } from "@/lib/br-validators";
+import { PageHeader, PageShell } from "@/components/PageHeader";
 
 export const Route = createFileRoute("/_manager/manager/equipe")({
   component: Equipe,

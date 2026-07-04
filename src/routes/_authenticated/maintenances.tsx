@@ -26,7 +26,6 @@ import {
   OwnerCompleteDialog,
   OwnerSettlePaymentDialog,
 } from "@/components/MaintenanceFlowDialogs";
-import { EvidenceGrid as EvidenceGridImg } from "@/components/EvidenceUploader";
 
 export const Route = createFileRoute("/_authenticated/maintenances")({
   head: () => ({ meta: [{ title: "Manutenções — Nexo" }] }),

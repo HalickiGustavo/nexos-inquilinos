@@ -18,11 +18,14 @@ import { Route as ManagerRouteImport } from './routes/_manager'
 import { Route as LandlordRouteImport } from './routes/_landlord'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
+import { Route as AuthenticatedVistoriasRouteImport } from './routes/_authenticated/vistorias'
 import { Route as AuthenticatedTenantsRouteImport } from './routes/_authenticated/tenants'
+import { Route as AuthenticatedRelatoriosRouteImport } from './routes/_authenticated/relatorios'
 import { Route as AuthenticatedPropertiesRouteImport } from './routes/_authenticated/properties'
 import { Route as AuthenticatedMaintenancesRouteImport } from './routes/_authenticated/maintenances'
 import { Route as AuthenticatedIntegrationsRouteImport } from './routes/_authenticated/integrations'
 import { Route as AuthenticatedFinancialsRouteImport } from './routes/_authenticated/financials'
+import { Route as AuthenticatedDocumentosRouteImport } from './routes/_authenticated/documentos'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedContractsRouteImport } from './routes/_authenticated/contracts'
 import { Route as AuthenticatedContaCorrenteRouteImport } from './routes/_authenticated/conta-corrente'
@@ -114,9 +117,19 @@ const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedVistoriasRoute = AuthenticatedVistoriasRouteImport.update({
+  id: '/vistorias',
+  path: '/vistorias',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedTenantsRoute = AuthenticatedTenantsRouteImport.update({
   id: '/tenants',
   path: '/tenants',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedRelatoriosRoute = AuthenticatedRelatoriosRouteImport.update({
+  id: '/relatorios',
+  path: '/relatorios',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedPropertiesRoute = AuthenticatedPropertiesRouteImport.update({
@@ -139,6 +152,11 @@ const AuthenticatedIntegrationsRoute =
 const AuthenticatedFinancialsRoute = AuthenticatedFinancialsRouteImport.update({
   id: '/financials',
   path: '/financials',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedDocumentosRoute = AuthenticatedDocumentosRouteImport.update({
+  id: '/documentos',
+  path: '/documentos',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
@@ -423,11 +441,14 @@ export interface FileRoutesByFullPath {
   '/conta-corrente': typeof AuthenticatedContaCorrenteRoute
   '/contracts': typeof AuthenticatedContractsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/documentos': typeof AuthenticatedDocumentosRoute
   '/financials': typeof AuthenticatedFinancialsRoute
   '/integrations': typeof AuthenticatedIntegrationsRoute
   '/maintenances': typeof AuthenticatedMaintenancesRoute
   '/properties': typeof AuthenticatedPropertiesRoute
+  '/relatorios': typeof AuthenticatedRelatoriosRoute
   '/tenants': typeof AuthenticatedTenantsRoute
+  '/vistorias': typeof AuthenticatedVistoriasRoute
   '/admin/integracoes': typeof AuthenticatedAdminIntegracoesRoute
   '/tenant/alertas': typeof AuthenticatedTenantAlertasRoute
   '/tenant/contrato': typeof AuthenticatedTenantContratoRoute
@@ -484,11 +505,14 @@ export interface FileRoutesByTo {
   '/conta-corrente': typeof AuthenticatedContaCorrenteRoute
   '/contracts': typeof AuthenticatedContractsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/documentos': typeof AuthenticatedDocumentosRoute
   '/financials': typeof AuthenticatedFinancialsRoute
   '/integrations': typeof AuthenticatedIntegrationsRoute
   '/maintenances': typeof AuthenticatedMaintenancesRoute
   '/properties': typeof AuthenticatedPropertiesRoute
+  '/relatorios': typeof AuthenticatedRelatoriosRoute
   '/tenants': typeof AuthenticatedTenantsRoute
+  '/vistorias': typeof AuthenticatedVistoriasRoute
   '/admin/integracoes': typeof AuthenticatedAdminIntegracoesRoute
   '/tenant/alertas': typeof AuthenticatedTenantAlertasRoute
   '/tenant/contrato': typeof AuthenticatedTenantContratoRoute
@@ -548,11 +572,14 @@ export interface FileRoutesById {
   '/_authenticated/conta-corrente': typeof AuthenticatedContaCorrenteRoute
   '/_authenticated/contracts': typeof AuthenticatedContractsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/documentos': typeof AuthenticatedDocumentosRoute
   '/_authenticated/financials': typeof AuthenticatedFinancialsRoute
   '/_authenticated/integrations': typeof AuthenticatedIntegrationsRoute
   '/_authenticated/maintenances': typeof AuthenticatedMaintenancesRoute
   '/_authenticated/properties': typeof AuthenticatedPropertiesRoute
+  '/_authenticated/relatorios': typeof AuthenticatedRelatoriosRoute
   '/_authenticated/tenants': typeof AuthenticatedTenantsRoute
+  '/_authenticated/vistorias': typeof AuthenticatedVistoriasRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/admin/integracoes': typeof AuthenticatedAdminIntegracoesRoute
   '/_authenticated/tenant/alertas': typeof AuthenticatedTenantAlertasRoute
@@ -612,11 +639,14 @@ export interface FileRouteTypes {
     | '/conta-corrente'
     | '/contracts'
     | '/dashboard'
+    | '/documentos'
     | '/financials'
     | '/integrations'
     | '/maintenances'
     | '/properties'
+    | '/relatorios'
     | '/tenants'
+    | '/vistorias'
     | '/admin/integracoes'
     | '/tenant/alertas'
     | '/tenant/contrato'
@@ -673,11 +703,14 @@ export interface FileRouteTypes {
     | '/conta-corrente'
     | '/contracts'
     | '/dashboard'
+    | '/documentos'
     | '/financials'
     | '/integrations'
     | '/maintenances'
     | '/properties'
+    | '/relatorios'
     | '/tenants'
+    | '/vistorias'
     | '/admin/integracoes'
     | '/tenant/alertas'
     | '/tenant/contrato'
@@ -736,11 +769,14 @@ export interface FileRouteTypes {
     | '/_authenticated/conta-corrente'
     | '/_authenticated/contracts'
     | '/_authenticated/dashboard'
+    | '/_authenticated/documentos'
     | '/_authenticated/financials'
     | '/_authenticated/integrations'
     | '/_authenticated/maintenances'
     | '/_authenticated/properties'
+    | '/_authenticated/relatorios'
     | '/_authenticated/tenants'
+    | '/_authenticated/vistorias'
     | '/_authenticated/'
     | '/_authenticated/admin/integracoes'
     | '/_authenticated/tenant/alertas'
@@ -879,11 +915,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/vistorias': {
+      id: '/_authenticated/vistorias'
+      path: '/vistorias'
+      fullPath: '/vistorias'
+      preLoaderRoute: typeof AuthenticatedVistoriasRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/tenants': {
       id: '/_authenticated/tenants'
       path: '/tenants'
       fullPath: '/tenants'
       preLoaderRoute: typeof AuthenticatedTenantsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/relatorios': {
+      id: '/_authenticated/relatorios'
+      path: '/relatorios'
+      fullPath: '/relatorios'
+      preLoaderRoute: typeof AuthenticatedRelatoriosRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/properties': {
@@ -912,6 +962,13 @@ declare module '@tanstack/react-router' {
       path: '/financials'
       fullPath: '/financials'
       preLoaderRoute: typeof AuthenticatedFinancialsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/documentos': {
+      id: '/_authenticated/documentos'
+      path: '/documentos'
+      fullPath: '/documentos'
+      preLoaderRoute: typeof AuthenticatedDocumentosRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/dashboard': {
@@ -1257,11 +1314,14 @@ interface AuthenticatedRouteChildren {
   AuthenticatedContaCorrenteRoute: typeof AuthenticatedContaCorrenteRoute
   AuthenticatedContractsRoute: typeof AuthenticatedContractsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedDocumentosRoute: typeof AuthenticatedDocumentosRoute
   AuthenticatedFinancialsRoute: typeof AuthenticatedFinancialsRoute
   AuthenticatedIntegrationsRoute: typeof AuthenticatedIntegrationsRoute
   AuthenticatedMaintenancesRoute: typeof AuthenticatedMaintenancesRoute
   AuthenticatedPropertiesRoute: typeof AuthenticatedPropertiesRoute
+  AuthenticatedRelatoriosRoute: typeof AuthenticatedRelatoriosRoute
   AuthenticatedTenantsRoute: typeof AuthenticatedTenantsRoute
+  AuthenticatedVistoriasRoute: typeof AuthenticatedVistoriasRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedAdminIntegracoesRoute: typeof AuthenticatedAdminIntegracoesRoute
   AuthenticatedTenantAlertasRoute: typeof AuthenticatedTenantAlertasRoute
@@ -1277,11 +1337,14 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedContaCorrenteRoute: AuthenticatedContaCorrenteRoute,
   AuthenticatedContractsRoute: AuthenticatedContractsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedDocumentosRoute: AuthenticatedDocumentosRoute,
   AuthenticatedFinancialsRoute: AuthenticatedFinancialsRoute,
   AuthenticatedIntegrationsRoute: AuthenticatedIntegrationsRoute,
   AuthenticatedMaintenancesRoute: AuthenticatedMaintenancesRoute,
   AuthenticatedPropertiesRoute: AuthenticatedPropertiesRoute,
+  AuthenticatedRelatoriosRoute: AuthenticatedRelatoriosRoute,
   AuthenticatedTenantsRoute: AuthenticatedTenantsRoute,
+  AuthenticatedVistoriasRoute: AuthenticatedVistoriasRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedAdminIntegracoesRoute: AuthenticatedAdminIntegracoesRoute,
   AuthenticatedTenantAlertasRoute: AuthenticatedTenantAlertasRoute,

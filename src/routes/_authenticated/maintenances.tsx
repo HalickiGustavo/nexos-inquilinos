@@ -226,7 +226,18 @@ function MaintenanceCard({ item }: { item: any }) {
           <Trash2 className="size-3.5 text-destructive" />
         </Button>
       </div>
-      <MaintenanceBudgetPanel item={item} />
+      {executionResponsible === "proprietario" ? (
+        <OwnerExecutionPanel item={item} />
+      ) : (
+        <>
+          <MaintenanceBudgetPanel item={item} />
+          {item.budget_status === "aprovado" && item.status !== "concluido" && (
+            <div className="mt-3 pt-3 border-t flex flex-wrap gap-2">
+              <OwnerSettlePaymentDialog item={item} />
+            </div>
+          )}
+        </>
+      )}
     </Card>
   );
 }

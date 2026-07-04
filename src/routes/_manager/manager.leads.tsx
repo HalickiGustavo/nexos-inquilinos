@@ -95,7 +95,8 @@ function LeadsPipeline() {
           })}
         </div>
       </div>
-    </div>
+    </PageShell>
+
   );
 }
 

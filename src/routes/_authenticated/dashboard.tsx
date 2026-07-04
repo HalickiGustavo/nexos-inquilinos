@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo } from "react";
+import { lazy, Suspense, useEffect, useMemo } from "react";
 import { Building2, Wallet, TrendingUp, AlertCircle, CheckCircle2, Home, Bell, ArrowRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -7,7 +7,9 @@ import { Progress } from "@/components/ui/progress";
 import { useProperties, useInstallments, useMaintenances, useContracts } from "@/lib/queries";
 import { useUserRole, roleHomePath } from "@/lib/useUserRole";
 import { formatBRL, monthRange } from "@/lib/format";
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Cell } from "recharts";
+
+const DashboardCollectionChart = lazy(() => import("@/components/charts/DashboardCollectionChart"));
+
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Visão Geral — Nexo" }] }),
@@ -158,21 +160,11 @@ function Dashboard() {
             </div>
           </div>
           <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData}>
-                <XAxis dataKey="month" stroke="var(--border)" fontSize={12} tick={{ fill: "#e4e4e7" }} />
-                <YAxis stroke="var(--border)" fontSize={12} tick={{ fill: "#e4e4e7" }} tickFormatter={(v) => `R$ ${(v / 1000).toFixed(0)}k`} />
-                <Tooltip
-                  formatter={(v: number) => formatBRL(v)}
-                  contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 8 }}
-                />
-                <Bar dataKey="pago" stackId="a" fill="var(--primary)" radius={[0, 0, 0, 0]} />
-                <Bar dataKey="pendente" stackId="a" fill="var(--muted-foreground)" radius={[4, 4, 0, 0]}>
-                  {chartData.map((_, i) => <Cell key={i} />)}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+            <Suspense fallback={<div className="h-full w-full animate-pulse rounded-md bg-muted/40" />}>
+              <DashboardCollectionChart data={chartData} />
+            </Suspense>
           </div>
+
         </Card>
 
         <Card className="p-6">

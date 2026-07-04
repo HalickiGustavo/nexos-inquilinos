@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { lazy, Suspense, useMemo, useState } from "react";
 import {
   BarChart3, Download, FileText, Home, Wallet, TrendingUp, Wrench,
   CheckCircle2, AlertCircle, Printer,
@@ -14,29 +14,29 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import {
-  ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid,
-  PieChart, Pie, Cell, Legend, LineChart, Line,
-} from "recharts";
-import {
   useProperties, useContracts, useInstallments,
   useMaintenances,
 } from "@/lib/queries";
 import { formatBRL, formatBRLCompact, formatDate } from "@/lib/format";
 import { downloadPdf } from "@/lib/pdf";
 
+const RevenueBarChart = lazy(() =>
+  import("@/components/charts/ReportsCharts").then((m) => ({ default: m.RevenueBarChart })),
+);
+const ExpensesPieChart = lazy(() =>
+  import("@/components/charts/ReportsCharts").then((m) => ({ default: m.ExpensesPieChart })),
+);
+const RevenueLineChart = lazy(() =>
+  import("@/components/charts/ReportsCharts").then((m) => ({ default: m.RevenueLineChart })),
+);
+
+const ChartFallback = () => <div className="h-full w-full animate-pulse rounded-md bg-muted/40" />;
+
 export const Route = createFileRoute("/_authenticated/relatorios")({
   head: () => ({ meta: [{ title: "Relatórios — NEXO" }] }),
   component: LandlordRelatoriosPage,
 });
 
-const CHART_COLORS = [
-  "hsl(var(--primary))",
-  "hsl(var(--chart-2, 210 70% 50%))",
-  "hsl(var(--chart-3, 45 90% 55%))",
-  "hsl(var(--chart-4, 340 75% 55%))",
-  "hsl(var(--chart-5, 160 60% 45%))",
-  "hsl(var(--chart-6, 280 65% 60%))",
-];
 
 function inRange(dateStr: string | null | undefined, from: string, to: string) {
   if (!dateStr) return false;
@@ -351,18 +351,11 @@ function LandlordRelatoriosPage() {
           <Card className="p-4">
             <h3 className="font-semibold mb-4">Receita mensal (últimos 12 meses)</h3>
             <div className="h-72">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={monthlyRevenue}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis dataKey="label" fontSize={12} />
-                  <YAxis fontSize={12} tickFormatter={(v) => formatBRLCompact(v)} width={80} />
-                  <Tooltip formatter={(v: number) => formatBRL(v)} />
-                  <Legend />
-                  <Bar dataKey="recebido" name="Recebido" fill={CHART_COLORS[0]} radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="pendente" name="Pendente" fill={CHART_COLORS[2]} radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+              <Suspense fallback={<ChartFallback />}>
+                <RevenueBarChart data={monthlyRevenue} />
+              </Suspense>
             </div>
+
           </Card>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -372,23 +365,11 @@ function LandlordRelatoriosPage() {
                 <p className="text-sm text-muted-foreground">Sem gastos no período.</p>
               ) : (
                 <div className="h-64">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={expensesByProperty}
-                        dataKey="value"
-                        nameKey="name"
-                        outerRadius={90}
-                        label={(e) => e.name}
-                      >
-                        {expensesByProperty.map((_, i) => (
-                          <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip formatter={(v: number) => formatBRL(v)} />
-                    </PieChart>
-                  </ResponsiveContainer>
+                  <Suspense fallback={<ChartFallback />}>
+                    <ExpensesPieChart data={expensesByProperty} />
+                  </Suspense>
                 </div>
+
               )}
             </Card>
 
@@ -438,16 +419,11 @@ function LandlordRelatoriosPage() {
           <Card className="p-4">
             <h3 className="font-semibold mb-4">Ocupação x contratos ativos</h3>
             <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={monthlyRevenue}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis dataKey="label" fontSize={12} />
-                  <YAxis fontSize={12} />
-                  <Tooltip />
-                  <Line type="monotone" dataKey="recebido" stroke={CHART_COLORS[0]} name="Recebido" />
-                </LineChart>
-              </ResponsiveContainer>
+              <Suspense fallback={<ChartFallback />}>
+                <RevenueLineChart data={monthlyRevenue} />
+              </Suspense>
             </div>
+
           </Card>
 
           <Card className="p-4">

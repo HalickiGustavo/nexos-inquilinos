@@ -71,25 +71,16 @@ function useContractDocuments(contractId?: string) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("documents" as any)
-        .select("*, uploader:profiles!documents_user_id_fkey(full_name, email)")
+        .select("*")
         .eq("contract_id", contractId!)
         .is("deleted_at", null)
         .order("created_at", { ascending: false });
-      if (error) {
-        // profiles join may fail; fallback without it
-        const fallback = await supabase
-          .from("documents" as any)
-          .select("*")
-          .eq("contract_id", contractId!)
-          .is("deleted_at", null)
-          .order("created_at", { ascending: false });
-        if (fallback.error) throw fallback.error;
-        return (fallback.data ?? []) as any[];
-      }
+      if (error) throw error;
       return (data ?? []) as any[];
     },
   });
 }
+
 
 function TenantDocumentos() {
   const { data: contract, isLoading: loadingContract } = useTenantActiveContract();

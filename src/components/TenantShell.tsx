@@ -1,5 +1,5 @@
 import { Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
-import { Home, Wallet, FileText, Wrench, Bell, LogOut, User } from "lucide-react";
+import { Home, Wallet, FileText, Wrench, LogOut, User, FolderOpen } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -8,20 +8,24 @@ import { NexoLogo } from "@/components/NexoLogo";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { OnboardingTour } from "@/components/OnboardingTour";
 import { tenantTourSteps } from "@/lib/tour-steps";
+import { AlertsBell } from "@/components/AlertsBell";
+import { useTenantAlerts } from "@/lib/alerts";
 
 const tenantNav: ReadonlyArray<{ to: string; label: string; icon: typeof Home; exact?: boolean; tour: string }> = [
   { to: "/tenant", label: "Início", icon: Home, exact: true, tour: "nav-tenant" },
   { to: "/tenant/financeiro", label: "Financeiro", icon: Wallet, tour: "nav-tenant-financeiro" },
   { to: "/tenant/contrato", label: "Contrato", icon: FileText, tour: "nav-tenant-contrato" },
+  { to: "/tenant/documentos", label: "Documentos", icon: FolderOpen, tour: "nav-tenant-documentos" },
   { to: "/tenant/manutencoes", label: "Manutenções", icon: Wrench, tour: "nav-tenant-manutencoes" },
-  { to: "/tenant/alertas", label: "Alertas", icon: Bell, tour: "nav-tenant-alertas" },
   { to: "/tenant/perfil", label: "Perfil", icon: User, tour: "nav-tenant-perfil" },
 ];
+
 
 export function TenantShell() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const { alerts } = useTenantAlerts();
 
   const isActive = (to: string, exact?: boolean) =>
     exact ? pathname === to : pathname === to || pathname.startsWith(to + "/");
@@ -33,7 +37,9 @@ export function TenantShell() {
         <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2 min-w-0">
             <NexoLogo className="h-7 shrink-0" />
+            <AlertsBell alerts={alerts} seeAllHref="/tenant/alertas" />
           </div>
+
           <div className="flex items-center gap-1 sm:gap-2 shrink-0">
             <span className="hidden sm:block text-xs text-muted-foreground truncate max-w-[180px]">
               {user?.email}

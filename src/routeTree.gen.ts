@@ -44,6 +44,7 @@ import { Route as ManagerManagerDimobRouteImport } from './routes/_manager/manag
 import { Route as ManagerManagerCrmRouteImport } from './routes/_manager/manager.crm'
 import { Route as ManagerManagerCarteiraRouteImport } from './routes/_manager/manager.carteira'
 import { Route as ManagerManagerAlertasRouteImport } from './routes/_manager/manager.alertas'
+import { Route as LandlordLandlordVistoriasRouteImport } from './routes/_landlord/landlord.vistorias'
 import { Route as LandlordLandlordSaldoRouteImport } from './routes/_landlord/landlord.saldo'
 import { Route as LandlordLandlordManutencoesRouteImport } from './routes/_landlord/landlord.manutencoes'
 import { Route as LandlordLandlordFinanceiroRouteImport } from './routes/_landlord/landlord.financeiro'
@@ -250,6 +251,12 @@ const ManagerManagerAlertasRoute = ManagerManagerAlertasRouteImport.update({
   path: '/manager/alertas',
   getParentRoute: () => ManagerRoute,
 } as any)
+const LandlordLandlordVistoriasRoute =
+  LandlordLandlordVistoriasRouteImport.update({
+    id: '/landlord/vistorias',
+    path: '/landlord/vistorias',
+    getParentRoute: () => LandlordRoute,
+  } as any)
 const LandlordLandlordSaldoRoute = LandlordLandlordSaldoRouteImport.update({
   id: '/landlord/saldo',
   path: '/landlord/saldo',
@@ -416,6 +423,7 @@ export interface FileRoutesByFullPath {
   '/landlord/financeiro': typeof LandlordLandlordFinanceiroRoute
   '/landlord/manutencoes': typeof LandlordLandlordManutencoesRoute
   '/landlord/saldo': typeof LandlordLandlordSaldoRoute
+  '/landlord/vistorias': typeof LandlordLandlordVistoriasRoute
   '/manager/alertas': typeof ManagerManagerAlertasRoute
   '/manager/carteira': typeof ManagerManagerCarteiraRoute
   '/manager/crm': typeof ManagerManagerCrmRoute
@@ -474,6 +482,7 @@ export interface FileRoutesByTo {
   '/landlord/financeiro': typeof LandlordLandlordFinanceiroRoute
   '/landlord/manutencoes': typeof LandlordLandlordManutencoesRoute
   '/landlord/saldo': typeof LandlordLandlordSaldoRoute
+  '/landlord/vistorias': typeof LandlordLandlordVistoriasRoute
   '/manager/alertas': typeof ManagerManagerAlertasRoute
   '/manager/carteira': typeof ManagerManagerCarteiraRoute
   '/manager/crm': typeof ManagerManagerCrmRoute
@@ -536,6 +545,7 @@ export interface FileRoutesById {
   '/_landlord/landlord/financeiro': typeof LandlordLandlordFinanceiroRoute
   '/_landlord/landlord/manutencoes': typeof LandlordLandlordManutencoesRoute
   '/_landlord/landlord/saldo': typeof LandlordLandlordSaldoRoute
+  '/_landlord/landlord/vistorias': typeof LandlordLandlordVistoriasRoute
   '/_manager/manager/alertas': typeof ManagerManagerAlertasRoute
   '/_manager/manager/carteira': typeof ManagerManagerCarteiraRoute
   '/_manager/manager/crm': typeof ManagerManagerCrmRoute
@@ -596,6 +606,7 @@ export interface FileRouteTypes {
     | '/landlord/financeiro'
     | '/landlord/manutencoes'
     | '/landlord/saldo'
+    | '/landlord/vistorias'
     | '/manager/alertas'
     | '/manager/carteira'
     | '/manager/crm'
@@ -654,6 +665,7 @@ export interface FileRouteTypes {
     | '/landlord/financeiro'
     | '/landlord/manutencoes'
     | '/landlord/saldo'
+    | '/landlord/vistorias'
     | '/manager/alertas'
     | '/manager/carteira'
     | '/manager/crm'
@@ -715,6 +727,7 @@ export interface FileRouteTypes {
     | '/_landlord/landlord/financeiro'
     | '/_landlord/landlord/manutencoes'
     | '/_landlord/landlord/saldo'
+    | '/_landlord/landlord/vistorias'
     | '/_manager/manager/alertas'
     | '/_manager/manager/carteira'
     | '/_manager/manager/crm'
@@ -1022,6 +1035,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ManagerManagerAlertasRouteImport
       parentRoute: typeof ManagerRoute
     }
+    '/_landlord/landlord/vistorias': {
+      id: '/_landlord/landlord/vistorias'
+      path: '/landlord/vistorias'
+      fullPath: '/landlord/vistorias'
+      preLoaderRoute: typeof LandlordLandlordVistoriasRouteImport
+      parentRoute: typeof LandlordRoute
+    }
     '/_landlord/landlord/saldo': {
       id: '/_landlord/landlord/saldo'
       path: '/landlord/saldo'
@@ -1242,6 +1262,7 @@ interface LandlordRouteChildren {
   LandlordLandlordFinanceiroRoute: typeof LandlordLandlordFinanceiroRoute
   LandlordLandlordManutencoesRoute: typeof LandlordLandlordManutencoesRoute
   LandlordLandlordSaldoRoute: typeof LandlordLandlordSaldoRoute
+  LandlordLandlordVistoriasRoute: typeof LandlordLandlordVistoriasRoute
   LandlordLandlordIndexRoute: typeof LandlordLandlordIndexRoute
 }
 
@@ -1249,6 +1270,7 @@ const LandlordRouteChildren: LandlordRouteChildren = {
   LandlordLandlordFinanceiroRoute: LandlordLandlordFinanceiroRoute,
   LandlordLandlordManutencoesRoute: LandlordLandlordManutencoesRoute,
   LandlordLandlordSaldoRoute: LandlordLandlordSaldoRoute,
+  LandlordLandlordVistoriasRoute: LandlordLandlordVistoriasRoute,
   LandlordLandlordIndexRoute: LandlordLandlordIndexRoute,
 }
 

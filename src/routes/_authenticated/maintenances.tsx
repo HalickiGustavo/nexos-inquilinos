@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Plus, Wrench, Trash2, MessageCircle } from "lucide-react";
+import { Plus, Wrench, Trash2, MessageCircle, History } from "lucide-react";
 import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,9 +16,11 @@ import { useAuth } from "@/lib/auth";
 import { useMaintenances, useProperties, useInvalidate, type Maintenance } from "@/lib/queries";
 import { MaintenanceChat } from "@/components/MaintenanceChat";
 import { MaintenanceBudgetPanel } from "@/components/MaintenanceBudgetPanel";
+import { MaintenanceTimeline } from "@/components/MaintenanceTimeline";
 import { EvidenceGrid } from "@/components/EvidenceUploader";
 import { formatBRL, formatDate, parseNumber } from "@/lib/format";
 import { useConfirm } from "@/components/ui/confirm";
+import { logMaintenanceEvent } from "@/lib/maintenance-events";
 
 export const Route = createFileRoute("/_authenticated/maintenances")({
   head: () => ({ meta: [{ title: "Manutenções — Nexo" }] }),

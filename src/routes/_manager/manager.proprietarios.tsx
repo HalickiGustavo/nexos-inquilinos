@@ -93,7 +93,7 @@ function ManagerProprietariosPage() {
           <div className="inline-flex items-center gap-2 text-xs uppercase tracking-wider text-violet-400 mb-2">
             <Users className="size-3.5" /> Carteira
           </div>
-          <h1 className="text-3xl font-bold tracking-tight">Proprietários</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Proprietários</h1>
           <p className="text-muted-foreground mt-1">
             Convide os donos dos imóveis para acompanharem painel, finanças e saldo direto na NEXO.
           </p>

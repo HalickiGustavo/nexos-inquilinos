@@ -82,10 +82,10 @@ export function TenantsManagement() {
   }, [installments]);
 
   return (
-    <div className="p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
       <div className="flex items-start justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Inquilinos</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Inquilinos</h1>
           <p className="text-muted-foreground mt-1">Cadastro e gestão de locatários.</p>
         </div>
         <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) setEditing(null); }}>

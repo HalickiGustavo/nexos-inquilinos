@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Inbox, Phone, Mail, Building2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
+import { PageHeader, PageShell } from "@/components/PageHeader";
 
 export const Route = createFileRoute("/_manager/manager/leads")({
   component: LeadsPipeline,
@@ -58,18 +59,13 @@ function LeadsPipeline() {
   }, [qc]);
 
   return (
-    <div className="p-6 space-y-6">
-      <header className="flex items-end justify-between flex-wrap gap-3">
-        <div>
-          <div className="text-[10px] uppercase tracking-[0.2em] text-primary/80 flex items-center gap-2">
-            <Sparkles className="size-3" /> Roleta de Portais
-          </div>
-          <h1 className="text-2xl font-bold mt-1">Leads de Portais</h1>
-          <p className="text-sm text-muted-foreground">
-            Distribuição automática de Zap, VivaReal, OLX e demais integrados
-          </p>
-        </div>
-      </header>
+    <PageShell>
+      <PageHeader
+        eyebrow={<span className="inline-flex items-center gap-1.5"><Sparkles className="size-3" /> Roleta de Portais</span>}
+        title="Leads de Portais"
+        description="Distribuição automática de Zap, VivaReal, OLX e demais integrados."
+      />
+
 
       <div className="overflow-x-auto -mx-6 px-6 pb-2">
         <div className="grid grid-flow-col auto-cols-[minmax(280px,1fr)] lg:grid-flow-row lg:grid-cols-4 gap-4">
@@ -100,7 +96,8 @@ function LeadsPipeline() {
           })}
         </div>
       </div>
-    </div>
+    </PageShell>
+
   );
 }
 

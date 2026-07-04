@@ -171,10 +171,10 @@ function PerfilPage() {
   }
 
   return (
-    <div className="p-4 md:p-8 max-w-3xl mx-auto space-y-6">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-3xl mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-bold flex items-center gap-2"><UserIcon className="size-6" />Meu Perfil</h1>
-        <p className="text-sm text-muted-foreground">Informações usadas no cadastro Asaas, contratos e comunicações.</p>
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight flex items-center gap-2"><UserIcon className="size-6 text-primary" />Meu Perfil</h1>
+        <p className="text-sm text-muted-foreground mt-1">Informações usadas no cadastro Asaas, contratos e comunicações.</p>
       </div>
 
       <form onSubmit={onSave} className="space-y-6">

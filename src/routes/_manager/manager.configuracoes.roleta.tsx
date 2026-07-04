@@ -105,16 +105,17 @@ function RoletaConfig() {
   ).length;
 
   return (
-    <div className="p-6 space-y-6 max-w-4xl">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto space-y-6">
       <header>
-        <div className="text-[10px] uppercase tracking-[0.2em] text-primary/80 flex items-center gap-2">
+        <div className="text-[10px] uppercase tracking-[0.2em] text-primary/80 flex items-center gap-2 font-semibold">
           <Shuffle className="size-3" /> Configurações
         </div>
-        <h1 className="text-2xl font-bold mt-1">Roleta de Leads</h1>
-        <p className="text-sm text-muted-foreground">
-          Defina como leads recebidos dos portais são distribuídos para o time
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight mt-1.5">Roleta de Leads</h1>
+        <p className="text-sm text-muted-foreground mt-1">
+          Defina como leads recebidos dos portais são distribuídos para o time.
         </p>
       </header>
+
 
       <Card className="border-border/60">
         <CardHeader>

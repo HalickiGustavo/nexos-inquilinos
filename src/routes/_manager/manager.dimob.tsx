@@ -73,12 +73,12 @@ function DimobPage() {
   }
 
   return (
-    <div className="p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
       <div>
         <div className="inline-flex items-center gap-2 text-xs uppercase tracking-wider text-violet-400 mb-2">
           <FileDigit className="size-3.5" /> Fiscal
         </div>
-        <h1 className="text-3xl font-bold tracking-tight">DIMOB</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">DIMOB</h1>
         <p className="text-muted-foreground mt-1">
           Declaração de Informações sobre Atividades Imobiliárias — Receita Federal.
           Selecione o ano-base, confira os dados consolidados e baixe o arquivo .txt para importação no PVA.

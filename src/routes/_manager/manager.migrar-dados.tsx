@@ -475,7 +475,7 @@ function MigrarDadosPage() {
         <div className="inline-flex items-center gap-2 text-xs uppercase tracking-wider text-violet-400 mb-2">
           <Database className="size-3.5" /> Admin
         </div>
-        <h1 className="text-3xl font-bold tracking-tight">Migrar Dados</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Migrar Dados</h1>
         <p className="text-muted-foreground mt-1">
           Importe toda a sua imobiliária em <strong className="text-zinc-200">uma única planilha</strong>.
           Cada linha representa um contrato completo (proprietário + imóvel + inquilino + contrato).

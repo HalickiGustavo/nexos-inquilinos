@@ -434,6 +434,149 @@ export type Database = {
           },
         ]
       }
+      document_events: {
+        Row: {
+          action: string
+          created_at: string
+          document_id: string
+          id: string
+          metadata: Json | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          document_id: string
+          id?: string
+          metadata?: Json | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          document_id?: string
+          id?: string
+          metadata?: Json | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_events_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      documents: {
+        Row: {
+          category: string
+          contract_id: string | null
+          created_at: string
+          custom_category: string | null
+          deleted_at: string | null
+          description: string | null
+          document_date: string | null
+          expires_at: string | null
+          file_ext: string | null
+          id: string
+          inspection_id: string | null
+          is_favorite: boolean
+          maintenance_id: string | null
+          mime_type: string | null
+          name: string
+          property_id: string | null
+          size_bytes: number | null
+          storage_path: string
+          tenant_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category?: string
+          contract_id?: string | null
+          created_at?: string
+          custom_category?: string | null
+          deleted_at?: string | null
+          description?: string | null
+          document_date?: string | null
+          expires_at?: string | null
+          file_ext?: string | null
+          id?: string
+          inspection_id?: string | null
+          is_favorite?: boolean
+          maintenance_id?: string | null
+          mime_type?: string | null
+          name: string
+          property_id?: string | null
+          size_bytes?: number | null
+          storage_path: string
+          tenant_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          contract_id?: string | null
+          created_at?: string
+          custom_category?: string | null
+          deleted_at?: string | null
+          description?: string | null
+          document_date?: string | null
+          expires_at?: string | null
+          file_ext?: string | null
+          id?: string
+          inspection_id?: string | null
+          is_favorite?: boolean
+          maintenance_id?: string | null
+          mime_type?: string | null
+          name?: string
+          property_id?: string | null
+          size_bytes?: number | null
+          storage_path?: string
+          tenant_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documents_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documents_inspection_id_fkey"
+            columns: ["inspection_id"]
+            isOneToOne: false
+            referencedRelation: "inspections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documents_maintenance_id_fkey"
+            columns: ["maintenance_id"]
+            isOneToOne: false
+            referencedRelation: "maintenances"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documents_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documents_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       inspections: {
         Row: {
           contract_id: string

@@ -34,7 +34,7 @@ function AlertasPage() {
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
       <header>
-        <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight flex items-center gap-2">
           <Bell className="size-7 text-primary" /> Alertas
         </h1>
         <p className="text-muted-foreground mt-1">

@@ -1704,7 +1704,7 @@ export type Database = {
     Enums: {
       app_role: "owner" | "tenant" | "manager" | "landlord"
       inspection_condition: "otimo" | "bom" | "regular" | "ruim"
-      inspection_kind: "entrada" | "saida"
+      inspection_kind: "entrada" | "saida" | "preventiva" | "extraordinaria"
       inspection_status: "rascunho" | "assinada"
       installment_status:
         | "pendente"
@@ -1857,7 +1857,7 @@ export const Constants = {
     Enums: {
       app_role: ["owner", "tenant", "manager", "landlord"],
       inspection_condition: ["otimo", "bom", "regular", "ruim"],
-      inspection_kind: ["entrada", "saida"],
+      inspection_kind: ["entrada", "saida", "preventiva", "extraordinaria"],
       inspection_status: ["rascunho", "assinada"],
       installment_status: [
         "pendente",

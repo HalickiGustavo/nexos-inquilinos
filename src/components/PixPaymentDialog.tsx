@@ -1,23 +1,25 @@
 import { useEffect, useRef, useState } from "react";
-import { Copy, Download, QrCode, Loader2, AlertCircle, FileText, CheckCircle2, Clock } from "lucide-react";
+import { Copy, Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { formatBRL, formatDate } from "@/lib/format";
 import { checkPixPayment } from "@/lib/pix-split.functions";
 
-
-
+/**
+ * Modal de pagamento PIX — versão redesenhada (2026).
+ * - Compacto, sem scroll interno, cabe no viewport em desktop e mobile.
+ * - Sem splits, sem TXID, sem logs técnicos visíveis ao inquilino.
+ * - Roxo apenas como acento; sem glow/neon.
+ */
 export function PixPaymentDialog({
   installment,
   open,
   onOpenChange,
   loading = false,
   error = null,
-  debug = null,
+  debug: _debug = null,
   onPaid,
 }: {
   installment: any | null;
@@ -29,8 +31,6 @@ export function PixPaymentDialog({
   onPaid?: () => void;
 }) {
   const [copying, setCopying] = useState(false);
-  const boletoUrl: string | null = installment?.boleto_url ?? null;
-  const boletoBarcode: string | null = installment?.boleto_barcode ?? installment?.barcode ?? null;
   const [paid, setPaid] = useState(false);
   const checkPaid = useServerFn(checkPixPayment);
   const onPaidRef = useRef(onPaid);
@@ -45,30 +45,27 @@ export function PixPaymentDialog({
         const res: any = await checkPaid({ data: { installmentId: installment.id } });
         if (!cancelled && res?.paid) {
           setPaid(true);
-          toast.success("Pagamento confirmado! 🎉");
+          toast.success("Pagamento confirmado com sucesso.");
           onPaidRef.current?.();
+          // Fecha automaticamente após breve feedback visual.
+          setTimeout(() => onOpenChange(false), 1600);
         }
       } catch { /* ignora — próxima rodada */ }
     };
     const id = setInterval(tick, 5000);
     tick();
     return () => { cancelled = true; clearInterval(id); };
-  }, [open, installment?.id, installment?.pix_payload, paid, checkPaid]);
+  }, [open, installment?.id, installment?.pix_payload, paid, checkPaid, onOpenChange]);
 
   useEffect(() => { if (!open) setPaid(false); }, [open]);
 
   if (!installment) return null;
 
-
+  // Total efetivo (mantém a mesma regra financeira — inclui split se existir).
   const amount = Number(installment.split_breakdown?.total ?? installment.amount);
   const pixPayload: string | null = installment.pix_payload ?? null;
   const qrSrc = installment.pix_qrcode
     ? `data:image/png;base64,${installment.pix_qrcode}`
-    : null;
-  const debugText = debug
-    ? typeof debug === "string"
-      ? debug
-      : JSON.stringify(debug, null, 2)
     : null;
 
   const copy = async () => {
@@ -76,7 +73,7 @@ export function PixPaymentDialog({
     setCopying(true);
     try {
       await navigator.clipboard.writeText(pixPayload);
-      toast.success("Código Pix copiado! Cole no aplicativo do seu banco para pagar.");
+      toast.success("PIX copiado com sucesso.");
     } catch {
       toast.error("Não foi possível copiar");
     } finally {
@@ -84,205 +81,100 @@ export function PixPaymentDialog({
     }
   };
 
-
-  const copyBarcode = async () => {
-    if (!boletoBarcode) return;
-    try {
-      await navigator.clipboard.writeText(boletoBarcode);
-      toast.success("Linha digitável copiada!");
-    } catch {
-      toast.error("Não foi possível copiar");
-    }
-  };
-
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-sm max-h-[85vh] overflow-y-auto p-4 sm:p-5">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <QrCode className="size-5 text-primary" /> Pagar este aluguel
-          </DialogTitle>
-          <DialogDescription>
-            Vencimento {formatDate(installment.due_date)} — escolha Pix ou Boleto.
-          </DialogDescription>
-        </DialogHeader>
+      <DialogContent className="w-[92vw] sm:max-w-[520px] p-0 gap-0 overflow-hidden border-border">
+        <div className="p-5 sm:p-6">
+          <DialogHeader className="space-y-1 text-left">
+            <DialogTitle className="text-base font-semibold">Pagamento via PIX</DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Escaneie o QR Code ou copie o código abaixo.
+            </DialogDescription>
+          </DialogHeader>
 
-        <Tabs defaultValue="pix" className="w-full">
-          <TabsList className="grid grid-cols-2 w-full">
-            <TabsTrigger value="pix"><QrCode className="size-4 mr-1.5" /> Pix</TabsTrigger>
-            <TabsTrigger value="boleto"><FileText className="size-4 mr-1.5" /> Boleto</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="pix" className="space-y-4 mt-4">
-
-          <div className="rounded-lg border-2 border-primary/20 bg-primary/5 p-4 text-center">
-            <p className="text-xs uppercase tracking-wide text-muted-foreground">Valor a pagar</p>
-            <p className="text-3xl font-bold text-primary mt-1">{formatBRL(amount)}</p>
-            {(() => {
-              const agencyAmt = Number(installment.split_breakdown?.agency ?? 0);
-              const ways = agencyAmt > 0 ? 3 : 2;
-              return (
-                <Badge variant="outline" className="mt-2 bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30">
-                  Pix com split nativo de {ways} vias
-                </Badge>
-              );
-            })()}
+          {/* Valor em destaque */}
+          <div className="mt-4 flex items-baseline justify-between gap-3 border-b border-border/60 pb-4">
+            <div>
+              <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Valor a pagar</p>
+              <p className="text-3xl font-bold tabular-nums mt-0.5">{formatBRL(amount)}</p>
+            </div>
+            <div className="text-right">
+              <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Vencimento</p>
+              <p className="text-sm font-medium mt-0.5">{formatDate(installment.due_date)}</p>
+            </div>
           </div>
 
-          {installment.split_breakdown && (
-            <div className="rounded-lg border border-violet-500/30 bg-violet-500/[0.06] p-3 shadow-[0_0_24px_-12px_rgb(168_85_247)]">
-              <p className="text-xs uppercase tracking-wide text-violet-300 font-semibold mb-2">
-                Detalhamento do split
-              </p>
-              <div className="space-y-1 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Plataforma Nexo</span>
-                  <span className="font-medium">{formatBRL(installment.split_breakdown.nexo)}</span>
-                </div>
-                {Number(installment.split_breakdown.agency ?? 0) > 0 && (
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Imobiliária (administração)</span>
-                    <span className="font-medium">{formatBRL(installment.split_breakdown.agency)}</span>
-                  </div>
-                )}
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Proprietário (líquido)</span>
-                  <span className="font-medium">{formatBRL(installment.split_breakdown.owner)}</span>
-                </div>
-                <div className="flex justify-between pt-1 mt-1 border-t border-violet-500/20 font-semibold">
-                  <span>Total</span>
-                  <span>{formatBRL(installment.split_breakdown.total)}</span>
-                </div>
-              </div>
-            </div>
-          )}
-
-
+          {/* Estado: loading */}
           {loading && (
-            <div className="flex flex-col items-center justify-center py-10 text-muted-foreground">
-              <Loader2 className="size-8 animate-spin mb-3 text-primary" />
-              <p className="text-sm">Gerando QR Code Pix...</p>
+            <div className="flex flex-col items-center justify-center py-10">
+              <Loader2 className="size-6 animate-spin text-primary mb-2" />
+              <p className="text-sm text-muted-foreground">Gerando código PIX…</p>
             </div>
           )}
 
+          {/* Estado: erro */}
           {!loading && error && (
-            <div className="flex flex-col items-center justify-center py-8 text-center gap-3">
-              <div>
-                <AlertCircle className="size-8 text-destructive mb-2 mx-auto" />
-                <p className="text-sm font-medium text-destructive">Não foi possível gerar o PIX</p>
-                <p className="text-xs text-muted-foreground mt-1">{error}</p>
-              </div>
-              {debugText && (
-                <div className="w-full rounded-md border border-destructive/30 bg-destructive/5 p-3 text-left">
-                  <div className="flex items-center justify-between gap-2 mb-2">
-                    <p className="text-xs font-semibold text-destructive">Log técnico Pix</p>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      className="h-7 px-2 text-xs"
-                      onClick={() => {
-                        navigator.clipboard.writeText(debugText);
-                        toast.success("Log Pix copiado");
-                      }}
-                    >
-                      <Copy className="size-3 mr-1" /> Copiar
-                    </Button>
-                  </div>
-                  <pre className="max-h-40 overflow-auto whitespace-pre-wrap break-words text-[11px] leading-relaxed text-muted-foreground">
-                    {debugText}
-                  </pre>
-                </div>
-              )}
+            <div className="flex flex-col items-center justify-center py-8 text-center gap-2">
+              <AlertCircle className="size-6 text-destructive" />
+              <p className="text-sm font-medium">Não foi possível gerar o PIX</p>
+              <p className="text-xs text-muted-foreground max-w-xs">{error}</p>
             </div>
           )}
 
+          {/* Estado: pronto */}
           {!loading && !error && qrSrc && pixPayload && (
-            <>
-              {paid && (
-                <div className="rounded-lg border border-emerald-500/40 bg-emerald-500/10 p-3 flex items-center gap-3">
-                  <CheckCircle2 className="size-6 text-emerald-500 shrink-0" />
-                  <div className="flex-1">
-                    <p className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">Pagamento confirmado</p>
-                    <p className="text-xs text-muted-foreground">Atualizamos automaticamente sua parcela.</p>
-                  </div>
-                  <Button size="sm" onClick={() => onOpenChange(false)}>Fechar</Button>
-                </div>
-              )}
+            <div className="mt-4 space-y-4">
+              {/* QR Code centralizado, borda discreta, sem glow */}
               <div className="flex justify-center">
-                <div className={`p-3 bg-white rounded-lg ring-2 shadow-[0_0_36px_-6px_rgb(168_85_247)] ${paid ? "ring-emerald-500/60 opacity-60" : "ring-violet-500/60"}`}>
-                  <img src={qrSrc} alt="QR Code Pix" className="w-full max-w-[168px] h-auto aspect-square" />
+                <div className="rounded-lg border border-border bg-white p-3">
+                  <img
+                    src={qrSrc}
+                    alt="QR Code PIX"
+                    className="block h-[200px] w-[200px] sm:h-[220px] sm:w-[220px]"
+                  />
                 </div>
               </div>
 
-              {!paid && (
-                <p className="text-xs text-center text-muted-foreground flex items-center justify-center gap-1.5">
-                  <Loader2 className="size-3 animate-spin" /> Aguardando confirmação do pagamento...
+              {/* Copia e cola compacto */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <p className="text-[11px] uppercase tracking-wider text-muted-foreground">PIX Copia e Cola</p>
+                </div>
+                <div className="flex items-stretch gap-2">
+                  <div className="flex-1 min-w-0 rounded-md border border-border bg-muted/40 px-3 py-2">
+                    <p className="font-mono text-[11px] leading-tight text-muted-foreground truncate">
+                      {pixPayload}
+                    </p>
+                  </div>
+                  <Button
+                    onClick={copy}
+                    disabled={copying || paid}
+                    size="sm"
+                    className="shrink-0 px-3"
+                  >
+                    {copying ? <Loader2 className="size-4 animate-spin" /> : <Copy className="size-4" />}
+                    <span className="ml-1.5 hidden sm:inline">Copiar código</span>
+                  </Button>
+                </div>
+              </div>
+
+              {/* Status de aguardando / confirmado */}
+              {paid ? (
+                <div className="flex items-center justify-center gap-2 rounded-md border border-emerald-500/40 bg-emerald-500/10 px-3 py-2">
+                  <CheckCircle2 className="size-4 text-emerald-500" />
+                  <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">
+                    Pagamento confirmado com sucesso.
+                  </p>
+                </div>
+              ) : (
+                <p className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+                  <Loader2 className="size-3 animate-spin" /> Aguardando confirmação do pagamento…
                 </p>
               )}
-
-              <div className="space-y-2">
-                <p className="text-xs uppercase tracking-wide text-muted-foreground">Pix Copia e Cola</p>
-                <div className="font-mono text-xs break-all rounded-md border bg-muted/40 p-3 max-h-20 overflow-auto">
-                  {pixPayload}
-                </div>
-                <Button className="w-full" onClick={copy} disabled={copying || paid}>
-                  {copying ? <Loader2 className="size-4 mr-2 animate-spin" /> : <Copy className="size-4 mr-2" />}
-                  Copiar Código Copia e Cola
-                </Button>
-              </div>
-            </>
-          )}
-          </TabsContent>
-
-          <TabsContent value="boleto" className="space-y-4 mt-4">
-            <div className="rounded-lg border-2 border-primary/20 bg-primary/5 p-4 text-center">
-              <p className="text-xs uppercase tracking-wide text-muted-foreground">Valor do boleto</p>
-              <p className="text-3xl font-bold text-primary mt-1">{formatBRL(amount)}</p>
-              <Badge variant="outline" className="mt-2 bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30">
-                {Number(installment.split_breakdown?.agency ?? 0) > 0
-                  ? "Repasse automático D+1 para imobiliária e proprietário"
-                  : "Repasse automático D+1 para o proprietário"}
-              </Badge>
             </div>
-
-            {!boletoUrl && (
-              <div className="flex flex-col items-center justify-center py-8 text-center gap-2 rounded-lg border border-dashed bg-muted/30">
-                <Clock className="size-7 text-muted-foreground" />
-                <p className="text-sm font-medium">Boleto ainda não disponível</p>
-                <p className="text-xs text-muted-foreground max-w-xs">
-                  O boleto desta parcela é emitido automaticamente 15 dias antes do vencimento ({formatDate(installment.due_date)}). Enquanto isso, use o Pix.
-                </p>
-              </div>
-            )}
-
-
-            {boletoUrl && (
-              <div className="space-y-3">
-                <Button variant="outline" className="w-full" asChild>
-                  <a href={boletoUrl} target="_blank" rel="noreferrer">
-                    <Download className="size-4 mr-2" /> Visualizar Boleto PDF
-                  </a>
-                </Button>
-
-                {boletoBarcode && (
-                  <div className="space-y-2">
-                    <p className="text-xs uppercase tracking-wide text-muted-foreground">Linha digitável</p>
-                    <div className="font-mono text-xs break-all rounded-md border bg-muted/40 p-3 max-h-20 overflow-auto">
-                      {boletoBarcode}
-                    </div>
-                    <Button className="w-full" onClick={copyBarcode}>
-                      <Copy className="size-4 mr-2" /> Copiar linha digitável
-                    </Button>
-                  </div>
-                )}
-              </div>
-            )}
-          </TabsContent>
-        </Tabs>
+          )}
+        </div>
       </DialogContent>
-
     </Dialog>
   );
 }

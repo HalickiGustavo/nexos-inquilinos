@@ -114,7 +114,7 @@ function TenantFinanceiro() {
       </header>
 
       {agreement && (
-        <Card className="p-5 border-violet-500/40 bg-violet-500/[0.07] shadow-[0_0_32px_-12px_rgb(168_85_247)]">
+        <Card className="p-5 border-violet-500/40 bg-violet-500/[0.05]">
           <div className="flex items-start gap-3">
             <div className="p-2 rounded-lg bg-violet-500/20 text-violet-300">
               <Handshake className="size-5" />

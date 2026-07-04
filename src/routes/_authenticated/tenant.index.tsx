@@ -1,12 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { Bell, QrCode, Wallet, FileText, Wrench, AlertTriangle } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { QrCode, Wallet, FileText, Wrench, Bell, MapPin, ArrowUpRight, CheckCircle2 } from "lucide-react";
 
 import { useServerFn } from "@tanstack/react-start";
 import { useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { PixPaymentDialog } from "@/components/PixPaymentDialog";
 import { generateTripleSplitPix } from "@/lib/pix-split.functions";
 import {
@@ -16,13 +15,12 @@ import {
   useTenantMaintenances,
 } from "@/lib/tenant-queries";
 import { formatBRL, formatDate, today } from "@/lib/format";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/tenant/")({
   head: () => ({ meta: [{ title: "Início — Nexo Inquilino" }] }),
   component: TenantHome,
 });
-
-
 
 function TenantHome() {
   const { data: tenant } = useCurrentTenant();
@@ -31,11 +29,18 @@ function TenantHome() {
   const { data: maintenances = [] } = useTenantMaintenances();
 
   const todayStr = today();
-  const upcoming = installments
-    .filter((i: any) => i.status !== "pago")
-    .sort((a: any, b: any) => a.due_date.localeCompare(b.due_date))[0];
+  const upcoming = useMemo(
+    () =>
+      installments
+        .filter((i: any) => i.status !== "pago")
+        .sort((a: any, b: any) => a.due_date.localeCompare(b.due_date))[0],
+    [installments],
+  );
 
-  const overdue = upcoming && upcoming.due_date < todayStr;
+  const overdue = !!upcoming && upcoming.due_date < todayStr;
+  const daysLeft = upcoming
+    ? Math.round((new Date(upcoming.due_date).getTime() - new Date(todayStr).getTime()) / 86400000)
+    : null;
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -43,14 +48,7 @@ function TenantHome() {
     if (Notification.permission === "default") {
       Notification.requestPermission().catch(() => {});
     }
-    if (Notification.permission === "granted" && overdue && upcoming) {
-      try {
-        new Notification("Aluguel em atraso", {
-          body: `Vencimento ${formatDate(upcoming.due_date)} • ${formatBRL(Number(upcoming.amount))}`,
-        });
-      } catch {}
-    }
-  }, [overdue, upcoming?.id]);
+  }, []);
 
   const openCount = maintenances.filter((m: any) => m.status !== "concluido").length;
 
@@ -89,85 +87,131 @@ function TenantHome() {
     }
   };
 
+  const firstName = tenant?.full_name ? tenant.full_name.split(" ")[0] : "";
+  const statusLabel = !upcoming
+    ? "Em dia"
+    : overdue
+      ? "Em atraso"
+      : daysLeft === 0
+        ? "Vence hoje"
+        : daysLeft && daysLeft > 0
+          ? `Vence em ${daysLeft} ${daysLeft === 1 ? "dia" : "dias"}`
+          : "Próximo aluguel";
+
   return (
-    <div className="space-y-5 animate-in fade-in duration-300">
+    <div className="space-y-4">
       <header>
-        <h1 className="text-2xl font-bold">Olá{tenant?.full_name ? `, ${tenant.full_name.split(" ")[0]}` : ""} 👋</h1>
-        <p className="text-sm text-muted-foreground mt-1">Tudo o que você precisa sobre seu aluguel.</p>
+        <h1 className="text-xl sm:text-2xl font-semibold tracking-tight">
+          Olá{firstName ? `, ${firstName}` : ""}
+        </h1>
+        <p className="text-sm text-muted-foreground mt-0.5">
+          Aqui está o resumo do seu aluguel.
+        </p>
       </header>
 
-      {/* Próximo aluguel */}
-      <Card
-        className={
-          "p-5 border-l-4 " +
-          (overdue
-            ? "border-l-destructive bg-destructive/5"
-            : upcoming
-              ? "border-l-warning bg-warning/5"
-              : "border-l-primary")
-        }
-      >
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs uppercase tracking-wide text-muted-foreground">
-                {overdue ? "Aluguel em atraso" : "Próximo aluguel"}
-              </span>
-              {overdue && (
-                <Badge variant="destructive" className="gap-1">
-                  <AlertTriangle className="size-3" /> Atrasado
-                </Badge>
+      {/* Card principal — Status + Valor + Vencimento + CTA */}
+      <Card className="relative overflow-hidden border-border">
+        <div className="p-5 sm:p-6">
+          {/* Badge de status discreta */}
+          <div className="flex items-center justify-between gap-3">
+            <span
+              className={cn(
+                "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-medium",
+                !upcoming
+                  ? "border-emerald-500/40 text-emerald-600 dark:text-emerald-400 bg-emerald-500/5"
+                  : overdue
+                    ? "border-destructive/40 text-destructive bg-destructive/5"
+                    : "border-primary/40 text-primary bg-primary/5",
               )}
-            </div>
-            {upcoming ? (
-              <>
-                <p className="text-3xl font-bold mt-1">{formatBRL(Number(upcoming.amount))}</p>
-                <p className="text-sm text-muted-foreground">
-                  Vencimento em <span className="font-medium text-foreground">{formatDate(upcoming.due_date)}</span>
-                </p>
-              </>
-            ) : (
-              <p className="text-muted-foreground mt-2">Nenhuma parcela pendente. 🎉</p>
-            )}
+            >
+              {!upcoming ? <CheckCircle2 className="size-3" /> : <Wallet className="size-3" />}
+              {statusLabel}
+            </span>
+            <span className="text-[11px] uppercase tracking-wider text-muted-foreground">
+              {upcoming ? "Próximo aluguel" : "Contrato em dia"}
+            </span>
           </div>
-          <Wallet className="size-8 text-primary/70" />
-        </div>
 
-        {upcoming && (
-          <div className="flex flex-wrap gap-2 mt-4">
-            <Button onClick={() => openPix(upcoming)} className="bg-emerald-600 hover:bg-emerald-700 text-white">
-              <QrCode className="size-4 mr-2" /> Gerar QR Pix — {formatBRL(Number(upcoming.amount))}
-            </Button>
-            <Button variant="outline" asChild>
-              <Link to="/tenant/financeiro">Ver boleto</Link>
-            </Button>
-          </div>
-        )}
+          {upcoming ? (
+            <>
+              <div className="mt-4 flex items-baseline gap-2">
+                <p className="text-4xl sm:text-5xl font-bold tabular-nums leading-none">
+                  {formatBRL(Number(upcoming.amount))}
+                </p>
+              </div>
+              <p className="text-sm text-muted-foreground mt-2">
+                Vencimento em{" "}
+                <span className="font-medium text-foreground">{formatDate(upcoming.due_date)}</span>
+              </p>
+
+              <div className="mt-5 flex flex-col sm:flex-row gap-2">
+                <Button
+                  size="lg"
+                  className="flex-1 font-semibold"
+                  onClick={() => openPix(upcoming)}
+                >
+                  <QrCode className="size-4 mr-2" /> Pagar agora
+                </Button>
+                <Button variant="outline" size="lg" asChild className="sm:w-auto">
+                  <Link to="/tenant/financeiro">Ver histórico</Link>
+                </Button>
+              </div>
+            </>
+          ) : (
+            <>
+              <p className="text-3xl sm:text-4xl font-semibold mt-4">Nenhum boleto em aberto.</p>
+              <p className="text-sm text-muted-foreground mt-2">
+                Você está em dia com o aluguel. Aproveite.
+              </p>
+              <div className="mt-5">
+                <Button variant="outline" asChild>
+                  <Link to="/tenant/financeiro">Ver histórico</Link>
+                </Button>
+              </div>
+            </>
+          )}
+        </div>
       </Card>
 
-      {/* Mini cards */}
+      {/* Cards secundários */}
       <div className="grid grid-cols-2 gap-3">
-        <Link to="/tenant/contrato">
-          <Card className="p-4 hover:shadow-md transition cursor-pointer h-full">
-            <FileText className="size-5 text-primary mb-2" />
-            <p className="text-xs text-muted-foreground">Imóvel atual</p>
-            <p className="font-medium truncate">{contract?.property?.nickname ?? "—"}</p>
-          </Card>
-        </Link>
-        <Link to="/tenant/manutencoes">
-          <Card className="p-4 hover:shadow-md transition cursor-pointer h-full">
-            <Wrench className="size-5 text-primary mb-2" />
-            <p className="text-xs text-muted-foreground">Chamados abertos</p>
-            <p className="font-medium">{openCount}</p>
-          </Card>
-        </Link>
+        <SecondaryCard
+          to="/tenant/contrato"
+          icon={<MapPin className="size-4" />}
+          title="Meu imóvel"
+          value={contract?.property?.nickname ?? "—"}
+          hint={
+            contract?.property?.address
+              ? `${contract.property.address}${contract.property.city ? `, ${contract.property.city}` : ""}`
+              : "Sem contrato ativo"
+          }
+        />
+        <SecondaryCard
+          to="/tenant/manutencoes"
+          icon={<Wrench className="size-4" />}
+          title="Chamados"
+          value={openCount === 0 ? "Nenhum aberto" : `${openCount} em andamento`}
+          hint="Toque para abrir um novo chamado"
+        />
+        <SecondaryCard
+          to="/tenant/contrato"
+          icon={<FileText className="size-4" />}
+          title="Contrato"
+          value={
+            contract
+              ? `Até ${formatDate(contract.end_date)}`
+              : "—"
+          }
+          hint={contract ? `Aluguel ${formatBRL(Number(contract.rent_amount))}/mês` : "Sem contrato ativo"}
+        />
+        <SecondaryCard
+          to="/tenant/alertas"
+          icon={<Bell className="size-4" />}
+          title="Alertas"
+          value="Ver notificações"
+          hint="Avisos importantes do seu contrato"
+        />
       </div>
-
-      {!("Notification" in (typeof window !== "undefined" ? window : {})) ? null : Notification.permission === "denied" ? (
-        <p className="text-xs text-muted-foreground flex items-center gap-2">
-          <Bell className="size-3" /> Notificações desativadas no navegador.
-        </p>
-      ) : null}
 
       <PixPaymentDialog
         installment={pixFor}
@@ -175,6 +219,7 @@ function TenantHome() {
         loading={pixLoading}
         error={pixError}
         debug={pixDebug}
+        onPaid={() => queryClient.invalidateQueries({ queryKey: ["tenant-installments"] })}
         onOpenChange={(o) => {
           if (!o) {
             setPixFor(null);
@@ -185,5 +230,37 @@ function TenantHome() {
         }}
       />
     </div>
+  );
+}
+
+function SecondaryCard({
+  to,
+  icon,
+  title,
+  value,
+  hint,
+}: {
+  to: string;
+  icon: React.ReactNode;
+  title: string;
+  value: string;
+  hint?: string;
+}) {
+  return (
+    <Link to={to as any} className="group block">
+      <Card className="h-full p-4 border-border transition-colors hover:border-primary/40 hover:bg-muted/30">
+        <div className="flex items-start justify-between">
+          <div className="inline-flex items-center gap-2 text-muted-foreground">
+            <span className="grid size-7 place-items-center rounded-md border border-border bg-muted/40 text-foreground/80">
+              {icon}
+            </span>
+            <span className="text-xs font-medium">{title}</span>
+          </div>
+          <ArrowUpRight className="size-3.5 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+        </div>
+        <p className="mt-3 text-sm font-semibold truncate">{value}</p>
+        {hint && <p className="mt-0.5 text-[11px] text-muted-foreground truncate">{hint}</p>}
+      </Card>
+    </Link>
   );
 }

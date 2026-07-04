@@ -247,6 +247,42 @@ function MaintenanceCard({ item }: { item: any }) {
   );
 }
 
+function OwnerExecutionPanel({ item }: { item: any }) {
+  const done = item.status === "concluido";
+  return (
+    <div className="mt-3 pt-3 border-t space-y-3">
+      <div className="flex items-center gap-1.5 text-xs">
+        <span className="text-muted-foreground">Execução:</span>
+        <Badge variant="outline" className="text-[10px]">Proprietário</Badge>
+        {item.provider_name && (
+          <span className="text-muted-foreground">· {item.provider_name}</span>
+        )}
+      </div>
+      {(item.invoice_urls?.length ?? 0) > 0 && (
+        <div className="space-y-1">
+          <p className="text-[11px] text-muted-foreground">Nota fiscal</p>
+          <EvidenceGrid paths={item.invoice_urls} />
+        </div>
+      )}
+      {(item.completion_photo_urls?.length ?? 0) > 0 && (
+        <div className="space-y-1">
+          <p className="text-[11px] text-muted-foreground">Fotos do serviço</p>
+          <EvidenceGrid paths={item.completion_photo_urls} />
+        </div>
+      )}
+      {item.final_notes && (
+        <p className="text-xs text-muted-foreground italic">"{item.final_notes}"</p>
+      )}
+      {!done && (
+        <div className="flex flex-wrap gap-2">
+          <OwnerScheduleDialog item={item} />
+          <OwnerCompleteDialog item={item} />
+        </div>
+      )}
+    </div>
+  );
+}
+
 function MaintenanceDialog({ onDone }: { onDone: () => void }) {
   const { user } = useAuth();
   const invalidate = useInvalidate();

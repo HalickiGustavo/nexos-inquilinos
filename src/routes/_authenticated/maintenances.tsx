@@ -250,7 +250,7 @@ function MaintenanceDialog({ onDone }: { onDone: () => void }) {
         onSubmit={async (e) => {
           e.preventDefault();
           if (!user) return;
-          const { error } = await supabase.from("maintenances").insert({
+          const { data: inserted, error } = await supabase.from("maintenances").insert({
             user_id: user.id,
             property_id: form.property_id,
             title: form.title,
@@ -259,9 +259,18 @@ function MaintenanceDialog({ onDone }: { onDone: () => void }) {
             status: form.status,
             responsible: form.responsible,
             scheduled_date: form.scheduled_date || null,
-          });
+          }).select("id").single();
           if (error) return toast.error(error.message);
           toast.success("Manutenção criada");
+          if (inserted?.id) {
+            await logMaintenanceEvent({
+              maintenanceId: inserted.id,
+              action: "created",
+              actorRole: "owner",
+              description: `Manutenção "${form.title}" registrada.`,
+              metadata: { property_id: form.property_id, responsible: form.responsible },
+            });
+          }
           invalidate(["maintenances"]);
           onDone();
         }}

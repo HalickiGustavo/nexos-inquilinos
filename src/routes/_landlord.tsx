@@ -21,6 +21,7 @@ const navItems: ReadonlyArray<{ to: string; label: string; icon: typeof LayoutDa
   { to: "/landlord/financeiro", label: "Finanças", icon: Wallet },
   { to: "/landlord/manutencoes", label: "Manutenções", icon: Wrench },
   { to: "/landlord/vistorias", label: "Vistorias", icon: ClipboardCheck },
+  { to: "/landlord/documentos", label: "Documentos", icon: FolderOpen },
 ];
 
 function LandlordLayout() {

@@ -26,16 +26,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let cancelled = false;
     // Hydrate from cached session first to render protected UI on first paint
+    // Hydrate from cached session first to render protected UI on first paint.
+    // Do NOT clear the query cache here — it wipes any prefetched/hydrated data
+    // that was warmed before the provider mounted. Cache is only cleared on
+    // real user switches inside onAuthStateChange below.
     supabase.auth.getSession().then(({ data }) => {
       if (cancelled) return;
-      // The QueryClient lives above AuthProvider. If the auth provider remounts
-      // after an account switch, stale sensitive rows from the previous user may
-      // still be in memory. Always start a fresh auth hydration with an empty cache.
-      queryClient.clear();
       lastUserId.current = data.session?.user?.id ?? null;
       setSession(data.session ?? null);
       setLoading(false);
     });
+
     const { data: sub } = supabase.auth.onAuthStateChange(async (_evt, s) => {
       const nextUserId = s?.user?.id ?? null;
       if (lastUserId.current !== nextUserId) {

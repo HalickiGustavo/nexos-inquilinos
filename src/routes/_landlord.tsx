@@ -1,7 +1,7 @@
 import { createFileRoute, Outlet, useNavigate, useRouterState, Link } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { LayoutDashboard, Wallet, Wrench, LogOut, Loader2, ClipboardCheck, FolderOpen, BarChart3 } from "lucide-react";
+import { LayoutDashboard, Wallet, Wrench, LogOut, Loader2 } from "lucide-react";
 import { NexoLogo } from "@/components/NexoLogo";
 import { InstallPwaButton } from "@/components/InstallPwaButton";
 import { useAuth } from "@/lib/auth";
@@ -20,9 +20,6 @@ const navItems: ReadonlyArray<{ to: string; label: string; icon: typeof LayoutDa
   { to: "/landlord", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/landlord/financeiro", label: "Finanças", icon: Wallet },
   { to: "/landlord/manutencoes", label: "Manutenções", icon: Wrench },
-  { to: "/landlord/vistorias", label: "Vistorias", icon: ClipboardCheck },
-  { to: "/landlord/documentos", label: "Documentos", icon: FolderOpen },
-  { to: "/landlord/relatorios", label: "Relatórios", icon: BarChart3 },
 ];
 
 function LandlordLayout() {

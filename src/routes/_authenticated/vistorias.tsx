@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
-import { useLandlordContracts } from "@/lib/landlord-queries";
+import { useContracts } from "@/lib/queries";
 import { useConfirm } from "@/components/ui/confirm";
 import { formatDate } from "@/lib/format";
 import { useQueryClient } from "@tanstack/react-query";
@@ -49,8 +49,8 @@ const LANDLORD_KIND_LABEL: Record<string, string> = {
   extraordinaria: "Vistoria Extraordinária",
 };
 
-export const Route = createFileRoute("/_landlord/landlord/vistorias")({
-  head: () => ({ meta: [{ title: "Vistorias — NEXO Proprietário" }] }),
+export const Route = createFileRoute("/_authenticated/vistorias")({
+  head: () => ({ meta: [{ title: "Vistorias — NEXO" }] }),
   component: LandlordVistoriasPage,
 });
 
@@ -200,7 +200,7 @@ function InspectionCard({ inspection, onEdit }: { inspection: any; onEdit: () =>
 function InspectionDialog({ existing, onDone }: { existing: any | null; onDone: () => void }) {
   const { user } = useAuth();
   const qc = useQueryClient();
-  const { data: contracts = [] } = useLandlordContracts();
+  const { data: contracts = [] } = useContracts();
   const contractOptions = useMemo(
     () => contracts.filter((c: any) => c.active || existing?.contract_id === c.id),
     [contracts, existing],

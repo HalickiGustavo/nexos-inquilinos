@@ -11,6 +11,9 @@ import {
   Loader2,
   Plug,
   Coins,
+  ClipboardCheck,
+  FolderOpen,
+  BarChart3,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useUserRole } from "@/lib/useUserRole";
@@ -36,6 +39,9 @@ const navItems = [
   { to: "/contracts", label: "Contratos", icon: FileText, tour: "nav-contracts" },
   { to: "/financials", label: "Finanças", icon: Wallet, tour: "nav-financials" },
   { to: "/maintenances", label: "Manutenções", icon: Wrench, tour: "nav-maintenances" },
+  { to: "/vistorias", label: "Vistorias", icon: ClipboardCheck, tour: undefined },
+  { to: "/documentos", label: "Documentos", icon: FolderOpen, tour: undefined },
+  { to: "/relatorios", label: "Relatórios", icon: BarChart3, tour: undefined },
   
 ] as const;
 

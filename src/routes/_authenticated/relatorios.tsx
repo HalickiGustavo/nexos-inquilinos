@@ -18,14 +18,14 @@ import {
   PieChart, Pie, Cell, Legend, LineChart, Line,
 } from "recharts";
 import {
-  useLandlordProperties, useLandlordContracts, useLandlordInstallments,
-  useLandlordMaintenances,
-} from "@/lib/landlord-queries";
+  useProperties, useContracts, useInstallments,
+  useMaintenances,
+} from "@/lib/queries";
 import { formatBRL, formatBRLCompact, formatDate } from "@/lib/format";
 import { downloadPdf } from "@/lib/pdf";
 
-export const Route = createFileRoute("/_landlord/landlord/relatorios")({
-  head: () => ({ meta: [{ title: "Relatórios — NEXO Proprietário" }] }),
+export const Route = createFileRoute("/_authenticated/relatorios")({
+  head: () => ({ meta: [{ title: "Relatórios — NEXO" }] }),
   component: LandlordRelatoriosPage,
 });
 
@@ -44,10 +44,10 @@ function inRange(dateStr: string | null | undefined, from: string, to: string) {
 }
 
 function LandlordRelatoriosPage() {
-  const { data: properties = [] } = useLandlordProperties();
-  const { data: contracts = [] } = useLandlordContracts();
-  const { data: installments = [] } = useLandlordInstallments();
-  const { data: maintenances = [] } = useLandlordMaintenances();
+  const { data: properties = [] } = useProperties();
+  const { data: contracts = [] } = useContracts();
+  const { data: installments = [] } = useInstallments();
+  const { data: maintenances = [] } = useMaintenances();
 
   const now = new Date();
   const defaultFrom = new Date(now.getFullYear(), now.getMonth() - 11, 1)
@@ -186,7 +186,7 @@ function LandlordRelatoriosPage() {
 
   async function exportFinanceiroPdf() {
     const lines: string[] = [
-      "Relatório Financeiro — NEXO Proprietário",
+      "Relatório Financeiro — NEXO",
       filtroLabel,
       "",
       `Total recebido no período: ${formatBRL(kpi.totalRecebido)}`,
@@ -210,7 +210,7 @@ function LandlordRelatoriosPage() {
 
   async function exportOperacionalPdf() {
     const lines: string[] = [
-      "Relatório Operacional — NEXO Proprietário",
+      "Relatório Operacional — NEXO",
       filtroLabel,
       "",
       `Total de imóveis: ${kpi.totalImoveis}`,

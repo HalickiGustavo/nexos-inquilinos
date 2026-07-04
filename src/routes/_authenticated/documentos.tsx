@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
-import { useLandlordProperties, useLandlordContracts } from "@/lib/landlord-queries";
+import { useProperties, useContracts } from "@/lib/queries";
 import { useQueryClient } from "@tanstack/react-query";
 import { useConfirm } from "@/components/ui/confirm";
 import { formatDate } from "@/lib/format";
@@ -32,14 +32,14 @@ import {
   useDocumentEvents, useDocuments,
 } from "@/lib/documents";
 
-export const Route = createFileRoute("/_landlord/landlord/documentos")({
-  head: () => ({ meta: [{ title: "Documentos — NEXO Proprietário" }] }),
+export const Route = createFileRoute("/_authenticated/documentos")({
+  head: () => ({ meta: [{ title: "Documentos — NEXO" }] }),
   component: LandlordDocumentosPage,
 });
 
 function LandlordDocumentosPage() {
   const { data: documents = [], isLoading } = useDocuments();
-  const { data: properties = [] } = useLandlordProperties();
+  const { data: properties = [] } = useProperties();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
   const [historyDoc, setHistoryDoc] = useState<any>(null);
@@ -325,8 +325,8 @@ function DocumentCard({
 function DocumentDialog({ existing, onDone }: { existing: any | null; onDone: () => void }) {
   const { user } = useAuth();
   const qc = useQueryClient();
-  const { data: properties = [] } = useLandlordProperties();
-  const { data: contracts = [] } = useLandlordContracts();
+  const { data: properties = [] } = useProperties();
+  const { data: contracts = [] } = useContracts();
 
   const [form, setForm] = useState({
     name: existing?.name ?? "",

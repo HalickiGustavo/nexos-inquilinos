@@ -64,16 +64,17 @@ function Equipe() {
   };
 
   return (
-    <div className="p-6 space-y-4">
-      <header className="flex items-end justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Equipe</h1>
-          <p className="text-sm text-zinc-500">Corretores da imobiliária</p>
-        </div>
-        <Button onClick={() => setOpen(true)} className="bg-primary hover:bg-primary/90">
-          <UserPlus className="size-4 mr-2" /> Convidar Novo Membro
-        </Button>
-      </header>
+    <PageShell>
+      <PageHeader
+        title="Equipe"
+        description="Corretores da imobiliária."
+        actions={
+          <Button onClick={() => setOpen(true)} className="bg-primary hover:bg-primary/90">
+            <UserPlus className="size-4 mr-2" /> Convidar Novo Membro
+          </Button>
+        }
+      />
+
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <MetricCard icon={UsersIcon} label="Membros ativos" value={String((q.data ?? []).filter((m: any) => m.status === "ativo").length)} />

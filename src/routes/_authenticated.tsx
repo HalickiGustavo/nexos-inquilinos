@@ -11,6 +11,9 @@ import {
   Loader2,
   Plug,
   Coins,
+  ClipboardCheck,
+  FolderOpen,
+  BarChart3,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useUserRole } from "@/lib/useUserRole";

@@ -59,16 +59,28 @@ export function PixPaymentDialog({
     return () => { cancelled = true; clearInterval(id); };
   }, [open, installment?.id, installment?.pix_payload, paid, checkPaid, onOpenChange]);
 
-  useEffect(() => { if (!open) setPaid(false); }, [open]);
-
-  if (!installment) return null;
+  useEffect(() => { if (!open) { setPaid(false); setQrFallback(null); } }, [open]);
 
   // Total efetivo (mantém a mesma regra financeira — inclui split se existir).
-  const amount = Number(installment.split_breakdown?.total ?? installment.amount);
-  const pixPayload: string | null = installment.pix_payload ?? null;
-  const qrSrc = installment.pix_qrcode
+  const amount = Number(installment?.split_breakdown?.total ?? installment?.amount ?? 0);
+  const pixPayload: string | null = installment?.pix_payload ?? null;
+  const qrFromServer = installment?.pix_qrcode
     ? `data:image/png;base64,${installment.pix_qrcode}`
     : null;
+  const qrSrc = qrFromServer ?? qrFallback;
+
+  // Fallback: se o servidor não devolveu QR mas temos o payload, geramos
+  // localmente a partir do BRCode (mesmo conteúdo, mesma leitura no banco).
+  useEffect(() => {
+    if (!open || qrFromServer || !pixPayload) return;
+    let cancelled = false;
+    QRCode.toDataURL(pixPayload, { margin: 1, width: 440, errorCorrectionLevel: "M" })
+      .then((url) => { if (!cancelled) setQrFallback(url); })
+      .catch(() => { /* ignora — modo texto ainda funciona */ });
+    return () => { cancelled = true; };
+  }, [open, qrFromServer, pixPayload]);
+
+  if (!installment) return null;
 
   const copy = async () => {
     if (!pixPayload) return;

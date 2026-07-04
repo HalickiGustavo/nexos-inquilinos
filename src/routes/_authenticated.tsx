@@ -39,9 +39,9 @@ const navItems = [
   { to: "/contracts", label: "Contratos", icon: FileText, tour: "nav-contracts" },
   { to: "/financials", label: "Finanças", icon: Wallet, tour: "nav-financials" },
   { to: "/maintenances", label: "Manutenções", icon: Wrench, tour: "nav-maintenances" },
-  { to: "/vistorias", label: "Vistorias", icon: ClipboardCheck },
-  { to: "/documentos", label: "Documentos", icon: FolderOpen },
-  { to: "/relatorios", label: "Relatórios", icon: BarChart3 },
+  { to: "/vistorias", label: "Vistorias", icon: ClipboardCheck, tour: undefined },
+  { to: "/documentos", label: "Documentos", icon: FolderOpen, tour: undefined },
+  { to: "/relatorios", label: "Relatórios", icon: BarChart3, tour: undefined },
   
 ] as const;
 

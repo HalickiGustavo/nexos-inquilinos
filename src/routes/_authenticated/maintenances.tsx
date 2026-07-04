@@ -89,6 +89,8 @@ function MaintenancesPage() {
 function MaintenanceCard({ item }: { item: any }) {
   const invalidate = useInvalidate();
   const confirm = useConfirm();
+  const executionResponsible: "proprietario" | "inquilino" =
+    item.execution_responsible ?? "inquilino";
   return (
     <Card className="p-4 hover:shadow-md transition">
       <div className="flex items-start justify-between gap-2">
@@ -119,6 +121,37 @@ function MaintenanceCard({ item }: { item: any }) {
         {item.scheduled_date && <span className="text-xs text-muted-foreground">{formatDate(item.scheduled_date)}</span>}
       </div>
 
+      <div className="mt-3 flex items-center justify-between gap-2 text-xs">
+        <Label className="text-[11px] text-muted-foreground shrink-0">Executa</Label>
+        <Select
+          value={executionResponsible}
+          onValueChange={async (v) => {
+            const { error } = await supabase
+              .from("maintenances")
+              .update({ execution_responsible: v } as any)
+              .eq("id", item.id);
+            if (error) return toast.error(error.message);
+            toast.success("Responsável pela execução atualizado");
+            await logMaintenanceEvent({
+              maintenanceId: item.id,
+              action: "execution_responsible_set",
+              actorRole: "owner",
+              description: v === "proprietario"
+                ? "Proprietário assumirá a execução da manutenção."
+                : "Inquilino ficará responsável pela execução (fluxo de orçamento).",
+              metadata: { execution_responsible: v },
+            });
+            invalidate(["maintenances"]);
+          }}
+        >
+          <SelectTrigger className="h-7 text-xs w-[140px]"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="proprietario">Proprietário</SelectItem>
+            <SelectItem value="inquilino">Inquilino</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
       <div className="flex gap-2 mt-3">
         <Select
           value={item.status}
@@ -128,6 +161,13 @@ function MaintenanceCard({ item }: { item: any }) {
             const { error } = await supabase.from("maintenances").update(updates).eq("id", item.id);
             if (error) return toast.error(error.message);
             toast.success("Status atualizado");
+            await logMaintenanceEvent({
+              maintenanceId: item.id,
+              action: "status_changed",
+              actorRole: "owner",
+              description: `Status alterado para "${v}".`,
+              metadata: { status: v },
+            });
             invalidate(["maintenances"]);
           }}
         >
@@ -138,6 +178,21 @@ function MaintenanceCard({ item }: { item: any }) {
             <SelectItem value="concluido">Concluído</SelectItem>
           </SelectContent>
         </Select>
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button variant="outline" size="sm" title="Histórico / linha do tempo">
+              <History className="size-3.5" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent className="w-full sm:max-w-md overflow-y-auto">
+            <SheetHeader>
+              <SheetTitle>Histórico — {item.title}</SheetTitle>
+            </SheetHeader>
+            <div className="mt-4">
+              <MaintenanceTimeline maintenanceId={item.id} />
+            </div>
+          </SheetContent>
+        </Sheet>
         {item.tenant_id && (
           <Sheet>
             <SheetTrigger asChild>

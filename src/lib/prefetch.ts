@@ -56,10 +56,11 @@ export function useWarmOwnerCache(enabled: boolean) {
     qc.prefetchQuery({
       queryKey: ["installments"],
       queryFn: async () => {
+        // Mesma projeção enxuta usada em useInstallments para reaproveitar o cache
         const { data, error } = await supabase
           .from("installments")
           .select(
-            "*, contract:contracts(*, property:properties(*), tenant:tenants(*))",
+            "*, contract:contracts(id, property_id, late_fee_percent, daily_interest_percent, property:properties(id, nickname, address), tenant:tenants(id, full_name))",
           )
           .order("due_date", { ascending: true })
           .limit(1000);
@@ -74,7 +75,7 @@ export function useWarmOwnerCache(enabled: boolean) {
         const { data, error } = await supabase
           .from("maintenances")
           .select(
-            "*, property:properties(*), contract:contracts(id, start_date, end_date, rent_amount, active, tenant:tenants(id, full_name))",
+            "*, property:properties(id, nickname, address), contract:contracts(id, start_date, end_date, rent_amount, active, tenant:tenants(id, full_name))",
           )
           .order("created_at", { ascending: false })
           .limit(500);
@@ -83,6 +84,7 @@ export function useWarmOwnerCache(enabled: boolean) {
       },
       ...opts,
     });
+
   }, [enabled, qc]);
 }
 

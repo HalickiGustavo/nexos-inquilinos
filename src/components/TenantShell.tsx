@@ -25,6 +25,7 @@ export function TenantShell() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const { alerts } = useTenantAlerts();
 
   const isActive = (to: string, exact?: boolean) =>
     exact ? pathname === to : pathname === to || pathname.startsWith(to + "/");
@@ -36,7 +37,9 @@ export function TenantShell() {
         <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2 min-w-0">
             <NexoLogo className="h-7 shrink-0" />
+            <AlertsBell alerts={alerts} seeAllHref="/tenant/alertas" />
           </div>
+
           <div className="flex items-center gap-1 sm:gap-2 shrink-0">
             <span className="hidden sm:block text-xs text-muted-foreground truncate max-w-[180px]">
               {user?.email}

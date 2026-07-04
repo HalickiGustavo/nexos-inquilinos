@@ -886,15 +886,26 @@ export type Database = {
           budget_rent_deduction: boolean
           budget_status: string
           completed_date: string | null
+          completion_photo_urls: string[]
           contract_id: string | null
           cost: number
           created_at: string
           description: string | null
           evidence_urls: string[]
           execution_responsible: Database["public"]["Enums"]["maintenance_responsible"]
+          final_notes: string | null
           id: string
+          invoice_urls: string[]
+          payment_applied_installment_id: string | null
+          payment_approved_amount: number | null
+          payment_date: string | null
+          payment_method: string | null
+          payment_notes: string | null
+          payment_paid_amount: number | null
+          payment_receipt_urls: string[]
           property_id: string
           provider_name: string | null
+          provider_phone: string | null
           responsible: Database["public"]["Enums"]["maintenance_responsible"]
           scheduled_date: string | null
           status: Database["public"]["Enums"]["maintenance_status"]
@@ -902,6 +913,7 @@ export type Database = {
           title: string
           updated_at: string
           user_id: string
+          workflow_stage: string | null
         }
         Insert: {
           budget_amount?: number
@@ -911,15 +923,26 @@ export type Database = {
           budget_rent_deduction?: boolean
           budget_status?: string
           completed_date?: string | null
+          completion_photo_urls?: string[]
           contract_id?: string | null
           cost?: number
           created_at?: string
           description?: string | null
           evidence_urls?: string[]
           execution_responsible?: Database["public"]["Enums"]["maintenance_responsible"]
+          final_notes?: string | null
           id?: string
+          invoice_urls?: string[]
+          payment_applied_installment_id?: string | null
+          payment_approved_amount?: number | null
+          payment_date?: string | null
+          payment_method?: string | null
+          payment_notes?: string | null
+          payment_paid_amount?: number | null
+          payment_receipt_urls?: string[]
           property_id: string
           provider_name?: string | null
+          provider_phone?: string | null
           responsible?: Database["public"]["Enums"]["maintenance_responsible"]
           scheduled_date?: string | null
           status?: Database["public"]["Enums"]["maintenance_status"]
@@ -927,6 +950,7 @@ export type Database = {
           title: string
           updated_at?: string
           user_id: string
+          workflow_stage?: string | null
         }
         Update: {
           budget_amount?: number
@@ -936,15 +960,26 @@ export type Database = {
           budget_rent_deduction?: boolean
           budget_status?: string
           completed_date?: string | null
+          completion_photo_urls?: string[]
           contract_id?: string | null
           cost?: number
           created_at?: string
           description?: string | null
           evidence_urls?: string[]
           execution_responsible?: Database["public"]["Enums"]["maintenance_responsible"]
+          final_notes?: string | null
           id?: string
+          invoice_urls?: string[]
+          payment_applied_installment_id?: string | null
+          payment_approved_amount?: number | null
+          payment_date?: string | null
+          payment_method?: string | null
+          payment_notes?: string | null
+          payment_paid_amount?: number | null
+          payment_receipt_urls?: string[]
           property_id?: string
           provider_name?: string | null
+          provider_phone?: string | null
           responsible?: Database["public"]["Enums"]["maintenance_responsible"]
           scheduled_date?: string | null
           status?: Database["public"]["Enums"]["maintenance_status"]
@@ -952,6 +987,7 @@ export type Database = {
           title?: string
           updated_at?: string
           user_id?: string
+          workflow_stage?: string | null
         }
         Relationships: [
           {
@@ -959,6 +995,13 @@ export type Database = {
             columns: ["contract_id"]
             isOneToOne: false
             referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "maintenances_payment_applied_installment_id_fkey"
+            columns: ["payment_applied_installment_id"]
+            isOneToOne: false
+            referencedRelation: "installments"
             referencedColumns: ["id"]
           },
           {

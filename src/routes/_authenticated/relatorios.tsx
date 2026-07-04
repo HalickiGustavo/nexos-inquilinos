@@ -365,23 +365,11 @@ function LandlordRelatoriosPage() {
                 <p className="text-sm text-muted-foreground">Sem gastos no período.</p>
               ) : (
                 <div className="h-64">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={expensesByProperty}
-                        dataKey="value"
-                        nameKey="name"
-                        outerRadius={90}
-                        label={(e) => e.name}
-                      >
-                        {expensesByProperty.map((_, i) => (
-                          <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip formatter={(v: number) => formatBRL(v)} />
-                    </PieChart>
-                  </ResponsiveContainer>
+                  <Suspense fallback={<ChartFallback />}>
+                    <ExpensesPieChart data={expensesByProperty} />
+                  </Suspense>
                 </div>
+
               )}
             </Card>
 
@@ -431,16 +419,11 @@ function LandlordRelatoriosPage() {
           <Card className="p-4">
             <h3 className="font-semibold mb-4">Ocupação x contratos ativos</h3>
             <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={monthlyRevenue}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis dataKey="label" fontSize={12} />
-                  <YAxis fontSize={12} />
-                  <Tooltip />
-                  <Line type="monotone" dataKey="recebido" stroke={CHART_COLORS[0]} name="Recebido" />
-                </LineChart>
-              </ResponsiveContainer>
+              <Suspense fallback={<ChartFallback />}>
+                <RevenueLineChart data={monthlyRevenue} />
+              </Suspense>
             </div>
+
           </Card>
 
           <Card className="p-4">

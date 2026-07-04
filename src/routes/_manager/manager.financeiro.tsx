@@ -24,11 +24,11 @@ export const Route = createFileRoute("/_manager/manager/financeiro")({
 
 function Financeiro() {
   return (
-    <div className="p-6 space-y-4">
-      <header>
-        <h1 className="text-2xl font-bold">Financeiro</h1>
-        <p className="text-sm text-zinc-500">Recebimentos da imobiliária e repasses aos proprietários</p>
-      </header>
+    <PageShell>
+      <PageHeader
+        title="Financeiro"
+        description="Recebimentos da imobiliária e repasses aos proprietários."
+      />
       <Tabs defaultValue="recebimentos">
         <TabsList>
           <TabsTrigger value="recebimentos">Recebimentos</TabsTrigger>
@@ -37,7 +37,7 @@ function Financeiro() {
         <TabsContent value="recebimentos"><Recebimentos /></TabsContent>
         <TabsContent value="repasses"><Repasses /></TabsContent>
       </Tabs>
-    </div>
+    </PageShell>
   );
 }
 

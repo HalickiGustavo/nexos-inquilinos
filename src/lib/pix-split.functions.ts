@@ -45,6 +45,56 @@ function toStarkUtcDue(date: Date) {
   return date.toISOString().replace(/\.\d{3}Z$/, "+00:00");
 }
 
+// Stark exige CPF/CNPJ VÁLIDO (dígito verificador correto).
+// Um documento com 11/14 dígitos porém checksum errado retorna
+// "invalid tax id" da API — motivo comum do PIX não ser gerado.
+function isValidCPF(cpf: string) {
+  if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
+  const calc = (base: string, factor: number) => {
+    let sum = 0;
+    for (const c of base) sum += parseInt(c, 10) * factor--;
+    const r = (sum * 10) % 11;
+    return r === 10 ? 0 : r;
+  };
+  const d1 = calc(cpf.slice(0, 9), 10);
+  const d2 = calc(cpf.slice(0, 10), 11);
+  return d1 === +cpf[9] && d2 === +cpf[10];
+}
+
+function isValidCNPJ(cnpj: string) {
+  if (cnpj.length !== 14 || /^(\d)\1{13}$/.test(cnpj)) return false;
+  const calc = (base: string, weights: number[]) => {
+    const sum = base.split("").reduce((acc, d, i) => acc + parseInt(d, 10) * weights[i], 0);
+    const r = sum % 11;
+    return r < 2 ? 0 : 11 - r;
+  };
+  const w1 = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+  const w2 = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+  const d1 = calc(cnpj.slice(0, 12), w1);
+  const d2 = calc(cnpj.slice(0, 13), w2);
+  return d1 === +cnpj[12] && d2 === +cnpj[13];
+}
+
+function validateTaxId(doc: string): string | null {
+  if (doc.length === 11) return isValidCPF(doc) ? null : "CPF inválido — verifique os dígitos.";
+  if (doc.length === 14) return isValidCNPJ(doc) ? null : "CNPJ inválido — verifique os dígitos.";
+  return "CPF/CNPJ com quantidade de dígitos inválida (esperado 11 para CPF ou 14 para CNPJ).";
+}
+
+// Nome do pagador para Stark: mínimo 2 caracteres, remove caracteres
+// especiais problemáticos e garante ao menos uma letra.
+function sanitizePayerName(raw: string): string | null {
+  const cleaned = raw
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^A-Za-z0-9 .'-]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 100);
+  if (cleaned.length < 2 || !/[A-Za-z]/.test(cleaned)) return null;
+  return cleaned;
+}
+
 export const generateTripleSplitPix = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => inputSchema.parse(d))
@@ -104,10 +154,14 @@ export const generateTripleSplitPix = createServerFn({ method: "POST" })
       const pct = Number(property?.default_management_fee_percent ?? 10);
 
       const payerDoc = normalizeDoc(tenant?.document);
-      if (payerDoc.length < 11) {
-        return { ok: false, error: "Inquilino sem CPF/CNPJ cadastrado — necessário para emitir Invoice PIX." };
+      const docError = validateTaxId(payerDoc);
+      if (docError) {
+        return { ok: false, error: `Inquilino sem CPF/CNPJ válido: ${docError} Atualize o cadastro do inquilino antes de gerar o PIX.` };
       }
-      const payerName = String(tenant?.full_name ?? "Inquilino").slice(0, 100);
+      const payerName = sanitizePayerName(String(tenant?.full_name ?? ""));
+      if (!payerName) {
+        return { ok: false, error: "Nome do inquilino é obrigatório (mínimo 2 letras) para emitir a cobrança PIX." };
+      }
 
       const [{ data: platform }, { data: agency }, { data: ownerProfile }] = await Promise.all([
         supabaseAdmin.from("platform_settings").select("nexo_platform_pix_key, nexo_flat_fee").limit(1).maybeSingle(),

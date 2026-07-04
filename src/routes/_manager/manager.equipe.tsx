@@ -138,7 +138,7 @@ function Equipe() {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
+    </PageShell>
   );
 }
 

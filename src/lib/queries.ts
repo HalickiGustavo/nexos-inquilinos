@@ -63,9 +63,13 @@ export function useInstallments() {
   return useQuery({
     queryKey: ["installments"],
     queryFn: async () => {
+      // Projeção enxuta: só os campos do contrato/imóvel/inquilino que a UI realmente consome.
+      // Antes: contract:contracts(*, property:properties(*), tenant:tenants(*)) — payload muito pesado.
       const { data, error } = await supabase
         .from("installments")
-        .select("*, contract:contracts(*, property:properties(*), tenant:tenants(*))")
+        .select(
+          "*, contract:contracts(id, property_id, late_fee_percent, daily_interest_percent, property:properties(id, nickname, address), tenant:tenants(id, full_name))",
+        )
         .order("due_date", { ascending: true })
         .limit(1000);
       if (error) throw error;
@@ -78,9 +82,12 @@ export function useMaintenances() {
   return useQuery({
     queryKey: ["maintenances"],
     queryFn: async () => {
+      // property:properties(*) reduzido para os campos exibidos na listagem.
       const { data, error } = await supabase
         .from("maintenances")
-        .select("*, property:properties(*), contract:contracts(id, start_date, end_date, rent_amount, active, tenant:tenants(id, full_name))")
+        .select(
+          "*, property:properties(id, nickname, address), contract:contracts(id, start_date, end_date, rent_amount, active, tenant:tenants(id, full_name))",
+        )
         .order("created_at", { ascending: false })
         .limit(500);
       if (error) throw error;
@@ -88,6 +95,7 @@ export function useMaintenances() {
     },
   });
 }
+
 
 
 export function useInvalidate() {

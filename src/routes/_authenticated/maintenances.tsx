@@ -21,6 +21,12 @@ import { EvidenceGrid } from "@/components/EvidenceUploader";
 import { formatBRL, formatDate, parseNumber } from "@/lib/format";
 import { useConfirm } from "@/components/ui/confirm";
 import { logMaintenanceEvent } from "@/lib/maintenance-events";
+import {
+  OwnerScheduleDialog,
+  OwnerCompleteDialog,
+  OwnerSettlePaymentDialog,
+} from "@/components/MaintenanceFlowDialogs";
+import { EvidenceGrid as EvidenceGridImg } from "@/components/EvidenceUploader";
 
 export const Route = createFileRoute("/_authenticated/maintenances")({
   head: () => ({ meta: [{ title: "Manutenções — Nexo" }] }),

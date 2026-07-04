@@ -87,10 +87,10 @@ function LandlordRelatoriosPage() {
     const yearEnd = new Date(now.getFullYear(), 11, 31).toISOString().slice(0, 10);
 
     const receitaMes = installments
-      .filter((i: any) => i.status === "pago" && inRange(i.paid_at?.slice(0, 10) ?? i.due_date, monthStart, monthEnd))
+      .filter((i: any) => i.status === "pago" && inRange(i.payment_date?.slice(0, 10) ?? i.due_date, monthStart, monthEnd))
       .reduce((s: number, i: any) => s + Number(i.paid_amount || i.amount || 0), 0);
     const receitaAno = installments
-      .filter((i: any) => i.status === "pago" && inRange(i.paid_at?.slice(0, 10) ?? i.due_date, yearStart, yearEnd))
+      .filter((i: any) => i.status === "pago" && inRange(i.payment_date?.slice(0, 10) ?? i.due_date, yearStart, yearEnd))
       .reduce((s: number, i: any) => s + Number(i.paid_amount || i.amount || 0), 0);
 
     const totalRecebido = filteredInstallments
@@ -101,7 +101,7 @@ function LandlordRelatoriosPage() {
       .reduce((s: number, i: any) => s + Number(i.amount || 0), 0);
 
     const gastoManutencao = filteredMaintenances
-      .reduce((s: number, m: any) => s + Number(m.payment_paid_amount || m.approved_budget || 0), 0);
+      .reduce((s: number, m: any) => s + Number(m.payment_paid_amount || m.budget_amount || 0), 0);
 
     const contratosAtivos = contracts.filter((c: any) => c.active).length;
     const em60Dias = new Date(now); em60Dias.setDate(em60Dias.getDate() + 60);
@@ -134,7 +134,7 @@ function LandlordRelatoriosPage() {
     const byKey = new Map(months.map((m) => [m.key, m]));
     for (const i of installments) {
       if (propertyId !== "all" && i.contract?.property?.id !== propertyId) continue;
-      const dateStr = (i.status === "pago" && i.paid_at ? i.paid_at : i.due_date)?.slice(0, 7);
+      const dateStr = (i.status === "pago" && i.payment_date ? i.payment_date : i.due_date)?.slice(0, 7);
       const bucket = byKey.get(dateStr);
       if (!bucket) continue;
       if (i.status === "pago") bucket.recebido += Number(i.paid_amount || i.amount || 0);
@@ -148,7 +148,7 @@ function LandlordRelatoriosPage() {
     const map = new Map<string, { name: string; value: number }>();
     for (const m of filteredMaintenances) {
       const name = m.property?.nickname ?? "Sem imóvel";
-      const value = Number(m.payment_paid_amount || m.approved_budget || 0);
+      const value = Number(m.payment_paid_amount || m.budget_amount || 0);
       if (value === 0) continue;
       const cur = map.get(name);
       if (cur) cur.value += value;
@@ -167,7 +167,7 @@ function LandlordRelatoriosPage() {
           .reduce((s: number, i: any) => s + Number(i.paid_amount || i.amount || 0), 0);
         const gasto = filteredMaintenances
           .filter((m: any) => m.property?.id === p.id)
-          .reduce((s: number, m: any) => s + Number(m.payment_paid_amount || m.approved_budget || 0), 0);
+          .reduce((s: number, m: any) => s + Number(m.payment_paid_amount || m.budget_amount || 0), 0);
         return { id: p.id, nickname: p.nickname, recebido, gasto, liquido: recebido - gasto };
       })
       .sort((a, b) => b.liquido - a.liquido);
@@ -220,7 +220,7 @@ function LandlordRelatoriosPage() {
       "",
       "Manutenções detalhadas:",
       ...filteredMaintenances.slice(0, 100).map((m: any) => {
-        const val = Number(m.payment_paid_amount || m.approved_budget || 0);
+        const val = Number(m.payment_paid_amount || m.budget_amount || 0);
         return `- ${formatDate(m.created_at?.slice(0, 10))} • ${m.property?.nickname ?? "—"} • ${m.title ?? "—"} • ${m.status} • ${formatBRL(val)}`;
       }),
     ];
@@ -236,7 +236,7 @@ function LandlordRelatoriosPage() {
         ["Data vencimento", "Data pagamento", "Imóvel", "Inquilino", "Valor", "Pago", "Status"],
         ...filteredInstallments.map((i: any) => [
           i.due_date ?? "",
-          i.paid_at?.slice(0, 10) ?? "",
+          i.payment_date?.slice(0, 10) ?? "",
           i.contract?.property?.nickname ?? "",
           i.contract?.tenant?.full_name ?? "",
           String(i.amount ?? ""),
@@ -255,7 +255,7 @@ function LandlordRelatoriosPage() {
           m.category ?? "",
           m.status ?? "",
           m.execution_responsible ?? "",
-          String(m.approved_budget ?? ""),
+          String(m.budget_amount ?? ""),
           String(m.payment_paid_amount ?? ""),
         ]),
       ];
@@ -471,7 +471,7 @@ function LandlordRelatoriosPage() {
                       <td className="py-2 pr-2 truncate max-w-[200px]">{m.title ?? "—"}</td>
                       <td className="py-2 pr-2 capitalize">{m.status}</td>
                       <td className="py-2 text-right">
-                        {formatBRL(Number(m.payment_paid_amount || m.approved_budget || 0))}
+                        {formatBRL(Number(m.payment_paid_amount || m.budget_amount || 0))}
                       </td>
                     </tr>
                   ))}

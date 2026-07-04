@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { lazy, Suspense, useMemo, useState } from "react";
 import {
   BarChart3, Download, FileText, Home, Wallet, TrendingUp, Wrench,
   CheckCircle2, AlertCircle, Printer,
@@ -14,29 +14,29 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import {
-  ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid,
-  PieChart, Pie, Cell, Legend, LineChart, Line,
-} from "recharts";
-import {
   useProperties, useContracts, useInstallments,
   useMaintenances,
 } from "@/lib/queries";
-import { formatBRL, formatBRLCompact, formatDate } from "@/lib/format";
+import { formatBRL, formatDate } from "@/lib/format";
 import { downloadPdf } from "@/lib/pdf";
+
+const RevenueBarChart = lazy(() =>
+  import("@/components/charts/ReportsCharts").then((m) => ({ default: m.RevenueBarChart })),
+);
+const ExpensesPieChart = lazy(() =>
+  import("@/components/charts/ReportsCharts").then((m) => ({ default: m.ExpensesPieChart })),
+);
+const RevenueLineChart = lazy(() =>
+  import("@/components/charts/ReportsCharts").then((m) => ({ default: m.RevenueLineChart })),
+);
+
+const ChartFallback = () => <div className="h-full w-full animate-pulse rounded-md bg-muted/40" />;
 
 export const Route = createFileRoute("/_authenticated/relatorios")({
   head: () => ({ meta: [{ title: "Relatórios — NEXO" }] }),
   component: LandlordRelatoriosPage,
 });
 
-const CHART_COLORS = [
-  "hsl(var(--primary))",
-  "hsl(var(--chart-2, 210 70% 50%))",
-  "hsl(var(--chart-3, 45 90% 55%))",
-  "hsl(var(--chart-4, 340 75% 55%))",
-  "hsl(var(--chart-5, 160 60% 45%))",
-  "hsl(var(--chart-6, 280 65% 60%))",
-];
 
 function inRange(dateStr: string | null | undefined, from: string, to: string) {
   if (!dateStr) return false;

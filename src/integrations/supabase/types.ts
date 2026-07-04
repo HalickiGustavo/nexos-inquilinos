@@ -750,6 +750,50 @@ export type Database = {
         }
         Relationships: []
       }
+      maintenance_events: {
+        Row: {
+          action: string
+          actor_role: string | null
+          created_at: string
+          description: string | null
+          id: string
+          maintenance_id: string
+          metadata: Json
+          user_email: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          actor_role?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          maintenance_id: string
+          metadata?: Json
+          user_email?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          actor_role?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          maintenance_id?: string
+          metadata?: Json
+          user_email?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "maintenance_events_maintenance_id_fkey"
+            columns: ["maintenance_id"]
+            isOneToOne: false
+            referencedRelation: "maintenances"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       maintenance_messages: {
         Row: {
           attachment_urls: string[]
@@ -847,6 +891,7 @@ export type Database = {
           created_at: string
           description: string | null
           evidence_urls: string[]
+          execution_responsible: Database["public"]["Enums"]["maintenance_responsible"]
           id: string
           property_id: string
           provider_name: string | null
@@ -871,6 +916,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           evidence_urls?: string[]
+          execution_responsible?: Database["public"]["Enums"]["maintenance_responsible"]
           id?: string
           property_id: string
           provider_name?: string | null
@@ -895,6 +941,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           evidence_urls?: string[]
+          execution_responsible?: Database["public"]["Enums"]["maintenance_responsible"]
           id?: string
           property_id?: string
           provider_name?: string | null

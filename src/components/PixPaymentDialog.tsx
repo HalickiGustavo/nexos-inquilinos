@@ -105,8 +105,8 @@ export function PixPaymentDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[92vw] sm:max-w-[520px] p-0 gap-0 overflow-hidden border-border">
-        <div className="p-5 sm:p-6">
+      <DialogContent className="w-[92vw] sm:max-w-[520px] p-0 gap-0 border-border block">
+        <div className="p-5 sm:p-6 min-w-0 w-full max-w-full">
           <DialogHeader className="space-y-1 text-left">
             <DialogTitle className="text-base font-semibold">Pagamento da parcela</DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">

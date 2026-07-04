@@ -1,7 +1,7 @@
 import { createFileRoute, Outlet, useNavigate, useRouterState, Link } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { LayoutDashboard, Wallet, Wrench, Coins, LogOut, Loader2 } from "lucide-react";
+import { LayoutDashboard, Wallet, Wrench, LogOut, Loader2, ClipboardCheck } from "lucide-react";
 import { NexoLogo } from "@/components/NexoLogo";
 import { InstallPwaButton } from "@/components/InstallPwaButton";
 import { useAuth } from "@/lib/auth";

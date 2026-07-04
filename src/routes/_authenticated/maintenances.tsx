@@ -21,6 +21,11 @@ import { EvidenceGrid } from "@/components/EvidenceUploader";
 import { formatBRL, formatDate, parseNumber } from "@/lib/format";
 import { useConfirm } from "@/components/ui/confirm";
 import { logMaintenanceEvent } from "@/lib/maintenance-events";
+import {
+  OwnerScheduleDialog,
+  OwnerCompleteDialog,
+  OwnerSettlePaymentDialog,
+} from "@/components/MaintenanceFlowDialogs";
 
 export const Route = createFileRoute("/_authenticated/maintenances")({
   head: () => ({ meta: [{ title: "Manutenções — Nexo" }] }),
@@ -226,8 +231,55 @@ function MaintenanceCard({ item }: { item: any }) {
           <Trash2 className="size-3.5 text-destructive" />
         </Button>
       </div>
-      <MaintenanceBudgetPanel item={item} />
+      {executionResponsible === "proprietario" ? (
+        <OwnerExecutionPanel item={item} />
+      ) : (
+        <>
+          <MaintenanceBudgetPanel item={item} />
+          {item.budget_status === "aprovado" && item.status !== "concluido" && (
+            <div className="mt-3 pt-3 border-t flex flex-wrap gap-2">
+              <OwnerSettlePaymentDialog item={item} />
+            </div>
+          )}
+        </>
+      )}
     </Card>
+  );
+}
+
+function OwnerExecutionPanel({ item }: { item: any }) {
+  const done = item.status === "concluido";
+  return (
+    <div className="mt-3 pt-3 border-t space-y-3">
+      <div className="flex items-center gap-1.5 text-xs">
+        <span className="text-muted-foreground">Execução:</span>
+        <Badge variant="outline" className="text-[10px]">Proprietário</Badge>
+        {item.provider_name && (
+          <span className="text-muted-foreground">· {item.provider_name}</span>
+        )}
+      </div>
+      {(item.invoice_urls?.length ?? 0) > 0 && (
+        <div className="space-y-1">
+          <p className="text-[11px] text-muted-foreground">Nota fiscal</p>
+          <EvidenceGrid paths={item.invoice_urls} />
+        </div>
+      )}
+      {(item.completion_photo_urls?.length ?? 0) > 0 && (
+        <div className="space-y-1">
+          <p className="text-[11px] text-muted-foreground">Fotos do serviço</p>
+          <EvidenceGrid paths={item.completion_photo_urls} />
+        </div>
+      )}
+      {item.final_notes && (
+        <p className="text-xs text-muted-foreground italic">"{item.final_notes}"</p>
+      )}
+      {!done && (
+        <div className="flex flex-wrap gap-2">
+          <OwnerScheduleDialog item={item} />
+          <OwnerCompleteDialog item={item} />
+        </div>
+      )}
+    </div>
   );
 }
 

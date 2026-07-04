@@ -17,7 +17,7 @@ import {
   useProperties, useContracts, useInstallments,
   useMaintenances,
 } from "@/lib/queries";
-import { formatBRL, formatDate } from "@/lib/format";
+import { formatBRL, formatBRLCompact, formatDate } from "@/lib/format";
 import { downloadPdf } from "@/lib/pdf";
 
 const RevenueBarChart = lazy(() =>
@@ -351,18 +351,11 @@ function LandlordRelatoriosPage() {
           <Card className="p-4">
             <h3 className="font-semibold mb-4">Receita mensal (últimos 12 meses)</h3>
             <div className="h-72">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={monthlyRevenue}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis dataKey="label" fontSize={12} />
-                  <YAxis fontSize={12} tickFormatter={(v) => formatBRLCompact(v)} width={80} />
-                  <Tooltip formatter={(v: number) => formatBRL(v)} />
-                  <Legend />
-                  <Bar dataKey="recebido" name="Recebido" fill={CHART_COLORS[0]} radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="pendente" name="Pendente" fill={CHART_COLORS[2]} radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+              <Suspense fallback={<ChartFallback />}>
+                <RevenueBarChart data={monthlyRevenue} />
+              </Suspense>
             </div>
+
           </Card>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

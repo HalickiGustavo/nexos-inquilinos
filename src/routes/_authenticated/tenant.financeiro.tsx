@@ -243,10 +243,14 @@ function TenantFinanceiro() {
                         <QrCode className="size-5 mr-2" /> Pagar Parcela — {formatBRL(totalDue)}
                       </Button>
                       {i.boleto_url ? (
-                        <Button variant="outline" className="w-full" asChild>
-                          <a href={i.boleto_url} target="_blank" rel="noreferrer">
-                            <Download className="size-4 mr-2" /> Visualizar Boleto PDF
-                          </a>
+                        <Button
+                          variant="outline"
+                          className="w-full"
+                          disabled={boletoLoadingId === i.id}
+                          onClick={() => openBoletoPdf(i.id)}
+                        >
+                          <Download className="size-4 mr-2" />
+                          {boletoLoadingId === i.id ? "Abrindo boleto..." : "Visualizar Boleto PDF"}
                         </Button>
                       ) : (
                         <p className="text-xs text-muted-foreground text-center">

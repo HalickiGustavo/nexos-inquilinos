@@ -1,13 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { QrCode, Wallet, FileText, Wrench, Bell, MapPin, ArrowUpRight, CheckCircle2 } from "lucide-react";
 
-import { useServerFn } from "@tanstack/react-start";
-import { useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PixPaymentDialog } from "@/components/PixPaymentDialog";
-import { generateTripleSplitPix } from "@/lib/pix-split.functions";
+import { usePixPayment } from "@/hooks/usePixPayment";
 import {
   useCurrentTenant,
   useTenantActiveContract,
@@ -52,40 +50,9 @@ function TenantHome() {
 
   const openCount = maintenances.filter((m: any) => m.status !== "concluido").length;
 
-  const tripleSplit = useServerFn(generateTripleSplitPix);
-  const queryClient = useQueryClient();
-  const [pixFor, setPixFor] = useState<any | null>(null);
-  const [pixLoading, setPixLoading] = useState(false);
-  const [pixError, setPixError] = useState<string | null>(null);
-  const [pixDebug, setPixDebug] = useState<unknown | null>(null);
-
-  const openPix = async (i: any) => {
-    setPixFor(i);
-    setPixError(null);
-    setPixDebug(null);
-    if (i.pix_qrcode && i.pix_payload) return;
-    setPixLoading(true);
-    try {
-      const res: any = await tripleSplit({ data: { installmentId: i.id } });
-      if (!res?.ok) {
-        setPixError(res?.error ?? "Não foi possível gerar o PIX.");
-        setPixDebug(res?.debug ?? null);
-        return;
-      }
-      setPixFor({
-        ...i,
-        pix_qrcode: res.qrCodeBase64,
-        pix_payload: res.pixPayload,
-        split_breakdown: res.breakdown,
-      });
-      queryClient.invalidateQueries({ queryKey: ["tenant-installments"] });
-    } catch (e: any) {
-      setPixError(e?.message ?? "Erro ao gerar PIX");
-      setPixDebug({ at: new Date().toISOString(), source: "client", message: e?.message ?? String(e), name: e?.name ?? null });
-    } finally {
-      setPixLoading(false);
-    }
-  };
+  const { open: openPix, dialogProps: pixDialogProps } = usePixPayment({
+    invalidateKeys: [["tenant-installments"]],
+  });
 
   const firstName = tenant?.full_name ? tenant.full_name.split(" ")[0] : "";
   const statusLabel = !upcoming

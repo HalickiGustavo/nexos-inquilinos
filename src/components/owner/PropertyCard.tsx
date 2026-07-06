@@ -1,5 +1,5 @@
 import { memo, useMemo } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import {
   Building2,
   Pencil,
@@ -72,6 +72,7 @@ function PropertyCardImpl({
   const p = data.property;
   const invalidate = useInvalidate();
   const confirm = useConfirm();
+  const navigate = useNavigate();
 
   const paymentLabel = useMemo(() => {
     switch (data.paymentHealth) {
@@ -101,8 +102,17 @@ function PropertyCardImpl({
     invalidate(["properties"]);
   };
 
+  const openDetail = (e: React.MouseEvent) => {
+    const target = e.target as HTMLElement;
+    if (target.closest("a,button,[role='menu'],[role='menuitem']")) return;
+    navigate({ to: "/properties/$id", params: { id: p.id } });
+  };
+
   return (
-    <Card className="p-5 flex flex-col gap-4 hover:shadow-md transition group h-full">
+    <Card
+      onClick={openDetail}
+      className="p-5 flex flex-col gap-4 hover:shadow-md transition group h-full cursor-pointer"
+    >
       <div className="flex items-start justify-between gap-2 min-w-0">
         <Link
           to="/properties/$id"

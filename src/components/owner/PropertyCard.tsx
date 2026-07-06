@@ -73,7 +73,7 @@ function PropertyCardImpl({
   const p = data.property;
   const invalidate = useInvalidate();
   const confirm = useConfirm();
-  const navigate = useNavigate();
+  const [detailOpen, setDetailOpen] = useState(false);
 
   const paymentLabel = useMemo(() => {
     switch (data.paymentHealth) {

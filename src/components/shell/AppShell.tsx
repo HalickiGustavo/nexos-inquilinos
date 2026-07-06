@@ -229,7 +229,7 @@ export function AppShell({
         <div className="md:hidden sticky top-0 z-40 bg-card border-b border-border shadow-sm">
           <div className="flex items-center justify-between px-4 py-3 gap-2">
             <Link to={brand.to as any} className="flex items-center">
-              <NexoLogo className="h-8" alt="NEXO" />
+              <NexoLogo className={mobileLogoClass} alt="NEXO" />
             </Link>
             <div className="flex items-center gap-1">
               {alerts && (

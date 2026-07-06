@@ -371,14 +371,16 @@ function StepCredentials({
   const strength = useMemo(() => scorePassword(form.password), [form.password]);
   const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email);
   const matches = form.password.length > 0 && form.password === form.confirm;
-  const canNext = emailOk && strength.valid && matches && !!form.captchaToken;
   const fetchSiteKey = useServerFn(getRecaptchaSiteKey);
   const { data: siteKeyData } = useQuery({
     queryKey: ["recaptcha-site-key"],
     queryFn: () => fetchSiteKey(),
     staleTime: Infinity,
   });
-  const recaptchaSiteKey = siteKeyData?.siteKey;
+  const recaptchaSiteKey = siteKeyData?.siteKey ?? null;
+  const recaptchaEnabled = siteKeyData?.enabled ?? true;
+  const canNext =
+    emailOk && strength.valid && matches && (!recaptchaEnabled || !!form.captchaToken);
 
 
   return (
@@ -438,25 +440,26 @@ function StepCredentials({
         )}
       </Field>
 
-      <div className="flex justify-center pt-2">
-        <div className="w-[237px] h-[61px] sm:w-[304px] sm:h-[78px] max-w-full rounded-md overflow-hidden ring-1 ring-zinc-800">
-          <div className="origin-top-left scale-[0.78] sm:scale-100 w-[304px] h-[78px]">
-            {recaptchaSiteKey ? (
-              <ReCAPTCHA
-                ref={captchaRef}
-                sitekey={recaptchaSiteKey}
-                theme="dark"
-                onChange={(token) => update("captchaToken", token)}
-                onExpired={() => update("captchaToken", null)}
-                onErrored={() => update("captchaToken", null)}
-              />
-            ) : (
-              <div className="w-[304px] h-[78px] bg-muted animate-pulse rounded-md" />
-            )}
+      {recaptchaEnabled && (
+        <div className="flex justify-center pt-2">
+          <div className="w-[237px] h-[61px] sm:w-[304px] sm:h-[78px] max-w-full rounded-md overflow-hidden ring-1 ring-zinc-800">
+            <div className="origin-top-left scale-[0.78] sm:scale-100 w-[304px] h-[78px]">
+              {recaptchaSiteKey ? (
+                <ReCAPTCHA
+                  ref={captchaRef}
+                  sitekey={recaptchaSiteKey}
+                  theme="dark"
+                  onChange={(token) => update("captchaToken", token)}
+                  onExpired={() => update("captchaToken", null)}
+                  onErrored={() => update("captchaToken", null)}
+                />
+              ) : (
+                <div className="w-[304px] h-[78px] bg-muted animate-pulse rounded-md" />
+              )}
+            </div>
           </div>
-
         </div>
-      </div>
+      )}
 
       <NextButton disabled={!canNext}>Próximo</NextButton>
     </form>

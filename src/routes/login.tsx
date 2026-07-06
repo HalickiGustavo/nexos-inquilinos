@@ -153,17 +153,18 @@ function SignInForm() {
     queryFn: () => fetchSiteKey(),
     staleTime: Infinity,
   });
-  const recaptchaSiteKey = siteKeyData?.siteKey;
+  const recaptchaSiteKey = siteKeyData?.siteKey ?? null;
+  const recaptchaEnabled = siteKeyData?.enabled ?? true;
 
-
-  const canSubmit = !!email && !!password && !!captchaToken && !busy;
+  const canSubmit =
+    !!email && !!password && (!recaptchaEnabled || !!captchaToken) && !busy;
 
   return (
     <form
       className="space-y-4"
       onSubmit={async (e) => {
         e.preventDefault();
-        if (!captchaToken) {
+        if (recaptchaEnabled && !captchaToken) {
           toast.error("Por favor, complete a verificação reCAPTCHA.");
           return;
         }
@@ -171,7 +172,7 @@ function SignInForm() {
         const { error } = await supabase.auth.signInWithPassword({
           email,
           password,
-          options: { captchaToken },
+          options: recaptchaEnabled && captchaToken ? { captchaToken } : undefined,
         });
         if (error) {
           setBusy(false);
@@ -223,27 +224,28 @@ function SignInForm() {
         <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
       </div>
 
-      <div className="flex justify-center pt-1 w-full">
-        <div className="w-[237px] h-[61px] sm:w-[304px] sm:h-[78px] max-w-full rounded-md overflow-hidden ring-1 ring-border">
-          <ClientOnly fallback={<div className="w-[237px] h-[61px] sm:w-[304px] sm:h-[78px] bg-muted animate-pulse rounded-md" />}>
-            <div className="origin-top-left scale-[0.78] sm:scale-100 w-[304px] h-[78px]">
-              {recaptchaSiteKey ? (
-                <ReCAPTCHA
-                  ref={captchaRef}
-                  sitekey={recaptchaSiteKey}
-                  theme="dark"
-                  onChange={(token) => setCaptchaToken(token)}
-                  onExpired={() => setCaptchaToken(null)}
-                  onErrored={() => setCaptchaToken(null)}
-                />
-              ) : (
-                <div className="w-[304px] h-[78px] bg-muted animate-pulse rounded-md" />
-              )}
-            </div>
-          </ClientOnly>
-
+      {recaptchaEnabled && (
+        <div className="flex justify-center pt-1 w-full">
+          <div className="w-[237px] h-[61px] sm:w-[304px] sm:h-[78px] max-w-full rounded-md overflow-hidden ring-1 ring-border">
+            <ClientOnly fallback={<div className="w-[237px] h-[61px] sm:w-[304px] sm:h-[78px] bg-muted animate-pulse rounded-md" />}>
+              <div className="origin-top-left scale-[0.78] sm:scale-100 w-[304px] h-[78px]">
+                {recaptchaSiteKey ? (
+                  <ReCAPTCHA
+                    ref={captchaRef}
+                    sitekey={recaptchaSiteKey}
+                    theme="dark"
+                    onChange={(token) => setCaptchaToken(token)}
+                    onExpired={() => setCaptchaToken(null)}
+                    onErrored={() => setCaptchaToken(null)}
+                  />
+                ) : (
+                  <div className="w-[304px] h-[78px] bg-muted animate-pulse rounded-md" />
+                )}
+              </div>
+            </ClientOnly>
+          </div>
         </div>
-      </div>
+      )}
 
       <Button type="submit" className="w-full" disabled={!canSubmit}>
         {busy && <Loader2 className="size-4 animate-spin mr-2" />}

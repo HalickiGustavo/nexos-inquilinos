@@ -145,9 +145,12 @@ function PropertyCardImpl({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem onClick={() => setDetailOpen(true)}>
+                <Building2 className="size-4 mr-2" /> Detalhes rápidos
+              </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Link to="/properties/$id" params={{ id: p.id }}>
-                  <Building2 className="size-4 mr-2" /> Ver imóvel
+                  <ArrowUpRight className="size-4 mr-2" /> Página completa
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>

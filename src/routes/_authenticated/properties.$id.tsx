@@ -128,9 +128,9 @@ function PropertyDetailPage() {
     }
 
     const openMaint = propMaint.filter(
-      (m) => m.status !== "concluida" && m.status !== "cancelada",
+      (m) => m.status !== "concluido",
     );
-    const doneMaint = propMaint.filter((m) => m.status === "concluida");
+    const doneMaint = propMaint.filter((m) => m.status === "concluido");
     const maintSpend = propMaint.reduce(
       (s, m) => s + Number(m.payment_paid_amount || m.cost || 0),
       0,

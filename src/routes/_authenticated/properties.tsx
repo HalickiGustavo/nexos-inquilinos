@@ -101,7 +101,7 @@ function PropertiesPage() {
     const openMaintByProp = new Map<string, number>();
     for (const m of maintenances as any[]) {
       if (!m.property_id) continue;
-      if (m.status !== "concluida" && m.status !== "cancelada") {
+      if (m.status !== "concluido") {
         openMaintByProp.set(
           m.property_id,
           (openMaintByProp.get(m.property_id) || 0) + 1,

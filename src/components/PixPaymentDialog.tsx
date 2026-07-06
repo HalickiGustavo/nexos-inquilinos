@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { formatBRL, formatDate } from "@/lib/format";
 import { checkPixPayment } from "@/lib/pix-split.functions";
+import { downloadBoletoPdf } from "@/lib/boleto-download.functions";
 
 /**
  * Modal de pagamento — PIX + Boleto (abas), compacto, sem scroll.
@@ -31,10 +32,12 @@ export function PixPaymentDialog({
 }) {
   const [copying, setCopying] = useState(false);
   const [copyingBoleto, setCopyingBoleto] = useState(false);
+  const [downloadingBoleto, setDownloadingBoleto] = useState(false);
   const [paid, setPaid] = useState(false);
   const [qrFallback, setQrFallback] = useState<string | null>(null);
   const [tab, setTab] = useState<"pix" | "boleto">("pix");
   const checkPaid = useServerFn(checkPixPayment);
+  const fetchBoleto = useServerFn(downloadBoletoPdf);
   const onPaidRef = useRef(onPaid);
   onPaidRef.current = onPaid;
 
@@ -101,6 +104,35 @@ export function PixPaymentDialog({
       toast.success("Linha digitável copiada.");
     } catch { toast.error("Não foi possível copiar"); }
     finally { setTimeout(() => setCopyingBoleto(false), 600); }
+  };
+
+  const openBoletoPdf = async (mode: "view" | "download") => {
+    if (!installment?.id) return;
+    setDownloadingBoleto(true);
+    try {
+      const res = await fetchBoleto({ data: { installmentId: installment.id } });
+      // Decode base64 → Blob → blob URL
+      const bin = atob(res.base64);
+      const bytes = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      const blob = new Blob([bytes], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+      if (mode === "download") {
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = res.filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      } else {
+        window.open(url, "_blank", "noopener,noreferrer");
+      }
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    } catch (e: any) {
+      toast.error(e?.message ?? "Não foi possível baixar o boleto");
+    } finally {
+      setDownloadingBoleto(false);
+    }
   };
 
   return (
@@ -240,15 +272,13 @@ export function PixPaymentDialog({
 
                   {boletoUrl ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      <Button variant="outline" asChild>
-                        <a href={boletoUrl} target="_blank" rel="noreferrer" download>
-                          <Download className="size-4 mr-2" /> Baixar PDF
-                        </a>
+                      <Button variant="outline" onClick={() => openBoletoPdf("download")} disabled={downloadingBoleto}>
+                        {downloadingBoleto ? <Loader2 className="size-4 mr-2 animate-spin" /> : <Download className="size-4 mr-2" />}
+                        Baixar PDF
                       </Button>
-                      <Button asChild>
-                        <a href={boletoUrl} target="_blank" rel="noreferrer">
-                          <ExternalLink className="size-4 mr-2" /> Abrir boleto
-                        </a>
+                      <Button onClick={() => openBoletoPdf("view")} disabled={downloadingBoleto}>
+                        {downloadingBoleto ? <Loader2 className="size-4 mr-2 animate-spin" /> : <ExternalLink className="size-4 mr-2" />}
+                        Abrir boleto
                       </Button>
                     </div>
                   ) : (

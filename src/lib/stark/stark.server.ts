@@ -102,6 +102,43 @@ export async function starkFetch<T = any>(opts: StarkRequestOptions): Promise<T>
   return json as T;
 }
 
+// Variante da starkFetch para respostas binárias (ex.: PDF de boleto).
+// Retorna bytes crus e o content-type — a Stark exige assinatura ECDSA em
+// todo request, então este proxy é a única forma segura do navegador baixar
+// o PDF sem expor a chave privada.
+export async function starkFetchRaw(opts: { path: string; method?: "GET" }): Promise<{
+  bytes: Uint8Array;
+  contentType: string;
+}> {
+  if (!isStarkConfigured()) {
+    throw new Error("Stark Bank não configurado (defina STARK_PROJECT_ID e STARK_PRIVATE_KEY)");
+  }
+  const method = opts.method ?? "GET";
+  const accessId = normalizeStarkAccessId(process.env.STARK_PROJECT_ID || "");
+  const accessTime = unixTime();
+  const message = `${accessId}:${accessTime}:`;
+  const signature = Ecdsa.sign(message, getPrivateKey()).toBase64();
+
+  const res = await fetch(`${starkHost()}${opts.path}`, {
+    method,
+    headers: {
+      "Access-Id": accessId,
+      "Access-Time": accessTime,
+      "Access-Signature": signature,
+      Accept: "*/*",
+      "User-Agent": "Nexo/1.0 (StarkFetchRaw)",
+    },
+  });
+  if (!res.ok) {
+    const txt = await res.text().catch(() => "");
+    const err = new Error(`[stark] ${method} ${opts.path} → ${res.status}: ${txt.slice(0, 200)}`) as any;
+    err.status = res.status;
+    throw err;
+  }
+  const buf = new Uint8Array(await res.arrayBuffer());
+  return { bytes: buf, contentType: res.headers.get("content-type") ?? "application/octet-stream" };
+}
+
 // ---------------- Webhook signature verification ----------------
 // Stark envia header "Digital-Signature" (base64) sobre o body cru.
 // Chave pública Stark é retornada em GET /public-key (uma vez, cacheado).

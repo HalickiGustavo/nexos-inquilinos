@@ -442,3 +442,17 @@ function UpdateBoletoBtn({ installment, onDone }: { installment: any; onDone: ()
   );
 }
 
+
+function TableRowsSkeleton({ cols, rows = 5 }: { cols: number; rows?: number }) {
+  return (
+    <>
+      {Array.from({ length: rows }).map((_, r) => (
+        <TableRow key={r}>
+          {Array.from({ length: cols }).map((__, c) => (
+            <TableCell key={c}><Skeleton className="h-4 w-full" /></TableCell>
+          ))}
+        </TableRow>
+      ))}
+    </>
+  );
+}

@@ -56,6 +56,26 @@ function TenantFinanceiro() {
   const { open: openPix, dialogProps: pixDialogProps } = usePixPayment({
     invalidateKeys: [["tenant-installments"]],
   });
+  const downloadBoleto = useServerFn(downloadBoletoPdf);
+  const [boletoLoadingId, setBoletoLoadingId] = useState<string | null>(null);
+
+  const openBoletoPdf = async (installmentId: string) => {
+    setBoletoLoadingId(installmentId);
+    try {
+      const res: any = await downloadBoleto({ data: { installmentId } });
+      const bin = atob(res.base64);
+      const bytes = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      const blob = new Blob([bytes], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank", "noopener,noreferrer");
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    } catch (e: any) {
+      toast.error(e?.message ?? "Não foi possível abrir o boleto");
+    } finally {
+      setBoletoLoadingId(null);
+    }
+  };
 
   useEffect(() => {
     if (!contract?.id) return;

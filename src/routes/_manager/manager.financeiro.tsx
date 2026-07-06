@@ -9,7 +9,9 @@ import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 import { formatBRL, formatDate } from "@/lib/format";
 import { CheckCircle2, Receipt, Sparkles, ChevronRight, BadgeCheck, FileText, Loader2, Wallet, Copy } from "lucide-react";
 import { toast } from "sonner";

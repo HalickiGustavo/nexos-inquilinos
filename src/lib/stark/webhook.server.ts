@@ -47,7 +47,7 @@ export async function handleStarkWebhook(rawBody: string, digitalSignature: stri
       log_type: event.logType ?? null,
       raw: payload as any,
     } as any);
-  if (insErr && !insErr.message.includes("duplicate")) {
+  if (insErr && (insErr as any).code !== "23505") {
     console.error("[stark-webhook] insert event", insErr);
     return { ok: false, status: 500, error: insErr.message };
   }

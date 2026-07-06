@@ -35,7 +35,8 @@ export const activateManagerRole = createServerFn({ method: "POST" })
     const { error } = await supabaseAdmin
       .from("user_roles")
       .insert({ user_id: userId, role: "manager" as const });
-    if (error && !error.message.toLowerCase().includes("duplicate")) {
+    // 23505 = unique_violation (idempotente: papel já existe)
+    if (error && (error as any).code !== "23505") {
       throw new Error(error.message);
     }
     return { ok: true, alreadyManager: false };

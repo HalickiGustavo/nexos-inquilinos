@@ -14,6 +14,9 @@ import { PixPaymentDialog } from "@/components/PixPaymentDialog";
 import { usePixPayment } from "@/hooks/usePixPayment";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { downloadBoletoPdf } from "@/lib/boleto-download.functions";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/tenant/financeiro")({
   head: () => ({ meta: [{ title: "Financeiro — Nexo Inquilino" }] }),
@@ -53,6 +56,26 @@ function TenantFinanceiro() {
   const { open: openPix, dialogProps: pixDialogProps } = usePixPayment({
     invalidateKeys: [["tenant-installments"]],
   });
+  const downloadBoleto = useServerFn(downloadBoletoPdf);
+  const [boletoLoadingId, setBoletoLoadingId] = useState<string | null>(null);
+
+  const openBoletoPdf = async (installmentId: string) => {
+    setBoletoLoadingId(installmentId);
+    try {
+      const res: any = await downloadBoleto({ data: { installmentId } });
+      const bin = atob(res.base64);
+      const bytes = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      const blob = new Blob([bytes], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank", "noopener,noreferrer");
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    } catch (e: any) {
+      toast.error(e?.message ?? "Não foi possível abrir o boleto");
+    } finally {
+      setBoletoLoadingId(null);
+    }
+  };
 
   useEffect(() => {
     if (!contract?.id) return;
@@ -220,10 +243,14 @@ function TenantFinanceiro() {
                         <QrCode className="size-5 mr-2" /> Pagar Parcela — {formatBRL(totalDue)}
                       </Button>
                       {i.boleto_url ? (
-                        <Button variant="outline" className="w-full" asChild>
-                          <a href={i.boleto_url} target="_blank" rel="noreferrer">
-                            <Download className="size-4 mr-2" /> Visualizar Boleto PDF
-                          </a>
+                        <Button
+                          variant="outline"
+                          className="w-full"
+                          disabled={boletoLoadingId === i.id}
+                          onClick={() => openBoletoPdf(i.id)}
+                        >
+                          <Download className="size-4 mr-2" />
+                          {boletoLoadingId === i.id ? "Abrindo boleto..." : "Visualizar Boleto PDF"}
                         </Button>
                       ) : (
                         <p className="text-xs text-muted-foreground text-center">

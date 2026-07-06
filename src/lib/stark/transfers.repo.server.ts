@@ -73,32 +73,14 @@ export async function enqueueTransfersForSplit(split: SplitResult, ctx: SplitCon
 
 export async function claimPendingBatch(limit = 20) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const nowIso = new Date().toISOString();
 
-  // 1) Seleciona candidatos elegíveis (PENDING + fora do backoff).
-  const { data: pendingIds, error: pendErr } = await supabaseAdmin
-    .from("payment_transfers")
-    .select("id")
-    .eq("status", "PENDING")
-    .or(`next_retry_at.is.null,next_retry_at.lte.${nowIso}`)
-    .limit(limit);
-  if (pendErr) throw new Error(pendErr.message);
-  const ids = (pendingIds as any[] | null)?.map((r) => r.id) ?? [];
-  if (!ids.length) return [] as any[];
-
-  // 2) Transição atômica PENDING→PROCESSING:
-  //    UPDATE ... WHERE status='PENDING' AND id = ANY(:ids) RETURNING *
-  //    Se dois workers rodarem em paralelo, apenas UM consegue mover cada
-  //    linha para PROCESSING; o outro recebe conjunto vazio, evitando
-  //    duplicidade de transferência PIX.
-  const { data: claimed, error: updErr } = await supabaseAdmin
-    .from("payment_transfers")
-    .update({ status: "PROCESSING" } as any)
-    .eq("status", "PENDING")
-    .in("id", ids)
-    .select("*");
-  if (updErr) throw new Error(updErr.message);
-  return (claimed as any[]) ?? [];
+  // Atomic claim via SQL FOR UPDATE SKIP LOCKED — impede que dois workers
+  // rodando em paralelo tentem processar a mesma linha (dupla transferência).
+  const { data, error } = await (supabaseAdmin as any).rpc("claim_pending_transfers", {
+    _limit: limit,
+  });
+  if (error) throw new Error(error.message);
+  return ((data as any[]) ?? []);
 }
 
 export async function markProcessing(id: string) {

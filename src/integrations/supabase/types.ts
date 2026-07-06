@@ -1827,6 +1827,36 @@ export type Database = {
     Functions: {
       accept_landlord_invite: { Args: { _token: string }; Returns: string }
       accept_manager_invite: { Args: { _token: string }; Returns: string }
+      claim_pending_transfers: {
+        Args: { _limit?: number }
+        Returns: {
+          amount: number
+          attempts: number
+          contract_id: string
+          created_at: string
+          description: string | null
+          error_message: string | null
+          external_id: string | null
+          id: string
+          installment_id: string
+          manager_user_id: string
+          next_retry_at: string | null
+          paid_at: string | null
+          pix_key: string | null
+          pix_key_type: string | null
+          recipient_type: Database["public"]["Enums"]["payment_recipient_type"]
+          recipient_user_id: string | null
+          stark_transfer_id: string | null
+          status: Database["public"]["Enums"]["payment_transfer_status"]
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "payment_transfers"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       current_landlord_id: { Args: never; Returns: string }
       current_manager_id: { Args: never; Returns: string }
       current_tenant_id: { Args: never; Returns: string }
@@ -1842,6 +1872,7 @@ export type Database = {
         Args: { _property_id: string }
         Returns: boolean
       }
+      run_security_invariants_check: { Args: never; Returns: undefined }
       sync_cron_secret: { Args: { _secret: string }; Returns: undefined }
       verify_security_invariants: {
         Args: never

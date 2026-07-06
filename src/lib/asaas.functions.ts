@@ -1457,7 +1457,7 @@ export const completeTenantSetup = createServerFn({ method: "POST" })
     const { error: roleErr } = await supabaseAdmin
       .from("user_roles")
       .insert({ user_id: userId, role: "tenant" });
-    if (roleErr && !roleErr.message.includes("duplicate")) throw new Error(roleErr.message);
+    if (roleErr && (roleErr as any).code !== "23505") throw new Error(roleErr.message);
 
     return { ok: true as const, linked: ids.length };
   });

@@ -14,6 +14,9 @@ import { PixPaymentDialog } from "@/components/PixPaymentDialog";
 import { usePixPayment } from "@/hooks/usePixPayment";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { downloadBoletoPdf } from "@/lib/boleto-download.functions";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/tenant/financeiro")({
   head: () => ({ meta: [{ title: "Financeiro — Nexo Inquilino" }] }),

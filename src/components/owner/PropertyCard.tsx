@@ -110,6 +110,7 @@ function PropertyCardImpl({
   };
 
   return (
+    <>
     <Card
       onClick={openDetail}
       className="p-5 flex flex-col gap-4 hover:shadow-md transition group h-full cursor-pointer"

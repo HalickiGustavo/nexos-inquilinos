@@ -48,6 +48,10 @@ export interface AppShellProps {
   variant?: "primary" | "accent";
   /** Sidebar width (default: w-64). */
   sidebarWidth?: "w-60 lg:w-64" | "w-64";
+  /** Mobile nav pill style. "pill" = rounded-full + border (manager/landlord); "chip" = rounded-md, no border (owner). */
+  mobileNavStyle?: "pill" | "chip";
+  /** Mobile header logo height class (default: h-8). */
+  mobileLogoClass?: string;
   /** Sign-out button click handler; defaults to auth.signOut + navigate /login */
   onSignOut?: () => void | Promise<void>;
   /** PWA install button bottom offset */

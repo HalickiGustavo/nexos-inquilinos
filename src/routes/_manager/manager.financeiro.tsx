@@ -335,7 +335,9 @@ function Repasses() {
           <TableHead></TableHead>
         </TableRow></TableHeader>
         <TableBody>
-          {(q.data ?? []).length === 0 && <TableRow><TableCell colSpan={8} className="text-center py-8 text-zinc-500">Nenhum repasse</TableCell></TableRow>}
+          {q.isLoading && <TableRowsSkeleton cols={8} rows={5} />}
+          {!q.isLoading && (q.data ?? []).length === 0 && <TableRow><TableCell colSpan={8} className="text-center py-8 text-zinc-500">Nenhum repasse</TableCell></TableRow>}
+
           {(q.data ?? []).map((i: any) => {
             const fee = Number(i.management_fee_percent ?? 10);
             const pago = Number(i.paid_amount ?? 0);

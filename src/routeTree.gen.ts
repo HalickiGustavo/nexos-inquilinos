@@ -70,6 +70,7 @@ import { Route as ApiPublicHooksProcessPayoutQueueRouteImport } from './routes/a
 import { Route as ApiPublicHooksIssueSingleBoletoRouteImport } from './routes/api/public/hooks/issue-single-boleto'
 import { Route as ApiPublicHooksGenerateUpcomingBoletosRouteImport } from './routes/api/public/hooks/generate-upcoming-boletos'
 import { Route as ManagerManagerConfiguracoesRoletaRouteImport } from './routes/_manager/manager.configuracoes.roleta'
+import { Route as LandlordLandlordImoveisIdRouteImport } from './routes/_landlord/landlord.imoveis.$id'
 import { Route as AuthenticatedAdminConfiguracoesSubcontaRouteImport } from './routes/_authenticated/admin.configuracoes.subconta'
 import { Route as ApiV1IntegrationsOrgSlugListingsDotxmlRouteImport } from './routes/api/v1/integrations/$orgSlug/listings[.]xml'
 import { Route as ApiV1IntegrationsOrgSlugLeadsRouteImport } from './routes/api/v1/integrations/$orgSlug/leads'
@@ -404,6 +405,12 @@ const ManagerManagerConfiguracoesRoletaRoute =
     path: '/manager/configuracoes/roleta',
     getParentRoute: () => ManagerRoute,
   } as any)
+const LandlordLandlordImoveisIdRoute =
+  LandlordLandlordImoveisIdRouteImport.update({
+    id: '/$id',
+    path: '/$id',
+    getParentRoute: () => LandlordLandlordImoveisRoute,
+  } as any)
 const AuthenticatedAdminConfiguracoesSubcontaRoute =
   AuthenticatedAdminConfiguracoesSubcontaRouteImport.update({
     id: '/admin/configuracoes/subconta',
@@ -449,7 +456,7 @@ export interface FileRoutesByFullPath {
   '/tenant/manutencoes': typeof AuthenticatedTenantManutencoesRoute
   '/tenant/perfil': typeof AuthenticatedTenantPerfilRoute
   '/landlord/financeiro': typeof LandlordLandlordFinanceiroRoute
-  '/landlord/imoveis': typeof LandlordLandlordImoveisRoute
+  '/landlord/imoveis': typeof LandlordLandlordImoveisRouteWithChildren
   '/landlord/manutencoes': typeof LandlordLandlordManutencoesRoute
   '/landlord/saldo': typeof LandlordLandlordSaldoRoute
   '/manager/alertas': typeof ManagerManagerAlertasRoute
@@ -471,6 +478,7 @@ export interface FileRoutesByFullPath {
   '/landlord/': typeof LandlordLandlordIndexRoute
   '/manager/': typeof ManagerManagerIndexRoute
   '/admin/configuracoes/subconta': typeof AuthenticatedAdminConfiguracoesSubcontaRoute
+  '/landlord/imoveis/$id': typeof LandlordLandlordImoveisIdRoute
   '/manager/configuracoes/roleta': typeof ManagerManagerConfiguracoesRoletaRoute
   '/api/public/hooks/generate-upcoming-boletos': typeof ApiPublicHooksGenerateUpcomingBoletosRoute
   '/api/public/hooks/issue-single-boleto': typeof ApiPublicHooksIssueSingleBoletoRoute
@@ -512,7 +520,7 @@ export interface FileRoutesByTo {
   '/tenant/manutencoes': typeof AuthenticatedTenantManutencoesRoute
   '/tenant/perfil': typeof AuthenticatedTenantPerfilRoute
   '/landlord/financeiro': typeof LandlordLandlordFinanceiroRoute
-  '/landlord/imoveis': typeof LandlordLandlordImoveisRoute
+  '/landlord/imoveis': typeof LandlordLandlordImoveisRouteWithChildren
   '/landlord/manutencoes': typeof LandlordLandlordManutencoesRoute
   '/landlord/saldo': typeof LandlordLandlordSaldoRoute
   '/manager/alertas': typeof ManagerManagerAlertasRoute
@@ -534,6 +542,7 @@ export interface FileRoutesByTo {
   '/landlord': typeof LandlordLandlordIndexRoute
   '/manager': typeof ManagerManagerIndexRoute
   '/admin/configuracoes/subconta': typeof AuthenticatedAdminConfiguracoesSubcontaRoute
+  '/landlord/imoveis/$id': typeof LandlordLandlordImoveisIdRoute
   '/manager/configuracoes/roleta': typeof ManagerManagerConfiguracoesRoletaRoute
   '/api/public/hooks/generate-upcoming-boletos': typeof ApiPublicHooksGenerateUpcomingBoletosRoute
   '/api/public/hooks/issue-single-boleto': typeof ApiPublicHooksIssueSingleBoletoRoute
@@ -579,7 +588,7 @@ export interface FileRoutesById {
   '/_authenticated/tenant/manutencoes': typeof AuthenticatedTenantManutencoesRoute
   '/_authenticated/tenant/perfil': typeof AuthenticatedTenantPerfilRoute
   '/_landlord/landlord/financeiro': typeof LandlordLandlordFinanceiroRoute
-  '/_landlord/landlord/imoveis': typeof LandlordLandlordImoveisRoute
+  '/_landlord/landlord/imoveis': typeof LandlordLandlordImoveisRouteWithChildren
   '/_landlord/landlord/manutencoes': typeof LandlordLandlordManutencoesRoute
   '/_landlord/landlord/saldo': typeof LandlordLandlordSaldoRoute
   '/_manager/manager/alertas': typeof ManagerManagerAlertasRoute
@@ -601,6 +610,7 @@ export interface FileRoutesById {
   '/_landlord/landlord/': typeof LandlordLandlordIndexRoute
   '/_manager/manager/': typeof ManagerManagerIndexRoute
   '/_authenticated/admin/configuracoes/subconta': typeof AuthenticatedAdminConfiguracoesSubcontaRoute
+  '/_landlord/landlord/imoveis/$id': typeof LandlordLandlordImoveisIdRoute
   '/_manager/manager/configuracoes/roleta': typeof ManagerManagerConfiguracoesRoletaRoute
   '/api/public/hooks/generate-upcoming-boletos': typeof ApiPublicHooksGenerateUpcomingBoletosRoute
   '/api/public/hooks/issue-single-boleto': typeof ApiPublicHooksIssueSingleBoletoRoute
@@ -666,6 +676,7 @@ export interface FileRouteTypes {
     | '/landlord/'
     | '/manager/'
     | '/admin/configuracoes/subconta'
+    | '/landlord/imoveis/$id'
     | '/manager/configuracoes/roleta'
     | '/api/public/hooks/generate-upcoming-boletos'
     | '/api/public/hooks/issue-single-boleto'
@@ -729,6 +740,7 @@ export interface FileRouteTypes {
     | '/landlord'
     | '/manager'
     | '/admin/configuracoes/subconta'
+    | '/landlord/imoveis/$id'
     | '/manager/configuracoes/roleta'
     | '/api/public/hooks/generate-upcoming-boletos'
     | '/api/public/hooks/issue-single-boleto'
@@ -795,6 +807,7 @@ export interface FileRouteTypes {
     | '/_landlord/landlord/'
     | '/_manager/manager/'
     | '/_authenticated/admin/configuracoes/subconta'
+    | '/_landlord/landlord/imoveis/$id'
     | '/_manager/manager/configuracoes/roleta'
     | '/api/public/hooks/generate-upcoming-boletos'
     | '/api/public/hooks/issue-single-boleto'
@@ -1265,6 +1278,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ManagerManagerConfiguracoesRoletaRouteImport
       parentRoute: typeof ManagerRoute
     }
+    '/_landlord/landlord/imoveis/$id': {
+      id: '/_landlord/landlord/imoveis/$id'
+      path: '/$id'
+      fullPath: '/landlord/imoveis/$id'
+      preLoaderRoute: typeof LandlordLandlordImoveisIdRouteImport
+      parentRoute: typeof LandlordLandlordImoveisRoute
+    }
     '/_authenticated/admin/configuracoes/subconta': {
       id: '/_authenticated/admin/configuracoes/subconta'
       path: '/admin/configuracoes/subconta'
@@ -1342,9 +1362,23 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
   AuthenticatedRouteChildren,
 )
 
+interface LandlordLandlordImoveisRouteChildren {
+  LandlordLandlordImoveisIdRoute: typeof LandlordLandlordImoveisIdRoute
+}
+
+const LandlordLandlordImoveisRouteChildren: LandlordLandlordImoveisRouteChildren =
+  {
+    LandlordLandlordImoveisIdRoute: LandlordLandlordImoveisIdRoute,
+  }
+
+const LandlordLandlordImoveisRouteWithChildren =
+  LandlordLandlordImoveisRoute._addFileChildren(
+    LandlordLandlordImoveisRouteChildren,
+  )
+
 interface LandlordRouteChildren {
   LandlordLandlordFinanceiroRoute: typeof LandlordLandlordFinanceiroRoute
-  LandlordLandlordImoveisRoute: typeof LandlordLandlordImoveisRoute
+  LandlordLandlordImoveisRoute: typeof LandlordLandlordImoveisRouteWithChildren
   LandlordLandlordManutencoesRoute: typeof LandlordLandlordManutencoesRoute
   LandlordLandlordSaldoRoute: typeof LandlordLandlordSaldoRoute
   LandlordLandlordIndexRoute: typeof LandlordLandlordIndexRoute
@@ -1352,7 +1386,7 @@ interface LandlordRouteChildren {
 
 const LandlordRouteChildren: LandlordRouteChildren = {
   LandlordLandlordFinanceiroRoute: LandlordLandlordFinanceiroRoute,
-  LandlordLandlordImoveisRoute: LandlordLandlordImoveisRoute,
+  LandlordLandlordImoveisRoute: LandlordLandlordImoveisRouteWithChildren,
   LandlordLandlordManutencoesRoute: LandlordLandlordManutencoesRoute,
   LandlordLandlordSaldoRoute: LandlordLandlordSaldoRoute,
   LandlordLandlordIndexRoute: LandlordLandlordIndexRoute,

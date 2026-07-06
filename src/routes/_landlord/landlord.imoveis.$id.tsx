@@ -1,7 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo } from "react";
-import { z } from "zod";
-import { zodValidator } from "@tanstack/zod-adapter";
 import {
   ArrowLeft, MapPin, Building2, User, FileText, Receipt, ClipboardList, Wrench, History,
   Calendar, TrendingUp, Percent, CheckCircle2, AlertCircle, Home,

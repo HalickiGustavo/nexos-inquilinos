@@ -21,52 +21,26 @@ export const downloadBoletoPdf = createServerFn({ method: "POST" })
     // 1) Verifica que o usuário tem acesso à parcela via RLS.
     const { data: inst, error } = await supabase
       .from("installments")
-      .select("id, stark_boleto_id, boleto_url")
+      .select("id, boleto_url")
       .eq("id", data.installmentId)
       .maybeSingle();
     if (error) throw new Error(error.message);
     if (!inst) throw new Error("Parcela não encontrada ou sem permissão");
 
-    // Extrai o ID do boleto: coluna dedicada OU sufixo da boleto_url.
-    let boletoId: string | null = (inst as any).stark_boleto_id ?? null;
-    if (!boletoId && inst.boleto_url) {
+    // Extrai o ID do boleto a partir do sufixo da URL Stark.
+    let boletoId: string | null = null;
+    if (inst.boleto_url) {
       const m = String(inst.boleto_url).match(/\/boleto\/([^/]+)\/pdf/);
       if (m) boletoId = m[1];
     }
     if (!boletoId) throw new Error("Boleto ainda não gerado para esta parcela");
 
-    // 2) Assina requisição Stark e busca bytes do PDF.
-    const [{ starkHost, isStarkConfigured, normalizeStarkAccessId, getPrivateKey }, ecdsa] =
-      await Promise.all([
-        import("@/lib/stark/stark.server"),
-        import("starkbank-ecdsa"),
-      ]);
-    if (!isStarkConfigured()) throw new Error("Stark Bank não configurado");
-    const Ecdsa = (ecdsa as any).Ecdsa;
+    // 2) Servidor assina requisição Stark e busca bytes do PDF.
+    const { starkFetchRaw } = await import("@/lib/stark/stark.server");
+    const { bytes } = await starkFetchRaw({ path: `/boleto/${boletoId}/pdf` });
 
-    const accessId = normalizeStarkAccessId(process.env.STARK_PROJECT_ID || "");
-    const accessTime = Math.floor(Date.now() / 1000).toString();
-    const path = `/boleto/${boletoId}/pdf`;
-    const message = `${accessId}:${accessTime}:`;
-    const signature = Ecdsa.sign(message, getPrivateKey()).toBase64();
-
-    const res = await fetch(`${starkHost()}${path}`, {
-      method: "GET",
-      headers: {
-        "Access-Id": accessId,
-        "Access-Time": accessTime,
-        "Access-Signature": signature,
-        Accept: "application/pdf",
-        "User-Agent": "Nexo/1.0 (BoletoProxy)",
-      },
-    });
-    if (!res.ok) {
-      const txt = await res.text().catch(() => "");
-      throw new Error(`Stark ${res.status}: ${txt.slice(0, 200)}`);
-    }
-    const buf = new Uint8Array(await res.arrayBuffer());
     let bin = "";
-    for (let i = 0; i < buf.length; i++) bin += String.fromCharCode(buf[i]);
+    for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
     const base64 = btoa(bin);
     return { base64, filename: `boleto-${boletoId}.pdf` };
   });

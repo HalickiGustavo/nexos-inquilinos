@@ -278,6 +278,13 @@ function PropertyCardImpl({
         ) : null}
       </div>
     </Card>
+    <PropertyDetailsDialog
+      property={p}
+      open={detailOpen}
+      onOpenChange={setDetailOpen}
+      onEdit={onEdit}
+    />
+    </>
   );
 }
 

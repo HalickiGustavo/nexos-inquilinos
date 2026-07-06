@@ -180,22 +180,7 @@ function TenantHome() {
         />
       </div>
 
-      <PixPaymentDialog
-        installment={pixFor}
-        open={!!pixFor}
-        loading={pixLoading}
-        error={pixError}
-        debug={pixDebug}
-        onPaid={() => queryClient.invalidateQueries({ queryKey: ["tenant-installments"] })}
-        onOpenChange={(o) => {
-          if (!o) {
-            setPixFor(null);
-            setPixError(null);
-            setPixDebug(null);
-            setPixLoading(false);
-          }
-        }}
-      />
+      <PixPaymentDialog {...pixDialogProps} />
     </div>
   );
 }

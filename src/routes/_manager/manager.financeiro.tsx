@@ -365,6 +365,7 @@ function Repasses() {
           })}
         </TableBody>
       </Table>
+      </div>
     </CardContent></Card>
   );
 }

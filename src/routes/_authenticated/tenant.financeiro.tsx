@@ -4,6 +4,8 @@ import { Download, ChevronDown, QrCode, Handshake } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+
 import { useTenantInstallments, useTenantActiveContract } from "@/lib/tenant-queries";
 import { formatBRL, formatDate, today } from "@/lib/format";
 import { downloadPdf } from "@/lib/pdf";

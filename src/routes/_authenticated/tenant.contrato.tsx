@@ -199,7 +199,18 @@ function TenantInspections({ contractId }: { contractId: string }) {
         <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Vistorias</h2>
       </div>
       {isLoading ? (
-        <p className="text-sm text-muted-foreground">Carregando...</p>
+        <div className="space-y-2">
+          {Array.from({ length: 2 }).map((_, k) => (
+            <div key={k} className="flex items-center justify-between gap-3 p-3 rounded-md border border-border bg-muted/20">
+              <div className="space-y-2 flex-1">
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="h-3 w-48" />
+              </div>
+              <Skeleton className="h-8 w-20" />
+            </div>
+          ))}
+        </div>
+
       ) : inspections.length === 0 ? (
         <p className="text-sm text-muted-foreground">
           Nenhuma vistoria registrada para este contrato.

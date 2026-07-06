@@ -14,13 +14,14 @@ import {
 } from "@/lib/landlord-queries";
 import { formatBRL, formatDate } from "@/lib/format";
 
-const tabSchema = z.object({
-  tab: z.enum(["resumo", "financeiro", "contrato", "documentos", "vistorias", "manutencoes", "historico"]).catch("resumo"),
-});
+type Tab = "resumo" | "financeiro" | "contrato" | "documentos" | "vistorias" | "manutencoes" | "historico";
+const TABS: Tab[] = ["resumo", "financeiro", "contrato", "documentos", "vistorias", "manutencoes", "historico"];
 
 export const Route = createFileRoute("/_landlord/landlord/imoveis/$id")({
   head: () => ({ meta: [{ title: "Imóvel — Proprietário NEXO" }] }),
-  validateSearch: zodValidator(tabSchema),
+  validateSearch: (s: Record<string, unknown>): { tab: Tab } => ({
+    tab: (TABS as string[]).includes(s.tab as string) ? (s.tab as Tab) : "resumo",
+  }),
   component: LandlordImovelDetail,
   errorComponent: ({ error, reset }) => (
     <div className="p-8 text-center">

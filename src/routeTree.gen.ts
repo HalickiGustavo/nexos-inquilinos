@@ -56,6 +56,7 @@ import { Route as AuthenticatedTenantFinanceiroRouteImport } from './routes/_aut
 import { Route as AuthenticatedTenantDocumentosRouteImport } from './routes/_authenticated/tenant.documentos'
 import { Route as AuthenticatedTenantContratoRouteImport } from './routes/_authenticated/tenant.contrato'
 import { Route as AuthenticatedTenantAlertasRouteImport } from './routes/_authenticated/tenant.alertas'
+import { Route as AuthenticatedPropertiesIdRouteImport } from './routes/_authenticated/properties.$id'
 import { Route as AuthenticatedAdminIntegracoesRouteImport } from './routes/_authenticated/admin.integracoes'
 import { Route as ApiPublicWebhooksLeadsRouteImport } from './routes/api/public/webhooks/leads'
 import { Route as ApiPublicListingsXmlRouteImport } from './routes/api/public/listings.xml'
@@ -322,6 +323,12 @@ const AuthenticatedTenantAlertasRoute =
     path: '/tenant/alertas',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedPropertiesIdRoute =
+  AuthenticatedPropertiesIdRouteImport.update({
+    id: '/$id',
+    path: '/$id',
+    getParentRoute: () => AuthenticatedPropertiesRoute,
+  } as any)
 const AuthenticatedAdminIntegracoesRoute =
   AuthenticatedAdminIntegracoesRouteImport.update({
     id: '/admin/integracoes',
@@ -431,11 +438,12 @@ export interface FileRoutesByFullPath {
   '/financials': typeof AuthenticatedFinancialsRoute
   '/integrations': typeof AuthenticatedIntegrationsRoute
   '/maintenances': typeof AuthenticatedMaintenancesRoute
-  '/properties': typeof AuthenticatedPropertiesRoute
+  '/properties': typeof AuthenticatedPropertiesRouteWithChildren
   '/relatorios': typeof AuthenticatedRelatoriosRoute
   '/tenants': typeof AuthenticatedTenantsRoute
   '/vistorias': typeof AuthenticatedVistoriasRoute
   '/admin/integracoes': typeof AuthenticatedAdminIntegracoesRoute
+  '/properties/$id': typeof AuthenticatedPropertiesIdRoute
   '/tenant/alertas': typeof AuthenticatedTenantAlertasRoute
   '/tenant/contrato': typeof AuthenticatedTenantContratoRoute
   '/tenant/documentos': typeof AuthenticatedTenantDocumentosRoute
@@ -493,11 +501,12 @@ export interface FileRoutesByTo {
   '/financials': typeof AuthenticatedFinancialsRoute
   '/integrations': typeof AuthenticatedIntegrationsRoute
   '/maintenances': typeof AuthenticatedMaintenancesRoute
-  '/properties': typeof AuthenticatedPropertiesRoute
+  '/properties': typeof AuthenticatedPropertiesRouteWithChildren
   '/relatorios': typeof AuthenticatedRelatoriosRoute
   '/tenants': typeof AuthenticatedTenantsRoute
   '/vistorias': typeof AuthenticatedVistoriasRoute
   '/admin/integracoes': typeof AuthenticatedAdminIntegracoesRoute
+  '/properties/$id': typeof AuthenticatedPropertiesIdRoute
   '/tenant/alertas': typeof AuthenticatedTenantAlertasRoute
   '/tenant/contrato': typeof AuthenticatedTenantContratoRoute
   '/tenant/documentos': typeof AuthenticatedTenantDocumentosRoute
@@ -558,12 +567,13 @@ export interface FileRoutesById {
   '/_authenticated/financials': typeof AuthenticatedFinancialsRoute
   '/_authenticated/integrations': typeof AuthenticatedIntegrationsRoute
   '/_authenticated/maintenances': typeof AuthenticatedMaintenancesRoute
-  '/_authenticated/properties': typeof AuthenticatedPropertiesRoute
+  '/_authenticated/properties': typeof AuthenticatedPropertiesRouteWithChildren
   '/_authenticated/relatorios': typeof AuthenticatedRelatoriosRoute
   '/_authenticated/tenants': typeof AuthenticatedTenantsRoute
   '/_authenticated/vistorias': typeof AuthenticatedVistoriasRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/admin/integracoes': typeof AuthenticatedAdminIntegracoesRoute
+  '/_authenticated/properties/$id': typeof AuthenticatedPropertiesIdRoute
   '/_authenticated/tenant/alertas': typeof AuthenticatedTenantAlertasRoute
   '/_authenticated/tenant/contrato': typeof AuthenticatedTenantContratoRoute
   '/_authenticated/tenant/documentos': typeof AuthenticatedTenantDocumentosRoute
@@ -628,6 +638,7 @@ export interface FileRouteTypes {
     | '/tenants'
     | '/vistorias'
     | '/admin/integracoes'
+    | '/properties/$id'
     | '/tenant/alertas'
     | '/tenant/contrato'
     | '/tenant/documentos'
@@ -690,6 +701,7 @@ export interface FileRouteTypes {
     | '/tenants'
     | '/vistorias'
     | '/admin/integracoes'
+    | '/properties/$id'
     | '/tenant/alertas'
     | '/tenant/contrato'
     | '/tenant/documentos'
@@ -755,6 +767,7 @@ export interface FileRouteTypes {
     | '/_authenticated/vistorias'
     | '/_authenticated/'
     | '/_authenticated/admin/integracoes'
+    | '/_authenticated/properties/$id'
     | '/_authenticated/tenant/alertas'
     | '/_authenticated/tenant/contrato'
     | '/_authenticated/tenant/documentos'
@@ -1155,6 +1168,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTenantAlertasRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/properties/$id': {
+      id: '/_authenticated/properties/$id'
+      path: '/$id'
+      fullPath: '/properties/$id'
+      preLoaderRoute: typeof AuthenticatedPropertiesIdRouteImport
+      parentRoute: typeof AuthenticatedPropertiesRoute
+    }
     '/_authenticated/admin/integracoes': {
       id: '/_authenticated/admin/integracoes'
       path: '/admin/integracoes'
@@ -1270,6 +1290,20 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedPropertiesRouteChildren {
+  AuthenticatedPropertiesIdRoute: typeof AuthenticatedPropertiesIdRoute
+}
+
+const AuthenticatedPropertiesRouteChildren: AuthenticatedPropertiesRouteChildren =
+  {
+    AuthenticatedPropertiesIdRoute: AuthenticatedPropertiesIdRoute,
+  }
+
+const AuthenticatedPropertiesRouteWithChildren =
+  AuthenticatedPropertiesRoute._addFileChildren(
+    AuthenticatedPropertiesRouteChildren,
+  )
+
 interface AuthenticatedRouteChildren {
   AuthenticatedContaCorrenteRoute: typeof AuthenticatedContaCorrenteRoute
   AuthenticatedContractsRoute: typeof AuthenticatedContractsRoute
@@ -1278,7 +1312,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedFinancialsRoute: typeof AuthenticatedFinancialsRoute
   AuthenticatedIntegrationsRoute: typeof AuthenticatedIntegrationsRoute
   AuthenticatedMaintenancesRoute: typeof AuthenticatedMaintenancesRoute
-  AuthenticatedPropertiesRoute: typeof AuthenticatedPropertiesRoute
+  AuthenticatedPropertiesRoute: typeof AuthenticatedPropertiesRouteWithChildren
   AuthenticatedRelatoriosRoute: typeof AuthenticatedRelatoriosRoute
   AuthenticatedTenantsRoute: typeof AuthenticatedTenantsRoute
   AuthenticatedVistoriasRoute: typeof AuthenticatedVistoriasRoute
@@ -1302,7 +1336,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedFinancialsRoute: AuthenticatedFinancialsRoute,
   AuthenticatedIntegrationsRoute: AuthenticatedIntegrationsRoute,
   AuthenticatedMaintenancesRoute: AuthenticatedMaintenancesRoute,
-  AuthenticatedPropertiesRoute: AuthenticatedPropertiesRoute,
+  AuthenticatedPropertiesRoute: AuthenticatedPropertiesRouteWithChildren,
   AuthenticatedRelatoriosRoute: AuthenticatedRelatoriosRoute,
   AuthenticatedTenantsRoute: AuthenticatedTenantsRoute,
   AuthenticatedVistoriasRoute: AuthenticatedVistoriasRoute,

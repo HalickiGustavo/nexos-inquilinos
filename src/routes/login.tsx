@@ -164,7 +164,7 @@ function SignInForm() {
       className="space-y-4"
       onSubmit={async (e) => {
         e.preventDefault();
-        if (!captchaToken) {
+        if (recaptchaEnabled && !captchaToken) {
           toast.error("Por favor, complete a verificação reCAPTCHA.");
           return;
         }
@@ -172,7 +172,7 @@ function SignInForm() {
         const { error } = await supabase.auth.signInWithPassword({
           email,
           password,
-          options: { captchaToken },
+          options: recaptchaEnabled && captchaToken ? { captchaToken } : undefined,
         });
         if (error) {
           setBusy(false);

@@ -5,9 +5,11 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useTenantActiveContract } from "@/lib/tenant-queries";
 import { formatBRL, formatDate } from "@/lib/format";
 import { downloadPdf } from "@/lib/pdf";
+
 import { openContractPdf } from "@/components/ContractPdfUploader";
 import {
   COND_LABEL,

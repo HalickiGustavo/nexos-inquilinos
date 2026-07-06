@@ -67,6 +67,8 @@ export function AppShell({
   tour,
   variant = "primary",
   sidebarWidth = "w-64",
+  mobileNavStyle = "pill",
+  mobileLogoClass = "h-8",
   onSignOut,
   pwaBottomOffset = 88,
   children,

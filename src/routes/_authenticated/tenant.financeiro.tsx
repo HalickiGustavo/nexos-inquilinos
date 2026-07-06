@@ -4,6 +4,8 @@ import { Download, ChevronDown, QrCode, Handshake } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+
 import { useTenantInstallments, useTenantActiveContract } from "@/lib/tenant-queries";
 import { formatBRL, formatDate, today } from "@/lib/format";
 import { downloadPdf } from "@/lib/pdf";
@@ -108,10 +110,25 @@ function TenantFinanceiro() {
         </Card>
       )}
 
-      {isLoading && <p className="text-muted-foreground text-sm">Carregando...</p>}
+      {isLoading && (
+        <div className="space-y-2">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Card key={i} className="p-4">
+              <div className="flex items-center justify-between gap-3">
+                <div className="space-y-2 flex-1 min-w-0">
+                  <Skeleton className="h-5 w-32" />
+                  <Skeleton className="h-3 w-48" />
+                </div>
+                <Skeleton className="h-6 w-20 rounded-full" />
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
       {!isLoading && sorted.length === 0 && (
         <Card className="p-6 text-center text-muted-foreground">Nenhuma parcela registrada ainda.</Card>
       )}
+
 
 
       <div className="space-y-2">

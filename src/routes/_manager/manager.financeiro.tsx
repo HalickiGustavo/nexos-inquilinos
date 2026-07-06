@@ -9,7 +9,9 @@ import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 import { formatBRL, formatDate } from "@/lib/format";
 import { CheckCircle2, Receipt, Sparkles, ChevronRight, BadgeCheck, FileText, Loader2, Wallet, Copy } from "lucide-react";
 import { toast } from "sonner";
@@ -157,7 +159,9 @@ function Recebimentos() {
             <TableHead className="text-right">Total</TableHead>
           </TableRow></TableHeader>
           <TableBody>
-            {groupList.length === 0 && <TableRow><TableCell colSpan={8} className="text-center py-8 text-zinc-500">Sem registros</TableCell></TableRow>}
+            {q.isLoading && <TableRowsSkeleton cols={8} rows={5} />}
+            {!q.isLoading && groupList.length === 0 && <TableRow><TableCell colSpan={8} className="text-center py-8 text-zinc-500">Sem registros</TableCell></TableRow>}
+
             {groupList.map((g) => {
               const isOpen = !!expanded[g.contractId];
               const total = g.items.reduce((s: number, i: any) => {
@@ -331,7 +335,9 @@ function Repasses() {
           <TableHead></TableHead>
         </TableRow></TableHeader>
         <TableBody>
-          {(q.data ?? []).length === 0 && <TableRow><TableCell colSpan={8} className="text-center py-8 text-zinc-500">Nenhum repasse</TableCell></TableRow>}
+          {q.isLoading && <TableRowsSkeleton cols={8} rows={5} />}
+          {!q.isLoading && (q.data ?? []).length === 0 && <TableRow><TableCell colSpan={8} className="text-center py-8 text-zinc-500">Nenhum repasse</TableCell></TableRow>}
+
           {(q.data ?? []).map((i: any) => {
             const fee = Number(i.management_fee_percent ?? 10);
             const pago = Number(i.paid_amount ?? 0);
@@ -436,3 +442,17 @@ function UpdateBoletoBtn({ installment, onDone }: { installment: any; onDone: ()
   );
 }
 
+
+function TableRowsSkeleton({ cols, rows = 5 }: { cols: number; rows?: number }) {
+  return (
+    <>
+      {Array.from({ length: rows }).map((_, r) => (
+        <TableRow key={r}>
+          {Array.from({ length: cols }).map((__, c) => (
+            <TableCell key={c}><Skeleton className="h-4 w-full" /></TableCell>
+          ))}
+        </TableRow>
+      ))}
+    </>
+  );
+}

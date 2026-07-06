@@ -5,9 +5,11 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useTenantActiveContract } from "@/lib/tenant-queries";
 import { formatBRL, formatDate } from "@/lib/format";
 import { downloadPdf } from "@/lib/pdf";
+
 import { openContractPdf } from "@/components/ContractPdfUploader";
 import {
   COND_LABEL,
@@ -34,13 +36,14 @@ function monthsBetween(start: string, end: string) {
 function TenantContrato() {
   const { data: contract, isLoading } = useTenantActiveContract();
 
-  if (isLoading) return <p className="text-muted-foreground text-sm">Carregando...</p>;
+  if (isLoading) return <TenantContratoSkeleton />;
   if (!contract)
     return (
       <Card className="p-8 text-center">
         <p className="text-muted-foreground">Você não possui contrato ativo no momento.</p>
       </Card>
     );
+
 
   const total = monthsBetween(contract.start_date, contract.end_date);
   const elapsed = Math.max(
@@ -196,7 +199,18 @@ function TenantInspections({ contractId }: { contractId: string }) {
         <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Vistorias</h2>
       </div>
       {isLoading ? (
-        <p className="text-sm text-muted-foreground">Carregando...</p>
+        <div className="space-y-2">
+          {Array.from({ length: 2 }).map((_, k) => (
+            <div key={k} className="flex items-center justify-between gap-3 p-3 rounded-md border border-border bg-muted/20">
+              <div className="space-y-2 flex-1">
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="h-3 w-48" />
+              </div>
+              <Skeleton className="h-8 w-20" />
+            </div>
+          ))}
+        </div>
+
       ) : inspections.length === 0 ? (
         <p className="text-sm text-muted-foreground">
           Nenhuma vistoria registrada para este contrato.
@@ -233,5 +247,30 @@ function TenantInspections({ contractId }: { contractId: string }) {
         </div>
       )}
     </Card>
+  );
+}
+
+function TenantContratoSkeleton() {
+  return (
+    <div className="space-y-4">
+      <header className="space-y-2">
+        <Skeleton className="h-7 w-40" />
+        <Skeleton className="h-4 w-56" />
+      </header>
+      {Array.from({ length: 4 }).map((_, i) => (
+        <Card key={i} className="p-4 sm:p-5 border-border space-y-3">
+          <div className="flex items-center gap-2">
+            <Skeleton className="size-6 rounded-md" />
+            <Skeleton className="h-3 w-24" />
+          </div>
+          <Skeleton className="h-5 w-2/3" />
+          <div className="grid grid-cols-2 gap-3">
+            <Skeleton className="h-10" />
+            <Skeleton className="h-10" />
+          </div>
+        </Card>
+      ))}
+      <Skeleton className="h-10 w-full" />
+    </div>
   );
 }

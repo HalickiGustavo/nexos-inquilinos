@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 
@@ -129,4 +130,64 @@ export function useLandlordSaldo() {
     totalSacado,
     loading: installments.isLoading || withdrawals.isLoading,
   };
+}
+
+/**
+ * Agregações por imóvel — reaproveitadas na listagem e detalhe de imóvel.
+ * Não muda regra de negócio: apenas deriva do que já vem de RLS.
+ */
+export type PropertyAggregate = {
+  propertyId: string;
+  receitaTotal: number;
+  receitaAno: number;
+  ultimoPagamento: string | null;
+  proximoVencimento: string | null;
+  inadimplencia: number;
+  parcelasPagasCount: number;
+  parcelasAbertasCount: number;
+};
+
+export function usePropertyAggregates() {
+  const { data: installments = [] } = useLandlordInstallments();
+  const today = new Date().toISOString().slice(0, 10);
+  const yearStart = `${new Date().getFullYear()}-01-01`;
+
+  return useMemo(() => {
+    const map = new Map<string, PropertyAggregate>();
+    for (const i of installments as any[]) {
+      const propId: string | undefined = i.contract?.property?.id;
+      if (!propId) continue;
+      const agg = map.get(propId) ?? {
+        propertyId: propId,
+        receitaTotal: 0,
+        receitaAno: 0,
+        ultimoPagamento: null,
+        proximoVencimento: null,
+        inadimplencia: 0,
+        parcelasPagasCount: 0,
+        parcelasAbertasCount: 0,
+      };
+      const amount = Number(i.paid_amount || i.amount);
+      if (i.status === "pago") {
+        agg.receitaTotal += amount;
+        if (i.paid_at && i.paid_at >= yearStart) agg.receitaAno += amount;
+        agg.parcelasPagasCount += 1;
+        const paid = i.paid_at || i.payment_date;
+        if (paid && (!agg.ultimoPagamento || paid > agg.ultimoPagamento)) {
+          agg.ultimoPagamento = paid;
+        }
+      } else {
+        agg.parcelasAbertasCount += 1;
+        if (i.due_date >= today) {
+          if (!agg.proximoVencimento || i.due_date < agg.proximoVencimento) {
+            agg.proximoVencimento = i.due_date;
+          }
+        } else {
+          agg.inadimplencia += Number(i.amount);
+        }
+      }
+      map.set(propId, agg);
+    }
+    return map;
+  }, [installments, today, yearStart]);
 }

@@ -73,15 +73,22 @@ function TenantHome() {
     <div className="space-y-4">
       <header>
         <h1 className="text-xl sm:text-2xl font-semibold tracking-tight">
-          Olá{firstName ? `, ${firstName}` : ""}
+          {tenantPending ? (
+            <Skeleton className="h-7 w-40" />
+          ) : (
+            <>Olá{firstName ? `, ${firstName}` : ""}</>
+          )}
         </h1>
         <p className="text-sm text-muted-foreground mt-0.5">
           Aqui está o resumo do seu aluguel.
         </p>
       </header>
 
+      {loading ? <TenantHomeSkeleton /> : (
+      <>
       {/* Card principal — Status + Valor + Vencimento + CTA */}
       <Card className="relative overflow-hidden border-border">
+
         <div className="p-5 sm:p-6">
           {/* Badge de status discreta */}
           <div className="flex items-center justify-between gap-3">

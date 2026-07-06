@@ -255,4 +255,4 @@ function addDaysISO(iso: string, n: number) {
   const d = new Date(iso); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10);
 }
 
-export { AlertCircle, CheckCircle2 }; // avoid unused warnings in strict mode
+

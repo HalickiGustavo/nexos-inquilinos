@@ -99,7 +99,7 @@ function LandlordImovelDetail() {
         <SummaryTile label="Rentabilidade" value={rentabilidade(property, agg)} tone="emerald" />
       </div>
 
-      <Tabs value={tab} onValueChange={(v) => navigate({ search: () => ({ tab: v as Tab }), replace: true })}>
+      <Tabs value={tab} onValueChange={(v) => navigate({ search: (() => ({ tab: v as Tab })) as any, replace: true } as any)}>
         <TabsList className="flex-wrap h-auto">
           <TabsTrigger value="resumo"><Home className="size-3.5 mr-1.5" />Resumo</TabsTrigger>
           <TabsTrigger value="financeiro"><Receipt className="size-3.5 mr-1.5" />Financeiro</TabsTrigger>

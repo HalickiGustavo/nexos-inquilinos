@@ -115,10 +115,10 @@ function PropertyCardImpl({
       className="p-5 flex flex-col gap-4 hover:shadow-md transition group h-full cursor-pointer"
     >
       <div className="flex items-start justify-between gap-2 min-w-0">
-        <Link
-          to="/properties/$id"
-          params={{ id: p.id }}
-          className="min-w-0 flex-1 group/link"
+        <button
+          type="button"
+          onClick={() => setDetailOpen(true)}
+          className="min-w-0 flex-1 group/link text-left"
         >
           <div className="flex items-center gap-2 min-w-0">
             <h3 className="font-semibold truncate group-hover/link:text-primary transition">
@@ -130,7 +130,7 @@ function PropertyCardImpl({
           {p.code ? (
             <p className="text-[11px] text-muted-foreground/70 mt-0.5">Código: {p.code}</p>
           ) : null}
-        </Link>
+        </button>
         <div className="flex items-center gap-1 shrink-0">
           {statusBadge(data.status)}
           <DropdownMenu>

@@ -1,11 +1,12 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { Loader2, Building2 } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { activateManagerRole } from "@/lib/manager-setup.functions";
 
 export const Route = createFileRoute("/manager-setup")({
   head: () => ({ meta: [{ title: "Ativar Imobiliária — Nexo Manager" }] }),
@@ -16,6 +17,7 @@ function ManagerSetup() {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
   const [busy, setBusy] = useState(false);
+  const activate = useServerFn(activateManagerRole);
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/login", replace: true });
@@ -24,14 +26,15 @@ function ManagerSetup() {
   const ativar = async () => {
     if (!user) return;
     setBusy(true);
-    const { error } = await supabase.from("user_roles").insert({ user_id: user.id, role: "manager" } as any);
-    setBusy(false);
-    if (error && !error.message.includes("duplicate")) {
-      toast.error("Erro ao ativar imobiliária");
-      return;
+    try {
+      await activate();
+      toast.success("Imobiliária ativada!");
+      navigate({ to: "/manager", replace: true });
+    } catch (e: any) {
+      toast.error(e?.message ?? "Erro ao ativar imobiliária");
+    } finally {
+      setBusy(false);
     }
-    toast.success("Imobiliária ativada!");
-    navigate({ to: "/manager", replace: true });
   };
 
   if (loading) return <div className="min-h-screen grid place-items-center"><Loader2 className="size-6 animate-spin" /></div>;

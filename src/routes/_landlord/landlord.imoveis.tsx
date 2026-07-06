@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import {
-  Building2, Search, MapPin, TrendingUp, Calendar, CheckCircle2, AlertCircle, Wrench,
+  Building2, Search, MapPin, TrendingUp, Calendar, Wrench,
   ArrowUpDown, MoreHorizontal, Eye, Receipt, FileText, ClipboardList, History,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";

@@ -76,7 +76,7 @@ export async function claimPendingBatch(limit = 20) {
 
   // Atomic claim via SQL FOR UPDATE SKIP LOCKED — impede que dois workers
   // rodando em paralelo tentem processar a mesma linha (dupla transferência).
-  const { data, error } = await supabaseAdmin.rpc("claim_pending_transfers", {
+  const { data, error } = await (supabaseAdmin as any).rpc("claim_pending_transfers", {
     _limit: limit,
   });
   if (error) throw new Error(error.message);

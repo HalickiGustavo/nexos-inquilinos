@@ -4,6 +4,7 @@ import { QrCode, Wallet, FileText, Wrench, Bell, MapPin, ArrowUpRight, CheckCirc
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { PixPaymentDialog } from "@/components/PixPaymentDialog";
 import { usePixPayment } from "@/hooks/usePixPayment";
 import {
@@ -21,10 +22,13 @@ export const Route = createFileRoute("/_authenticated/tenant/")({
 });
 
 function TenantHome() {
-  const { data: tenant } = useCurrentTenant();
-  const { data: contract } = useTenantActiveContract();
-  const { data: installments = [] } = useTenantInstallments();
-  const { data: maintenances = [] } = useTenantMaintenances();
+  const { data: tenant, isPending: tenantPending } = useCurrentTenant();
+  const { data: contract, isPending: contractPending } = useTenantActiveContract();
+  const { data: installments = [], isPending: installmentsPending } = useTenantInstallments();
+  const { data: maintenances = [], isPending: maintenancesPending } = useTenantMaintenances();
+
+  const loading = tenantPending || contractPending || installmentsPending || maintenancesPending;
+
 
   const todayStr = today();
   const upcoming = useMemo(

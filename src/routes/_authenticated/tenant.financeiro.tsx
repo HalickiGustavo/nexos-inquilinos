@@ -9,12 +9,9 @@ import { formatBRL, formatDate, today } from "@/lib/format";
 import { downloadPdf } from "@/lib/pdf";
 import { parseExpenses, expensesTotals } from "@/lib/variable-expenses";
 import { PixPaymentDialog } from "@/components/PixPaymentDialog";
+import { usePixPayment } from "@/hooks/usePixPayment";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
-import { useServerFn } from "@tanstack/react-start";
-
-import { generateTripleSplitPix } from "@/lib/pix-split.functions";
-import { useQueryClient } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/_authenticated/tenant/financeiro")({
   head: () => ({ meta: [{ title: "Financeiro — Nexo Inquilino" }] }),
@@ -50,42 +47,10 @@ function TenantFinanceiro() {
   const { data: contract } = useTenantActiveContract();
   const { data: items = [], isLoading } = useTenantInstallments();
   const [openId, setOpenId] = useState<string | null>(null);
-  const [pixFor, setPixFor] = useState<any | null>(null);
-  const [pixLoading, setPixLoading] = useState(false);
-  const [pixError, setPixError] = useState<string | null>(null);
-  const [pixDebug, setPixDebug] = useState<unknown | null>(null);
   const [agreement, setAgreement] = useState<any | null>(null);
-  const tripleSplit = useServerFn(generateTripleSplitPix);
-  const queryClient = useQueryClient();
-
-  const openPix = async (i: any) => {
-    setPixFor(i);
-    setPixError(null);
-    setPixDebug(null);
-    if (i.pix_qrcode && i.pix_payload) return;
-    setPixLoading(true);
-    try {
-      // Split Pix (Nexo + Imobiliária + Proprietário).
-      const res: any = await tripleSplit({ data: { installmentId: i.id } });
-      if (!res?.ok) {
-        setPixError(res?.error ?? "Não foi possível gerar o PIX no momento.");
-        setPixDebug(res?.debug ?? null);
-        return;
-      }
-      setPixFor({
-        ...i,
-        pix_qrcode: res.qrCodeBase64,
-        pix_payload: res.pixPayload,
-        split_breakdown: res.breakdown,
-      });
-      queryClient.invalidateQueries({ queryKey: ["tenant-installments"] });
-    } catch (e: any) {
-      setPixError(e?.message ?? "Erro ao gerar PIX");
-      setPixDebug({ at: new Date().toISOString(), source: "client", message: e?.message ?? String(e), name: e?.name ?? null });
-    } finally {
-      setPixLoading(false);
-    }
-  };
+  const { open: openPix, dialogProps: pixDialogProps } = usePixPayment({
+    invalidateKeys: [["tenant-installments"]],
+  });
 
   useEffect(() => {
     if (!contract?.id) return;
@@ -257,23 +222,7 @@ function TenantFinanceiro() {
           );
         })}
       </div>
-      <PixPaymentDialog
-        installment={pixFor}
-        open={!!pixFor}
-        loading={pixLoading}
-        error={pixError}
-        debug={pixDebug}
-        onPaid={() => queryClient.invalidateQueries({ queryKey: ["tenant-installments"] })}
-        onOpenChange={(o) => {
-          if (!o) {
-            setPixFor(null);
-            setPixError(null);
-            setPixDebug(null);
-            setPixLoading(false);
-            queryClient.invalidateQueries({ queryKey: ["tenant-installments"] });
-          }
-        }}
-      />
+      <PixPaymentDialog {...pixDialogProps} />
     </div>
   );
 }

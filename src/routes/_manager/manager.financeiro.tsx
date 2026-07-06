@@ -318,6 +318,7 @@ function Repasses() {
 
   return (
     <Card className="mt-4"><CardContent className="p-0">
+      <div className="overflow-x-auto">
       <Table>
         <TableHeader><TableRow>
           <TableHead>Imóvel</TableHead>
@@ -364,6 +365,7 @@ function Repasses() {
           })}
         </TableBody>
       </Table>
+      </div>
     </CardContent></Card>
   );
 }

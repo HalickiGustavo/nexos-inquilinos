@@ -159,7 +159,9 @@ function Recebimentos() {
             <TableHead className="text-right">Total</TableHead>
           </TableRow></TableHeader>
           <TableBody>
-            {groupList.length === 0 && <TableRow><TableCell colSpan={8} className="text-center py-8 text-zinc-500">Sem registros</TableCell></TableRow>}
+            {q.isLoading && <TableRowsSkeleton cols={8} rows={5} />}
+            {!q.isLoading && groupList.length === 0 && <TableRow><TableCell colSpan={8} className="text-center py-8 text-zinc-500">Sem registros</TableCell></TableRow>}
+
             {groupList.map((g) => {
               const isOpen = !!expanded[g.contractId];
               const total = g.items.reduce((s: number, i: any) => {

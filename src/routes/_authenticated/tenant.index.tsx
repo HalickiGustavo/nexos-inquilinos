@@ -190,11 +190,47 @@ function TenantHome() {
           hint="Avisos importantes do seu contrato"
         />
       </div>
+      </>
+      )}
 
       <PixPaymentDialog {...pixDialogProps} />
     </div>
   );
 }
+
+function TenantHomeSkeleton() {
+  return (
+    <>
+      <Card className="border-border">
+        <div className="p-5 sm:p-6 space-y-4">
+          <div className="flex items-center justify-between gap-3">
+            <Skeleton className="h-5 w-20 rounded-full" />
+            <Skeleton className="h-3 w-24" />
+          </div>
+          <Skeleton className="h-12 w-48" />
+          <Skeleton className="h-4 w-40" />
+          <div className="flex flex-col sm:flex-row gap-2 pt-2">
+            <Skeleton className="h-11 flex-1" />
+            <Skeleton className="h-11 sm:w-32" />
+          </div>
+        </div>
+      </Card>
+      <div className="grid grid-cols-2 gap-3">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Card key={i} className="h-full p-4 border-border space-y-3">
+            <div className="flex items-center gap-2">
+              <Skeleton className="size-7 rounded-md" />
+              <Skeleton className="h-3 w-16" />
+            </div>
+            <Skeleton className="h-4 w-3/4" />
+            <Skeleton className="h-3 w-1/2" />
+          </Card>
+        ))}
+      </div>
+    </>
+  );
+}
+
 
 function SecondaryCard({
   to,

@@ -36,13 +36,14 @@ function monthsBetween(start: string, end: string) {
 function TenantContrato() {
   const { data: contract, isLoading } = useTenantActiveContract();
 
-  if (isLoading) return <p className="text-muted-foreground text-sm">Carregando...</p>;
+  if (isLoading) return <TenantContratoSkeleton />;
   if (!contract)
     return (
       <Card className="p-8 text-center">
         <p className="text-muted-foreground">Você não possui contrato ativo no momento.</p>
       </Card>
     );
+
 
   const total = monthsBetween(contract.start_date, contract.end_date);
   const elapsed = Math.max(

@@ -153,10 +153,11 @@ function SignInForm() {
     queryFn: () => fetchSiteKey(),
     staleTime: Infinity,
   });
-  const recaptchaSiteKey = siteKeyData?.siteKey;
+  const recaptchaSiteKey = siteKeyData?.siteKey ?? null;
+  const recaptchaEnabled = siteKeyData?.enabled ?? true;
 
-
-  const canSubmit = !!email && !!password && !!captchaToken && !busy;
+  const canSubmit =
+    !!email && !!password && (!recaptchaEnabled || !!captchaToken) && !busy;
 
   return (
     <form

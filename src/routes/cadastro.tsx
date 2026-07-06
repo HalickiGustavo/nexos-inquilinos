@@ -371,14 +371,16 @@ function StepCredentials({
   const strength = useMemo(() => scorePassword(form.password), [form.password]);
   const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email);
   const matches = form.password.length > 0 && form.password === form.confirm;
-  const canNext = emailOk && strength.valid && matches && !!form.captchaToken;
   const fetchSiteKey = useServerFn(getRecaptchaSiteKey);
   const { data: siteKeyData } = useQuery({
     queryKey: ["recaptcha-site-key"],
     queryFn: () => fetchSiteKey(),
     staleTime: Infinity,
   });
-  const recaptchaSiteKey = siteKeyData?.siteKey;
+  const recaptchaSiteKey = siteKeyData?.siteKey ?? null;
+  const recaptchaEnabled = siteKeyData?.enabled ?? true;
+  const canNext =
+    emailOk && strength.valid && matches && (!recaptchaEnabled || !!form.captchaToken);
 
 
   return (

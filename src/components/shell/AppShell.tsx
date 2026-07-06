@@ -258,10 +258,17 @@ export function AppShell({
                   to={item.to as any}
                   data-tour={item.tour}
                   className={cn(
-                    "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs whitespace-nowrap border transition-colors",
+                    "flex items-center gap-2 px-3 py-1.5 text-xs whitespace-nowrap transition-colors",
+                    mobileNavStyle === "pill"
+                      ? "rounded-full border"
+                      : "rounded-md",
                     active
-                      ? "bg-primary text-primary-foreground border-primary"
-                      : "bg-muted text-muted-foreground border-border hover:text-foreground",
+                      ? mobileNavStyle === "pill"
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "bg-primary text-primary-foreground"
+                      : mobileNavStyle === "pill"
+                      ? "bg-muted text-muted-foreground border-border hover:text-foreground"
+                      : "bg-muted text-muted-foreground",
                   )}
                 >
                   <Icon className="size-3.5" />
@@ -271,7 +278,12 @@ export function AppShell({
             })}
             <button
               onClick={doSignOut}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs whitespace-nowrap border bg-muted text-muted-foreground border-border hover:text-foreground"
+              className={cn(
+                "flex items-center gap-2 px-3 py-1.5 text-xs whitespace-nowrap transition-colors",
+                mobileNavStyle === "pill"
+                  ? "rounded-full border bg-muted text-muted-foreground border-border hover:text-foreground"
+                  : "rounded-md bg-muted text-muted-foreground",
+              )}
             >
               <LogOut className="size-3.5" />
               Sair

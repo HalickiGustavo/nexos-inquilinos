@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { LayoutDashboard, Receipt, Building2, Wrench, Coins, Loader2 } from "lucide-react";
+import { LayoutDashboard, Wallet, Wrench, Loader2 } from "lucide-react";
 import { AppShell, type ShellNavGroup } from "@/components/shell/AppShell";
 import { useAuth } from "@/lib/auth";
 import { useUserRole, roleHomePath } from "@/lib/useUserRole";
@@ -16,11 +16,9 @@ export const Route = createFileRoute("/_landlord")({
 const navGroups: ShellNavGroup[] = [
   {
     items: [
-      { to: "/landlord", label: "Visão Geral", icon: LayoutDashboard, exact: true },
-      { to: "/landlord/financeiro", label: "Conta Corrente", icon: Receipt },
-      { to: "/landlord/imoveis", label: "Imóveis", icon: Building2 },
+      { to: "/landlord", label: "Dashboard", icon: LayoutDashboard, exact: true },
+      { to: "/landlord/financeiro", label: "Finanças", icon: Wallet },
       { to: "/landlord/manutencoes", label: "Manutenções", icon: Wrench },
-      { to: "/landlord/saldo", label: "Saldo & Saque", icon: Coins },
     ],
   },
 ];

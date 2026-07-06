@@ -106,7 +106,7 @@ function PropertyCardImpl({
   const openDetail = (e: React.MouseEvent) => {
     const target = e.target as HTMLElement;
     if (target.closest("a,button,[role='menu'],[role='menuitem']")) return;
-    navigate({ to: "/properties/$id", params: { id: p.id } });
+    setDetailOpen(true);
   };
 
   return (

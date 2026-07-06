@@ -1,17 +1,26 @@
-import { createFileRoute, Outlet, useNavigate, useRouterState, Link } from "@tanstack/react-router";
+import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { LayoutDashboard, Briefcase, Wallet, Users, ClipboardCheck, LogOut, Loader2, FileDigit, Database, Globe, Shuffle, Inbox, Home, KeyRound, UserCog } from "lucide-react";
-import { AlertsBell } from "@/components/AlertsBell";
-import { NexoLogo } from "@/components/NexoLogo";
-import { InstallPwaButton } from "@/components/InstallPwaButton";
+import {
+  LayoutDashboard,
+  Briefcase,
+  Wallet,
+  Users,
+  ClipboardCheck,
+  Loader2,
+  FileDigit,
+  Database,
+  Globe,
+  Shuffle,
+  Inbox,
+  Home,
+  KeyRound,
+  UserCog,
+} from "lucide-react";
+import { AppShell, type ShellNavGroup } from "@/components/shell/AppShell";
 import { GlobalSearch } from "@/components/GlobalSearch";
 import { useAuth } from "@/lib/auth";
 import { useUserRole, roleHomePath } from "@/lib/useUserRole";
 import { useManagerAlerts } from "@/lib/alerts";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { OnboardingTour } from "@/components/OnboardingTour";
 import { managerTourSteps } from "@/lib/tour-steps";
 
 export const Route = createFileRoute("/_manager")({
@@ -19,10 +28,7 @@ export const Route = createFileRoute("/_manager")({
   component: ManagerLayout,
 });
 
-type NavItem = { to: string; label: string; icon: typeof LayoutDashboard; exact?: boolean; tour: string };
-type NavGroup = { label: string | null; items: NavItem[] };
-
-const navGroups: NavGroup[] = [
+const navGroups: ShellNavGroup[] = [
   {
     label: null,
     items: [
@@ -68,13 +74,10 @@ const navGroups: NavGroup[] = [
   },
 ];
 
-const flatNav = navGroups.flatMap((g) => g.items);
-
 function ManagerLayout() {
-  const { user, loading, signOut } = useAuth();
+  const { user, loading } = useAuth();
   const { role, loading: roleLoading } = useUserRole();
   const navigate = useNavigate();
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { alerts } = useManagerAlerts();
 
   useEffect(() => {
@@ -88,132 +91,24 @@ function ManagerLayout() {
   }, [role, roleLoading, navigate]);
 
   if (loading || !user || roleLoading || role !== "manager") {
-    return <div className="min-h-screen grid place-items-center bg-background"><Loader2 className="size-6 animate-spin text-primary" /></div>;
+    return (
+      <div className="min-h-screen grid place-items-center bg-background">
+        <Loader2 className="size-6 animate-spin text-primary" />
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen flex bg-background text-foreground">
-      {/* ============ DESKTOP SIDEBAR ============ */}
-      <aside className="hidden md:fixed md:left-0 md:top-0 md:h-screen md:flex w-60 lg:w-64 flex-col bg-sidebar text-sidebar-foreground border-r border-sidebar-border">
-        <div className="px-4 py-4 border-b border-sidebar-border">
-          <Link to="/manager" className="flex items-center gap-2">
-            <NexoLogo className="h-9" alt="NEXO" />
-            <span className="text-[10px] text-sidebar-foreground/60 uppercase tracking-wider hidden lg:block">Imobiliária</span>
-          </Link>
-        </div>
-
-        <nav className="flex-1 px-2.5 py-3 space-y-4 overflow-y-auto">
-          {navGroups.map((group, gi) => (
-            <div key={gi}>
-              {group.label && (
-                <div className="px-2.5 mb-1.5 text-[10px] uppercase tracking-[0.14em] text-sidebar-foreground/45 font-semibold">
-                  {group.label}
-                </div>
-              )}
-              <div className="space-y-0.5">
-                {group.items.map((item) => {
-                  const active = item.exact ? pathname === item.to : pathname.startsWith(item.to);
-                  const Icon = item.icon;
-                  return (
-                    <Link
-                      key={item.to}
-                      to={item.to}
-                      data-tour={item.tour}
-                      className={cn(
-                        "group relative flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm transition-colors",
-                        active
-                          ? "bg-sidebar-accent text-sidebar-foreground font-medium"
-                          : "text-sidebar-foreground/75 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground",
-                      )}
-                    >
-                      {active && (
-                        <span className="absolute left-0 top-1.5 bottom-1.5 w-0.5 rounded-r-full bg-primary" aria-hidden />
-                      )}
-                      <Icon className={cn("size-4 shrink-0", active ? "text-primary" : "")} strokeWidth={active ? 2.2 : 1.75} />
-                      <span className="truncate">{item.label}</span>
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
-        </nav>
-
-        <div className="p-2.5 border-t border-sidebar-border space-y-1">
-          <div className="px-2.5 py-1.5 text-[11px] text-sidebar-foreground/55 truncate">{user.email}</div>
-          <ThemeToggle />
-          <Button
-            variant="ghost"
-            className="w-full justify-start text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground h-9"
-            onClick={async () => { await signOut(); navigate({ to: "/login", replace: true }); }}
-          >
-            <LogOut className="size-4 mr-2" />Sair
-          </Button>
-        </div>
-      </aside>
-
-      {/* ============ CONTENT ============ */}
-      <div className="flex-1 flex flex-col min-w-0 md:ml-60 lg:ml-64">
-        {/* Desktop top header */}
-        <div className="hidden md:flex sticky top-0 z-30 h-14 items-center gap-3 px-6 lg:px-8 bg-background/85 backdrop-blur border-b border-border">
-          <div className="flex-1 max-w-md">
-            <GlobalSearch />
-          </div>
-          <div className="ml-auto flex items-center gap-1">
-            <AlertsBell alerts={alerts} seeAllHref="/manager/alertas" />
-          </div>
-        </div>
-
-        {/* Mobile top bar */}
-        <div className="md:hidden sticky top-0 z-40 bg-card border-b border-border shadow-sm">
-          <div className="flex items-center justify-between px-4 py-3 gap-2">
-            <Link to="/manager" className="flex items-center">
-              <NexoLogo className="h-8" alt="NEXO" />
-            </Link>
-            <div className="flex items-center gap-1">
-              <AlertsBell alerts={alerts} seeAllHref="/manager/alertas" />
-              <ThemeToggle size="icon" variant="ghost" />
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-foreground hover:bg-muted"
-                onClick={async () => { await signOut(); navigate({ to: "/login", replace: true }); }}
-              >
-                <LogOut className="size-5" />
-              </Button>
-            </div>
-          </div>
-          <div className="px-4 pb-2">
-            <GlobalSearch />
-          </div>
-
-          <nav className="flex overflow-x-auto gap-1 p-2 border-t border-border">
-            {flatNav.map((item) => {
-              const active = item.exact ? pathname === item.to : pathname.startsWith(item.to);
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.to}
-                  to={item.to}
-                  data-tour={item.tour}
-                  className={cn(
-                    "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs whitespace-nowrap border transition-colors",
-                    active
-                      ? "bg-primary text-primary-foreground border-primary"
-                      : "bg-muted text-muted-foreground border-border hover:text-foreground",
-                  )}
-                >
-                  <Icon className="size-3.5" />{item.label}
-                </Link>
-              );
-            })}
-          </nav>
-        </div>
-
-        <main className="flex-1 overflow-y-auto"><Outlet /></main>
-      </div>
-      <OnboardingTour tourKey="manager" steps={managerTourSteps} />
-      <InstallPwaButton bottomOffset={88} />
-    </div>
+    <AppShell
+      brand={{ to: "/manager", subtitle: "Imobiliária" }}
+      navGroups={navGroups}
+      variant="accent"
+      sidebarWidth="w-60 lg:w-64"
+      search={<GlobalSearch />}
+      alerts={{ alerts, seeAllHref: "/manager/alertas" }}
+      tour={{ key: "manager", steps: managerTourSteps }}
+    >
+      <Outlet />
+    </AppShell>
   );
 }

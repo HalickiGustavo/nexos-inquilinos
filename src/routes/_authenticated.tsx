@@ -1,4 +1,4 @@
-import { createFileRoute, Outlet, useNavigate, useRouterState, Link } from "@tanstack/react-router";
+import { createFileRoute, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect } from "react";
 import {
   LayoutDashboard,
@@ -7,9 +7,7 @@ import {
   FileText,
   Wallet,
   Wrench,
-  LogOut,
   Loader2,
-  Plug,
   Coins,
   ClipboardCheck,
   FolderOpen,
@@ -17,13 +15,8 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useUserRole } from "@/lib/useUserRole";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { AppShell, type ShellNavGroup } from "@/components/shell/AppShell";
 import { TenantShell } from "@/components/TenantShell";
-import { InstallPwaButton } from "@/components/InstallPwaButton";
-import { NexoLogo } from "@/components/NexoLogo";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { OnboardingTour } from "@/components/OnboardingTour";
 import { ownerTourSteps } from "@/lib/tour-steps";
 import { useWarmOwnerCache, useIdlePreloadRoutes } from "@/lib/prefetch";
 
@@ -31,19 +24,22 @@ export const Route = createFileRoute("/_authenticated")({
   component: AuthLayout,
 });
 
-const navItems = [
-  { to: "/dashboard", label: "Visão Geral", icon: LayoutDashboard, tour: "nav-dashboard" },
-  { to: "/conta-corrente", label: "Conta Corrente", icon: Coins, tour: "nav-conta-corrente" },
-  { to: "/properties", label: "Imóveis", icon: Building2, tour: "nav-properties" },
-  { to: "/tenants", label: "Inquilinos", icon: Users, tour: "nav-tenants" },
-  { to: "/contracts", label: "Contratos", icon: FileText, tour: "nav-contracts" },
-  { to: "/financials", label: "Finanças", icon: Wallet, tour: "nav-financials" },
-  { to: "/maintenances", label: "Manutenções", icon: Wrench, tour: "nav-maintenances" },
-  { to: "/vistorias", label: "Vistorias", icon: ClipboardCheck, tour: undefined },
-  { to: "/documentos", label: "Documentos", icon: FolderOpen, tour: undefined },
-  { to: "/relatorios", label: "Relatórios", icon: BarChart3, tour: undefined },
-  
-] as const;
+const navGroups: ShellNavGroup[] = [
+  {
+    items: [
+      { to: "/dashboard", label: "Visão Geral", icon: LayoutDashboard, tour: "nav-dashboard" },
+      { to: "/conta-corrente", label: "Conta Corrente", icon: Coins, tour: "nav-conta-corrente" },
+      { to: "/properties", label: "Imóveis", icon: Building2, tour: "nav-properties" },
+      { to: "/tenants", label: "Inquilinos", icon: Users, tour: "nav-tenants" },
+      { to: "/contracts", label: "Contratos", icon: FileText, tour: "nav-contracts" },
+      { to: "/financials", label: "Finanças", icon: Wallet, tour: "nav-financials" },
+      { to: "/maintenances", label: "Manutenções", icon: Wrench, tour: "nav-maintenances" },
+      { to: "/vistorias", label: "Vistorias", icon: ClipboardCheck },
+      { to: "/documentos", label: "Documentos", icon: FolderOpen },
+      { to: "/relatorios", label: "Relatórios", icon: BarChart3 },
+    ],
+  },
+];
 
 const OWNER_PREFETCH_PATHS = [
   "/dashboard",
@@ -56,12 +52,11 @@ const OWNER_PREFETCH_PATHS = [
 ];
 
 function AuthLayout() {
-  const { user, loading, signOut } = useAuth();
+  const { user, loading } = useAuth();
   const { role, loading: roleLoading } = useUserRole();
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
-  // Warm React Query cache + preload route chunks once the owner is authenticated
   useWarmOwnerCache(!!user && role === "owner");
   useIdlePreloadRoutes(OWNER_PREFETCH_PATHS, !!user && role === "owner");
 
@@ -69,7 +64,6 @@ function AuthLayout() {
     if (!loading && !user) navigate({ to: "/login", replace: true });
   }, [user, loading, navigate]);
 
-  // Role-based path enforcement
   useEffect(() => {
     if (!role) return;
     const isTenantPath = pathname === "/tenant" || pathname.startsWith("/tenant/");
@@ -84,7 +78,6 @@ function AuthLayout() {
     }
   }, [role, pathname, navigate]);
 
-
   if (loading || !user || roleLoading) {
     return (
       <div className="min-h-screen grid place-items-center">
@@ -98,104 +91,16 @@ function AuthLayout() {
   }
 
   return (
-    <div className="min-h-screen flex bg-background">
-      {/* Sidebar */}
-      <aside className="hidden md:fixed md:left-0 md:top-0 md:h-screen md:flex w-64 flex-col bg-sidebar text-sidebar-foreground border-r border-sidebar-border">
-        <div className="p-5 flex items-center gap-3 border-b border-sidebar-border bg-card">
-          <NexoLogo className="h-10" />
-        </div>
-
-        <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
-          {navItems.map((item) => {
-            const active = pathname.startsWith(item.to);
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.to}
-                to={item.to}
-                data-tour={item.tour}
-                className={cn(
-                  "flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors",
-                  active
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "hover:bg-sidebar-accent text-sidebar-foreground/80 hover:text-sidebar-foreground"
-                )}
-              >
-                <Icon className="size-4" />
-                {item.label}
-              </Link>
-            );
-          })}
-        </nav>
-        <div className="p-3 border-t border-sidebar-border space-y-1">
-          <div className="px-3 py-2 text-xs text-sidebar-foreground/60 truncate">{user.email}</div>
-          <ThemeToggle />
-          <Button
-            variant="ghost"
-            className="w-full justify-start text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground"
-            onClick={async () => {
-              await signOut();
-              navigate({ to: "/login", replace: true });
-            }}
-          >
-            <LogOut className="size-4 mr-2" />
-            Sair
-          </Button>
-        </div>
-      </aside>
-
-      {/* Mobile top bar */}
-      <div className="flex-1 flex flex-col min-w-0 md:ml-64">
-        <div className="md:hidden sticky top-0 z-40 bg-card border-b shadow-sm">
-          <header className="flex items-center justify-between p-4">
-            <div className="flex items-center gap-2">
-              <NexoLogo className="h-7" />
-            </div>
-            <div className="flex items-center gap-2">
-              <ThemeToggle size="icon" variant="ghost" />
-              <Button variant="ghost" size="sm" onClick={async () => { await signOut(); navigate({ to: "/login" }); }}>
-                <LogOut className="size-4" />
-              </Button>
-            </div>
-          </header>
-          <nav className="flex overflow-x-auto gap-1 p-2 border-t">
-            {navItems.map((item) => {
-              const active = pathname.startsWith(item.to);
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.to}
-                  to={item.to}
-                  data-tour={item.tour}
-                  className={cn(
-                    "flex items-center gap-2 px-3 py-1.5 rounded-md text-xs whitespace-nowrap",
-                    active ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
-                  )}
-                >
-                  <Icon className="size-3.5" />
-                  {item.label}
-                </Link>
-              );
-            })}
-            <button
-              onClick={async () => {
-                await signOut();
-                navigate({ to: "/login", replace: true });
-              }}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-md text-xs whitespace-nowrap bg-muted text-muted-foreground"
-            >
-              <LogOut className="size-3.5" />
-              Sair
-            </button>
-          </nav>
-        </div>
-        <main className="flex-1 overflow-y-auto">
-          <Outlet />
-        </main>
-      </div>
-
-      <OnboardingTour tourKey="owner" steps={ownerTourSteps} />
-      <InstallPwaButton bottomOffset={88} />
-    </div>
+    <AppShell
+      brand={{ to: "/dashboard" }}
+      navGroups={navGroups}
+      variant="primary"
+      sidebarWidth="w-64"
+      mobileNavStyle="chip"
+      mobileLogoClass="h-7"
+      tour={{ key: "owner", steps: ownerTourSteps }}
+    >
+      <Outlet />
+    </AppShell>
   );
 }

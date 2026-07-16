@@ -577,6 +577,92 @@ export type Database = {
           },
         ]
       }
+      efi_charges: {
+        Row: {
+          amount: number
+          brcode: string | null
+          created_at: string
+          id: string
+          installment_id: string | null
+          kind: string
+          loc_id: number | null
+          manager_user_id: string | null
+          paid_at: string | null
+          qrcode_image_base64: string | null
+          raw: Json | null
+          status: string
+          txid: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          brcode?: string | null
+          created_at?: string
+          id?: string
+          installment_id?: string | null
+          kind?: string
+          loc_id?: number | null
+          manager_user_id?: string | null
+          paid_at?: string | null
+          qrcode_image_base64?: string | null
+          raw?: Json | null
+          status?: string
+          txid?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          brcode?: string | null
+          created_at?: string
+          id?: string
+          installment_id?: string | null
+          kind?: string
+          loc_id?: number | null
+          manager_user_id?: string | null
+          paid_at?: string | null
+          qrcode_image_base64?: string | null
+          raw?: Json | null
+          status?: string
+          txid?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "efi_charges_installment_id_fkey"
+            columns: ["installment_id"]
+            isOneToOne: false
+            referencedRelation: "installments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      efi_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          payload: Json
+          processed_at: string | null
+          received_at: string
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          payload: Json
+          processed_at?: string | null
+          received_at?: string
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          payload?: Json
+          processed_at?: string | null
+          received_at?: string
+        }
+        Relationships: []
+      }
       inspections: {
         Row: {
           contract_id: string

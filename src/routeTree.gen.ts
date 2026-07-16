@@ -33,6 +33,7 @@ import { Route as ManagerManagerIndexRouteImport } from './routes/_manager/manag
 import { Route as LandlordLandlordIndexRouteImport } from './routes/_landlord/landlord.index'
 import { Route as AuthenticatedTenantIndexRouteImport } from './routes/_authenticated/tenant.index'
 import { Route as ApiPublicStarkWebhookRouteImport } from './routes/api/public/stark-webhook'
+import { Route as ApiPublicEfiWebhookRouteImport } from './routes/api/public/efi-webhook'
 import { Route as ManagerManagerVistoriasRouteImport } from './routes/_manager/manager.vistorias'
 import { Route as ManagerManagerProprietariosRouteImport } from './routes/_manager/manager.proprietarios'
 import { Route as ManagerManagerPortaisRouteImport } from './routes/_manager/manager.portais'
@@ -193,6 +194,11 @@ const AuthenticatedTenantIndexRoute =
 const ApiPublicStarkWebhookRoute = ApiPublicStarkWebhookRouteImport.update({
   id: '/api/public/stark-webhook',
   path: '/api/public/stark-webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicEfiWebhookRoute = ApiPublicEfiWebhookRouteImport.update({
+  id: '/api/public/efi-webhook',
+  path: '/api/public/efi-webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ManagerManagerVistoriasRoute = ManagerManagerVistoriasRouteImport.update({
@@ -467,6 +473,7 @@ export interface FileRoutesByFullPath {
   '/manager/portais': typeof ManagerManagerPortaisRoute
   '/manager/proprietarios': typeof ManagerManagerProprietariosRoute
   '/manager/vistorias': typeof ManagerManagerVistoriasRoute
+  '/api/public/efi-webhook': typeof ApiPublicEfiWebhookRoute
   '/api/public/stark-webhook': typeof ApiPublicStarkWebhookRoute
   '/tenant/': typeof AuthenticatedTenantIndexRoute
   '/landlord/': typeof LandlordLandlordIndexRoute
@@ -530,6 +537,7 @@ export interface FileRoutesByTo {
   '/manager/portais': typeof ManagerManagerPortaisRoute
   '/manager/proprietarios': typeof ManagerManagerProprietariosRoute
   '/manager/vistorias': typeof ManagerManagerVistoriasRoute
+  '/api/public/efi-webhook': typeof ApiPublicEfiWebhookRoute
   '/api/public/stark-webhook': typeof ApiPublicStarkWebhookRoute
   '/tenant': typeof AuthenticatedTenantIndexRoute
   '/landlord': typeof LandlordLandlordIndexRoute
@@ -597,6 +605,7 @@ export interface FileRoutesById {
   '/_manager/manager/portais': typeof ManagerManagerPortaisRoute
   '/_manager/manager/proprietarios': typeof ManagerManagerProprietariosRoute
   '/_manager/manager/vistorias': typeof ManagerManagerVistoriasRoute
+  '/api/public/efi-webhook': typeof ApiPublicEfiWebhookRoute
   '/api/public/stark-webhook': typeof ApiPublicStarkWebhookRoute
   '/_authenticated/tenant/': typeof AuthenticatedTenantIndexRoute
   '/_landlord/landlord/': typeof LandlordLandlordIndexRoute
@@ -662,6 +671,7 @@ export interface FileRouteTypes {
     | '/manager/portais'
     | '/manager/proprietarios'
     | '/manager/vistorias'
+    | '/api/public/efi-webhook'
     | '/api/public/stark-webhook'
     | '/tenant/'
     | '/landlord/'
@@ -725,6 +735,7 @@ export interface FileRouteTypes {
     | '/manager/portais'
     | '/manager/proprietarios'
     | '/manager/vistorias'
+    | '/api/public/efi-webhook'
     | '/api/public/stark-webhook'
     | '/tenant'
     | '/landlord'
@@ -791,6 +802,7 @@ export interface FileRouteTypes {
     | '/_manager/manager/portais'
     | '/_manager/manager/proprietarios'
     | '/_manager/manager/vistorias'
+    | '/api/public/efi-webhook'
     | '/api/public/stark-webhook'
     | '/_authenticated/tenant/'
     | '/_landlord/landlord/'
@@ -821,6 +833,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   ManagerSetupRoute: typeof ManagerSetupRoute
   TenantSetupRoute: typeof TenantSetupRoute
+  ApiPublicEfiWebhookRoute: typeof ApiPublicEfiWebhookRoute
   ApiPublicStarkWebhookRoute: typeof ApiPublicStarkWebhookRoute
   ApiPublicHooksGenerateUpcomingBoletosRoute: typeof ApiPublicHooksGenerateUpcomingBoletosRoute
   ApiPublicHooksIssueSingleBoletoRoute: typeof ApiPublicHooksIssueSingleBoletoRoute
@@ -1005,6 +1018,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/stark-webhook'
       fullPath: '/api/public/stark-webhook'
       preLoaderRoute: typeof ApiPublicStarkWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/efi-webhook': {
+      id: '/api/public/efi-webhook'
+      path: '/api/public/efi-webhook'
+      fullPath: '/api/public/efi-webhook'
+      preLoaderRoute: typeof ApiPublicEfiWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_manager/manager/vistorias': {
@@ -1426,6 +1446,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   ManagerSetupRoute: ManagerSetupRoute,
   TenantSetupRoute: TenantSetupRoute,
+  ApiPublicEfiWebhookRoute: ApiPublicEfiWebhookRoute,
   ApiPublicStarkWebhookRoute: ApiPublicStarkWebhookRoute,
   ApiPublicHooksGenerateUpcomingBoletosRoute:
     ApiPublicHooksGenerateUpcomingBoletosRoute,
@@ -1450,13 +1471,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

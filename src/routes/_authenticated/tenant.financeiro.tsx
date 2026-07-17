@@ -16,7 +16,9 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
 import { downloadBoletoPdf } from "@/lib/boleto-download.functions";
+import { requestBoletoForInstallment } from "@/lib/boleto-issue.functions";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/_authenticated/tenant/financeiro")({
   head: () => ({ meta: [{ title: "Financeiro — Nexo Inquilino" }] }),

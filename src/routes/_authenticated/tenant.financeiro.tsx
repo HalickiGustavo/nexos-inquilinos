@@ -16,7 +16,9 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
 import { downloadBoletoPdf } from "@/lib/boleto-download.functions";
+import { requestBoletoForInstallment } from "@/lib/boleto-issue.functions";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/_authenticated/tenant/financeiro")({
   head: () => ({ meta: [{ title: "Financeiro — Nexo Inquilino" }] }),
@@ -57,7 +59,25 @@ function TenantFinanceiro() {
     invalidateKeys: [["tenant-installments"]],
   });
   const downloadBoleto = useServerFn(downloadBoletoPdf);
+  const issueBoleto = useServerFn(requestBoletoForInstallment);
   const [boletoLoadingId, setBoletoLoadingId] = useState<string | null>(null);
+  const [issuingId, setIssuingId] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+
+  const generateBoleto = async (installmentId: string) => {
+    setIssuingId(installmentId);
+    try {
+      const res: any = await issueBoleto({ data: { installmentId } });
+      toast.success(
+        res.alreadyExisted ? "Boleto já disponível" : "Boleto gerado com sucesso",
+      );
+      await queryClient.invalidateQueries({ queryKey: ["tenant-installments"] });
+    } catch (e: any) {
+      toast.error(e?.message ?? "Não foi possível gerar o boleto");
+    } finally {
+      setIssuingId(null);
+    }
+  };
 
   const openBoletoPdf = async (installmentId: string) => {
     setBoletoLoadingId(installmentId);
@@ -253,9 +273,15 @@ function TenantFinanceiro() {
                           {boletoLoadingId === i.id ? "Abrindo boleto..." : "Visualizar Boleto PDF"}
                         </Button>
                       ) : (
-                        <p className="text-xs text-muted-foreground text-center">
-                          Boleto em emissão. Use o PIX acima para pagamento imediato.
-                        </p>
+                        <Button
+                          variant="outline"
+                          className="w-full"
+                          disabled={issuingId === i.id}
+                          onClick={() => generateBoleto(i.id)}
+                        >
+                          <Download className="size-4 mr-2" />
+                          {issuingId === i.id ? "Gerando boleto..." : "Gerar Boleto"}
+                        </Button>
                       )}
                     </>
                   )}

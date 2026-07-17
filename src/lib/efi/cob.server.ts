@@ -58,10 +58,18 @@ export async function createOrReuseEfiPix(input: CreateEfiPixInput): Promise<Cre
   let pixPayload = cob.pixCopiaECola ?? "";
   let qrCodeBase64 = "";
   if (locId != null) {
-    const qr = await efiQrCodeGet(locId);
-    pixPayload = qr.qrcode || pixPayload;
-    qrCodeBase64 = (qr.imagemQrcode ?? "").replace(/^data:image\/png;base64,/, "");
+    // qrcode_get exige scope pix.read; se falhar (insufficient_scope, 404, etc.)
+    // não invalidamos a cobrança — o pixCopiaECola da criação já é suficiente
+    // (o cliente renderiza o QR a partir do payload).
+    try {
+      const qr = await efiQrCodeGet(locId);
+      pixPayload = qr.qrcode || pixPayload;
+      qrCodeBase64 = (qr.imagemQrcode ?? "").replace(/^data:image\/png;base64,/, "");
+    } catch (err) {
+      console.warn("[efi] qrcode_get failed, using pixCopiaECola fallback", err);
+    }
   }
+
 
   return {
     txid,

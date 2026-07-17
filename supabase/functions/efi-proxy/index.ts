@@ -43,17 +43,29 @@ function efiBaseUrl(): string {
 let _client: Deno.HttpClient | null = null;
 async function getHttpClient(): Promise<Deno.HttpClient> {
   if (_client) return _client;
-  const p12b64 = getEnv("EFI_CERT_P12_BASE64");
-  const password = Deno.env.get("EFI_CERT_PASSWORD") ?? "";
+  const p12b64 = getEnv("EFI_CERT_P12_BASE64").replace(/\s+/g, "");
+  // Homologação Efí: certificado SEM senha. Ignoramos EFI_CERT_PASSWORD e
+  // tentamos todos os formatos aceitos por node-forge (undefined / "" / null)
+  // até um deles decodificar o PKCS#12.
   const p12 = Uint8Array.from(atob(p12b64), (c) => c.charCodeAt(0));
 
-  // Use node-forge (via npm:) to decode PKCS#12 → PEM. It is the most
-  // battle-tested option available in Supabase Edge Runtime.
   const forgeMod: any = await import("npm:node-forge");
   const forge: any = forgeMod.default ?? forgeMod;
   const p12Der = String.fromCharCode(...p12);
   const p12Asn1 = forge.asn1.fromDer(p12Der);
-  const p12Obj = forge.pkcs12.pkcs12FromAsn1(p12Asn1, false, password);
+
+  const passwordCandidates: Array<string | undefined | null> = [undefined, "", null];
+  let p12Obj: any = null;
+  let lastErr: unknown = null;
+  for (const pwd of passwordCandidates) {
+    try {
+      p12Obj = forge.pkcs12.pkcs12FromAsn1(p12Asn1, false, pwd as any);
+      break;
+    } catch (e) {
+      lastErr = e;
+    }
+  }
+  if (!p12Obj) throw lastErr ?? new Error("failed to decode PKCS#12");
 
   let certPem = "";
   let keyPem = "";

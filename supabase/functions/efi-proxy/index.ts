@@ -206,6 +206,20 @@ Deno.serve(async (req) => {
         const res = await efiFetch(`/v2/loc/${locId}/qrcode`, { method: "GET" });
         return efiJsonResponse(res);
       }
+      case "boleto_create": {
+        const { body } = payload.params ?? {};
+        if (!body) return json(400, { error: "missing body" });
+        const res = await cobrancasFetch(`/v1/charge/one-step`, { method: "POST", json: body });
+        return cobrancasJsonResponse(res);
+      }
+      case "boleto_get": {
+        const { chargeId } = payload.params ?? {};
+        if (!chargeId) return json(400, { error: "missing chargeId" });
+        const res = await cobrancasFetch(`/v1/charge/${chargeId}`, { method: "GET" });
+        return cobrancasJsonResponse(res);
+      }
+      default:
+        return json(400, { error: `unknown action: ${payload.action}` });
       default:
         return json(400, { error: `unknown action: ${payload.action}` });
     }

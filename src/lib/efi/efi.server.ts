@@ -99,3 +99,46 @@ export async function efiQrCodeGet(locId: number | string): Promise<{
 }> {
   return callProxy("qrcode_get", { locId });
 }
+
+// ---------- Boleto (API Cobranças) ----------
+export type EfiBoletoRequest = {
+  items: Array<{ name: string; value: number; amount: number }>; // value em centavos
+  payment: {
+    banking_billet: {
+      expire_at: string; // YYYY-MM-DD
+      message?: string;
+      customer: {
+        name: string;
+        cpf?: string;
+        juridical_person?: { corporate_name: string; cnpj: string };
+        phone_number?: string;
+        email?: string;
+      };
+      fine?: number;      // % *100 (ex: 200 = 2%)
+      interest?: number;  // % *100 ao mês
+    };
+  };
+};
+
+export type EfiBoletoResponse = {
+  code: number;
+  data: {
+    charge_id: number;
+    status: string;
+    total: number;
+    payment: string;
+    barcode: string;
+    pix?: { qrcode: string; qrcode_image: string };
+    link: string;      // URL pública do boleto (HTML)
+    pdf: { charge: string }; // URL pública do PDF
+    expire_at: string;
+  };
+};
+
+export async function efiBoletoCreate(body: EfiBoletoRequest): Promise<EfiBoletoResponse> {
+  return callProxy<EfiBoletoResponse>("boleto_create", { body });
+}
+
+export async function efiBoletoGet(chargeId: number | string): Promise<EfiBoletoResponse> {
+  return callProxy<EfiBoletoResponse>("boleto_get", { chargeId });
+}

@@ -47,22 +47,30 @@ export const Route = createFileRoute("/api/public/hooks/generate-upcoming-boleto
           }
 
 
-          // 2) Reconciliação: verifica boletos ainda `created` para
+          // 2) Reconciliação: verifica boletos Efí ainda `created` para
           // detectar pagamentos perdidos (webhook falhou).
           const { data: openBoletos } = await supabaseAdmin
-            .from("stark_charges")
-            .select("stark_id")
+            .from("efi_charges")
+            .select("txid, installment_id")
             .eq("kind", "boleto")
             .eq("status", "created")
-            .not("stark_id", "is", null)
+            .not("txid", "is", null)
             .limit(200);
 
           let reconciled = 0;
           for (const c of (openBoletos ?? []) as any[]) {
             try {
-              const res = await getBoleto(c.stark_id);
-              if (res.boleto?.status === "paid") {
-                await confirmChargePaid({ starkId: c.stark_id, kind: "boleto" });
+              const res = await efiBoletoGet(Number(c.txid));
+              const status = String(res.data?.status ?? "").toLowerCase();
+              if (status === "paid" || status === "settled") {
+                await supabaseAdmin
+                  .from("efi_charges")
+                  .update({ status: "paid", paid_at: new Date().toISOString() } as any)
+                  .eq("txid", c.txid);
+                await supabaseAdmin
+                  .from("installments")
+                  .update({ status: "pago", payment_date: new Date().toISOString().slice(0, 10) } as any)
+                  .eq("id", c.installment_id);
                 reconciled++;
               }
             } catch {

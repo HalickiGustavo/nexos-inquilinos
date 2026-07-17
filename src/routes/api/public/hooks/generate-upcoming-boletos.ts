@@ -14,7 +14,7 @@ export const Route = createFileRoute("/api/public/hooks/generate-upcoming-boleto
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
           const { issueBoletoForInstallmentEfi } = await import("@/lib/efi/boleto-issuer.server");
           const { efiBoletoGet } = await import("@/lib/efi/efi.server");
-          const { confirmChargePaid } = await import("@/lib/stark/webhook.server");
+          
 
           const today = new Date();
           const in15 = new Date(today.getTime() + 15 * 24 * 60 * 60 * 1000);

@@ -156,6 +156,50 @@ async function efiJsonResponse(res: Response): Promise<Response> {
   return json(res.status, data);
 }
 
+// ---------- API Cobranças (Boleto) ----------
+let _cobrancasToken: { access_token: string; exp: number } | null = null;
+async function getCobrancasToken(): Promise<string> {
+  if (_cobrancasToken && _cobrancasToken.exp > Date.now() + 30_000) {
+    return _cobrancasToken.access_token;
+  }
+  const clientId = getEnv("EFI_CLIENT_ID");
+  const clientSecret = getEnv("EFI_CLIENT_SECRET");
+  const basic = btoa(`${clientId}:${clientSecret}`);
+  const res = await fetch(`${efiCobrancasBaseUrl()}/v1/authorize`, {
+    method: "POST",
+    headers: {
+      Authorization: `Basic ${basic}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ grant_type: "client_credentials" }),
+  });
+  const body = await res.json();
+  if (!res.ok) throw new Error(`cobrancas oauth ${res.status}: ${JSON.stringify(body)}`);
+  _cobrancasToken = {
+    access_token: body.access_token,
+    exp: Date.now() + Number(body.expires_in ?? 3600) * 1000,
+  };
+  return _cobrancasToken.access_token;
+}
+
+async function cobrancasFetch(path: string, init: RequestInit & { json?: unknown } = {}): Promise<Response> {
+  const token = await getCobrancasToken();
+  const headers = new Headers(init.headers);
+  headers.set("Authorization", `Bearer ${token}`);
+  headers.set("api-sdk", "nexo-lovable-1.0.0");
+  if (init.json !== undefined) headers.set("Content-Type", "application/json");
+  return fetch(`${efiCobrancasBaseUrl()}${path}`, {
+    ...init,
+    headers,
+    body: init.json !== undefined ? JSON.stringify(init.json) : init.body,
+  });
+}
+
+async function cobrancasJsonResponse(res: Response): Promise<Response> {
+  const data = await res.json().catch(() => ({}));
+  return json(res.status, data);
+}
+
 function json(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
     status,

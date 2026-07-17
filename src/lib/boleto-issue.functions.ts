@@ -1,4 +1,4 @@
-// Emite Boleto Stark sob demanda para uma parcela, verificando
+// Emite Boleto Efí Bank sob demanda para uma parcela, verificando
 // que o usuário autenticado (inquilino) tem acesso à parcela via RLS.
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";

@@ -103,8 +103,10 @@ export const generateTripleSplitPix = createServerFn({ method: "POST" })
       const { createInvoice, getInvoiceQrCodePng } = await import("@/lib/stark/charges.server");
       const { computeSplit } = await import("@/lib/stark/split-engine");
       const { isStarkConfigured } = await import("@/lib/stark/stark.server");
-      if (!isStarkConfigured()) {
-        return { ok: false, error: "Stark Bank não configurado. Faltam STARK_PROJECT_ID/STARK_PRIVATE_KEY." };
+      const { isEfiConfigured } = await import("@/lib/efi/efi.server");
+      const useEfi = isEfiConfigured() && !!process.env.EFI_PIX_KEY;
+      if (!useEfi && !isStarkConfigured()) {
+        return { ok: false, error: "Nenhum provedor PIX configurado (Efí ou Stark)." };
       }
 
       // Ownership check via RLS-scoped client — retorna null se o caller

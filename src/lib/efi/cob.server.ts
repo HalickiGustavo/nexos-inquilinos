@@ -4,7 +4,7 @@
 // via Efí. A geração do txid é determinística por parcela para garantir
 // idempotência (recuperar cobrança existente em vez de duplicar).
 
-import { efiCobCreate, efiCobGet, efiQrCodeGet, type EfiCobRequest } from "./efi.server";
+import { efiCobCreate, efiCobGet, efiQrCodeGet, type EfiCobRequest, type EfiCobResponse } from "./efi.server";
 
 // txid Efí: 26–35 chars alfanuméricos. Deriva de uuid da parcela.
 export function txidFromInstallmentId(installmentId: string): string {

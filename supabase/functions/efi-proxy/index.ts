@@ -220,8 +220,6 @@ Deno.serve(async (req) => {
       }
       default:
         return json(400, { error: `unknown action: ${payload.action}` });
-      default:
-        return json(400, { error: `unknown action: ${payload.action}` });
     }
   } catch (e: any) {
     return json(500, { error: e?.message ?? String(e) });

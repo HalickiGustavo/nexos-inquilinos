@@ -37,7 +37,7 @@ export const Route = createFileRoute("/api/public/hooks/generate-upcoming-boleto
           const errors: Array<{ id: string; error: string }> = [];
           for (const row of (pending ?? []) as any[]) {
             try {
-              const r = await issueBoletoForInstallment(row.id);
+              const r = await issueBoletoForInstallmentEfi(row.id);
               if (r.ok && !r.alreadyExisted) issued++;
               else if (!r.ok) errors.push({ id: row.id, error: r.error });
             } catch (e: any) {

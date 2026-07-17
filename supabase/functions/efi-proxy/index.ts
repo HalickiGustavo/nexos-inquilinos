@@ -24,6 +24,15 @@ const REQUIRED_ENV = [
   "EFI_PROXY_SECRET",
 ] as const;
 
+const EFI_PIX_SCOPES = [
+  "cob.read",
+  "cob.write",
+  "pix.read",
+  "pix.write",
+  "webhook.read",
+  "webhook.write",
+].join(" ");
+
 function getEnv(name: string): string {
   const v = Deno.env.get(name);
   if (!v) throw new Error(`missing env: ${name}`);
@@ -100,7 +109,7 @@ async function getAccessToken(): Promise<string> {
       Authorization: `Basic ${basic}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ grant_type: "client_credentials" }),
+    body: JSON.stringify({ grant_type: "client_credentials", scope: EFI_PIX_SCOPES }),
   });
   const body = await res.json();
   if (!res.ok) throw new Error(`oauth failed ${res.status}: ${JSON.stringify(body)}`);
@@ -124,6 +133,19 @@ async function efiFetch(path: string, init: RequestInit & { json?: unknown } = {
     headers,
     body: init.json !== undefined ? JSON.stringify(init.json) : init.body,
   });
+}
+
+async function efiJsonResponse(res: Response): Promise<Response> {
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok && data?.error === "insufficient_scope") {
+    return json(res.status, {
+      ...data,
+      message:
+        "A aplicação Efí não possui escopo suficiente para PIX. Habilite cob.write/cob.read na aplicação que gerou estas credenciais.",
+      requestedScopes: EFI_PIX_SCOPES,
+    });
+  }
+  return json(res.status, data);
 }
 
 function json(status: number, body: unknown): Response {
@@ -162,22 +184,19 @@ Deno.serve(async (req) => {
         const { txid, body } = payload.params ?? {};
         if (!txid) return json(400, { error: "missing txid" });
         const res = await efiFetch(`/v2/cob/${txid}`, { method: "PUT", json: body });
-        const data = await res.json();
-        return json(res.status, data);
+        return efiJsonResponse(res);
       }
       case "cob_get": {
         const { txid } = payload.params ?? {};
         if (!txid) return json(400, { error: "missing txid" });
         const res = await efiFetch(`/v2/cob/${txid}`, { method: "GET" });
-        const data = await res.json();
-        return json(res.status, data);
+        return efiJsonResponse(res);
       }
       case "qrcode_get": {
         const { locId } = payload.params ?? {};
         if (!locId) return json(400, { error: "missing locId" });
         const res = await efiFetch(`/v2/loc/${locId}/qrcode`, { method: "GET" });
-        const data = await res.json();
-        return json(res.status, data);
+        return efiJsonResponse(res);
       }
       default:
         return json(400, { error: `unknown action: ${payload.action}` });

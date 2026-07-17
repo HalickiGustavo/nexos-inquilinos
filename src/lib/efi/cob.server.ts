@@ -4,7 +4,7 @@
 // via Efí. A geração do txid é determinística por parcela para garantir
 // idempotência (recuperar cobrança existente em vez de duplicar).
 
-import { efiCobCreate, efiCobGet, efiQrCodeGet, type EfiCobRequest } from "./efi.server";
+import { efiCobCreate, efiCobGet, efiQrCodeGet, type EfiCobRequest, type EfiCobResponse } from "./efi.server";
 
 // txid Efí: 26–35 chars alfanuméricos. Deriva de uuid da parcela.
 export function txidFromInstallmentId(installmentId: string): string {
@@ -49,16 +49,31 @@ export async function createOrReuseEfiPix(input: CreateEfiPixInput): Promise<Cre
   };
 
   // Idempotência: tenta GET, se não existe cria; se existe e está ATIVA reutiliza.
+  const getWithRetry = async (attempts = 4): Promise<EfiCobResponse | null> => {
+    for (let i = 0; i < attempts; i++) {
+      const r = await efiCobGet(txid).catch(() => null);
+      if (r) return r;
+      if (i < attempts - 1) await new Promise((res) => setTimeout(res, 400 * (i + 1)));
+    }
+    return null;
+  };
+
   let cob = await efiCobGet(txid).catch(() => null);
   if (!cob || cob.status === "REMOVIDA_PELO_USUARIO_RECEBEDOR" || cob.status === "REMOVIDA_PELO_PSP") {
     try {
       cob = await efiCobCreate(txid, body);
     } catch (err: any) {
-      // 409 txid_duplicado: cobrança já existe (GET pode ter falhado por scope/rede). Refaz GET.
+      // 409 txid_duplicado: cobrança já existe na Efí mas GET pode responder
+      // 400 cobranca_nao_encontrada por eventual consistency — tenta reler com backoff.
       const bodyErr = err?.body;
       const isDup = err?.status === 409 || bodyErr?.nome === "txid_duplicado";
       if (!isDup) throw err;
-      cob = await efiCobGet(txid);
+      cob = await getWithRetry();
+      if (!cob) {
+        throw new Error(
+          "Efí reportou txid duplicado mas não retorna a cobrança. Tente novamente em alguns segundos.",
+        );
+      }
     }
   }
 

@@ -51,7 +51,15 @@ export async function createOrReuseEfiPix(input: CreateEfiPixInput): Promise<Cre
   // Idempotência: tenta GET, se não existe cria; se existe e está ATIVA reutiliza.
   let cob = await efiCobGet(txid).catch(() => null);
   if (!cob || cob.status === "REMOVIDA_PELO_USUARIO_RECEBEDOR" || cob.status === "REMOVIDA_PELO_PSP") {
-    cob = await efiCobCreate(txid, body);
+    try {
+      cob = await efiCobCreate(txid, body);
+    } catch (err: any) {
+      // 409 txid_duplicado: cobrança já existe (GET pode ter falhado por scope/rede). Refaz GET.
+      const bodyErr = err?.body;
+      const isDup = err?.status === 409 || bodyErr?.nome === "txid_duplicado";
+      if (!isDup) throw err;
+      cob = await efiCobGet(txid);
+    }
   }
 
   const locId = cob.loc?.id ?? null;

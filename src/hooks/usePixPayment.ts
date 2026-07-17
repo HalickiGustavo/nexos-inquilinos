@@ -42,8 +42,16 @@ export function usePixPayment(opts?: UsePixPaymentOptions) {
       try {
         const res: any = await tripleSplit({ data: { installmentId: i.id } });
         if (!res?.ok) {
-          setError(res?.error ?? "Não foi possível gerar o PIX no momento.");
+          const msg = res?.error ?? "Não foi possível gerar o PIX no momento.";
+          setError(msg);
           setDebug(res?.debug ?? null);
+          toast.error(msg, {
+            description: typeof res?.debug === "string"
+              ? res.debug
+              : res?.debug
+                ? JSON.stringify(res.debug).slice(0, 400)
+                : undefined,
+          });
           return;
         }
         setInstallment({
@@ -54,13 +62,15 @@ export function usePixPayment(opts?: UsePixPaymentOptions) {
         });
         invalidate();
       } catch (e: any) {
-        setError(e?.message ?? "Erro ao gerar PIX");
+        const msg = e?.message ?? "Erro ao gerar PIX";
+        setError(msg);
         setDebug({
           at: new Date().toISOString(),
           source: "client",
-          message: e?.message ?? String(e),
+          message: msg,
           name: e?.name ?? null,
         });
+        toast.error(msg);
       } finally {
         setLoading(false);
       }

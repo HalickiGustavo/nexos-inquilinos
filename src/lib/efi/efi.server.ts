@@ -50,11 +50,20 @@ async function callProxy<T = unknown>(action: ProxyAction, params?: unknown): Pr
   });
   const body: any = await res.json().catch(() => ({}));
   if (!res.ok) {
+    // Efí Cobranças errors: { code, error, error_description }
+    // Also may include { error: {...nested...} } from proxy; stringify to expose
+    // whatever detail the API returned.
+    const detail =
+      body?.error_description ||
+      (typeof body?.error === "string" ? body.error : null) ||
+      (body?.mensagem ? `${body?.nome ?? "efi"}: ${body.mensagem}` : null) ||
+      JSON.stringify(body);
     const err: EfiProxyError = {
       status: res.status,
       body,
-      message: body?.error ?? `efi-proxy ${action} failed (${res.status})`,
+      message: `efi-proxy ${action} failed (${res.status}) ${detail}`,
     };
+    console.error("[efi-proxy]", action, res.status, body);
     throw Object.assign(new Error(err.message), err);
   }
   return body as T;

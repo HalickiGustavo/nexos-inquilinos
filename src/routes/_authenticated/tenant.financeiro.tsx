@@ -103,9 +103,6 @@ function TenantFinanceiro() {
       setBoletoLoadingId(null);
     }
   };
-      setBoletoLoadingId(null);
-    }
-  };
 
   useEffect(() => {
     if (!contract?.id) return;

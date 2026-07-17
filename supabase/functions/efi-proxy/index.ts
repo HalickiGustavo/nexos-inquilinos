@@ -49,7 +49,7 @@ async function getHttpClient(): Promise<Deno.HttpClient> {
 
   // Use node-forge (via npm:) to decode PKCS#12 → PEM. It is the most
   // battle-tested option available in Supabase Edge Runtime.
-  const forge: any = await import("npm:[email protected]");
+  const forge: any = await import("npm:node-forge");
   const p12Der = String.fromCharCode(...p12);
   const p12Asn1 = forge.asn1.fromDer(p12Der);
   const p12Obj = forge.pkcs12.pkcs12FromAsn1(p12Asn1, false, password);

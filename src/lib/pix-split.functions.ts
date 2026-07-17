@@ -103,8 +103,10 @@ export const generateTripleSplitPix = createServerFn({ method: "POST" })
       const { createInvoice, getInvoiceQrCodePng } = await import("@/lib/stark/charges.server");
       const { computeSplit } = await import("@/lib/stark/split-engine");
       const { isStarkConfigured } = await import("@/lib/stark/stark.server");
-      if (!isStarkConfigured()) {
-        return { ok: false, error: "Stark Bank não configurado. Faltam STARK_PROJECT_ID/STARK_PRIVATE_KEY." };
+      const { isEfiConfigured } = await import("@/lib/efi/efi.server");
+      const useEfi = isEfiConfigured() && !!process.env.EFI_PIX_KEY;
+      if (!useEfi && !isStarkConfigured()) {
+        return { ok: false, error: "Nenhum provedor PIX configurado (Efí ou Stark)." };
       }
 
       // Ownership check via RLS-scoped client — retorna null se o caller
@@ -183,6 +185,56 @@ export const generateTripleSplitPix = createServerFn({ method: "POST" })
         ownerPixKey: (ownerProfile as any)?.pix_key ?? null,
         nexoPixKey,
       });
+
+      // ---- Efí branch ------------------------------------------------------
+      // Quando EFI_* estão configurados, geramos via proxy mTLS (Deno) em
+      // vez da Stark. Split/repasse fica para uma segunda fase (Pix Split Efí).
+      if (useEfi) {
+        try {
+          const { createOrReuseEfiPix } = await import("@/lib/efi/cob.server");
+          const { supabaseAdmin: admin } = await import("@/integrations/supabase/client.server");
+          const efi = await createOrReuseEfiPix({
+            installmentId: data.installmentId,
+            amount: total,
+            payer: { taxId: payerDoc, name: payerName },
+            pixKey: process.env.EFI_PIX_KEY!,
+            descriptions: [{ key: "Aluguel", value: `Parcela ${data.installmentId.slice(0, 8)}` }],
+          });
+          await admin.from("efi_charges" as any).upsert({
+            installment_id: data.installmentId,
+            manager_user_id: managerUserId,
+            kind: "pix",
+            status: efi.status,
+            amount: total,
+            txid: efi.txid,
+            loc_id: efi.locId,
+            brcode: efi.pixPayload,
+          } as any, { onConflict: "txid" } as any);
+          return {
+            ok: true,
+            provider: "stark",
+            qrCodeBase64: efi.qrCodeBase64,
+            pixPayload: efi.pixPayload,
+            breakdown: {
+              total: split.total,
+              nexo: split.nexo.amount,
+              agency: split.agency.amount,
+              owner: split.owner.amount,
+              nexoKey: split.nexo.pixKey ?? "",
+              agencyKey: split.agency.pixKey,
+              ownerKey: split.owner.pixKey,
+            },
+          };
+        } catch (e: any) {
+          return {
+            ok: false,
+            error: e?.message ?? "Falha ao gerar PIX na Efí.",
+            debug: e?.body ? JSON.stringify(e.body).slice(0, 2000) : null,
+          };
+        }
+      }
+      // ---- /Efí branch -----------------------------------------------------
+
 
       // Stark exige due >= agora. Parcelas vencidas devem ser pagas via Boleto.
       const dueDateStr = String((inst as any).due_date ?? "");

@@ -186,6 +186,56 @@ export const generateTripleSplitPix = createServerFn({ method: "POST" })
         nexoPixKey,
       });
 
+      // ---- Efí branch ------------------------------------------------------
+      // Quando EFI_* estão configurados, geramos via proxy mTLS (Deno) em
+      // vez da Stark. Split/repasse fica para uma segunda fase (Pix Split Efí).
+      if (useEfi) {
+        try {
+          const { createOrReuseEfiPix } = await import("@/lib/efi/cob.server");
+          const { supabaseAdmin: admin } = await import("@/integrations/supabase/client.server");
+          const efi = await createOrReuseEfiPix({
+            installmentId: data.installmentId,
+            amount: total,
+            payer: { taxId: payerDoc, name: payerName },
+            pixKey: process.env.EFI_PIX_KEY!,
+            descriptions: [{ key: "Aluguel", value: `Parcela ${data.installmentId.slice(0, 8)}` }],
+          });
+          await admin.from("efi_charges" as any).upsert({
+            installment_id: data.installmentId,
+            manager_user_id: managerUserId,
+            kind: "pix",
+            status: efi.status,
+            amount: total,
+            txid: efi.txid,
+            loc_id: efi.locId,
+            brcode: efi.pixPayload,
+          } as any, { onConflict: "txid" } as any);
+          return {
+            ok: true,
+            provider: "stark",
+            qrCodeBase64: efi.qrCodeBase64,
+            pixPayload: efi.pixPayload,
+            breakdown: {
+              total: split.total,
+              nexo: split.nexo.amount,
+              agency: split.agency.amount,
+              owner: split.owner.amount,
+              nexoKey: split.nexo.pixKey ?? "",
+              agencyKey: split.agency.pixKey,
+              ownerKey: split.owner.pixKey,
+            },
+          };
+        } catch (e: any) {
+          return {
+            ok: false,
+            error: e?.message ?? "Falha ao gerar PIX na Efí.",
+            debug: e?.body ? JSON.stringify(e.body).slice(0, 2000) : null,
+          };
+        }
+      }
+      // ---- /Efí branch -----------------------------------------------------
+
+
       // Stark exige due >= agora. Parcelas vencidas devem ser pagas via Boleto.
       const dueDateStr = String((inst as any).due_date ?? "");
       const isoMatch = dueDateStr.match(/^(\d{4})-(\d{2})-(\d{2})$/);

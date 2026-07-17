@@ -273,9 +273,15 @@ function TenantFinanceiro() {
                           {boletoLoadingId === i.id ? "Abrindo boleto..." : "Visualizar Boleto PDF"}
                         </Button>
                       ) : (
-                        <p className="text-xs text-muted-foreground text-center">
-                          Boleto em emissão. Use o PIX acima para pagamento imediato.
-                        </p>
+                        <Button
+                          variant="outline"
+                          className="w-full"
+                          disabled={issuingId === i.id}
+                          onClick={() => generateBoleto(i.id)}
+                        >
+                          <Download className="size-4 mr-2" />
+                          {issuingId === i.id ? "Gerando boleto..." : "Gerar Boleto"}
+                        </Button>
                       )}
                     </>
                   )}

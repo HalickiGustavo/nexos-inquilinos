@@ -22,7 +22,9 @@ type ProxyAction =
   | "oauth_token"
   | "cob_create"
   | "cob_get"
-  | "qrcode_get";
+  | "qrcode_get"
+  | "boleto_create"
+  | "boleto_get";
 
 export type EfiProxyError = {
   status: number;

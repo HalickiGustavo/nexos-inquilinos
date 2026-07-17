@@ -46,6 +46,14 @@ function efiBaseUrl(): string {
     : "https://pix-h.api.efipay.com.br";
 }
 
+// Cobranças (boleto) API — endpoints diferentes do PIX, sem mTLS.
+function efiCobrancasBaseUrl(): string {
+  const env = (Deno.env.get("EFI_ENV") ?? "homologacao").toLowerCase();
+  return env === "producao"
+    ? "https://cobrancas.api.efipay.com.br"
+    : "https://cobrancas-h.api.efipay.com.br";
+}
+
 // Convert base64 .p12 into a Deno HttpClient with client cert.
 // Efí ships PKCS#12; Deno accepts PEM. We rely on the standard library's
 // pkcs12 helper (available in Supabase Edge Runtime via std/crypto).

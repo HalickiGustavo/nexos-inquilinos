@@ -46,6 +46,14 @@ function efiBaseUrl(): string {
     : "https://pix-h.api.efipay.com.br";
 }
 
+// Cobranças (boleto) API — endpoints diferentes do PIX, sem mTLS.
+function efiCobrancasBaseUrl(): string {
+  const env = (Deno.env.get("EFI_ENV") ?? "homologacao").toLowerCase();
+  return env === "producao"
+    ? "https://cobrancas.api.efipay.com.br"
+    : "https://cobrancas-h.api.efipay.com.br";
+}
+
 // Convert base64 .p12 into a Deno HttpClient with client cert.
 // Efí ships PKCS#12; Deno accepts PEM. We rely on the standard library's
 // pkcs12 helper (available in Supabase Edge Runtime via std/crypto).
@@ -148,6 +156,50 @@ async function efiJsonResponse(res: Response): Promise<Response> {
   return json(res.status, data);
 }
 
+// ---------- API Cobranças (Boleto) ----------
+let _cobrancasToken: { access_token: string; exp: number } | null = null;
+async function getCobrancasToken(): Promise<string> {
+  if (_cobrancasToken && _cobrancasToken.exp > Date.now() + 30_000) {
+    return _cobrancasToken.access_token;
+  }
+  const clientId = getEnv("EFI_CLIENT_ID");
+  const clientSecret = getEnv("EFI_CLIENT_SECRET");
+  const basic = btoa(`${clientId}:${clientSecret}`);
+  const res = await fetch(`${efiCobrancasBaseUrl()}/v1/authorize`, {
+    method: "POST",
+    headers: {
+      Authorization: `Basic ${basic}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ grant_type: "client_credentials" }),
+  });
+  const body = await res.json();
+  if (!res.ok) throw new Error(`cobrancas oauth ${res.status}: ${JSON.stringify(body)}`);
+  _cobrancasToken = {
+    access_token: body.access_token,
+    exp: Date.now() + Number(body.expires_in ?? 3600) * 1000,
+  };
+  return _cobrancasToken.access_token;
+}
+
+async function cobrancasFetch(path: string, init: RequestInit & { json?: unknown } = {}): Promise<Response> {
+  const token = await getCobrancasToken();
+  const headers = new Headers(init.headers);
+  headers.set("Authorization", `Bearer ${token}`);
+  headers.set("api-sdk", "nexo-lovable-1.0.0");
+  if (init.json !== undefined) headers.set("Content-Type", "application/json");
+  return fetch(`${efiCobrancasBaseUrl()}${path}`, {
+    ...init,
+    headers,
+    body: init.json !== undefined ? JSON.stringify(init.json) : init.body,
+  });
+}
+
+async function cobrancasJsonResponse(res: Response): Promise<Response> {
+  const data = await res.json().catch(() => ({}));
+  return json(res.status, data);
+}
+
 function json(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
     status,
@@ -197,6 +249,18 @@ Deno.serve(async (req) => {
         if (!locId) return json(400, { error: "missing locId" });
         const res = await efiFetch(`/v2/loc/${locId}/qrcode`, { method: "GET" });
         return efiJsonResponse(res);
+      }
+      case "boleto_create": {
+        const { body } = payload.params ?? {};
+        if (!body) return json(400, { error: "missing body" });
+        const res = await cobrancasFetch(`/v1/charge/one-step`, { method: "POST", json: body });
+        return cobrancasJsonResponse(res);
+      }
+      case "boleto_get": {
+        const { chargeId } = payload.params ?? {};
+        if (!chargeId) return json(400, { error: "missing chargeId" });
+        const res = await cobrancasFetch(`/v1/charge/${chargeId}`, { method: "GET" });
+        return cobrancasJsonResponse(res);
       }
       default:
         return json(400, { error: `unknown action: ${payload.action}` });

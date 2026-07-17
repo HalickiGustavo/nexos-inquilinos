@@ -1,4 +1,4 @@
-// Emite Boleto Stark sob demanda para uma parcela, verificando
+// Emite Boleto Efí Bank sob demanda para uma parcela, verificando
 // que o usuário autenticado (inquilino) tem acesso à parcela via RLS.
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
@@ -24,10 +24,10 @@ export const requestBoletoForInstallment = createServerFn({ method: "POST" })
     if (!inst) throw new Error("Parcela não encontrada ou sem permissão");
     if (inst.status === "pago") throw new Error("Parcela já paga");
 
-    const { issueBoletoForInstallment } = await import(
-      "@/lib/stark/boleto-issuer.server"
+    const { issueBoletoForInstallmentEfi } = await import(
+      "@/lib/efi/boleto-issuer.server"
     );
-    const res = await issueBoletoForInstallment(data.installmentId);
+    const res = await issueBoletoForInstallmentEfi(data.installmentId);
     if (!res.ok) throw new Error(res.error);
     return { ok: true, alreadyExisted: res.alreadyExisted, pdfUrl: res.pdfUrl };
   });

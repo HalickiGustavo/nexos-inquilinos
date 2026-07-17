@@ -79,17 +79,24 @@ function TenantFinanceiro() {
     }
   };
 
-  const openBoletoPdf = async (installmentId: string) => {
-    setBoletoLoadingId(installmentId);
+  const openBoletoPdf = async (installment: any) => {
+    setBoletoLoadingId(installment.id);
     try {
-      const res: any = await downloadBoleto({ data: { installmentId } });
+      const url = String(installment.boleto_url ?? "");
+      // Efí devolve URL pública direta do PDF — abre em nova aba.
+      // Stark (legado) exige assinatura ECDSA → proxy autenticado.
+      if (url && !/\/boleto\/[^/]+\/pdf/.test(url)) {
+        window.open(url, "_blank", "noopener,noreferrer");
+        return;
+      }
+      const res: any = await downloadBoleto({ data: { installmentId: installment.id } });
       const bin = atob(res.base64);
       const bytes = new Uint8Array(bin.length);
       for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
       const blob = new Blob([bytes], { type: "application/pdf" });
-      const url = URL.createObjectURL(blob);
-      window.open(url, "_blank", "noopener,noreferrer");
-      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+      const blobUrl = URL.createObjectURL(blob);
+      window.open(blobUrl, "_blank", "noopener,noreferrer");
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
     } catch (e: any) {
       toast.error(e?.message ?? "Não foi possível abrir o boleto");
     } finally {
@@ -267,7 +274,7 @@ function TenantFinanceiro() {
                           variant="outline"
                           className="w-full"
                           disabled={boletoLoadingId === i.id}
-                          onClick={() => openBoletoPdf(i.id)}
+                          onClick={() => openBoletoPdf(i)}
                         >
                           <Download className="size-4 mr-2" />
                           {boletoLoadingId === i.id ? "Abrindo boleto..." : "Visualizar Boleto PDF"}

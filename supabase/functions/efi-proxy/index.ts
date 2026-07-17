@@ -47,11 +47,27 @@ async function getHttpClient(): Promise<Deno.HttpClient> {
   const password = Deno.env.get("EFI_CERT_PASSWORD") ?? "";
   const p12 = Uint8Array.from(atob(p12b64), (c) => c.charCodeAt(0));
 
-  // Lazy import so cold-start pays the cost only when needed.
-  const { parse } = await import("https://deno.land/x/[email protected]/mod.ts");
-  const bag: any = parse(p12, password);
-  const certPem: string = bag.cert;
-  const keyPem: string = bag.key;
+  // Use node-forge (via npm:) to decode PKCS#12 → PEM. It is the most
+  // battle-tested option available in Supabase Edge Runtime.
+  const forgeMod: any = await import("npm:node-forge");
+  const forge: any = forgeMod.default ?? forgeMod;
+  const p12Der = String.fromCharCode(...p12);
+  const p12Asn1 = forge.asn1.fromDer(p12Der);
+  const p12Obj = forge.pkcs12.pkcs12FromAsn1(p12Asn1, false, password);
+
+  let certPem = "";
+  let keyPem = "";
+  for (const safeContents of p12Obj.safeContents) {
+    for (const safeBag of safeContents.safeBags) {
+      if (safeBag.cert && !certPem) {
+        certPem = forge.pki.certificateToPem(safeBag.cert);
+      }
+      if (safeBag.key && !keyPem) {
+        keyPem = forge.pki.privateKeyToPem(safeBag.key);
+      }
+    }
+  }
+  if (!certPem || !keyPem) throw new Error("failed to extract cert/key from p12");
 
   _client = Deno.createHttpClient({ cert: certPem, key: keyPem });
   return _client;

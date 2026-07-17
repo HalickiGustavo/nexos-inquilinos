@@ -274,7 +274,7 @@ function TenantFinanceiro() {
                           variant="outline"
                           className="w-full"
                           disabled={boletoLoadingId === i.id}
-                          onClick={() => openBoletoPdf(i.id)}
+                          onClick={() => openBoletoPdf(i)}
                         >
                           <Download className="size-4 mr-2" />
                           {boletoLoadingId === i.id ? "Abrindo boleto..." : "Visualizar Boleto PDF"}

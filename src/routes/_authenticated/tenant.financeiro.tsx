@@ -59,7 +59,25 @@ function TenantFinanceiro() {
     invalidateKeys: [["tenant-installments"]],
   });
   const downloadBoleto = useServerFn(downloadBoletoPdf);
+  const issueBoleto = useServerFn(requestBoletoForInstallment);
   const [boletoLoadingId, setBoletoLoadingId] = useState<string | null>(null);
+  const [issuingId, setIssuingId] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+
+  const generateBoleto = async (installmentId: string) => {
+    setIssuingId(installmentId);
+    try {
+      const res: any = await issueBoleto({ data: { installmentId } });
+      toast.success(
+        res.alreadyExisted ? "Boleto já disponível" : "Boleto gerado com sucesso",
+      );
+      await queryClient.invalidateQueries({ queryKey: ["tenant-installments"] });
+    } catch (e: any) {
+      toast.error(e?.message ?? "Não foi possível gerar o boleto");
+    } finally {
+      setIssuingId(null);
+    }
+  };
 
   const openBoletoPdf = async (installmentId: string) => {
     setBoletoLoadingId(installmentId);

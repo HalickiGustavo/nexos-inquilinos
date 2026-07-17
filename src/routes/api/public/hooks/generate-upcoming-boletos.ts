@@ -12,8 +12,8 @@ export const Route = createFileRoute("/api/public/hooks/generate-upcoming-boleto
         if (unauth) return unauth;
         try {
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-          const { issueBoletoForInstallment } = await import("@/lib/stark/boleto-issuer.server");
-          const { getBoleto } = await import("@/lib/stark/charges.server");
+          const { issueBoletoForInstallmentEfi } = await import("@/lib/efi/boleto-issuer.server");
+          const { efiBoletoGet } = await import("@/lib/efi/efi.server");
           const { confirmChargePaid } = await import("@/lib/stark/webhook.server");
 
           const today = new Date();

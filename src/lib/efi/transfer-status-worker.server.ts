@@ -71,10 +71,11 @@ export async function reconcileEfiTransfers(): Promise<EfiTransferReconcileResul
 
   for (const row of rows) {
     const idEnvio: string = row.efi_id_envio || idEnvioFromTransferId(row.id);
+    const e2eId: string | null = row.efi_e2e_id ?? row.provider_transfer_id ?? null;
     const attempts = Number(row.attempts ?? 0);
     try {
-      console.log("[efi-transfer-status] consulting", { id: row.id, idEnvio, attempts });
-      const res = await efiPixSendGet(idEnvio);
+      console.log("[efi-transfer-status] consulting", { id: row.id, idEnvio, e2eId, attempts });
+      const res = await efiPixSendGet({ idEnvio, e2eId: e2eId ?? undefined });
 
       const consultedAt = new Date().toISOString();
       if (!res) {

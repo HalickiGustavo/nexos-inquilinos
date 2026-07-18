@@ -55,6 +55,7 @@ const navGroups: ShellNavGroup[] = [
   {
     label: "Operação",
     items: [
+      { to: "/manager/contratos", label: "Contratos", icon: FileText, tour: "nav-manager-contratos" },
       { to: "/manager/vistorias", label: "Vistorias", icon: ClipboardCheck, tour: "nav-manager-vistorias" },
     ],
   },

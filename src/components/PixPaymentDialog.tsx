@@ -84,7 +84,7 @@ export function PixPaymentDialog({
     : null;
   const qrSrc = qrFromServer ?? qrFallback;
   const boletoUrl: string | null = boletoOverride?.url ?? installment?.boleto_url ?? null;
-  const boletoLine: string | null = boletoOverride?.line ?? installment?.barcode ?? null;
+  const boletoLine: string | null = boletoOverride?.line ?? installment?.barcode ?? installment?.boleto_barcode ?? null;
 
   // Auto-emitir boleto ao abrir a aba, se ainda não existir.
   useEffect(() => {
@@ -97,7 +97,10 @@ export function PixPaymentDialog({
       try {
         const res: any = await issueBoleto({ data: { installmentId: installment.id } });
         if (res?.pdfUrl) {
-          setBoletoOverride({ url: res.pdfUrl, line: res.barcode ?? "" });
+          setBoletoOverride({
+            url: res.pdfUrl,
+            line: res.barcode ?? installment?.barcode ?? installment?.boleto_barcode ?? "",
+          });
         } else {
           setBoletoError("Boleto emitido, atualize em instantes.");
         }
@@ -143,9 +146,26 @@ export function PixPaymentDialog({
   };
 
   const openBoletoPdf = async (mode: "view" | "download") => {
-    if (!installment?.id) return;
+    if (!installment?.id && !boletoUrl) return;
     setDownloadingBoleto(true);
     try {
+      const directUrl = String(boletoUrl ?? "");
+      const isLegacyStarkUrl = /\/boleto\/[^/]+\/pdf(?:$|[?#])/.test(directUrl);
+
+      // Efí devolve uma URL pública direta do PDF. Não passa pelo proxy Stark,
+      // senão o proxy tenta extrair um ID /boleto/:id/pdf e acusa "não gerado".
+      if (directUrl && !isLegacyStarkUrl) {
+        const a = document.createElement("a");
+        a.href = directUrl;
+        a.target = "_blank";
+        a.rel = "noopener noreferrer";
+        if (mode === "download") a.download = `boleto-${installment?.id ?? "parcela"}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        return;
+      }
+
       const res = await fetchBoleto({ data: { installmentId: installment.id } });
       // Decode base64 → Blob → blob URL
       const bin = atob(res.base64);

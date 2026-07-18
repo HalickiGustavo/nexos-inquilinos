@@ -29,5 +29,12 @@ export const requestBoletoForInstallment = createServerFn({ method: "POST" })
     );
     const res = await issueBoletoForInstallmentEfi(data.installmentId);
     if (!res.ok) throw new Error(res.error);
-    return { ok: true, alreadyExisted: res.alreadyExisted, pdfUrl: res.pdfUrl };
+    return {
+      ok: true,
+      alreadyExisted: res.alreadyExisted,
+      chargeId: res.chargeId,
+      pdfUrl: res.pdfUrl,
+      barcode: res.barcode,
+      link: res.link,
+    };
   });

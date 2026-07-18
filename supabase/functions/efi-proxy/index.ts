@@ -31,6 +31,9 @@ const EFI_PIX_SCOPES = [
   "pix.write",
   "webhook.read",
   "webhook.write",
+  // Envio de PIX via chave (repasses NEXO → proprietário / imobiliária)
+  "gn.pix.send.read",
+  "gn.pix.send.write",
 ].join(" ");
 
 function getEnv(name: string): string {

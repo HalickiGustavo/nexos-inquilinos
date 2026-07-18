@@ -18,7 +18,10 @@ export const Route = createFileRoute("/api/public/hooks/register-efi-webhook")({
         const chave = process.env.EFI_PIX_KEY;
         if (!chave) return Response.json({ ok: false, error: "EFI_PIX_KEY not set" }, { status: 500 });
 
-        const webhookUrl = `https://dashboard.usenexoapp.com/api/public/efi-webhook?hmac=${encodeURIComponent(expected)}`;
+        // Registramos o path base; a Efí anexa "/pix" ao final por conta própria.
+        // O sufixo `&ignorar=` protege o valor do hmac caso a concatenação
+        // aconteça sobre o último parâmetro da querystring.
+        const webhookUrl = `https://dashboard.usenexoapp.com/api/public/efi-webhook?hmac=${encodeURIComponent(expected)}&ignorar=`;
 
         try {
           const { efiProxyCall } = await import("@/lib/efi/efi.server");

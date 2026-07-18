@@ -87,7 +87,7 @@ export async function markProcessing(id: string) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   await supabaseAdmin
     .from("payment_transfers")
-    .update({ status: "PROCESSING", attempts: (undefined as any) } as any)
+    .update({ status: "PROCESSING" } as any)
     .eq("id", id);
 }
 

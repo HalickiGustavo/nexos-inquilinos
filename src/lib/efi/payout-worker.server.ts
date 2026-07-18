@@ -115,7 +115,7 @@ export async function runEfiPayoutWorker(opts?: { limit?: number }) {
           .eq("id", row.id);
       } else {
         // EM_PROCESSAMENTO — mantém PROCESSING; primeira consulta em 30s.
-        await supabaseAdmin
+        const { error: upErr } = await supabaseAdmin
           .from("payment_transfers")
           .update({
             ...baseFields,
@@ -125,6 +125,10 @@ export async function runEfiPayoutWorker(opts?: { limit?: number }) {
             next_retry_at: new Date(Date.now() + 30_000).toISOString(),
           } as any)
           .eq("id", row.id);
+        if (upErr) {
+          console.error("[efi-payout] db update failed (EM_PROCESSAMENTO)", row.id, upErr);
+          throw new Error(`db update failed: ${upErr.message}`);
+        }
       }
       results.push({ id: row.id, ok: true });
     } catch (e: any) {

@@ -71,20 +71,58 @@ export async function runEfiPayoutWorker(opts?: { limit?: number }) {
         e2eId: sent.e2eId,
       });
 
+      // Persistimos TODOS os identificadores retornados pela Efí para que o
+      // worker de acompanhamento (`reconcileEfiTransfers`) reuse o mesmo
+      // idEnvio/e2eId como fonte de verdade nas próximas consultas.
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const nowIso = new Date().toISOString();
+      const baseFields: any = {
+        efi_id_envio: idEnvio,
+        efi_e2e_id: sent.e2eId ?? null,
+        efi_status: sent.status,
+        efi_status_updated_at: nowIso,
+        efi_last_consult_at: nowIso,
+        efi_response: sent as any,
+        provider_transfer_id: sent.e2eId ?? idEnvio,
+      };
+
       if (sent.status === "REALIZADO") {
-        await markCompleted(row.id, sent.e2eId ?? idEnvio);
-      } else if (sent.status === "NAO_REALIZADO") {
-        await markFailed(row.id, "efi pix NAO_REALIZADO", attempts);
-      } else {
-        // EM_PROCESSAMENTO — mantém PROCESSING, grava e2eId para reconciliar
-        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         await supabaseAdmin
           .from("payment_transfers")
           .update({
+            ...baseFields,
+            status: "COMPLETED",
+            paid_at: nowIso,
+            finished_at: nowIso,
+            error_message: null,
+            next_retry_at: null,
+          } as any)
+          .eq("id", row.id);
+      } else if (sent.status === "NAO_REALIZADO") {
+        const reason =
+          (sent as any)?.motivo ??
+          (sent as any)?.descricao ??
+          "efi pix NAO_REALIZADO";
+        await supabaseAdmin
+          .from("payment_transfers")
+          .update({
+            ...baseFields,
+            status: "FAILED",
+            finished_at: nowIso,
+            error_message: String(reason).slice(0, 500),
+            next_retry_at: null,
+          } as any)
+          .eq("id", row.id);
+      } else {
+        // EM_PROCESSAMENTO — mantém PROCESSING; primeira consulta em 30s.
+        await supabaseAdmin
+          .from("payment_transfers")
+          .update({
+            ...baseFields,
             status: "PROCESSING",
-            provider_transfer_id: sent.e2eId ?? idEnvio,
             attempts,
             error_message: null,
+            next_retry_at: new Date(Date.now() + 30_000).toISOString(),
           } as any)
           .eq("id", row.id);
       }
@@ -100,39 +138,9 @@ export async function runEfiPayoutWorker(opts?: { limit?: number }) {
   return { processed: batch.length, results };
 }
 
-/** Reconcilia repasses PROCESSING consultando o status na Efí. */
+/** Reconcilia repasses PROCESSING consultando o status na Efí.
+ *  Delega para `reconcileEfiTransfers` (worker dedicado com backoff). */
 export async function reconcileEfiPayouts() {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { data } = await supabaseAdmin
-    .from("payment_transfers")
-    .select("id, provider_transfer_id, attempts")
-    .eq("status", "PROCESSING")
-    .not("provider_transfer_id", "is", null)
-    .limit(50);
-
-  const rows = ((data as any[]) ?? []);
-  console.log("[efi-reconcile] start", { processing: rows.length });
-  for (const row of rows) {
-    try {
-      const idEnvio = idEnvioFromTransferId(row.id);
-      const res = await efiPixSendGet(idEnvio);
-      if (!res) {
-        console.warn("[efi-reconcile] no efi record", { transferId: row.id, idEnvio });
-        continue;
-      }
-      console.log("[efi-reconcile] efi status", {
-        transferId: row.id,
-        idEnvio,
-        status: res.status,
-        e2eId: res.e2eId,
-      });
-      if (res.status === "REALIZADO") {
-        await markCompleted(row.id, res.e2eId ?? idEnvio);
-      } else if (res.status === "NAO_REALIZADO") {
-        await markFailed(row.id, "efi pix NAO_REALIZADO (reconcile)", Number(row.attempts ?? 0) + 1);
-      }
-    } catch (e: any) {
-      console.warn("[efi-reconcile] fetch failed", row.id, e?.message);
-    }
-  }
+  const { reconcileEfiTransfers } = await import("./transfer-status-worker.server");
+  return reconcileEfiTransfers();
 }

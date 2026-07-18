@@ -67,7 +67,14 @@ export function PixPaymentDialog({
   }, [open, installment?.id, installment?.pix_payload, paid, checkPaid, onOpenChange]);
 
   useEffect(() => {
-    if (!open) { setPaid(false); setQrFallback(null); setTab("pix"); }
+    if (!open) {
+      setPaid(false);
+      setQrFallback(null);
+      setTab("pix");
+      setBoletoOverride(null);
+      setIssuingBoleto(false);
+      setBoletoError(null);
+    }
   }, [open]);
 
   const amount = Number(installment?.split_breakdown?.total ?? installment?.amount ?? 0);
@@ -76,8 +83,32 @@ export function PixPaymentDialog({
     ? `data:image/png;base64,${installment.pix_qrcode}`
     : null;
   const qrSrc = qrFromServer ?? qrFallback;
-  const boletoUrl: string | null = installment?.boleto_url ?? null;
-  const boletoLine: string | null = installment?.barcode ?? null;
+  const boletoUrl: string | null = boletoOverride?.url ?? installment?.boleto_url ?? null;
+  const boletoLine: string | null = boletoOverride?.line ?? installment?.barcode ?? null;
+
+  // Auto-emitir boleto ao abrir a aba, se ainda não existir.
+  useEffect(() => {
+    if (!open || tab !== "boleto") return;
+    if (boletoUrl || boletoLine || issuingBoleto || boletoError) return;
+    if (!installment?.id) return;
+    setIssuingBoleto(true);
+    setBoletoError(null);
+    (async () => {
+      try {
+        const res: any = await issueBoleto({ data: { installmentId: installment.id } });
+        if (res?.pdfUrl) {
+          setBoletoOverride({ url: res.pdfUrl, line: res.barcode ?? "" });
+        } else {
+          setBoletoError("Boleto emitido, atualize em instantes.");
+        }
+        onPaidRef.current?.();
+      } catch (e: any) {
+        setBoletoError(e?.message ?? "Não foi possível gerar o boleto");
+      } finally {
+        setIssuingBoleto(false);
+      }
+    })();
+  }, [open, tab, boletoUrl, boletoLine, issuingBoleto, boletoError, installment?.id, issueBoleto]);
 
   // Fallback local QR.
   useEffect(() => {

@@ -107,7 +107,7 @@ export function TenantShell() {
       </nav>
 
       {/* Desktop top tabs */}
-      <nav className="hidden md:flex border-b border-border/60 backdrop-blur-xl bg-card/85 sticky top-14 left-0 right-0 z-20">
+      <nav className="hidden md:flex border-b border-border/60 backdrop-blur-xl bg-card/85 fixed top-14 left-0 right-0 z-30">
         <div className="max-w-3xl mx-auto px-4 flex gap-1 w-full overflow-x-auto">
           {tenantNav.map((item) => {
             const active = isActive(item.to, item.exact);

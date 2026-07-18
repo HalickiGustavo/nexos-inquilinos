@@ -269,27 +269,6 @@ function TenantFinanceiro() {
                       >
                         <QrCode className="size-5 mr-2" /> Pagar Parcela — {formatBRL(totalDue)}
                       </Button>
-                      {i.boleto_url ? (
-                        <Button
-                          variant="outline"
-                          className="w-full"
-                          disabled={boletoLoadingId === i.id}
-                          onClick={() => openBoletoPdf(i)}
-                        >
-                          <Download className="size-4 mr-2" />
-                          {boletoLoadingId === i.id ? "Abrindo boleto..." : "Visualizar Boleto PDF"}
-                        </Button>
-                      ) : (
-                        <Button
-                          variant="outline"
-                          className="w-full"
-                          disabled={issuingId === i.id}
-                          onClick={() => generateBoleto(i.id)}
-                        >
-                          <Download className="size-4 mr-2" />
-                          {issuingId === i.id ? "Gerando boleto..." : "Gerar Boleto"}
-                        </Button>
-                      )}
                     </>
                   )}
 

@@ -80,6 +80,12 @@ function ContratosPage() {
             Contratos de locação da imobiliária.
           </p>
         </div>
+        <Dialog open={openNew} onOpenChange={setOpenNew}>
+          <DialogTrigger asChild>
+            <Button><Plus className="size-4 mr-2" />Novo contrato</Button>
+          </DialogTrigger>
+          <ContractFormDialog onDone={() => setOpenNew(false)} />
+        </Dialog>
       </div>
 
       <Card className="p-4 flex flex-col sm:flex-row gap-3 sm:items-center">

@@ -1,15 +1,17 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useMemo } from "react";
-import { FileText, Search, Calendar, Home } from "lucide-react";
+import { FileText, Search, Calendar, Home, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { formatBRL } from "@/lib/format";
 import { ContractPdfUploader } from "@/components/ContractPdfUploader";
+import { ContractFormDialog } from "@/components/ContractFormDialog";
 
 export const Route = createFileRoute("/_manager/manager/contratos")({
   component: ContratosPage,
@@ -30,6 +32,7 @@ type ContractRow = {
 function ContratosPage() {
   const [filter, setFilter] = useState<"all" | "ativos" | "encerrados">("ativos");
   const [search, setSearch] = useState("");
+  const [openNew, setOpenNew] = useState(false);
 
   const q = useQuery({
     queryKey: ["mgr-contratos"],
@@ -77,6 +80,12 @@ function ContratosPage() {
             Contratos de locação da imobiliária.
           </p>
         </div>
+        <Dialog open={openNew} onOpenChange={setOpenNew}>
+          <DialogTrigger asChild>
+            <Button><Plus className="size-4 mr-2" />Novo contrato</Button>
+          </DialogTrigger>
+          <ContractFormDialog onDone={() => setOpenNew(false)} />
+        </Dialog>
       </div>
 
       <Card className="p-4 flex flex-col sm:flex-row gap-3 sm:items-center">

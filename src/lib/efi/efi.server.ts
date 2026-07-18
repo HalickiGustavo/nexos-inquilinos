@@ -24,7 +24,12 @@ type ProxyAction =
   | "cob_get"
   | "qrcode_get"
   | "boleto_create"
-  | "boleto_get";
+  | "boleto_get"
+  | "pix_send"
+  | "pix_send_get"
+  | "webhook_put"
+  | "webhook_get";
+
 
 export type EfiProxyError = {
   status: number;
@@ -154,3 +159,9 @@ export async function efiBoletoCreate(body: EfiBoletoRequest): Promise<EfiBoleto
 export async function efiBoletoGet(chargeId: number | string): Promise<EfiBoletoResponse> {
   return callProxy<EfiBoletoResponse>("boleto_get", { chargeId });
 }
+
+// Genérico — usado por rotas admin (registrar webhook, etc.)
+export async function efiProxyCall<T = unknown>(action: ProxyAction, params?: unknown): Promise<T> {
+  return callProxy<T>(action, params);
+}
+

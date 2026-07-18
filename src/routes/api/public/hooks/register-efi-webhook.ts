@@ -18,7 +18,7 @@ export const Route = createFileRoute("/api/public/hooks/register-efi-webhook")({
         const chave = process.env.EFI_PIX_KEY;
         if (!chave) return Response.json({ ok: false, error: "EFI_PIX_KEY not set" }, { status: 500 });
 
-        const webhookUrl = `https://nexos-inquilinos.lovable.app/api/public/efi-webhook?hmac=${encodeURIComponent(expected)}`;
+        const webhookUrl = `https://dashboard.usenexoapp.com/api/public/efi-webhook?hmac=${encodeURIComponent(expected)}`;
 
         try {
           const { efiProxyCall } = await import("@/lib/efi/efi.server");

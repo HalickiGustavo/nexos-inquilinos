@@ -154,12 +154,11 @@ export function PixPaymentDialog({
 
       // Efí devolve uma URL pública direta do PDF. Não passa pelo proxy Stark,
       // senão o proxy tenta extrair um ID /boleto/:id/pdf e acusa "não gerado".
-      if (directUrl && !isLegacyStarkUrl) {
+      if (directUrl && !isLegacyStarkUrl && mode === "view") {
         const a = document.createElement("a");
         a.href = directUrl;
         a.target = "_blank";
         a.rel = "noopener noreferrer";
-        if (mode === "download") a.download = `boleto-${installment?.id ?? "parcela"}.pdf`;
         document.body.appendChild(a);
         a.click();
         a.remove();

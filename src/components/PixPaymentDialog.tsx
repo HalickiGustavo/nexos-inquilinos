@@ -37,8 +37,12 @@ export function PixPaymentDialog({
   const [paid, setPaid] = useState(false);
   const [qrFallback, setQrFallback] = useState<string | null>(null);
   const [tab, setTab] = useState<"pix" | "boleto">("pix");
+  const [boletoOverride, setBoletoOverride] = useState<{ url: string; line: string } | null>(null);
+  const [issuingBoleto, setIssuingBoleto] = useState(false);
+  const [boletoError, setBoletoError] = useState<string | null>(null);
   const checkPaid = useServerFn(checkPixPayment);
   const fetchBoleto = useServerFn(downloadBoletoPdf);
+  const issueBoleto = useServerFn(requestBoletoForInstallment);
   const onPaidRef = useRef(onPaid);
   onPaidRef.current = onPaid;
 

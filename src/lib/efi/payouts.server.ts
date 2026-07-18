@@ -80,9 +80,13 @@ export async function efiPixSend(input: EfiPixSendInput): Promise<EfiPixSendResp
   return callProxy<EfiPixSendResponse>("pix_send", { idEnvio: input.idEnvio, body });
 }
 
-export async function efiPixSendGet(idEnvio: string): Promise<EfiPixSendResponse | null> {
+export async function efiPixSendGet(
+  idEnvioOrOpts: string | { idEnvio?: string; e2eId?: string },
+): Promise<EfiPixSendResponse | null> {
+  const params =
+    typeof idEnvioOrOpts === "string" ? { idEnvio: idEnvioOrOpts } : idEnvioOrOpts;
   try {
-    return await callProxy<EfiPixSendResponse>("pix_send_get", { idEnvio });
+    return await callProxy<EfiPixSendResponse>("pix_send_get", params);
   } catch (e: any) {
     if (e?.status === 404) return null;
     throw e;

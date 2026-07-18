@@ -275,10 +275,22 @@ Deno.serve(async (req) => {
         const res = await efiFetch(`/v3/gn/pix/${idEnvio}`, { method: "PUT", json: body });
         return efiJsonResponse(res);
       }
+      // Consulta oficial "Consultar Pix Enviado":
+      //   • GET /v2/gn/pix/enviados/{e2eId}
+      //   • GET /v2/gn/pix/enviados/id-envio/{idEnvio}
+      // A rota /v3/gn/pix/enviados/{idEnvio} NÃO EXISTE — retorna 404.
       case "pix_send_get": {
-        const { idEnvio } = payload.params ?? {};
-        if (!idEnvio) return json(400, { error: "missing idEnvio" });
-        const res = await efiFetch(`/v3/gn/pix/enviados/${idEnvio}`, { method: "GET" });
+        const { idEnvio, e2eId } = payload.params ?? {};
+        if (!idEnvio && !e2eId) return json(400, { error: "missing idEnvio or e2eId" });
+        // Prioriza e2eId (endpoint canônico); cai para idEnvio se necessário.
+        if (e2eId) {
+          const byE2E = await efiFetch(`/v2/gn/pix/enviados/${encodeURIComponent(e2eId)}`, { method: "GET" });
+          if (byE2E.ok || byE2E.status !== 404) return efiJsonResponse(byE2E);
+        }
+        const res = await efiFetch(
+          `/v2/gn/pix/enviados/id-envio/${encodeURIComponent(idEnvio)}`,
+          { method: "GET" },
+        );
         return efiJsonResponse(res);
       }
       // Configuração de webhook Pix — /v2/webhook/{chave}

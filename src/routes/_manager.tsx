@@ -8,6 +8,7 @@ import {
   ClipboardCheck,
   Loader2,
   FileDigit,
+  FileText,
   Database,
   Globe,
   Shuffle,

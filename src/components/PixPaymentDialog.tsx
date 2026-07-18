@@ -9,6 +9,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { formatBRL, formatDate } from "@/lib/format";
 import { checkPixPayment } from "@/lib/pix-split.functions";
 import { downloadBoletoPdf } from "@/lib/boleto-download.functions";
+import { requestBoletoForInstallment } from "@/lib/boleto-issue.functions";
 
 /**
  * Modal de pagamento — PIX + Boleto (abas), compacto, sem scroll.

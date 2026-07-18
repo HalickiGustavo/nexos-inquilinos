@@ -53,11 +53,14 @@ async function callProxy<T = unknown>(action: ProxyAction, params?: unknown): Pr
     // Efí Cobranças errors: { code, error, error_description }
     // Also may include { error: {...nested...} } from proxy; stringify to expose
     // whatever detail the API returned.
+    const stringify = (v: unknown) =>
+      typeof v === "string" ? v : (() => { try { return JSON.stringify(v); } catch { return String(v); } })();
     const detail =
-      body?.error_description ||
-      (typeof body?.error === "string" ? body.error : null) ||
-      (body?.mensagem ? `${body?.nome ?? "efi"}: ${body.mensagem}` : null) ||
-      JSON.stringify(body);
+      (body?.error_description ? stringify(body.error_description) : null) ||
+      (typeof body?.error === "string" ? body.error : body?.error ? stringify(body.error) : null) ||
+      (body?.mensagem ? `${body?.nome ?? "efi"}: ${stringify(body.mensagem)}` : null) ||
+      (body?.violacoes ? stringify(body.violacoes) : null) ||
+      stringify(body);
     const err: EfiProxyError = {
       status: res.status,
       body,

@@ -24,25 +24,35 @@ export const Route = createFileRoute("/api/public/efi-webhook")({
   },
 });
 
-async function handle(request: Request) {
+export async function handle(request: Request) {
   const url = new URL(request.url);
-  const provided = url.searchParams.get("hmac") ?? "";
+  // Efí anexa "/pix" ao final da URL registrada como parte do path do webhook
+  // (ex.: {URL}/pix). Quando a URL registrada contém query string, alguns
+  // eventos chegam com "/pix" concatenado ao próprio valor do último parâmetro
+  // (ex.: ?hmac=SECRET/pix). Aceitamos ambos os casos.
+  const rawHmac = url.searchParams.get("hmac") ?? "";
+  const provided = rawHmac.replace(/\/pix$/, "");
   const expected = process.env.EFI_WEBHOOK_HMAC_SECRET ?? "";
   if (!expected) return new Response("webhook not configured", { status: 503 });
   const a = Buffer.from(provided);
   const b = Buffer.from(expected);
   if (a.length !== b.length || !timingSafeEqual(a, b)) {
-    console.warn("[efi-webhook] hmac mismatch");
+    console.warn("[efi-webhook] hmac mismatch", { pathname: url.pathname, providedLen: provided.length });
     return new Response("unauthorized", { status: 401 });
   }
+  console.log("[efi-webhook] hmac ok", { pathname: url.pathname });
 
   let payload: any = null;
   try {
     payload = await request.json();
   } catch {
     // POST vazio (validação/callback de configuração) — responde 200.
+    console.log("[efi-webhook] empty body (probe)");
     return new Response("ok", { status: 200 });
   }
+  console.log("[efi-webhook] payload received", {
+    pixCount: Array.isArray(payload?.pix) ? payload.pix.length : 0,
+  });
 
   // 1) Persistência crua (auditoria + idempotência downstream)
   let eventId: string | null = null;

@@ -156,22 +156,44 @@ export async function enqueueSplitForInstallment(installmentId: string, paidAmou
 
   const [{ data: platform }, { data: agency }, { data: ownerProfile }] = await Promise.all([
     supabaseAdmin.from("platform_settings").select("nexo_platform_pix_key, nexo_flat_fee").limit(1).maybeSingle(),
-    supabaseAdmin.from("agency_settings").select("pix_key").eq("manager_user_id", managerUserId).maybeSingle(),
+    supabaseAdmin
+      .from("agency_settings")
+      .select("agency_pix_key, agency_pix_key_type")
+      .eq("manager_user_id", managerUserId)
+      .maybeSingle(),
     landlordId
-      ? supabaseAdmin.from("profiles").select("pix_key").eq("id", landlordId).maybeSingle()
+      ? supabaseAdmin.from("profiles").select("pix_key, pix_key_type").eq("id", landlordId).maybeSingle()
       : Promise.resolve({ data: null } as any),
   ]);
 
   const nexoPixKey = (platform as any)?.nexo_platform_pix_key ?? process.env.EFI_PIX_KEY ?? "66524872000167";
   const nexoFee = Number((platform as any)?.nexo_flat_fee ?? process.env.NEXO_FLAT_FEE ?? 24.99);
+  const agencyPixKey = (agency as any)?.agency_pix_key ?? null;
+  const ownerPixKey = (ownerProfile as any)?.pix_key ?? null;
+
+  console.log("[efi-split] inputs", {
+    installmentId,
+    paidAmount,
+    nexoFee,
+    managementFeePercent: pct,
+    agencyPixKey: agencyPixKey ? "present" : "MISSING",
+    ownerPixKey: ownerPixKey ? "present" : "MISSING",
+  });
 
   const split = computeSplit({
     paidAmount,
     nexoFee,
     managementFeePercent: pct,
-    agencyPixKey: (agency as any)?.pix_key ?? null,
-    ownerPixKey: (ownerProfile as any)?.pix_key ?? null,
+    agencyPixKey,
+    ownerPixKey,
     nexoPixKey,
+  });
+
+  console.log("[efi-split] result", {
+    installmentId,
+    nexo: split.nexo.amount,
+    agency: split.agency.amount,
+    owner: split.owner.amount,
   });
 
   await enqueueTransfersForSplit(split, {

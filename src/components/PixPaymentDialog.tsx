@@ -280,13 +280,30 @@ export function PixPaymentDialog({
             {/* BOLETO */}
             <TabsContent value="boleto" className="mt-4">
               {!boletoUrl && !boletoLine ? (
-                <div className="flex flex-col items-center justify-center py-10 text-center gap-2">
-                  <Loader2 className="size-5 animate-spin text-muted-foreground" />
-                  <p className="text-sm font-medium">Boleto sendo gerado</p>
-                  <p className="text-xs text-muted-foreground max-w-xs">
-                    O boleto ficará disponível em instantes. Enquanto isso, utilize o PIX para pagamento imediato.
-                  </p>
-                </div>
+                boletoError ? (
+                  <div className="flex flex-col items-center justify-center py-8 text-center gap-3">
+                    <AlertCircle className="size-6 text-destructive" />
+                    <p className="text-sm font-medium">Não foi possível gerar o boleto</p>
+                    <p className="text-xs text-muted-foreground max-w-xs break-words">{boletoError}</p>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setBoletoError(null)}
+                    >
+                      Tentar novamente
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-10 text-center gap-2">
+                    <Loader2 className="size-5 animate-spin text-muted-foreground" />
+                    <p className="text-sm font-medium">
+                      {issuingBoleto ? "Gerando boleto…" : "Boleto sendo gerado"}
+                    </p>
+                    <p className="text-xs text-muted-foreground max-w-xs">
+                      O boleto ficará disponível em instantes. Enquanto isso, utilize o PIX para pagamento imediato.
+                    </p>
+                  </div>
+                )
               ) : (
                 <div className="space-y-4">
                   {boletoLine && (

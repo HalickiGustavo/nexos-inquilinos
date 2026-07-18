@@ -1311,8 +1311,15 @@ export type Database = {
           contract_id: string
           created_at: string
           description: string | null
+          efi_e2e_id: string | null
+          efi_id_envio: string | null
+          efi_last_consult_at: string | null
+          efi_response: Json | null
+          efi_status: string | null
+          efi_status_updated_at: string | null
           error_message: string | null
           external_id: string | null
+          finished_at: string | null
           id: string
           installment_id: string
           manager_user_id: string
@@ -1332,8 +1339,15 @@ export type Database = {
           contract_id: string
           created_at?: string
           description?: string | null
+          efi_e2e_id?: string | null
+          efi_id_envio?: string | null
+          efi_last_consult_at?: string | null
+          efi_response?: Json | null
+          efi_status?: string | null
+          efi_status_updated_at?: string | null
           error_message?: string | null
           external_id?: string | null
+          finished_at?: string | null
           id?: string
           installment_id: string
           manager_user_id: string
@@ -1353,8 +1367,15 @@ export type Database = {
           contract_id?: string
           created_at?: string
           description?: string | null
+          efi_e2e_id?: string | null
+          efi_id_envio?: string | null
+          efi_last_consult_at?: string | null
+          efi_response?: Json | null
+          efi_status?: string | null
+          efi_status_updated_at?: string | null
           error_message?: string | null
           external_id?: string | null
+          finished_at?: string | null
           id?: string
           installment_id?: string
           manager_user_id?: string
@@ -1924,8 +1945,15 @@ export type Database = {
           contract_id: string
           created_at: string
           description: string | null
+          efi_e2e_id: string | null
+          efi_id_envio: string | null
+          efi_last_consult_at: string | null
+          efi_response: Json | null
+          efi_status: string | null
+          efi_status_updated_at: string | null
           error_message: string | null
           external_id: string | null
+          finished_at: string | null
           id: string
           installment_id: string
           manager_user_id: string

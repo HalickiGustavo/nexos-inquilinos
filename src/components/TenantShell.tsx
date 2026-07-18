@@ -60,7 +60,7 @@ export function TenantShell() {
         </div>
       </header>
 
-      <main className="flex-1 pb-24 md:pb-6">
+      <main className="flex-1 pt-14 pb-24 md:pb-6 md:pt-[7.25rem]">
         <div className="max-w-3xl mx-auto px-4 py-5">
           <Outlet />
         </div>

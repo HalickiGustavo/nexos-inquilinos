@@ -22,6 +22,7 @@ export async function runEfiPayoutWorker(opts?: { limit?: number }) {
     console.error("[efi-payout] EFI_PIX_KEY não configurada — abortando");
     return { processed: 0, results: [], error: "EFI_PIX_KEY missing" };
   }
+  console.log("[efi-payout] worker start", { claimed: batch.length });
 
   for (const row of batch as any[]) {
     const attempts = Number(row.attempts ?? 0) + 1;
@@ -42,6 +43,12 @@ export async function runEfiPayoutWorker(opts?: { limit?: number }) {
       }
 
       const idEnvio = idEnvioFromTransferId(row.id);
+      console.log("[efi-payout] sending", {
+        transferId: row.id,
+        recipient: row.recipient_type,
+        amount: row.amount,
+        idEnvio,
+      });
       let sent = await efiPixSend({
         idEnvio,
         amount: Number(row.amount),
@@ -51,12 +58,18 @@ export async function runEfiPayoutWorker(opts?: { limit?: number }) {
       }).catch(async (err: any) => {
         // Se a Efí retorna "envio duplicado" (idempotência), tenta consultar
         if (err?.status === 409 || err?.body?.nome === "envio_duplicado") {
+          console.warn("[efi-payout] duplicate send, consulting", { transferId: row.id });
           return efiPixSendGet(idEnvio);
         }
         throw err;
       });
 
       if (!sent) throw new Error("Envio PIX Efí sem retorno");
+      console.log("[efi-payout] efi response", {
+        transferId: row.id,
+        status: sent.status,
+        e2eId: sent.e2eId,
+      });
 
       if (sent.status === "REALIZADO") {
         await markCompleted(row.id, sent.e2eId ?? idEnvio);
@@ -83,6 +96,7 @@ export async function runEfiPayoutWorker(opts?: { limit?: number }) {
       results.push({ id: row.id, ok: false, error: msg });
     }
   }
+  console.log("[efi-payout] worker done", { processed: batch.length });
   return { processed: batch.length, results };
 }
 
@@ -96,18 +110,29 @@ export async function reconcileEfiPayouts() {
     .not("provider_transfer_id", "is", null)
     .limit(50);
 
-  for (const row of ((data as any[]) ?? [])) {
+  const rows = ((data as any[]) ?? []);
+  console.log("[efi-reconcile] start", { processing: rows.length });
+  for (const row of rows) {
     try {
       const idEnvio = idEnvioFromTransferId(row.id);
       const res = await efiPixSendGet(idEnvio);
-      if (!res) continue;
+      if (!res) {
+        console.warn("[efi-reconcile] no efi record", { transferId: row.id, idEnvio });
+        continue;
+      }
+      console.log("[efi-reconcile] efi status", {
+        transferId: row.id,
+        idEnvio,
+        status: res.status,
+        e2eId: res.e2eId,
+      });
       if (res.status === "REALIZADO") {
         await markCompleted(row.id, res.e2eId ?? idEnvio);
       } else if (res.status === "NAO_REALIZADO") {
         await markFailed(row.id, "efi pix NAO_REALIZADO (reconcile)", Number(row.attempts ?? 0) + 1);
       }
     } catch (e: any) {
-      console.warn("[efi-payout] reconcile fetch failed", row.id, e?.message);
+      console.warn("[efi-reconcile] fetch failed", row.id, e?.message);
     }
   }
 }

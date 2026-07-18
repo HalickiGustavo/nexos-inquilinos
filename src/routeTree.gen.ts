@@ -72,6 +72,7 @@ import { Route as ApiPublicHooksReconcileStarkChargesRouteImport } from './route
 import { Route as ApiPublicHooksProcessPayoutQueueRouteImport } from './routes/api/public/hooks/process-payout-queue'
 import { Route as ApiPublicHooksIssueSingleBoletoRouteImport } from './routes/api/public/hooks/issue-single-boleto'
 import { Route as ApiPublicHooksGenerateUpcomingBoletosRouteImport } from './routes/api/public/hooks/generate-upcoming-boletos'
+import { Route as ApiPublicEfiWebhookPixRouteImport } from './routes/api/public/efi-webhook.pix'
 import { Route as ManagerManagerConfiguracoesRoletaRouteImport } from './routes/_manager/manager.configuracoes.roleta'
 import { Route as AuthenticatedAdminConfiguracoesSubcontaRouteImport } from './routes/_authenticated/admin.configuracoes.subconta'
 import { Route as ApiV1IntegrationsOrgSlugListingsDotxmlRouteImport } from './routes/api/v1/integrations/$orgSlug/listings[.]xml'
@@ -418,6 +419,11 @@ const ApiPublicHooksGenerateUpcomingBoletosRoute =
     path: '/api/public/hooks/generate-upcoming-boletos',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicEfiWebhookPixRoute = ApiPublicEfiWebhookPixRouteImport.update({
+  id: '/pix',
+  path: '/pix',
+  getParentRoute: () => ApiPublicEfiWebhookRoute,
+} as any)
 const ManagerManagerConfiguracoesRoletaRoute =
   ManagerManagerConfiguracoesRoletaRouteImport.update({
     id: '/manager/configuracoes/roleta',
@@ -487,13 +493,14 @@ export interface FileRoutesByFullPath {
   '/manager/portais': typeof ManagerManagerPortaisRoute
   '/manager/proprietarios': typeof ManagerManagerProprietariosRoute
   '/manager/vistorias': typeof ManagerManagerVistoriasRoute
-  '/api/public/efi-webhook': typeof ApiPublicEfiWebhookRoute
+  '/api/public/efi-webhook': typeof ApiPublicEfiWebhookRouteWithChildren
   '/api/public/stark-webhook': typeof ApiPublicStarkWebhookRoute
   '/tenant/': typeof AuthenticatedTenantIndexRoute
   '/landlord/': typeof LandlordLandlordIndexRoute
   '/manager/': typeof ManagerManagerIndexRoute
   '/admin/configuracoes/subconta': typeof AuthenticatedAdminConfiguracoesSubcontaRoute
   '/manager/configuracoes/roleta': typeof ManagerManagerConfiguracoesRoletaRoute
+  '/api/public/efi-webhook/pix': typeof ApiPublicEfiWebhookPixRoute
   '/api/public/hooks/generate-upcoming-boletos': typeof ApiPublicHooksGenerateUpcomingBoletosRoute
   '/api/public/hooks/issue-single-boleto': typeof ApiPublicHooksIssueSingleBoletoRoute
   '/api/public/hooks/process-payout-queue': typeof ApiPublicHooksProcessPayoutQueueRoute
@@ -553,13 +560,14 @@ export interface FileRoutesByTo {
   '/manager/portais': typeof ManagerManagerPortaisRoute
   '/manager/proprietarios': typeof ManagerManagerProprietariosRoute
   '/manager/vistorias': typeof ManagerManagerVistoriasRoute
-  '/api/public/efi-webhook': typeof ApiPublicEfiWebhookRoute
+  '/api/public/efi-webhook': typeof ApiPublicEfiWebhookRouteWithChildren
   '/api/public/stark-webhook': typeof ApiPublicStarkWebhookRoute
   '/tenant': typeof AuthenticatedTenantIndexRoute
   '/landlord': typeof LandlordLandlordIndexRoute
   '/manager': typeof ManagerManagerIndexRoute
   '/admin/configuracoes/subconta': typeof AuthenticatedAdminConfiguracoesSubcontaRoute
   '/manager/configuracoes/roleta': typeof ManagerManagerConfiguracoesRoletaRoute
+  '/api/public/efi-webhook/pix': typeof ApiPublicEfiWebhookPixRoute
   '/api/public/hooks/generate-upcoming-boletos': typeof ApiPublicHooksGenerateUpcomingBoletosRoute
   '/api/public/hooks/issue-single-boleto': typeof ApiPublicHooksIssueSingleBoletoRoute
   '/api/public/hooks/process-payout-queue': typeof ApiPublicHooksProcessPayoutQueueRoute
@@ -623,13 +631,14 @@ export interface FileRoutesById {
   '/_manager/manager/portais': typeof ManagerManagerPortaisRoute
   '/_manager/manager/proprietarios': typeof ManagerManagerProprietariosRoute
   '/_manager/manager/vistorias': typeof ManagerManagerVistoriasRoute
-  '/api/public/efi-webhook': typeof ApiPublicEfiWebhookRoute
+  '/api/public/efi-webhook': typeof ApiPublicEfiWebhookRouteWithChildren
   '/api/public/stark-webhook': typeof ApiPublicStarkWebhookRoute
   '/_authenticated/tenant/': typeof AuthenticatedTenantIndexRoute
   '/_landlord/landlord/': typeof LandlordLandlordIndexRoute
   '/_manager/manager/': typeof ManagerManagerIndexRoute
   '/_authenticated/admin/configuracoes/subconta': typeof AuthenticatedAdminConfiguracoesSubcontaRoute
   '/_manager/manager/configuracoes/roleta': typeof ManagerManagerConfiguracoesRoletaRoute
+  '/api/public/efi-webhook/pix': typeof ApiPublicEfiWebhookPixRoute
   '/api/public/hooks/generate-upcoming-boletos': typeof ApiPublicHooksGenerateUpcomingBoletosRoute
   '/api/public/hooks/issue-single-boleto': typeof ApiPublicHooksIssueSingleBoletoRoute
   '/api/public/hooks/process-payout-queue': typeof ApiPublicHooksProcessPayoutQueueRoute
@@ -698,6 +707,7 @@ export interface FileRouteTypes {
     | '/manager/'
     | '/admin/configuracoes/subconta'
     | '/manager/configuracoes/roleta'
+    | '/api/public/efi-webhook/pix'
     | '/api/public/hooks/generate-upcoming-boletos'
     | '/api/public/hooks/issue-single-boleto'
     | '/api/public/hooks/process-payout-queue'
@@ -764,6 +774,7 @@ export interface FileRouteTypes {
     | '/manager'
     | '/admin/configuracoes/subconta'
     | '/manager/configuracoes/roleta'
+    | '/api/public/efi-webhook/pix'
     | '/api/public/hooks/generate-upcoming-boletos'
     | '/api/public/hooks/issue-single-boleto'
     | '/api/public/hooks/process-payout-queue'
@@ -833,6 +844,7 @@ export interface FileRouteTypes {
     | '/_manager/manager/'
     | '/_authenticated/admin/configuracoes/subconta'
     | '/_manager/manager/configuracoes/roleta'
+    | '/api/public/efi-webhook/pix'
     | '/api/public/hooks/generate-upcoming-boletos'
     | '/api/public/hooks/issue-single-boleto'
     | '/api/public/hooks/process-payout-queue'
@@ -858,7 +870,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   ManagerSetupRoute: typeof ManagerSetupRoute
   TenantSetupRoute: typeof TenantSetupRoute
-  ApiPublicEfiWebhookRoute: typeof ApiPublicEfiWebhookRoute
+  ApiPublicEfiWebhookRoute: typeof ApiPublicEfiWebhookRouteWithChildren
   ApiPublicStarkWebhookRoute: typeof ApiPublicStarkWebhookRoute
   ApiPublicHooksGenerateUpcomingBoletosRoute: typeof ApiPublicHooksGenerateUpcomingBoletosRoute
   ApiPublicHooksIssueSingleBoletoRoute: typeof ApiPublicHooksIssueSingleBoletoRoute
@@ -1319,6 +1331,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksGenerateUpcomingBoletosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/efi-webhook/pix': {
+      id: '/api/public/efi-webhook/pix'
+      path: '/pix'
+      fullPath: '/api/public/efi-webhook/pix'
+      preLoaderRoute: typeof ApiPublicEfiWebhookPixRouteImport
+      parentRoute: typeof ApiPublicEfiWebhookRoute
+    }
     '/_manager/manager/configuracoes/roleta': {
       id: '/_manager/manager/configuracoes/roleta'
       path: '/manager/configuracoes/roleta'
@@ -1479,6 +1498,17 @@ const ManagerRouteChildren: ManagerRouteChildren = {
 const ManagerRouteWithChildren =
   ManagerRoute._addFileChildren(ManagerRouteChildren)
 
+interface ApiPublicEfiWebhookRouteChildren {
+  ApiPublicEfiWebhookPixRoute: typeof ApiPublicEfiWebhookPixRoute
+}
+
+const ApiPublicEfiWebhookRouteChildren: ApiPublicEfiWebhookRouteChildren = {
+  ApiPublicEfiWebhookPixRoute: ApiPublicEfiWebhookPixRoute,
+}
+
+const ApiPublicEfiWebhookRouteWithChildren =
+  ApiPublicEfiWebhookRoute._addFileChildren(ApiPublicEfiWebhookRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   LandlordRoute: LandlordRouteWithChildren,
@@ -1488,7 +1518,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   ManagerSetupRoute: ManagerSetupRoute,
   TenantSetupRoute: TenantSetupRoute,
-  ApiPublicEfiWebhookRoute: ApiPublicEfiWebhookRoute,
+  ApiPublicEfiWebhookRoute: ApiPublicEfiWebhookRouteWithChildren,
   ApiPublicStarkWebhookRoute: ApiPublicStarkWebhookRoute,
   ApiPublicHooksGenerateUpcomingBoletosRoute:
     ApiPublicHooksGenerateUpcomingBoletosRoute,
@@ -1514,13 +1544,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

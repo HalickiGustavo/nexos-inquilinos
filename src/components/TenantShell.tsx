@@ -33,7 +33,7 @@ export function TenantShell() {
   return (
     <div className="min-h-screen flex flex-col bg-muted/30">
       {/* Top header */}
-      <header className="sticky top-0 z-30 backdrop-blur-xl bg-card/85 border-b border-border/60">
+      <header className="fixed top-0 inset-x-0 z-40 backdrop-blur-xl bg-card/85 border-b border-border/60">
         <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2 min-w-0">
             <NexoLogo className="h-7 shrink-0" />

@@ -1,15 +1,17 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useMemo } from "react";
-import { FileText, Search, Calendar, Home } from "lucide-react";
+import { FileText, Search, Calendar, Home, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { formatBRL } from "@/lib/format";
 import { ContractPdfUploader } from "@/components/ContractPdfUploader";
+import { ContractFormDialog } from "@/components/ContractFormDialog";
 
 export const Route = createFileRoute("/_manager/manager/contratos")({
   component: ContratosPage,

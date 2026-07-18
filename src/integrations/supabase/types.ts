@@ -639,6 +639,7 @@ export type Database = {
       efi_events: {
         Row: {
           created_at: string
+          error: string | null
           event_type: string
           id: string
           payload: Json
@@ -647,6 +648,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          error?: string | null
           event_type: string
           id?: string
           payload: Json
@@ -655,6 +657,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          error?: string | null
           event_type?: string
           id?: string
           payload?: Json

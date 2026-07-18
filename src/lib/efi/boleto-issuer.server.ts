@@ -114,8 +114,6 @@ export async function issueBoletoForInstallmentEfi(installmentId: string): Promi
           expire_at: expireAt,
           message: "Pagamento de aluguel via Nexo",
           customer,
-          fine: 200,      // 2%
-          interest: 100,  // 1% ao mês
         },
       },
     });

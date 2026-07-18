@@ -69,7 +69,7 @@ export async function runEfiPayoutWorker(opts?: { limit?: number }) {
           .from("payment_transfers")
           .update({
             status: "PROCESSING",
-            stark_transfer_id: sent.e2eId ?? idEnvio,
+            provider_transfer_id: sent.e2eId ?? idEnvio,
             attempts,
             error_message: null,
           } as any)
@@ -91,9 +91,9 @@ export async function reconcileEfiPayouts() {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data } = await supabaseAdmin
     .from("payment_transfers")
-    .select("id, stark_transfer_id, attempts")
+    .select("id, provider_transfer_id, attempts")
     .eq("status", "PROCESSING")
-    .not("stark_transfer_id", "is", null)
+    .not("provider_transfer_id", "is", null)
     .limit(50);
 
   for (const row of ((data as any[]) ?? [])) {

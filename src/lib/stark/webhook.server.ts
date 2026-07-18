@@ -107,13 +107,13 @@ async function onTransferEvent(event: any) {
     await supabaseAdmin
       .from("payment_transfers")
       .update({ status: "COMPLETED", paid_at: new Date().toISOString() } as any)
-      .eq("stark_transfer_id", id);
+      .eq("provider_transfer_id", id);
   } else if (transfer.status === "failed") {
     const reason = event?.log?.errors?.[0]?.message ?? "transfer failed";
     await supabaseAdmin
       .from("payment_transfers")
       .update({ status: "FAILED", error_message: String(reason).slice(0, 500) } as any)
-      .eq("stark_transfer_id", id);
+      .eq("provider_transfer_id", id);
   }
 }
 

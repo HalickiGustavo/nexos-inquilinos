@@ -61,9 +61,8 @@ let _client: Deno.HttpClient | null = null;
 async function getHttpClient(): Promise<Deno.HttpClient> {
   if (_client) return _client;
   const p12b64 = getEnv("EFI_CERT_P12_BASE64").replace(/\s+/g, "");
-  // Homologação Efí: certificado SEM senha. Ignoramos EFI_CERT_PASSWORD e
-  // tentamos todos os formatos aceitos por node-forge (undefined / "" / null)
-  // até um deles decodificar o PKCS#12.
+  // Usa EFI_CERT_PASSWORD quando presente; cai em vazios/nulos como fallback
+  // (homologação Efí normalmente vem sem senha).
   const p12 = Uint8Array.from(atob(p12b64), (c) => c.charCodeAt(0));
 
   const forgeMod: any = await import("npm:node-forge");
@@ -71,7 +70,11 @@ async function getHttpClient(): Promise<Deno.HttpClient> {
   const p12Der = String.fromCharCode(...p12);
   const p12Asn1 = forge.asn1.fromDer(p12Der);
 
-  const passwordCandidates: Array<string | undefined | null> = [undefined, "", null];
+  const envPwd = Deno.env.get("EFI_CERT_PASSWORD");
+  const passwordCandidates: Array<string | undefined | null> = [];
+  if (envPwd && envPwd.length > 0) passwordCandidates.push(envPwd);
+  passwordCandidates.push(undefined, "", null);
+
   let p12Obj: any = null;
   let lastErr: unknown = null;
   for (const pwd of passwordCandidates) {

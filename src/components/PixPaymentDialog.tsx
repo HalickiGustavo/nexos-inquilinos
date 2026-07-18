@@ -9,6 +9,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { formatBRL, formatDate } from "@/lib/format";
 import { checkPixPayment } from "@/lib/pix-split.functions";
 import { downloadBoletoPdf } from "@/lib/boleto-download.functions";
+import { requestBoletoForInstallment } from "@/lib/boleto-issue.functions";
 
 /**
  * Modal de pagamento — PIX + Boleto (abas), compacto, sem scroll.
@@ -36,8 +37,12 @@ export function PixPaymentDialog({
   const [paid, setPaid] = useState(false);
   const [qrFallback, setQrFallback] = useState<string | null>(null);
   const [tab, setTab] = useState<"pix" | "boleto">("pix");
+  const [boletoOverride, setBoletoOverride] = useState<{ url: string; line: string } | null>(null);
+  const [issuingBoleto, setIssuingBoleto] = useState(false);
+  const [boletoError, setBoletoError] = useState<string | null>(null);
   const checkPaid = useServerFn(checkPixPayment);
   const fetchBoleto = useServerFn(downloadBoletoPdf);
+  const issueBoleto = useServerFn(requestBoletoForInstallment);
   const onPaidRef = useRef(onPaid);
   onPaidRef.current = onPaid;
 
@@ -62,7 +67,14 @@ export function PixPaymentDialog({
   }, [open, installment?.id, installment?.pix_payload, paid, checkPaid, onOpenChange]);
 
   useEffect(() => {
-    if (!open) { setPaid(false); setQrFallback(null); setTab("pix"); }
+    if (!open) {
+      setPaid(false);
+      setQrFallback(null);
+      setTab("pix");
+      setBoletoOverride(null);
+      setIssuingBoleto(false);
+      setBoletoError(null);
+    }
   }, [open]);
 
   const amount = Number(installment?.split_breakdown?.total ?? installment?.amount ?? 0);
@@ -71,8 +83,32 @@ export function PixPaymentDialog({
     ? `data:image/png;base64,${installment.pix_qrcode}`
     : null;
   const qrSrc = qrFromServer ?? qrFallback;
-  const boletoUrl: string | null = installment?.boleto_url ?? null;
-  const boletoLine: string | null = installment?.barcode ?? null;
+  const boletoUrl: string | null = boletoOverride?.url ?? installment?.boleto_url ?? null;
+  const boletoLine: string | null = boletoOverride?.line ?? installment?.barcode ?? null;
+
+  // Auto-emitir boleto ao abrir a aba, se ainda não existir.
+  useEffect(() => {
+    if (!open || tab !== "boleto") return;
+    if (boletoUrl || boletoLine || issuingBoleto || boletoError) return;
+    if (!installment?.id) return;
+    setIssuingBoleto(true);
+    setBoletoError(null);
+    (async () => {
+      try {
+        const res: any = await issueBoleto({ data: { installmentId: installment.id } });
+        if (res?.pdfUrl) {
+          setBoletoOverride({ url: res.pdfUrl, line: res.barcode ?? "" });
+        } else {
+          setBoletoError("Boleto emitido, atualize em instantes.");
+        }
+        onPaidRef.current?.();
+      } catch (e: any) {
+        setBoletoError(e?.message ?? "Não foi possível gerar o boleto");
+      } finally {
+        setIssuingBoleto(false);
+      }
+    })();
+  }, [open, tab, boletoUrl, boletoLine, issuingBoleto, boletoError, installment?.id, issueBoleto]);
 
   // Fallback local QR.
   useEffect(() => {
@@ -244,13 +280,30 @@ export function PixPaymentDialog({
             {/* BOLETO */}
             <TabsContent value="boleto" className="mt-4">
               {!boletoUrl && !boletoLine ? (
-                <div className="flex flex-col items-center justify-center py-10 text-center gap-2">
-                  <Loader2 className="size-5 animate-spin text-muted-foreground" />
-                  <p className="text-sm font-medium">Boleto sendo gerado</p>
-                  <p className="text-xs text-muted-foreground max-w-xs">
-                    O boleto ficará disponível em instantes. Enquanto isso, utilize o PIX para pagamento imediato.
-                  </p>
-                </div>
+                boletoError ? (
+                  <div className="flex flex-col items-center justify-center py-8 text-center gap-3">
+                    <AlertCircle className="size-6 text-destructive" />
+                    <p className="text-sm font-medium">Não foi possível gerar o boleto</p>
+                    <p className="text-xs text-muted-foreground max-w-xs break-words">{boletoError}</p>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setBoletoError(null)}
+                    >
+                      Tentar novamente
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-10 text-center gap-2">
+                    <Loader2 className="size-5 animate-spin text-muted-foreground" />
+                    <p className="text-sm font-medium">
+                      {issuingBoleto ? "Gerando boleto…" : "Boleto sendo gerado"}
+                    </p>
+                    <p className="text-xs text-muted-foreground max-w-xs">
+                      O boleto ficará disponível em instantes. Enquanto isso, utilize o PIX para pagamento imediato.
+                    </p>
+                  </div>
+                )
               ) : (
                 <div className="space-y-4">
                   {boletoLine && (

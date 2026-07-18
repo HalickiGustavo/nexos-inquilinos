@@ -32,6 +32,7 @@ type ContractRow = {
 function ContratosPage() {
   const [filter, setFilter] = useState<"all" | "ativos" | "encerrados">("ativos");
   const [search, setSearch] = useState("");
+  const [openNew, setOpenNew] = useState(false);
 
   const q = useQuery({
     queryKey: ["mgr-contratos"],

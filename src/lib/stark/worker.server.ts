@@ -42,7 +42,7 @@ export async function runPayoutWorker(opts?: { limit?: number }) {
           .from("payment_transfers")
           .update({
             status: "PROCESSING",
-            stark_transfer_id: t.id,
+            provider_transfer_id: t.id,
             attempts,
             error_message: null,
           } as any)
@@ -62,16 +62,16 @@ export async function reconcileProcessing() {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data } = await supabaseAdmin
     .from("payment_transfers")
-    .select("id, stark_transfer_id, attempts")
+    .select("id, provider_transfer_id, attempts")
     .eq("status", "PROCESSING")
-    .not("stark_transfer_id", "is", null)
+    .not("provider_transfer_id", "is", null)
     .limit(50);
 
   for (const row of ((data as any[]) ?? [])) {
     try {
-      const res = await getTransfer(row.stark_transfer_id);
+      const res = await getTransfer(row.provider_transfer_id);
       const st = res.transfer?.status;
-      if (st === "success") await markCompleted(row.id, row.stark_transfer_id);
+      if (st === "success") await markCompleted(row.id, row.provider_transfer_id);
       else if (st === "failed")
         await markFailed(row.id, "transfer failed (reconcile)", Number(row.attempts ?? 0) + 1);
     } catch (e: any) {

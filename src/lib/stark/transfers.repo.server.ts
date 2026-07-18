@@ -97,7 +97,7 @@ export async function markCompleted(id: string, starkTransferId: string) {
     .from("payment_transfers")
     .update({
       status: "COMPLETED",
-      stark_transfer_id: starkTransferId,
+      provider_transfer_id: starkTransferId,
       paid_at: new Date().toISOString(),
       error_message: null,
     } as any)

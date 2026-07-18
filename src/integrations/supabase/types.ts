@@ -1320,9 +1320,9 @@ export type Database = {
           paid_at: string | null
           pix_key: string | null
           pix_key_type: string | null
+          provider_transfer_id: string | null
           recipient_type: Database["public"]["Enums"]["payment_recipient_type"]
           recipient_user_id: string | null
-          stark_transfer_id: string | null
           status: Database["public"]["Enums"]["payment_transfer_status"]
           updated_at: string
         }
@@ -1341,9 +1341,9 @@ export type Database = {
           paid_at?: string | null
           pix_key?: string | null
           pix_key_type?: string | null
+          provider_transfer_id?: string | null
           recipient_type: Database["public"]["Enums"]["payment_recipient_type"]
           recipient_user_id?: string | null
-          stark_transfer_id?: string | null
           status?: Database["public"]["Enums"]["payment_transfer_status"]
           updated_at?: string
         }
@@ -1362,9 +1362,9 @@ export type Database = {
           paid_at?: string | null
           pix_key?: string | null
           pix_key_type?: string | null
+          provider_transfer_id?: string | null
           recipient_type?: Database["public"]["Enums"]["payment_recipient_type"]
           recipient_user_id?: string | null
-          stark_transfer_id?: string | null
           status?: Database["public"]["Enums"]["payment_transfer_status"]
           updated_at?: string
         }
@@ -1933,9 +1933,9 @@ export type Database = {
           paid_at: string | null
           pix_key: string | null
           pix_key_type: string | null
+          provider_transfer_id: string | null
           recipient_type: Database["public"]["Enums"]["payment_recipient_type"]
           recipient_user_id: string | null
-          stark_transfer_id: string | null
           status: Database["public"]["Enums"]["payment_transfer_status"]
           updated_at: string
         }[]

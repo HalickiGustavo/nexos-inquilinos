@@ -1,0 +1,1 @@
+ALTER TABLE public.payment_transfers RENAME COLUMN stark_transfer_id TO provider_transfer_id;

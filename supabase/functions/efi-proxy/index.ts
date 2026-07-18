@@ -31,6 +31,9 @@ const EFI_PIX_SCOPES = [
   "pix.write",
   "webhook.read",
   "webhook.write",
+  // Envio de PIX via chave (repasses NEXO → proprietário / imobiliária)
+  "gn.pix.send.read",
+  "gn.pix.send.write",
 ].join(" ");
 
 function getEnv(name: string): string {
@@ -264,6 +267,35 @@ Deno.serve(async (req) => {
         if (!chargeId) return json(400, { error: "missing chargeId" });
         const res = await cobrancasFetch(`/v1/charge/${chargeId}`, { method: "GET" });
         return cobrancasJsonResponse(res);
+      }
+      // Envio de PIX (repasse) — /v3/gn/pix/:idEnvio
+      case "pix_send": {
+        const { idEnvio, body } = payload.params ?? {};
+        if (!idEnvio) return json(400, { error: "missing idEnvio" });
+        const res = await efiFetch(`/v3/gn/pix/${idEnvio}`, { method: "PUT", json: body });
+        return efiJsonResponse(res);
+      }
+      case "pix_send_get": {
+        const { idEnvio } = payload.params ?? {};
+        if (!idEnvio) return json(400, { error: "missing idEnvio" });
+        const res = await efiFetch(`/v3/gn/pix/enviados/${idEnvio}`, { method: "GET" });
+        return efiJsonResponse(res);
+      }
+      // Configuração de webhook Pix — /v2/webhook/{chave}
+      case "webhook_put": {
+        const { chave, body } = payload.params ?? {};
+        if (!chave) return json(400, { error: "missing chave" });
+        const res = await efiFetch(`/v2/webhook/${encodeURIComponent(chave)}`, {
+          method: "PUT",
+          json: body,
+        });
+        return efiJsonResponse(res);
+      }
+      case "webhook_get": {
+        const { chave } = payload.params ?? {};
+        if (!chave) return json(400, { error: "missing chave" });
+        const res = await efiFetch(`/v2/webhook/${encodeURIComponent(chave)}`, { method: "GET" });
+        return efiJsonResponse(res);
       }
       default:
         return json(400, { error: `unknown action: ${payload.action}` });

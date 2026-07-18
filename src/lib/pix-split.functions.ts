@@ -365,6 +365,43 @@ export const checkPixPayment = createServerFn({ method: "POST" })
         .maybeSingle();
       if ((inst as any)?.status === "pago") return { paid: true, status: "pago" };
 
+      // 1) Efí (preferencial quando configurado)
+      const useEfi = !!(process.env.EFI_PROXY_URL && process.env.EFI_PROXY_SECRET);
+      if (useEfi) {
+        const { data: efiCharge } = await supabaseAdmin
+          .from("efi_charges" as any)
+          .select("txid, status")
+          .eq("installment_id", data.installmentId)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        const txid = (efiCharge as any)?.txid;
+        if (txid) {
+          try {
+            const { efiCobGet } = await import("@/lib/efi/efi.server");
+            const cob: any = await efiCobGet(txid);
+            if (cob?.status === "CONCLUIDA") {
+              const paidAmount = Number(cob?.valor?.original ?? 0);
+              const endToEndId = cob?.pix?.[0]?.endToEndId;
+              const { confirmEfiChargePaid } = await import("@/lib/efi/webhook.server");
+              await confirmEfiChargePaid({ txid, paidAmount, endToEndId });
+              // Dispara worker de payouts (idempotente)
+              try {
+                const { runEfiPayoutWorker } = await import("@/lib/efi/payout-worker.server");
+                await runEfiPayoutWorker({ limit: 20 });
+              } catch (e) {
+                console.warn("[checkPixPayment] payout worker error", e);
+              }
+              return { paid: true, status: "pago" };
+            }
+            return { paid: false, status: cob?.status ?? "pending" };
+          } catch (e) {
+            console.warn("[checkPixPayment] efi cob_get failed", e);
+          }
+        }
+      }
+
+      // 2) Fallback Stark (legado)
       const { data: charge } = await supabaseAdmin
         .from("stark_charges")
         .select("stark_id")

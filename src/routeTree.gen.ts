@@ -67,6 +67,7 @@ import { Route as ApiPublicHooksStarkE2eSandboxRouteImport } from './routes/api/
 import { Route as ApiPublicHooksSendTenantRemindersRouteImport } from './routes/api/public/hooks/send-tenant-reminders'
 import { Route as ApiPublicHooksSendMaintenanceResponseRemindersRouteImport } from './routes/api/public/hooks/send-maintenance-response-reminders'
 import { Route as ApiPublicHooksRegisterStarkWebhookRouteImport } from './routes/api/public/hooks/register-stark-webhook'
+import { Route as ApiPublicHooksRegisterEfiWebhookRouteImport } from './routes/api/public/hooks/register-efi-webhook'
 import { Route as ApiPublicHooksReconcileStarkChargesRouteImport } from './routes/api/public/hooks/reconcile-stark-charges'
 import { Route as ApiPublicHooksProcessPayoutQueueRouteImport } from './routes/api/public/hooks/process-payout-queue'
 import { Route as ApiPublicHooksIssueSingleBoletoRouteImport } from './routes/api/public/hooks/issue-single-boleto'
@@ -387,6 +388,12 @@ const ApiPublicHooksRegisterStarkWebhookRoute =
     path: '/api/public/hooks/register-stark-webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksRegisterEfiWebhookRoute =
+  ApiPublicHooksRegisterEfiWebhookRouteImport.update({
+    id: '/api/public/hooks/register-efi-webhook',
+    path: '/api/public/hooks/register-efi-webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksReconcileStarkChargesRoute =
   ApiPublicHooksReconcileStarkChargesRouteImport.update({
     id: '/api/public/hooks/reconcile-stark-charges',
@@ -491,6 +498,7 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/issue-single-boleto': typeof ApiPublicHooksIssueSingleBoletoRoute
   '/api/public/hooks/process-payout-queue': typeof ApiPublicHooksProcessPayoutQueueRoute
   '/api/public/hooks/reconcile-stark-charges': typeof ApiPublicHooksReconcileStarkChargesRoute
+  '/api/public/hooks/register-efi-webhook': typeof ApiPublicHooksRegisterEfiWebhookRoute
   '/api/public/hooks/register-stark-webhook': typeof ApiPublicHooksRegisterStarkWebhookRoute
   '/api/public/hooks/send-maintenance-response-reminders': typeof ApiPublicHooksSendMaintenanceResponseRemindersRoute
   '/api/public/hooks/send-tenant-reminders': typeof ApiPublicHooksSendTenantRemindersRoute
@@ -556,6 +564,7 @@ export interface FileRoutesByTo {
   '/api/public/hooks/issue-single-boleto': typeof ApiPublicHooksIssueSingleBoletoRoute
   '/api/public/hooks/process-payout-queue': typeof ApiPublicHooksProcessPayoutQueueRoute
   '/api/public/hooks/reconcile-stark-charges': typeof ApiPublicHooksReconcileStarkChargesRoute
+  '/api/public/hooks/register-efi-webhook': typeof ApiPublicHooksRegisterEfiWebhookRoute
   '/api/public/hooks/register-stark-webhook': typeof ApiPublicHooksRegisterStarkWebhookRoute
   '/api/public/hooks/send-maintenance-response-reminders': typeof ApiPublicHooksSendMaintenanceResponseRemindersRoute
   '/api/public/hooks/send-tenant-reminders': typeof ApiPublicHooksSendTenantRemindersRoute
@@ -625,6 +634,7 @@ export interface FileRoutesById {
   '/api/public/hooks/issue-single-boleto': typeof ApiPublicHooksIssueSingleBoletoRoute
   '/api/public/hooks/process-payout-queue': typeof ApiPublicHooksProcessPayoutQueueRoute
   '/api/public/hooks/reconcile-stark-charges': typeof ApiPublicHooksReconcileStarkChargesRoute
+  '/api/public/hooks/register-efi-webhook': typeof ApiPublicHooksRegisterEfiWebhookRoute
   '/api/public/hooks/register-stark-webhook': typeof ApiPublicHooksRegisterStarkWebhookRoute
   '/api/public/hooks/send-maintenance-response-reminders': typeof ApiPublicHooksSendMaintenanceResponseRemindersRoute
   '/api/public/hooks/send-tenant-reminders': typeof ApiPublicHooksSendTenantRemindersRoute
@@ -692,6 +702,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/issue-single-boleto'
     | '/api/public/hooks/process-payout-queue'
     | '/api/public/hooks/reconcile-stark-charges'
+    | '/api/public/hooks/register-efi-webhook'
     | '/api/public/hooks/register-stark-webhook'
     | '/api/public/hooks/send-maintenance-response-reminders'
     | '/api/public/hooks/send-tenant-reminders'
@@ -757,6 +768,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/issue-single-boleto'
     | '/api/public/hooks/process-payout-queue'
     | '/api/public/hooks/reconcile-stark-charges'
+    | '/api/public/hooks/register-efi-webhook'
     | '/api/public/hooks/register-stark-webhook'
     | '/api/public/hooks/send-maintenance-response-reminders'
     | '/api/public/hooks/send-tenant-reminders'
@@ -825,6 +837,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/issue-single-boleto'
     | '/api/public/hooks/process-payout-queue'
     | '/api/public/hooks/reconcile-stark-charges'
+    | '/api/public/hooks/register-efi-webhook'
     | '/api/public/hooks/register-stark-webhook'
     | '/api/public/hooks/send-maintenance-response-reminders'
     | '/api/public/hooks/send-tenant-reminders'
@@ -851,6 +864,7 @@ export interface RootRouteChildren {
   ApiPublicHooksIssueSingleBoletoRoute: typeof ApiPublicHooksIssueSingleBoletoRoute
   ApiPublicHooksProcessPayoutQueueRoute: typeof ApiPublicHooksProcessPayoutQueueRoute
   ApiPublicHooksReconcileStarkChargesRoute: typeof ApiPublicHooksReconcileStarkChargesRoute
+  ApiPublicHooksRegisterEfiWebhookRoute: typeof ApiPublicHooksRegisterEfiWebhookRoute
   ApiPublicHooksRegisterStarkWebhookRoute: typeof ApiPublicHooksRegisterStarkWebhookRoute
   ApiPublicHooksSendMaintenanceResponseRemindersRoute: typeof ApiPublicHooksSendMaintenanceResponseRemindersRoute
   ApiPublicHooksSendTenantRemindersRoute: typeof ApiPublicHooksSendTenantRemindersRoute
@@ -1270,6 +1284,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksRegisterStarkWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/register-efi-webhook': {
+      id: '/api/public/hooks/register-efi-webhook'
+      path: '/api/public/hooks/register-efi-webhook'
+      fullPath: '/api/public/hooks/register-efi-webhook'
+      preLoaderRoute: typeof ApiPublicHooksRegisterEfiWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/reconcile-stark-charges': {
       id: '/api/public/hooks/reconcile-stark-charges'
       path: '/api/public/hooks/reconcile-stark-charges'
@@ -1475,6 +1496,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksProcessPayoutQueueRoute: ApiPublicHooksProcessPayoutQueueRoute,
   ApiPublicHooksReconcileStarkChargesRoute:
     ApiPublicHooksReconcileStarkChargesRoute,
+  ApiPublicHooksRegisterEfiWebhookRoute: ApiPublicHooksRegisterEfiWebhookRoute,
   ApiPublicHooksRegisterStarkWebhookRoute:
     ApiPublicHooksRegisterStarkWebhookRoute,
   ApiPublicHooksSendMaintenanceResponseRemindersRoute:

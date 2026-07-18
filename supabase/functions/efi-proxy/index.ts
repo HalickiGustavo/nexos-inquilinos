@@ -285,12 +285,17 @@ Deno.serve(async (req) => {
       case "webhook_put": {
         const { chave, body } = payload.params ?? {};
         if (!chave) return json(400, { error: "missing chave" });
+        // Efí exige mTLS na URL do webhook por padrão. Como nosso callback
+        // roda no Cloudflare Worker (sem cliente-cert), enviamos o header
+        // `x-skip-mtls-checking: true` para desabilitar essa checagem.
         const res = await efiFetch(`/v2/webhook/${encodeURIComponent(chave)}`, {
           method: "PUT",
+          headers: { "x-skip-mtls-checking": "true" },
           json: body,
         });
         return efiJsonResponse(res);
       }
+
       case "webhook_get": {
         const { chave } = payload.params ?? {};
         if (!chave) return json(400, { error: "missing chave" });

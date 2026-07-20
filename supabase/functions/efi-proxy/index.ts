@@ -201,15 +201,28 @@ async function cobrancasFetch(path: string, init: RequestInit & { json?: unknown
   headers.set("Authorization", `Bearer ${token}`);
   headers.set("api-sdk", "nexo-lovable-1.0.0");
   if (init.json !== undefined) headers.set("Content-Type", "application/json");
-  return fetch(`${efiCobrancasBaseUrl()}${path}`, {
+  const started = Date.now();
+  const res = await fetch(`${efiCobrancasBaseUrl()}${path}`, {
     ...init,
     headers,
     body: init.json !== undefined ? JSON.stringify(init.json) : init.body,
   });
+  console.log(
+    `[efi-proxy][cobrancas] ${init.method ?? "GET"} ${path} → ${res.status} ${Date.now() - started}ms`,
+  );
+  return res;
 }
 
-async function cobrancasJsonResponse(res: Response): Promise<Response> {
+async function cobrancasJsonResponse(res: Response, ctx?: { action?: string; path?: string }): Promise<Response> {
   const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    console.error("[efi-proxy][cobrancas] error", {
+      action: ctx?.action,
+      path: ctx?.path,
+      status: res.status,
+      body: data,
+    });
+  }
   return json(res.status, data);
 }
 

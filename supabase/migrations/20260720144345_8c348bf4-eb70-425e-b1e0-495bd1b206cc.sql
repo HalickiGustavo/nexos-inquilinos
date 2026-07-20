@@ -1,0 +1,1 @@
+UPDATE public.efi_charges SET status='ignored' WHERE txid !~ '^[a-zA-Z0-9]{26,35}$' AND status IN ('created','active','pending');

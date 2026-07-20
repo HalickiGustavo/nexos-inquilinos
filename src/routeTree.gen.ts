@@ -35,6 +35,7 @@ import { Route as AuthenticatedTenantIndexRouteImport } from './routes/_authenti
 import { Route as ApiPublicStarkWebhookRouteImport } from './routes/api/public/stark-webhook'
 import { Route as ApiPublicEfiWebhookRouteImport } from './routes/api/public/efi-webhook'
 import { Route as ManagerManagerVistoriasRouteImport } from './routes/_manager/manager.vistorias'
+import { Route as ManagerManagerRelatoriosRouteImport } from './routes/_manager/manager.relatorios'
 import { Route as ManagerManagerProprietariosRouteImport } from './routes/_manager/manager.proprietarios'
 import { Route as ManagerManagerPortaisRouteImport } from './routes/_manager/manager.portais'
 import { Route as ManagerManagerPerfilRouteImport } from './routes/_manager/manager.perfil'
@@ -212,6 +213,12 @@ const ManagerManagerVistoriasRoute = ManagerManagerVistoriasRouteImport.update({
   path: '/manager/vistorias',
   getParentRoute: () => ManagerRoute,
 } as any)
+const ManagerManagerRelatoriosRoute =
+  ManagerManagerRelatoriosRouteImport.update({
+    id: '/manager/relatorios',
+    path: '/manager/relatorios',
+    getParentRoute: () => ManagerRoute,
+  } as any)
 const ManagerManagerProprietariosRoute =
   ManagerManagerProprietariosRouteImport.update({
     id: '/manager/proprietarios',
@@ -512,6 +519,7 @@ export interface FileRoutesByFullPath {
   '/manager/perfil': typeof ManagerManagerPerfilRoute
   '/manager/portais': typeof ManagerManagerPortaisRoute
   '/manager/proprietarios': typeof ManagerManagerProprietariosRoute
+  '/manager/relatorios': typeof ManagerManagerRelatoriosRoute
   '/manager/vistorias': typeof ManagerManagerVistoriasRoute
   '/api/public/efi-webhook': typeof ApiPublicEfiWebhookRouteWithChildren
   '/api/public/stark-webhook': typeof ApiPublicStarkWebhookRoute
@@ -582,6 +590,7 @@ export interface FileRoutesByTo {
   '/manager/perfil': typeof ManagerManagerPerfilRoute
   '/manager/portais': typeof ManagerManagerPortaisRoute
   '/manager/proprietarios': typeof ManagerManagerProprietariosRoute
+  '/manager/relatorios': typeof ManagerManagerRelatoriosRoute
   '/manager/vistorias': typeof ManagerManagerVistoriasRoute
   '/api/public/efi-webhook': typeof ApiPublicEfiWebhookRouteWithChildren
   '/api/public/stark-webhook': typeof ApiPublicStarkWebhookRoute
@@ -656,6 +665,7 @@ export interface FileRoutesById {
   '/_manager/manager/perfil': typeof ManagerManagerPerfilRoute
   '/_manager/manager/portais': typeof ManagerManagerPortaisRoute
   '/_manager/manager/proprietarios': typeof ManagerManagerProprietariosRoute
+  '/_manager/manager/relatorios': typeof ManagerManagerRelatoriosRoute
   '/_manager/manager/vistorias': typeof ManagerManagerVistoriasRoute
   '/api/public/efi-webhook': typeof ApiPublicEfiWebhookRouteWithChildren
   '/api/public/stark-webhook': typeof ApiPublicStarkWebhookRoute
@@ -728,6 +738,7 @@ export interface FileRouteTypes {
     | '/manager/perfil'
     | '/manager/portais'
     | '/manager/proprietarios'
+    | '/manager/relatorios'
     | '/manager/vistorias'
     | '/api/public/efi-webhook'
     | '/api/public/stark-webhook'
@@ -798,6 +809,7 @@ export interface FileRouteTypes {
     | '/manager/perfil'
     | '/manager/portais'
     | '/manager/proprietarios'
+    | '/manager/relatorios'
     | '/manager/vistorias'
     | '/api/public/efi-webhook'
     | '/api/public/stark-webhook'
@@ -871,6 +883,7 @@ export interface FileRouteTypes {
     | '/_manager/manager/perfil'
     | '/_manager/manager/portais'
     | '/_manager/manager/proprietarios'
+    | '/_manager/manager/relatorios'
     | '/_manager/manager/vistorias'
     | '/api/public/efi-webhook'
     | '/api/public/stark-webhook'
@@ -1111,6 +1124,13 @@ declare module '@tanstack/react-router' {
       path: '/manager/vistorias'
       fullPath: '/manager/vistorias'
       preLoaderRoute: typeof ManagerManagerVistoriasRouteImport
+      parentRoute: typeof ManagerRoute
+    }
+    '/_manager/manager/relatorios': {
+      id: '/_manager/manager/relatorios'
+      path: '/manager/relatorios'
+      fullPath: '/manager/relatorios'
+      preLoaderRoute: typeof ManagerManagerRelatoriosRouteImport
       parentRoute: typeof ManagerRoute
     }
     '/_manager/manager/proprietarios': {
@@ -1531,6 +1551,7 @@ interface ManagerRouteChildren {
   ManagerManagerPerfilRoute: typeof ManagerManagerPerfilRoute
   ManagerManagerPortaisRoute: typeof ManagerManagerPortaisRoute
   ManagerManagerProprietariosRoute: typeof ManagerManagerProprietariosRoute
+  ManagerManagerRelatoriosRoute: typeof ManagerManagerRelatoriosRoute
   ManagerManagerVistoriasRoute: typeof ManagerManagerVistoriasRoute
   ManagerManagerIndexRoute: typeof ManagerManagerIndexRoute
   ManagerManagerConfiguracoesRoletaRoute: typeof ManagerManagerConfiguracoesRoletaRoute
@@ -1551,6 +1572,7 @@ const ManagerRouteChildren: ManagerRouteChildren = {
   ManagerManagerPerfilRoute: ManagerManagerPerfilRoute,
   ManagerManagerPortaisRoute: ManagerManagerPortaisRoute,
   ManagerManagerProprietariosRoute: ManagerManagerProprietariosRoute,
+  ManagerManagerRelatoriosRoute: ManagerManagerRelatoriosRoute,
   ManagerManagerVistoriasRoute: ManagerManagerVistoriasRoute,
   ManagerManagerIndexRoute: ManagerManagerIndexRoute,
   ManagerManagerConfiguracoesRoletaRoute:
@@ -1611,13 +1633,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

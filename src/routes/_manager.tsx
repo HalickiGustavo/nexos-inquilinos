@@ -16,6 +16,7 @@ import {
   Home,
   KeyRound,
   UserCog,
+  BarChart3,
 } from "lucide-react";
 import { AppShell, type ShellNavGroup } from "@/components/shell/AppShell";
 import { GlobalSearch } from "@/components/GlobalSearch";
@@ -42,6 +43,7 @@ const navGroups: ShellNavGroup[] = [
       { to: "/manager/carteira", label: "Carteira", icon: Briefcase, tour: "nav-manager-carteira" },
       { to: "/manager/financeiro", label: "Financeiro", icon: Wallet, tour: "nav-manager-financeiro" },
       { to: "/manager/dimob", label: "DIMOB", icon: FileDigit, tour: "nav-manager-dimob" },
+      { to: "/manager/relatorios", label: "Relatórios", icon: BarChart3 },
     ],
   },
   {

@@ -83,15 +83,16 @@ export async function confirmEfiChargePaid(args: {
     console.warn("[efi-webhook] cob_get failed, continuing with webhook data", e);
   }
 
-  // 2) Localiza cobrança no banco
+  // 2) Localiza cobrança PIX no banco (kind='pix' — nunca colide com boleto)
   const { data: charge } = await supabaseAdmin
     .from("efi_charges" as any)
-    .select("id, installment_id, amount, status, manager_user_id")
+    .select("id, installment_id, amount, status, manager_user_id, kind")
     .eq("txid", args.txid)
+    .eq("kind", "pix")
     .maybeSingle();
 
   if (!charge) {
-    console.warn("[efi-webhook] efi_charge not found for txid", args.txid);
+    console.warn("[efi-webhook] efi_charge (pix) not found for txid", args.txid);
     return;
   }
 

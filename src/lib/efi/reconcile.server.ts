@@ -40,7 +40,19 @@ export async function reconcileEfiCharges(): Promise<{
   let confirmed = 0;
   const errors: string[] = [];
 
+  const TXID_RE = /^[a-zA-Z0-9]{26,35}$/;
+
   for (const row of rows) {
+    // Efí exige txid alfanumérico 26–35 chars. Registros com IDs numéricos
+    // curtos são de boleto (charge_id), não de cobrança PIX — pula e marca
+    // como ignorado para não repetir a consulta.
+    if (!TXID_RE.test(String(row.txid))) {
+      await supabaseAdmin
+        .from("efi_charges" as any)
+        .update({ status: "ignored" })
+        .eq("id", row.id);
+      continue;
+    }
     try {
       const cob: any = await efiCobGet(row.txid);
       const status = cob?.status;
@@ -68,6 +80,7 @@ export async function reconcileEfiCharges(): Promise<{
       errors.push(`${row.txid}: ${msg}`);
     }
   }
+
 
   console.log("[efi-reconcile-charges] done", { scanned: rows.length, confirmed });
   return { scanned: rows.length, confirmed, errors };

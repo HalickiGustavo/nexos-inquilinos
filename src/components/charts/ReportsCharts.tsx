@@ -5,12 +5,12 @@ import {
 import { formatBRL, formatBRLCompact } from "@/lib/format";
 
 const CHART_COLORS = [
-  "hsl(var(--primary))",
-  "hsl(var(--chart-2, 210 70% 50%))",
-  "hsl(var(--chart-3, 45 90% 55%))",
-  "hsl(var(--chart-4, 340 75% 55%))",
-  "hsl(var(--chart-5, 160 60% 45%))",
-  "hsl(var(--chart-6, 280 65% 60%))",
+  "var(--chart-1)",
+  "var(--chart-2)",
+  "var(--chart-3)",
+  "var(--chart-4)",
+  "var(--chart-5)",
+  "var(--primary)",
 ];
 
 export function RevenueBarChart({ data }: { data: Array<{ label: string; recebido: number; pendente: number }> }) {

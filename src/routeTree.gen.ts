@@ -74,6 +74,7 @@ import { Route as ApiPublicHooksReconcileEfiChargesRouteImport } from './routes/
 import { Route as ApiPublicHooksProcessPayoutQueueRouteImport } from './routes/api/public/hooks/process-payout-queue'
 import { Route as ApiPublicHooksIssueSingleBoletoRouteImport } from './routes/api/public/hooks/issue-single-boleto'
 import { Route as ApiPublicHooksGenerateUpcomingBoletosRouteImport } from './routes/api/public/hooks/generate-upcoming-boletos'
+import { Route as ApiPublicHooksEfiSaldoRouteImport } from './routes/api/public/hooks/efi-saldo'
 import { Route as ApiPublicEfiWebhookPixRouteImport } from './routes/api/public/efi-webhook.pix'
 import { Route as ManagerManagerConfiguracoesRoletaRouteImport } from './routes/_manager/manager.configuracoes.roleta'
 import { Route as AuthenticatedAdminConfiguracoesSubcontaRouteImport } from './routes/_authenticated/admin.configuracoes.subconta'
@@ -433,6 +434,11 @@ const ApiPublicHooksGenerateUpcomingBoletosRoute =
     path: '/api/public/hooks/generate-upcoming-boletos',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksEfiSaldoRoute = ApiPublicHooksEfiSaldoRouteImport.update({
+  id: '/api/public/hooks/efi-saldo',
+  path: '/api/public/hooks/efi-saldo',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicEfiWebhookPixRoute = ApiPublicEfiWebhookPixRouteImport.update({
   id: '/pix',
   path: '/pix',
@@ -515,6 +521,7 @@ export interface FileRoutesByFullPath {
   '/admin/configuracoes/subconta': typeof AuthenticatedAdminConfiguracoesSubcontaRoute
   '/manager/configuracoes/roleta': typeof ManagerManagerConfiguracoesRoletaRoute
   '/api/public/efi-webhook/pix': typeof ApiPublicEfiWebhookPixRoute
+  '/api/public/hooks/efi-saldo': typeof ApiPublicHooksEfiSaldoRoute
   '/api/public/hooks/generate-upcoming-boletos': typeof ApiPublicHooksGenerateUpcomingBoletosRoute
   '/api/public/hooks/issue-single-boleto': typeof ApiPublicHooksIssueSingleBoletoRoute
   '/api/public/hooks/process-payout-queue': typeof ApiPublicHooksProcessPayoutQueueRoute
@@ -584,6 +591,7 @@ export interface FileRoutesByTo {
   '/admin/configuracoes/subconta': typeof AuthenticatedAdminConfiguracoesSubcontaRoute
   '/manager/configuracoes/roleta': typeof ManagerManagerConfiguracoesRoletaRoute
   '/api/public/efi-webhook/pix': typeof ApiPublicEfiWebhookPixRoute
+  '/api/public/hooks/efi-saldo': typeof ApiPublicHooksEfiSaldoRoute
   '/api/public/hooks/generate-upcoming-boletos': typeof ApiPublicHooksGenerateUpcomingBoletosRoute
   '/api/public/hooks/issue-single-boleto': typeof ApiPublicHooksIssueSingleBoletoRoute
   '/api/public/hooks/process-payout-queue': typeof ApiPublicHooksProcessPayoutQueueRoute
@@ -657,6 +665,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/configuracoes/subconta': typeof AuthenticatedAdminConfiguracoesSubcontaRoute
   '/_manager/manager/configuracoes/roleta': typeof ManagerManagerConfiguracoesRoletaRoute
   '/api/public/efi-webhook/pix': typeof ApiPublicEfiWebhookPixRoute
+  '/api/public/hooks/efi-saldo': typeof ApiPublicHooksEfiSaldoRoute
   '/api/public/hooks/generate-upcoming-boletos': typeof ApiPublicHooksGenerateUpcomingBoletosRoute
   '/api/public/hooks/issue-single-boleto': typeof ApiPublicHooksIssueSingleBoletoRoute
   '/api/public/hooks/process-payout-queue': typeof ApiPublicHooksProcessPayoutQueueRoute
@@ -728,6 +737,7 @@ export interface FileRouteTypes {
     | '/admin/configuracoes/subconta'
     | '/manager/configuracoes/roleta'
     | '/api/public/efi-webhook/pix'
+    | '/api/public/hooks/efi-saldo'
     | '/api/public/hooks/generate-upcoming-boletos'
     | '/api/public/hooks/issue-single-boleto'
     | '/api/public/hooks/process-payout-queue'
@@ -797,6 +807,7 @@ export interface FileRouteTypes {
     | '/admin/configuracoes/subconta'
     | '/manager/configuracoes/roleta'
     | '/api/public/efi-webhook/pix'
+    | '/api/public/hooks/efi-saldo'
     | '/api/public/hooks/generate-upcoming-boletos'
     | '/api/public/hooks/issue-single-boleto'
     | '/api/public/hooks/process-payout-queue'
@@ -869,6 +880,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/configuracoes/subconta'
     | '/_manager/manager/configuracoes/roleta'
     | '/api/public/efi-webhook/pix'
+    | '/api/public/hooks/efi-saldo'
     | '/api/public/hooks/generate-upcoming-boletos'
     | '/api/public/hooks/issue-single-boleto'
     | '/api/public/hooks/process-payout-queue'
@@ -898,6 +910,7 @@ export interface RootRouteChildren {
   TenantSetupRoute: typeof TenantSetupRoute
   ApiPublicEfiWebhookRoute: typeof ApiPublicEfiWebhookRouteWithChildren
   ApiPublicStarkWebhookRoute: typeof ApiPublicStarkWebhookRoute
+  ApiPublicHooksEfiSaldoRoute: typeof ApiPublicHooksEfiSaldoRoute
   ApiPublicHooksGenerateUpcomingBoletosRoute: typeof ApiPublicHooksGenerateUpcomingBoletosRoute
   ApiPublicHooksIssueSingleBoletoRoute: typeof ApiPublicHooksIssueSingleBoletoRoute
   ApiPublicHooksProcessPayoutQueueRoute: typeof ApiPublicHooksProcessPayoutQueueRoute
@@ -1373,6 +1386,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksGenerateUpcomingBoletosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/efi-saldo': {
+      id: '/api/public/hooks/efi-saldo'
+      path: '/api/public/hooks/efi-saldo'
+      fullPath: '/api/public/hooks/efi-saldo'
+      preLoaderRoute: typeof ApiPublicHooksEfiSaldoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/efi-webhook/pix': {
       id: '/api/public/efi-webhook/pix'
       path: '/pix'
@@ -1562,6 +1582,7 @@ const rootRouteChildren: RootRouteChildren = {
   TenantSetupRoute: TenantSetupRoute,
   ApiPublicEfiWebhookRoute: ApiPublicEfiWebhookRouteWithChildren,
   ApiPublicStarkWebhookRoute: ApiPublicStarkWebhookRoute,
+  ApiPublicHooksEfiSaldoRoute: ApiPublicHooksEfiSaldoRoute,
   ApiPublicHooksGenerateUpcomingBoletosRoute:
     ApiPublicHooksGenerateUpcomingBoletosRoute,
   ApiPublicHooksIssueSingleBoletoRoute: ApiPublicHooksIssueSingleBoletoRoute,
@@ -1590,13 +1611,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

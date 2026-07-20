@@ -692,7 +692,7 @@ function Empty({ text }: { text: string }) {
 function buildActivity(a: { contracts: any[]; paid: any[]; maint: any[]; leads: any[] }) {
   const items: { text: string; at: string; color: string }[] = [];
   a.paid.forEach((r) => items.push({
-    text: `Pagamento recebido de ${r.contract?.tenant?.full_name ?? "—"} — ${formatBRLCompact(Number(r.paid_amount ?? 0))}`,
+    text: `Pagamento recebido de ${r.contract?.tenant?.full_name ?? "—"} — ${formatBRL(Number(r.paid_amount ?? 0))}`,
     at: r.payment_date, color: "bg-emerald-500",
   }));
   a.contracts.forEach((r) => items.push({

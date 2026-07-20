@@ -8,10 +8,11 @@ import {
   markCompleted,
   markFailed,
 } from "@/lib/stark/transfers.repo.server";
-import { efiPixSend, efiPixSendGet, idEnvioFromTransferId } from "./payouts.server";
+import { efiPixSend, efiPixSendGet, efiSaldoGet, idEnvioFromTransferId } from "./payouts.server";
 
 const NEXO_PIX_KEY = () =>
   process.env.EFI_PIX_KEY ?? process.env.NEXO_MASTER_WALLET_ID ?? "";
+
 
 export async function runEfiPayoutWorker(opts?: { limit?: number }) {
   const batch = await claimPendingBatch(opts?.limit ?? 20);
@@ -23,6 +24,17 @@ export async function runEfiPayoutWorker(opts?: { limit?: number }) {
     return { processed: 0, results: [], error: "EFI_PIX_KEY missing" };
   }
   console.log("[efi-payout] worker start", { claimed: batch.length });
+
+  // Pré-check de saldo — evita gastar tentativas quando conta está zerada.
+  let saldoDisponivel: number | null = null;
+  try {
+    const s = await efiSaldoGet();
+    saldoDisponivel = Number(s?.saldo ?? 0);
+    console.log("[efi-payout] saldo Efí", { saldo: saldoDisponivel });
+  } catch (e: any) {
+    console.warn("[efi-payout] falha ao consultar saldo", e?.message ?? e);
+  }
+
 
   for (const row of batch as any[]) {
     const attempts = Number(row.attempts ?? 0) + 1;
@@ -99,20 +111,36 @@ export async function runEfiPayoutWorker(opts?: { limit?: number }) {
           } as any)
           .eq("id", row.id);
       } else if (sent.status === "NAO_REALIZADO") {
+        // A resposta síncrona do PUT /v3/gn/pix quase nunca traz `motivo`.
+        // Consultamos /v2/gn/pix/enviados/{e2eId} para obter descrição do
+        // SPI/DICT (ex: "Chave PIX não encontrada", "Titularidade divergente").
+        let enriched: any = sent;
+        try {
+          const detail = await efiPixSendGet({ idEnvio, e2eId: sent.e2eId ?? undefined });
+          if (detail) enriched = { ...sent, ...detail };
+          console.log("[efi-payout] detail after NAO_REALIZADO", enriched);
+        } catch (err: any) {
+          console.warn("[efi-payout] detail lookup failed", err?.message ?? err);
+        }
         const reason =
-          (sent as any)?.motivo ??
-          (sent as any)?.descricao ??
-          "efi pix NAO_REALIZADO";
+          (enriched as any)?.motivo ??
+          (enriched as any)?.descricao ??
+          (enriched as any)?.rejeicao?.motivo ??
+          (saldoDisponivel !== null && saldoDisponivel < Number(row.amount)
+            ? `Saldo insuficiente (Efí: R$ ${saldoDisponivel.toFixed(2)})`
+            : "SPI/DICT recusou o PIX (motivo não retornado pela Efí — verificar se a chave do favorecido está registrada no DICT)");
         await supabaseAdmin
           .from("payment_transfers")
           .update({
             ...baseFields,
+            efi_response: enriched,
             status: "FAILED",
             finished_at: nowIso,
             error_message: String(reason).slice(0, 500),
             next_retry_at: null,
           } as any)
           .eq("id", row.id);
+
       } else {
         // EM_PROCESSAMENTO — mantém PROCESSING; primeira consulta em 30s.
         const { error: upErr } = await supabaseAdmin

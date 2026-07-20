@@ -201,3 +201,42 @@
   .border-zinc-100, .border-slate-100, .border-gray-100 { border-color: rgba(255,255,255,0.06) !important; }
 }
 
+
+/* ========= Print: force desktop-style report layout ========= */
+@media print {
+  @page { size: A4; margin: 12mm; }
+
+  html, body { background: #fff !important; }
+
+  /* Hide app chrome (sidebars, headers, bottom nav, floating widgets) */
+  aside, nav, header,
+  [data-sidebar], [data-app-shell-sidebar], [data-app-shell-header],
+  [data-tenant-shell-header], [data-tenant-shell-nav],
+  .print\:hidden { display: none !important; }
+
+  /* Neutralize app layout wrappers so the report uses the full page */
+  body, #root, main, [data-app-shell-main], [data-app-shell-content] {
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+    overflow: visible !important;
+  }
+
+  /* Force desktop-like grids regardless of print viewport width */
+  .grid { display: grid !important; }
+  .grid-cols-1, .sm\:grid-cols-2, .md\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0,1fr)) !important; }
+  .md\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0,1fr)) !important; }
+  .lg\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0,1fr)) !important; }
+  .lg\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0,1fr)) !important; }
+  .lg\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0,1fr)) !important; }
+
+  /* Keep cards from splitting awkwardly */
+  .card, [class*="rounded-"], table { break-inside: avoid; page-break-inside: avoid; }
+
+  /* Charts: keep readable */
+  .recharts-wrapper, .recharts-surface { width: 100% !important; height: auto !important; }
+
+  a[href]:after { content: "" !important; }
+}

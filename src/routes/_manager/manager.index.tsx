@@ -4,7 +4,7 @@ import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import {
   ArrowDownRight, ArrowUpRight, ArrowRight, AlertTriangle, Bell, Building2, Calendar,
   ClipboardCheck, FilePlus, FileSearch, Inbox, Home as HomeIcon, KeyRound, Users,
-  Wallet, Wrench, Coins, TrendingUp, CheckCircle2, CircleDollarSign, PlusCircle,
+  Wallet, Coins, TrendingUp, CheckCircle2, CircleDollarSign, PlusCircle,
   UserPlus, Database,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";

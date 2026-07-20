@@ -388,7 +388,7 @@ function ManagerDashboard() {
             <Shortcut to="/manager/carteira" search={{ novo: "imovel" }} icon={Building2} label="Novo imóvel" />
             <Shortcut to="/manager/financeiro" search={{ novo: "cobranca" }} icon={PlusCircle} label="Nova cobrança" />
             <Shortcut to="/manager/vistorias" search={{ novo: "1" }} icon={FileSearch} label="Nova vistoria" />
-            <Shortcut to="/maintenances" search={{ novo: "1" }} icon={Wrench} label="Novo chamado" />
+            
             <Shortcut to="/manager/proprietarios" search={{ novo: "1" }} icon={HomeIcon} label="Proprietário" />
             <Shortcut to="/manager/inquilinos" search={{ novo: "1" }} icon={KeyRound} label="Inquilino" />
             <Shortcut to="/manager/leads" search={{ novo: "1" }} icon={Inbox} label="Novo lead" />

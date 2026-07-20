@@ -16,12 +16,12 @@ const CHART_COLORS = [
 export function RevenueBarChart({ data }: { data: Array<{ label: string; recebido: number; pendente: number }> }) {
   return (
     <ResponsiveContainer width="100%" height="100%">
-      <BarChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 24 }}>
+      <BarChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 48 }}>
         <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
         <XAxis dataKey="label" fontSize={12} />
         <YAxis fontSize={12} tickFormatter={(v) => formatBRLCompact(v)} width={80} />
         <Tooltip formatter={(v: number) => formatBRL(v)} />
-        <Legend verticalAlign="bottom" align="center" wrapperStyle={{ paddingTop: 16, bottom: 0 }} />
+        <Legend verticalAlign="bottom" align="center" wrapperStyle={{ paddingTop: 24, bottom: -8 }} />
         <Bar dataKey="recebido" name="Recebido" fill={CHART_COLORS[0]} radius={[4, 4, 0, 0]} />
         <Bar dataKey="pendente" name="Pendente" fill={CHART_COLORS[2]} radius={[4, 4, 0, 0]} />
       </BarChart>

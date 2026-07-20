@@ -280,13 +280,18 @@ Deno.serve(async (req) => {
         const { body } = payload.params ?? {};
         if (!body) return json(400, { error: "missing body" });
         const res = await cobrancasFetch(`/v1/charge/one-step`, { method: "POST", json: body });
-        return cobrancasJsonResponse(res);
+        return cobrancasJsonResponse(res, { action: "boleto_create", path: "/v1/charge/one-step" });
       }
       case "boleto_get": {
         const { chargeId } = payload.params ?? {};
         if (!chargeId) return json(400, { error: "missing chargeId" });
-        const res = await cobrancasFetch(`/v1/charge/${chargeId}`, { method: "GET" });
-        return cobrancasJsonResponse(res);
+        // Boleto = charge_id numérico. NUNCA usar /v2/cob/{txid} (endpoint PIX).
+        if (!/^\d+$/.test(String(chargeId))) {
+          return json(400, { error: "invalid boleto chargeId (must be numeric)" });
+        }
+        const path = `/v1/charge/${chargeId}`;
+        const res = await cobrancasFetch(path, { method: "GET" });
+        return cobrancasJsonResponse(res, { action: "boleto_get", path });
       }
       // Envio de PIX (repasse) — /v3/gn/pix/:idEnvio
       case "pix_send": {

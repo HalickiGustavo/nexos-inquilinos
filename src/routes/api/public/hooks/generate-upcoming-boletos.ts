@@ -14,7 +14,8 @@ export const Route = createFileRoute("/api/public/hooks/generate-upcoming-boleto
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
           const { issueBoletoForInstallmentEfi } = await import("@/lib/efi/boleto-issuer.server");
           const { efiBoletoGet } = await import("@/lib/efi/efi.server");
-          
+          const { markBoletoChargePaid } = await import("@/lib/efi/webhook.server");
+
 
           const today = new Date();
           const in15 = new Date(today.getTime() + 15 * 24 * 60 * 60 * 1000);
@@ -41,40 +42,55 @@ export const Route = createFileRoute("/api/public/hooks/generate-upcoming-boleto
               if (r.ok && !r.alreadyExisted) issued++;
               else if (!r.ok) errors.push({ id: row.id, error: r.error });
             } catch (e: any) {
-              // Nunca deixar erro de UMA parcela derrubar o cron inteiro.
               errors.push({ id: row.id, error: e?.message ?? String(e) });
             }
           }
 
 
-          // 2) Reconciliação: verifica boletos Efí ainda `created` para
-          // detectar pagamentos perdidos (webhook falhou).
+          // 2) Reconciliação de boletos abertos (últimos 120 dias) — detecta
+          // pagamentos perdidos e SEMPRE roteia via markBoletoChargePaid para
+          // garantir cálculo de split + enfileiramento de repasse.
+          const boletoSince = new Date(Date.now() - 120 * 86400 * 1000).toISOString();
           const { data: openBoletos } = await supabaseAdmin
             .from("efi_charges")
-            .select("txid, installment_id")
+            .select("txid, installment_id, amount")
             .eq("kind", "boleto")
-            .eq("status", "created")
+            .in("status", ["created", "waiting", "new", "identified", "approved", "unpaid"])
             .not("txid", "is", null)
-            .limit(200);
+            .gte("created_at", boletoSince)
+            .limit(500);
 
           let reconciled = 0;
+          const reconcileErrors: Array<{ chargeId: string; error: string }> = [];
           for (const c of (openBoletos ?? []) as any[]) {
+            const chargeId = String(c.txid ?? "");
+            if (!/^\d+$/.test(chargeId)) continue;
+            const started = Date.now();
             try {
-              const res = await efiBoletoGet(Number(c.txid));
-              const status = String(res.data?.status ?? "").toLowerCase();
+              const res: any = await efiBoletoGet(Number(chargeId));
+              const data: any = res?.data ?? res;
+              const status = String(data?.status ?? "").toLowerCase();
+              console.log("[generate-upcoming-boletos] boleto status", {
+                chargeId,
+                status,
+                ms: Date.now() - started,
+              });
               if (status === "paid" || status === "settled") {
+                const paidAt = data?.paid_at ?? new Date().toISOString();
+                const rawAmount = Number(data?.total ?? data?.value ?? data?.payment?.value ?? 0);
+                const paidAmount = rawAmount > 0 ? rawAmount / 100 : Number(c.amount ?? 0);
+                await markBoletoChargePaid({ chargeId, paidAmount, paidAt });
+                reconciled++;
+              } else if (status === "canceled" || status === "expired") {
                 await supabaseAdmin
                   .from("efi_charges")
-                  .update({ status: "paid", paid_at: new Date().toISOString() } as any)
-                  .eq("txid", c.txid);
-                await supabaseAdmin
-                  .from("installments")
-                  .update({ status: "pago", payment_date: new Date().toISOString().slice(0, 10) } as any)
-                  .eq("id", c.installment_id);
-                reconciled++;
+                  .update({ status: status === "canceled" ? "cancelled" : status } as any)
+                  .eq("txid", chargeId);
               }
-            } catch {
-              /* continua */
+            } catch (e: any) {
+              const msg = e?.message ?? String(e);
+              console.warn("[generate-upcoming-boletos] reconcile failed", { chargeId, msg });
+              reconcileErrors.push({ chargeId, error: msg });
             }
           }
 
@@ -84,7 +100,9 @@ export const Route = createFileRoute("/api/public/hooks/generate-upcoming-boleto
             scanned: pending?.length ?? 0,
             issued,
             reconciled,
+            reconcileScanned: openBoletos?.length ?? 0,
             errors,
+            reconcileErrors,
           });
         } catch (e: any) {
           return Response.json(

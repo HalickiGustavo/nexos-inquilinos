@@ -201,15 +201,28 @@ async function cobrancasFetch(path: string, init: RequestInit & { json?: unknown
   headers.set("Authorization", `Bearer ${token}`);
   headers.set("api-sdk", "nexo-lovable-1.0.0");
   if (init.json !== undefined) headers.set("Content-Type", "application/json");
-  return fetch(`${efiCobrancasBaseUrl()}${path}`, {
+  const started = Date.now();
+  const res = await fetch(`${efiCobrancasBaseUrl()}${path}`, {
     ...init,
     headers,
     body: init.json !== undefined ? JSON.stringify(init.json) : init.body,
   });
+  console.log(
+    `[efi-proxy][cobrancas] ${init.method ?? "GET"} ${path} → ${res.status} ${Date.now() - started}ms`,
+  );
+  return res;
 }
 
-async function cobrancasJsonResponse(res: Response): Promise<Response> {
+async function cobrancasJsonResponse(res: Response, ctx?: { action?: string; path?: string }): Promise<Response> {
   const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    console.error("[efi-proxy][cobrancas] error", {
+      action: ctx?.action,
+      path: ctx?.path,
+      status: res.status,
+      body: data,
+    });
+  }
   return json(res.status, data);
 }
 
@@ -267,13 +280,18 @@ Deno.serve(async (req) => {
         const { body } = payload.params ?? {};
         if (!body) return json(400, { error: "missing body" });
         const res = await cobrancasFetch(`/v1/charge/one-step`, { method: "POST", json: body });
-        return cobrancasJsonResponse(res);
+        return cobrancasJsonResponse(res, { action: "boleto_create", path: "/v1/charge/one-step" });
       }
       case "boleto_get": {
         const { chargeId } = payload.params ?? {};
         if (!chargeId) return json(400, { error: "missing chargeId" });
-        const res = await cobrancasFetch(`/v1/charge/${chargeId}`, { method: "GET" });
-        return cobrancasJsonResponse(res);
+        // Boleto = charge_id numérico. NUNCA usar /v2/cob/{txid} (endpoint PIX).
+        if (!/^\d+$/.test(String(chargeId))) {
+          return json(400, { error: "invalid boleto chargeId (must be numeric)" });
+        }
+        const path = `/v1/charge/${chargeId}`;
+        const res = await cobrancasFetch(path, { method: "GET" });
+        return cobrancasJsonResponse(res, { action: "boleto_get", path });
       }
       // Envio de PIX (repasse) — /v3/gn/pix/:idEnvio
       case "pix_send": {

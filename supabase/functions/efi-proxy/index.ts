@@ -140,14 +140,21 @@ async function efiFetch(path: string, init: RequestInit & { json?: unknown } = {
   const headers = new Headers(init.headers);
   headers.set("Authorization", `Bearer ${token}`);
   if (init.json !== undefined) headers.set("Content-Type", "application/json");
-  return fetch(`${efiBaseUrl()}${path}`, {
+  const url = `${efiBaseUrl()}${path}`;
+  const started = Date.now();
+  const res = await fetch(url, {
     ...init,
     // @ts-ignore Deno-only
     client,
     headers,
     body: init.json !== undefined ? JSON.stringify(init.json) : init.body,
   });
+  console.log(
+    `[efi-proxy] ${init.method ?? "GET"} ${path} → ${res.status} ${Date.now() - started}ms`,
+  );
+  return res;
 }
+
 
 async function efiJsonResponse(res: Response): Promise<Response> {
   const data = await res.json().catch(() => ({}));
@@ -293,6 +300,12 @@ Deno.serve(async (req) => {
         );
         return efiJsonResponse(res);
       }
+      // Saldo PIX — GET /v2/gn/saldo. Retorna { saldo: "0.00" }.
+      case "saldo_get": {
+        const res = await efiFetch(`/v2/gn/saldo`, { method: "GET" });
+        return efiJsonResponse(res);
+      }
+
       // Configuração de webhook Pix — /v2/webhook/{chave}
       case "webhook_put": {
         const { chave, body } = payload.params ?? {};

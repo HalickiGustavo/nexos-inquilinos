@@ -13,8 +13,9 @@
 import { efiCobGet, efiBoletoGet } from "./efi.server";
 import { confirmEfiChargePaid, markBoletoChargePaid } from "./webhook.server";
 
-const LOOKBACK_HOURS = 48;
-const BATCH = 50;
+const PIX_LOOKBACK_HOURS = 48;
+const BOLETO_LOOKBACK_DAYS = 120; // boletos emitidos com até 15d antecedência + prazo pós-vencimento
+const BATCH = 100;
 const PIX_TXID_RE = /^[a-zA-Z0-9]{26,35}$/;
 const BOLETO_ID_RE = /^\d+$/;
 
@@ -25,24 +26,44 @@ export async function reconcileEfiCharges(): Promise<{
 }> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-  const since = new Date(Date.now() - LOOKBACK_HOURS * 3600 * 1000).toISOString();
-  const { data, error } = await supabaseAdmin
-    .from("efi_charges" as any)
-    .select("id, txid, installment_id, status, created_at, kind")
-    .not("txid", "is", null)
-    .in("kind", ["pix", "boleto"])
-    .in("status", ["created", "active", "pending"])
-    .gte("created_at", since)
-    .order("created_at", { ascending: true })
-    .limit(BATCH);
+  const pixSince = new Date(Date.now() - PIX_LOOKBACK_HOURS * 3600 * 1000).toISOString();
+  const boletoSince = new Date(Date.now() - BOLETO_LOOKBACK_DAYS * 86400 * 1000).toISOString();
 
-  if (error) {
-    console.error("[efi-reconcile-charges] db list failed", error);
-    return { scanned: 0, confirmed: 0, errors: [error.message] };
+  const [{ data: pixRows, error: pixErr }, { data: boletoRows, error: boletoErr }] = await Promise.all([
+    supabaseAdmin
+      .from("efi_charges" as any)
+      .select("id, txid, installment_id, status, created_at, kind, amount")
+      .not("txid", "is", null)
+      .eq("kind", "pix")
+      .in("status", ["created", "active", "pending"])
+      .gte("created_at", pixSince)
+      .order("created_at", { ascending: true })
+      .limit(BATCH),
+    supabaseAdmin
+      .from("efi_charges" as any)
+      .select("id, txid, installment_id, status, created_at, kind, amount")
+      .not("txid", "is", null)
+      .eq("kind", "boleto")
+      .in("status", ["created", "waiting", "new", "identified", "approved", "unpaid"])
+      .gte("created_at", boletoSince)
+      .order("created_at", { ascending: true })
+      .limit(BATCH),
+  ]);
+
+  if (pixErr || boletoErr) {
+    console.error("[efi-reconcile-charges] db list failed", pixErr, boletoErr);
+    return {
+      scanned: 0,
+      confirmed: 0,
+      errors: [pixErr?.message, boletoErr?.message].filter(Boolean) as string[],
+    };
   }
 
-  const rows = (data as any[]) ?? [];
-  console.log("[efi-reconcile-charges] start", { candidates: rows.length });
+  const rows = [...((pixRows as any[]) ?? []), ...((boletoRows as any[]) ?? [])];
+  console.log("[efi-reconcile-charges] start", {
+    pix: pixRows?.length ?? 0,
+    boleto: boletoRows?.length ?? 0,
+  });
 
   let confirmed = 0;
   const errors: string[] = [];

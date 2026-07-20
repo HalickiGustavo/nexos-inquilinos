@@ -135,6 +135,70 @@ export async function confirmEfiChargePaid(args: {
   await enqueueSplitForInstallment(installmentId, amount);
 }
 
+/** Confirma pagamento de um BOLETO Efí (identificador = charge_id numérico).
+ *  Fluxo separado do PIX: endpoints e IDs diferentes. Reaproveita o cálculo
+ *  de split, já que a lógica financeira interna é a mesma. */
+export async function markBoletoChargePaid(args: {
+  chargeId: string | number;
+  paidAmount: number;
+  paidAt?: string;
+}) {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const chargeIdStr = String(args.chargeId);
+
+  const { data: charge } = await supabaseAdmin
+    .from("efi_charges" as any)
+    .select("id, installment_id, amount, status, kind")
+    .eq("txid", chargeIdStr)
+    .eq("kind", "boleto")
+    .maybeSingle();
+
+  if (!charge) {
+    console.warn("[efi-webhook] boleto charge not found", chargeIdStr);
+    return;
+  }
+  if ((charge as any).status === "paid") return;
+
+  const installmentId = (charge as any).installment_id as string;
+  const amount = args.paidAmount || Number((charge as any).amount ?? 0);
+
+  await supabaseAdmin
+    .from("efi_charges" as any)
+    .update({
+      status: "paid",
+      paid_at: args.paidAt ?? new Date().toISOString(),
+      raw: { chargeId: chargeIdStr, paidAmount: amount } as any,
+    } as any)
+    .eq("id", (charge as any).id);
+
+  const { data: inst } = await supabaseAdmin
+    .from("installments")
+    .select("id, status")
+    .eq("id", installmentId)
+    .maybeSingle();
+
+  if ((inst as any)?.status !== "pago") {
+    await supabaseAdmin
+      .from("installments")
+      .update({
+        status: "pago",
+        paid_amount: amount,
+        payment_date: (args.paidAt ?? new Date().toISOString()).slice(0, 10),
+      } as any)
+      .eq("id", installmentId);
+  }
+
+  await enqueueSplitForInstallment(installmentId, amount);
+
+  // Dispara worker de repasse imediatamente.
+  try {
+    const { runEfiPayoutWorker } = await import("./payout-worker.server");
+    await runEfiPayoutWorker({ limit: 20 });
+  } catch (e) {
+    console.error("[efi-webhook] boleto payout worker error", e);
+  }
+}
+
 /** Recalcula split e insere linhas em `payment_transfers`. Reutilizável para
  *  reconciliação manual. */
 export async function enqueueSplitForInstallment(installmentId: string, paidAmount: number) {

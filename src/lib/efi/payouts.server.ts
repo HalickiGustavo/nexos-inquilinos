@@ -92,3 +92,9 @@ export async function efiPixSendGet(
     throw e;
   }
 }
+
+/** GET /v2/gn/saldo — retorna saldo disponível para envio PIX. */
+export async function efiSaldoGet(): Promise<{ saldo: string; bloqueios?: unknown }> {
+  return callProxy("saldo_get", {});
+}
+

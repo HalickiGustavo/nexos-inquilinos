@@ -100,7 +100,9 @@ export const Route = createFileRoute("/api/public/hooks/generate-upcoming-boleto
             scanned: pending?.length ?? 0,
             issued,
             reconciled,
+            reconcileScanned: openBoletos?.length ?? 0,
             errors,
+            reconcileErrors,
           });
         } catch (e: any) {
           return Response.json(

@@ -43,7 +43,7 @@ function inRange(dateStr: string | null | undefined, from: string, to: string) {
   return dateStr >= from && dateStr <= to;
 }
 
-function LandlordRelatoriosPage() {
+export function LandlordRelatoriosPage() {
   const { data: properties = [] } = useProperties();
   const { data: contracts = [] } = useContracts();
   const { data: installments = [] } = useInstallments();

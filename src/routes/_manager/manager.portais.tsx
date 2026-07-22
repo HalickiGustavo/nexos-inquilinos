@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { CentralConexoesPanel } from "@/components/CentralConexoesPanel";
+import { PageHeader, PageShell } from "@/components/PageHeader";
 
 
 export const Route = createFileRoute("/_manager/manager/portais")({

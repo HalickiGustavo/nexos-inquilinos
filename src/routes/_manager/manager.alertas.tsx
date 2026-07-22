@@ -2,8 +2,10 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Bell, AlertTriangle, AlertCircle, Info, BellOff } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { formatDate } from "@/lib/format";
+import { PageHeader, PageShell } from "@/components/PageHeader";
 import {
   SEVERITY_LABEL,
   SEVERITY_STYLES,

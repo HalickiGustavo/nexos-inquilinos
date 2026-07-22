@@ -1,12 +1,10 @@
-import { createFileRoute, useNavigate, useRouterState } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Outlet } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { LayoutDashboard, Wallet, Wrench, Loader2 } from "lucide-react";
 import { AppShell, type ShellNavGroup } from "@/components/shell/AppShell";
 import { useAuth } from "@/lib/auth";
 import { useUserRole, roleHomePath } from "@/lib/useUserRole";
-import { supabase } from "@/integrations/supabase/client";
-import { Outlet } from "@tanstack/react-router";
+import { useLandlordProfile } from "@/lib/landlord-queries";
 
 export const Route = createFileRoute("/_landlord")({
   ssr: false,
@@ -27,7 +25,6 @@ function LandlordLayout() {
   const { user, loading } = useAuth();
   const { role, loading: roleLoading } = useUserRole();
   const navigate = useNavigate();
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/login", replace: true });
@@ -39,24 +36,14 @@ function LandlordLayout() {
     }
   }, [role, roleLoading, navigate]);
 
-  const { data: profile, isLoading: profileLoading } = useQuery({
-    queryKey: ["landlord-gate-profile", user?.id],
-    enabled: !!user && role === "landlord",
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("pix_key")
-        .eq("id", user!.id)
-        .maybeSingle();
-      if (error) throw error;
-      return data;
-    },
-  });
+  // Reaproveita o hook cacheado (staleTime longo) em vez de rodar uma segunda
+  // query dedicada só pra portão — evita refetch em cada troca de rota.
+  const { data: profile, isLoading: profileLoading } = useLandlordProfile();
 
   useEffect(() => {
     if (role !== "landlord" || profileLoading || !profile) return;
     if (!profile.pix_key) navigate({ to: "/landlord-setup", replace: true });
-  }, [role, profile, profileLoading, navigate, pathname]);
+  }, [role, profile, profileLoading, navigate]);
 
   if (loading || !user || roleLoading || role !== "landlord" || profileLoading) {
     return (

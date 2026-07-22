@@ -1,8 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
+import { Wallet, Calendar, TrendingUp, Filter } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+} from "@/components/ui/table";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLandlordInstallments } from "@/lib/landlord-queries";
 import { formatBRL, formatDate } from "@/lib/format";
-import { EmptyLine, KpiCard, LoadingLine, Panel, Pill, SectionHeader, URBANIST } from "@/components/landlord/ui";
 
 export const Route = createFileRoute("/_landlord/landlord/financeiro")({
   head: () => ({ meta: [{ title: "Finanças — Proprietário NEXO" }] }),
@@ -10,13 +16,6 @@ export const Route = createFileRoute("/_landlord/landlord/financeiro")({
 });
 
 type Filtro = "todos" | "pago" | "pendente" | "atrasado";
-
-const FILTROS: { key: Filtro; label: string }[] = [
-  { key: "todos", label: "Todos" },
-  { key: "pago", label: "Pagos" },
-  { key: "pendente", label: "Pendentes" },
-  { key: "atrasado", label: "Atrasados" },
-];
 
 function LandlordFinanceiro() {
   const { data: installments = [], isLoading } = useLandlordInstallments();
@@ -48,113 +47,101 @@ function LandlordFinanceiro() {
   }, [installments, todayStr]);
 
   return (
-    <div className="mx-auto max-w-7xl space-y-10">
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-        <KpiCard label="Total Recebido" value={formatBRL(totals.recebido)} />
-        <KpiCard label="A Receber" value={formatBRL(totals.aReceber)} />
-        <KpiCard
-          label="Em Atraso"
-          value={formatBRL(totals.atrasado)}
-          footer={
-            totals.atrasado > 0 ? (
-              <span className="font-bold uppercase tracking-wider text-rose-400">Requer atenção</span>
-            ) : (
-              <span className="font-bold uppercase tracking-wider text-emerald-400">Tudo em dia</span>
-            )
-          }
-        />
+    <div className="p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
+      <header>
+        <h1 className="text-3xl font-bold tracking-tight">Finanças</h1>
+        <p className="text-muted-foreground mt-1">Histórico de parcelas e repasses dos seus imóveis.</p>
+      </header>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <SummaryCard label="Total recebido" value={formatBRL(totals.recebido)} tone="emerald" icon={<Wallet className="size-5" />} />
+        <SummaryCard label="A receber" value={formatBRL(totals.aReceber)} tone="violet" icon={<TrendingUp className="size-5" />} />
+        <SummaryCard label="Em atraso" value={formatBRL(totals.atrasado)} tone={totals.atrasado > 0 ? "rose" : "zinc"} icon={<Calendar className="size-5" />} />
       </div>
 
-      <div className="space-y-6">
-        <SectionHeader
-          title="Últimas Parcelas"
-          action={
-            <div className="flex gap-1 rounded-xl border border-[#1e1e5a] bg-[#141432] p-1">
-              {FILTROS.map((f) => {
-                const active = f.key === filtro;
-                return (
-                  <button
-                    key={f.key}
-                    onClick={() => setFiltro(f.key)}
-                    className={
-                      "rounded-lg px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider transition-all " +
-                      (active
-                        ? "bg-[#4f46e5] text-white shadow-lg shadow-[#4f46e5]/30"
-                        : "text-slate-400 hover:text-white")
-                    }
-                  >
-                    {f.label}
-                  </button>
-                );
-              })}
-            </div>
-          }
-        />
+      <Card className="p-5">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <h2 className="font-semibold inline-flex items-center gap-2">
+            <Filter className="size-4 text-muted-foreground" /> Parcelas
+          </h2>
+          <Tabs value={filtro} onValueChange={(v) => setFiltro(v as Filtro)}>
+            <TabsList>
+              <TabsTrigger value="todos">Todos</TabsTrigger>
+              <TabsTrigger value="pago">Pagos</TabsTrigger>
+              <TabsTrigger value="pendente">Pendentes</TabsTrigger>
+              <TabsTrigger value="atrasado">Atrasados</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
 
-        <Panel>
-          {isLoading ? (
-            <LoadingLine />
-          ) : filtered.length === 0 ? (
-            <EmptyLine text="Nenhuma parcela neste filtro." />
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[720px] border-collapse text-left">
-                <thead className="border-b border-[#1e1e5a] bg-[#1e1e5a]/30">
-                  <tr>
-                    {["Vencimento", "Imóvel", "Inquilino", "Status", "Pago em", "Valor"].map((h, i) => (
-                      <th
-                        key={h}
-                        className={
-                          "px-6 py-5 text-[10px] font-bold uppercase tracking-[0.15em] text-slate-500 " +
-                          (i === 5 ? "text-right" : "")
-                        }
-                      >
-                        {h}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#1e1e5a]/50">
-                  {filtered.map((i: any) => {
-                    const overdue = i.status !== "pago" && i.due_date < todayStr;
-                    return (
-                      <tr key={i.id} className="transition-colors hover:bg-[#1e1e5a]/20">
-                        <td className="px-6 py-5 text-sm text-slate-300">{formatDate(i.due_date)}</td>
-                        <td className="max-w-[220px] truncate px-6 py-5 text-sm font-bold text-white" style={URBANIST}>
-                          {i.contract?.property?.nickname || i.contract?.property?.address || "—"}
-                        </td>
-                        <td className="max-w-[180px] truncate px-6 py-5 text-sm text-slate-400">
-                          {i.contract?.tenant?.full_name || "—"}
-                        </td>
-                        <td className="px-6 py-5">
-                          {overdue ? (
-                            <Pill tone="rose">Atrasado</Pill>
-                          ) : i.status === "pago" ? (
-                            <Pill tone="emerald">Pago</Pill>
-                          ) : i.status === "agendado" ? (
-                            <Pill tone="slate">Agendado</Pill>
-                          ) : (
-                            <Pill tone="violet">{i.status}</Pill>
-                          )}
-                        </td>
-                        <td className="px-6 py-5 text-sm text-slate-400">
-                          {i.paid_at ? formatDate(i.paid_at) : "—"}
-                        </td>
-                        <td
-                          className="px-6 py-5 text-right text-sm font-extrabold tracking-tight text-white tabular-nums"
-                          style={URBANIST}
-                        >
-                          {formatBRL(Number(i.paid_amount || i.amount))}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </Panel>
-      </div>
+        {isLoading ? (
+          <p className="text-sm text-muted-foreground py-8 text-center">Carregando…</p>
+        ) : filtered.length === 0 ? (
+          <p className="text-sm text-muted-foreground py-8 text-center">Nenhuma parcela neste filtro.</p>
+        ) : (
+          <div className="rounded-md border border-border overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Vencimento</TableHead>
+                  <TableHead>Imóvel</TableHead>
+                  <TableHead>Inquilino</TableHead>
+                  <TableHead className="text-right">Valor</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Pago em</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filtered.map((i: any) => {
+                  const overdue = i.status !== "pago" && i.due_date < todayStr;
+                  return (
+                    <TableRow key={i.id}>
+                      <TableCell>{formatDate(i.due_date)}</TableCell>
+                      <TableCell className="max-w-[200px] truncate">
+                        {i.contract?.property?.nickname || i.contract?.property?.address || "—"}
+                      </TableCell>
+                      <TableCell className="max-w-[180px] truncate">{i.contract?.tenant?.full_name || "—"}</TableCell>
+                      <TableCell className="text-right tabular-nums font-medium">{formatBRL(Number(i.amount))}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={statusBadge(i.status, overdue)}>
+                          {overdue ? "Atrasado" : i.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{i.paid_at ? formatDate(i.paid_at) : "—"}</TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
+        )}
+      </Card>
     </div>
   );
+}
+
+function SummaryCard({ label, value, icon, tone }: {
+  label: string; value: string; icon: React.ReactNode;
+  tone: "emerald" | "violet" | "rose" | "zinc";
+}) {
+  const map = {
+    emerald: "text-emerald-400 bg-emerald-500/10",
+    violet: "text-violet-400 bg-violet-500/10",
+    rose: "text-rose-400 bg-rose-500/10",
+    zinc: "text-zinc-300 bg-zinc-500/10",
+  } as const;
+  return (
+    <Card className="p-5">
+      <div className={`size-10 rounded-lg grid place-items-center ${map[tone]} mb-3`}>{icon}</div>
+      <p className="text-xs uppercase tracking-wider text-muted-foreground">{label}</p>
+      <p className="text-2xl font-bold tabular-nums mt-1">{value}</p>
+    </Card>
+  );
+}
+
+function statusBadge(status: string, overdue: boolean) {
+  if (overdue) return "border-rose-500/40 text-rose-300";
+  if (status === "pago") return "border-emerald-500/40 text-emerald-300";
+  if (status === "agendado") return "border-zinc-700 text-zinc-400";
+  return "border-violet-500/40 text-violet-300";
 }

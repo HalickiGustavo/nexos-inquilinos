@@ -200,6 +200,6 @@ function ContratosPage() {
           })}
         </div>
       )}
-    </div>
+    </PageShell>
   );
 }

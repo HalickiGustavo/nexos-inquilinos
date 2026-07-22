@@ -17,6 +17,7 @@ import {
   KeyRound,
   UserCog,
   BarChart3,
+  Wrench,
 } from "lucide-react";
 import { AppShell, type ShellNavGroup } from "@/components/shell/AppShell";
 import { GlobalSearch } from "@/components/GlobalSearch";

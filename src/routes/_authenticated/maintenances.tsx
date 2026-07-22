@@ -38,7 +38,7 @@ const COLUMNS = [
   { key: "concluido", label: "Concluídas", color: "bg-primary/10 text-primary" },
 ] as const;
 
-function MaintenancesPage() {
+export function MaintenancesPage() {
   const { data: items = [], isLoading } = useMaintenances();
   const [open, setOpen] = useState(false);
   useEffect(() => {

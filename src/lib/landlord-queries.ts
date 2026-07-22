@@ -2,6 +2,12 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 
+// Cache defaults: mantém a UI fluida entre navegações (dashboard <-> finanças <->
+// saldo <-> manutenções) sem refetch a cada troca de rota. Mutations continuam
+// invalidando explicitamente.
+const DEFAULT_STALE = 60_000; // 1 min
+const DEFAULT_GC = 5 * 60_000; // 5 min
+
 // Todas as queries abaixo confiam na RLS: o landlord só enxerga linhas onde
 // properties.landlord_id = auth.uid() (e cascata em contracts/installments/maintenances).
 
@@ -10,6 +16,8 @@ export function useLandlordProperties() {
   return useQuery({
     queryKey: ["landlord", "properties", user?.id],
     enabled: !!user?.id,
+    staleTime: DEFAULT_STALE,
+    gcTime: DEFAULT_GC,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("properties")
@@ -27,6 +35,8 @@ export function useLandlordContracts() {
   return useQuery({
     queryKey: ["landlord", "contracts", user?.id],
     enabled: !!user?.id,
+    staleTime: DEFAULT_STALE,
+    gcTime: DEFAULT_GC,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("contracts")
@@ -44,10 +54,16 @@ export function useLandlordInstallments() {
   return useQuery({
     queryKey: ["landlord", "installments", user?.id],
     enabled: !!user?.id,
+    staleTime: DEFAULT_STALE,
+    gcTime: DEFAULT_GC,
     queryFn: async () => {
+      // Slim select: só as colunas usadas por dashboard / finanças / saldo.
+      // Reduz payload e tempo de parse. RLS mantém a cascata segura.
       const { data, error } = await supabase
         .from("installments")
-        .select("*, contract:contracts(*, property:properties(*), tenant:tenants(*))")
+        .select(
+          "id, due_date, amount, paid_amount, paid_at, status, contract:contracts(id, property:properties(id, address, nickname), tenant:tenants(id, full_name))",
+        )
         .order("due_date", { ascending: true })
         .limit(1000);
       if (error) throw error;
@@ -61,6 +77,8 @@ export function useLandlordMaintenances() {
   return useQuery({
     queryKey: ["landlord", "maintenances", user?.id],
     enabled: !!user?.id,
+    staleTime: DEFAULT_STALE,
+    gcTime: DEFAULT_GC,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("maintenances")
@@ -68,7 +86,6 @@ export function useLandlordMaintenances() {
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data ?? [];
-
     },
   });
 }
@@ -78,6 +95,8 @@ export function useLandlordWithdrawals() {
   return useQuery({
     queryKey: ["landlord", "withdrawals", user?.id],
     enabled: !!user?.id,
+    staleTime: DEFAULT_STALE,
+    gcTime: DEFAULT_GC,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("landlord_withdrawals")
@@ -95,6 +114,9 @@ export function useLandlordProfile() {
   return useQuery({
     queryKey: ["landlord", "profile", user?.id],
     enabled: !!user?.id,
+    // Profile muda pouco — cachear por mais tempo evita refetch em cada navegação.
+    staleTime: 5 * 60_000,
+    gcTime: 15 * 60_000,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("profiles")

@@ -1,6 +1,8 @@
-import { memo, useMemo, useState } from "react";
+import { lazy, memo, Suspense, useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { PropertyDetailsDialog } from "@/components/owner/PropertyDetailsDialog";
+const PropertyDetailsDialog = lazy(() =>
+  import("@/components/owner/PropertyDetailsDialog").then((m) => ({ default: m.PropertyDetailsDialog })),
+);
 import {
   Building2,
   Pencil,
@@ -279,12 +281,16 @@ function PropertyCardImpl({
         ) : null}
       </div>
     </Card>
-    <PropertyDetailsDialog
-      property={p}
-      open={detailOpen}
-      onOpenChange={setDetailOpen}
-      onEdit={onEdit}
-    />
+    {detailOpen && (
+      <Suspense fallback={null}>
+        <PropertyDetailsDialog
+          property={p}
+          open={detailOpen}
+          onOpenChange={setDetailOpen}
+          onEdit={onEdit}
+        />
+      </Suspense>
+    )}
     </>
   );
 }

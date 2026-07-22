@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatBRL } from "@/lib/format";
@@ -15,6 +16,7 @@ import { PropertyFormDialog } from "@/components/PropertyFormDialog";
 import { ContractPdfUploader } from "@/components/ContractPdfUploader";
 import { useInvalidate, type Property } from "@/lib/queries";
 import { useConfirm } from "@/components/ui/confirm";
+import { PageHeader, PageShell } from "@/components/PageHeader";
 
 export const Route = createFileRoute("/_manager/manager/carteira")({
   component: Carteira,

@@ -8,6 +8,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { sendEvolutionText, sanitizeBrPhone } from "@/lib/whatsapp.server";
+import { rateLimit, clientIpFromRequest } from "@/lib/rate-limit.server";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -47,6 +48,21 @@ export const Route = createFileRoute("/api/public/webhooks/leads")({
       OPTIONS: async () => new Response(null, { status: 204, headers: corsHeaders }),
 
       POST: async ({ request }) => {
+        const ip = clientIpFromRequest(request);
+        const rl = rateLimit(`leads:${ip}`, { limit: 30, windowMs: 60_000 });
+        if (!rl.ok) {
+          return new Response(
+            JSON.stringify({ received: false, error: "rate_limited" }),
+            {
+              status: 429,
+              headers: {
+                "Content-Type": "application/json",
+                "Retry-After": String(rl.retryAfterSec),
+                ...corsHeaders,
+              },
+            },
+          );
+        }
         let parsed: z.infer<typeof payloadSchema>;
         try {
           const raw = await request.json();

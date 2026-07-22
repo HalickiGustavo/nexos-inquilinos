@@ -4,6 +4,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { sendEvolutionText, sanitizeBrPhone } from "@/lib/whatsapp.server";
+import { rateLimit, clientIpFromRequest } from "@/lib/rate-limit.server";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -46,6 +47,22 @@ export const Route = createFileRoute("/api/v1/integrations/$orgSlug/leads")({
         const slug = String(params.orgSlug ?? "").toLowerCase();
         if (!/^[a-z0-9-]{3,80}$/.test(slug)) {
           return jsonResp({ received: false, error: "invalid_slug" }, 400);
+        }
+
+        const ip = clientIpFromRequest(request);
+        const rl = rateLimit(`v1leads:${slug}:${ip}`, { limit: 30, windowMs: 60_000 });
+        if (!rl.ok) {
+          return new Response(
+            JSON.stringify({ received: false, error: "rate_limited" }),
+            {
+              status: 429,
+              headers: {
+                "Content-Type": "application/json",
+                "Retry-After": String(rl.retryAfterSec),
+                ...corsHeaders,
+              },
+            },
+          );
         }
 
         let parsed: z.infer<typeof payloadSchema>;

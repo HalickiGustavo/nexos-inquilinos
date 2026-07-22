@@ -95,14 +95,19 @@ function Carteira() {
       </Card>
 
       {q.isLoading ? (
-        <p className="text-muted-foreground">Carregando...</p>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Skeleton key={i} className="h-64 w-full rounded-xl" />
+          ))}
+        </div>
       ) : filtered.length === 0 ? (
-        <Card className="p-12 text-center">
-          <Building2 className="size-12 mx-auto text-muted-foreground mb-3" />
-          <p className="text-muted-foreground">Nenhum imóvel encontrado.</p>
+        <Card className="p-12 text-center border-dashed">
+          <Building2 className="size-12 mx-auto text-muted-foreground/60 mb-3" />
+          <p className="font-medium">Nenhum imóvel encontrado</p>
+          <p className="text-sm text-muted-foreground mt-1">Ajuste os filtros ou cadastre um novo imóvel.</p>
         </Card>
       ) : (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           {filtered.map((p: any) => {
             const active = (p.contracts ?? []).find((c: any) => c.active);
             return (
@@ -145,7 +150,7 @@ function Carteira() {
           })}
         </div>
       )}
-    </div>
+    </PageShell>
   );
 }
 

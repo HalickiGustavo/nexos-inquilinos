@@ -3,15 +3,15 @@ import { useMemo, useState, type ReactNode } from "react";
 import { LayoutDashboard, Wallet, Coins, Wrench, LogOut, Menu, X } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
-import SupportWhatsAppButton from "@/components/SupportWhatsAppButton";
+import { SupportWhatsAppButton } from "@/components/SupportWhatsAppButton";
 import { URBANIST } from "./ui";
 
-const NAV = [
+const NAV: { to: string; label: string; icon: typeof LayoutDashboard; exact?: boolean }[] = [
   { to: "/landlord", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/landlord/financeiro", label: "Finanças", icon: Wallet },
   { to: "/landlord/saldo", label: "Saldo & Saque", icon: Coins },
   { to: "/landlord/manutencoes", label: "Manutenções", icon: Wrench },
-] as const;
+];
 
 const TITLES: Record<string, { title: string; subtitle: string }> = {
   "/landlord": {

@@ -7,11 +7,13 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { formatBRL } from "@/lib/format";
 import { ContractPdfUploader } from "@/components/ContractPdfUploader";
 import { ContractFormDialog } from "@/components/ContractFormDialog";
+import { PageHeader, PageShell } from "@/components/PageHeader";
 
 export const Route = createFileRoute("/_manager/manager/contratos")({
   component: ContratosPage,

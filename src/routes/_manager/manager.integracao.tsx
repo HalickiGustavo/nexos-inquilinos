@@ -54,9 +54,18 @@ function ManagerIntegracao() {
           </p>
           <div className="grid sm:grid-cols-3 gap-3 mt-2">
             <div className="rounded-md border bg-background p-3">
-              <p className="text-xs uppercase tracking-wide text-muted-foreground">NEXO — Taxa de serviço</p>
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">Imobiliária</p>
               <p className="text-lg font-semibold mt-1">
-                {formatBRL(nexoFee)} <span className="text-xs font-normal text-muted-foreground">por parcela</span>
+                Taxa de administração <span className="text-xs font-normal text-muted-foreground">(% do aluguel)</span>
+              </p>
+            </div>
+            <div className="rounded-md border bg-background p-3">
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">Proprietário</p>
+              <p className="text-lg font-semibold mt-1">
+                Valor líquido restante
+                <Badge variant="outline" className="ml-2 text-[10px] inline-flex items-center gap-1">
+                  <Coins className="size-2.5" /> Pix direto
+                </Badge>
               </p>
             </div>
             <div className="rounded-md border bg-background p-3">

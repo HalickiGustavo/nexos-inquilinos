@@ -297,6 +297,7 @@ export function AppShell({
 
       {tour && <OnboardingTour tourKey={tour.key} steps={tour.steps} />}
       <InstallPwaButton bottomOffset={pwaBottomOffset} />
+      <SupportWhatsAppButton bottomOffset={pwaBottomOffset + 64} />
     </div>
   );
 }

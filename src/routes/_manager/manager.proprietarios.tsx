@@ -89,68 +89,68 @@ function ManagerProprietariosPage() {
   }
 
   return (
-    <div className="p-6 lg:p-8 max-w-6xl mx-auto space-y-6">
-      <header className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <div className="inline-flex items-center gap-2 text-xs uppercase tracking-wider text-violet-400 mb-2">
-            <Users className="size-3.5" /> Carteira
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Proprietários</h1>
-          <p className="text-muted-foreground mt-1">
-            Convide os donos dos imóveis para acompanharem painel, finanças e saldo direto na NEXO.
-          </p>
-        </div>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-violet-500 hover:bg-violet-400 text-white">
-              <UserPlus className="size-4 mr-2" /> Novo convite
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Convidar proprietário</DialogTitle>
-              <DialogDescription>
-                Geramos um link único. O CPF/CNPJ liga automaticamente os imóveis dele.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-3">
-              <div>
-                <Label>E-mail *</Label>
-                <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-                  placeholder="proprietario@exemplo.com" />
-              </div>
-              <div>
-                <Label>Nome completo</Label>
-                <Input value={fullName} onChange={(e) => setFullName(e.target.value)}
-                  placeholder="Maria Souza" />
-              </div>
-              <div>
-                <Label>CPF ou CNPJ (recomendado)</Label>
-                <Input value={document} onChange={(e) => setDocument(e.target.value)}
-                  placeholder="000.000.000-00" />
-                <p className="text-xs text-muted-foreground mt-1">
-                  Quando informado, os imóveis cujo CPF/CNPJ do proprietário bate com este são vinculados no aceite.
-                </p>
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="ghost" onClick={() => setOpen(false)}>Cancelar</Button>
-              <Button onClick={() => createInvite.mutate()} disabled={createInvite.isPending}
-                className="bg-violet-500 hover:bg-violet-400 text-white">
-                {createInvite.isPending ? <Loader2 className="size-4 mr-2 animate-spin" /> : <Mail className="size-4 mr-2" />}
-                Criar convite
+    <PageShell>
+      <PageHeader
+        icon={Users}
+        eyebrow="Carteira"
+        title="Proprietários"
+        description="Convide os donos dos imóveis para acompanharem painel, finanças e saldo direto na NEXO."
+        actions={
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <UserPlus className="size-4 mr-2" /> Novo convite
               </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </header>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Convidar proprietário</DialogTitle>
+                <DialogDescription>
+                  Geramos um link único. O CPF/CNPJ liga automaticamente os imóveis dele.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-3">
+                <div>
+                  <Label>E-mail *</Label>
+                  <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
+                    placeholder="proprietario@exemplo.com" />
+                </div>
+                <div>
+                  <Label>Nome completo</Label>
+                  <Input value={fullName} onChange={(e) => setFullName(e.target.value)}
+                    placeholder="Maria Souza" />
+                </div>
+                <div>
+                  <Label>CPF ou CNPJ (recomendado)</Label>
+                  <Input value={document} onChange={(e) => setDocument(e.target.value)}
+                    placeholder="000.000.000-00" />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Quando informado, os imóveis cujo CPF/CNPJ do proprietário bate com este são vinculados no aceite.
+                  </p>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="ghost" onClick={() => setOpen(false)}>Cancelar</Button>
+                <Button onClick={() => createInvite.mutate()} disabled={createInvite.isPending}>
+                  {createInvite.isPending ? <Loader2 className="size-4 mr-2 animate-spin" /> : <Mail className="size-4 mr-2" />}
+                  Criar convite
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        }
+      />
 
       <Card className="p-5">
         {isLoading ? (
-          <p className="text-sm text-muted-foreground py-8 text-center">Carregando…</p>
+          <div className="space-y-2">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-10 w-full" />
+            ))}
+          </div>
         ) : invites.length === 0 ? (
           <div className="py-10 text-center">
-            <Users className="size-10 mx-auto text-muted-foreground mb-3" />
+            <Users className="size-10 mx-auto text-muted-foreground/60 mb-3" />
             <p className="font-medium">Nenhum convite ainda</p>
             <p className="text-sm text-muted-foreground mt-1">Clique em "Novo convite" para começar.</p>
           </div>

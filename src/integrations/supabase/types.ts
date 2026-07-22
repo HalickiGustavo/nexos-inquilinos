@@ -2001,7 +2001,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "owner" | "tenant" | "manager" | "landlord"
+      app_role: "owner" | "tenant" | "manager" | "landlord" | "platform_admin"
       inspection_condition: "otimo" | "bom" | "regular" | "ruim"
       inspection_kind: "entrada" | "saida" | "preventiva" | "extraordinaria"
       inspection_status: "rascunho" | "assinada"
@@ -2154,7 +2154,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["owner", "tenant", "manager", "landlord"],
+      app_role: ["owner", "tenant", "manager", "landlord", "platform_admin"],
       inspection_condition: ["otimo", "bom", "regular", "ruim"],
       inspection_kind: ["entrada", "saida", "preventiva", "extraordinaria"],
       inspection_status: ["rascunho", "assinada"],

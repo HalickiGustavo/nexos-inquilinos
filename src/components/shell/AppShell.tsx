@@ -3,6 +3,7 @@ import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { LogOut, type LucideIcon } from "lucide-react";
 import { NexoLogo } from "@/components/NexoLogo";
 import { InstallPwaButton } from "@/components/InstallPwaButton";
+import { SupportWhatsAppButton } from "@/components/SupportWhatsAppButton";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { AlertsBell } from "@/components/AlertsBell";
 import { OnboardingTour, type TourStep } from "@/components/OnboardingTour";
@@ -296,6 +297,7 @@ export function AppShell({
 
       {tour && <OnboardingTour tourKey={tour.key} steps={tour.steps} />}
       <InstallPwaButton bottomOffset={pwaBottomOffset} />
+      <SupportWhatsAppButton bottomOffset={pwaBottomOffset + 64} />
     </div>
   );
 }

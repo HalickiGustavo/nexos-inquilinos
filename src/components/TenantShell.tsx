@@ -4,6 +4,7 @@ import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { InstallPwaButton } from "@/components/InstallPwaButton";
+import { SupportWhatsAppButton } from "@/components/SupportWhatsAppButton";
 import { NexoLogo } from "@/components/NexoLogo";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { OnboardingTour } from "@/components/OnboardingTour";
@@ -133,6 +134,7 @@ export function TenantShell() {
       </nav>
       <OnboardingTour tourKey="tenant" steps={tenantTourSteps} />
       <InstallPwaButton bottomOffset={80} />
+      <SupportWhatsAppButton bottomOffset={144} />
     </div>
   );
 }

@@ -60,24 +60,25 @@ function Carteira() {
   });
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
-      <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div className="min-w-0">
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Carteira de Imóveis</h1>
-          <p className="text-muted-foreground mt-1 text-sm">Gestão de portfólio e proprietários.</p>
-        </div>
-        <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) setEditing(null); }}>
-          <DialogTrigger asChild>
-            <Button><Plus className="size-4 mr-2" />Novo imóvel</Button>
-          </DialogTrigger>
-          <PropertyFormDialog
-            editing={editing}
-            mode="manager"
-            invalidateKeys={["mgr-carteira", "properties"]}
-            onDone={() => { setOpen(false); setEditing(null); qc.invalidateQueries({ queryKey: ["mgr-carteira"] }); }}
-          />
-        </Dialog>
-      </div>
+    <PageShell>
+      <PageHeader
+        icon={Building2}
+        title="Carteira de Imóveis"
+        description="Gestão de portfólio e proprietários."
+        actions={
+          <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) setEditing(null); }}>
+            <DialogTrigger asChild>
+              <Button><Plus className="size-4 mr-2" />Novo imóvel</Button>
+            </DialogTrigger>
+            <PropertyFormDialog
+              editing={editing}
+              mode="manager"
+              invalidateKeys={["mgr-carteira", "properties"]}
+              onDone={() => { setOpen(false); setEditing(null); qc.invalidateQueries({ queryKey: ["mgr-carteira"] }); }}
+            />
+          </Dialog>
+        }
+      />
 
       <Card className="p-4 flex flex-col sm:flex-row gap-3 sm:items-center">
         <div className="relative flex-1">

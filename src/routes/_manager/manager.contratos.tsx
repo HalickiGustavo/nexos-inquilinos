@@ -7,11 +7,13 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { formatBRL } from "@/lib/format";
 import { ContractPdfUploader } from "@/components/ContractPdfUploader";
 import { ContractFormDialog } from "@/components/ContractFormDialog";
+import { PageHeader, PageShell } from "@/components/PageHeader";
 
 export const Route = createFileRoute("/_manager/manager/contratos")({
   component: ContratosPage,
@@ -72,21 +74,20 @@ function ContratosPage() {
     new Date(d + "T00:00:00").toLocaleDateString("pt-BR");
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
-      <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div className="min-w-0">
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Contratos</h1>
-          <p className="text-muted-foreground mt-1 text-sm">
-            Contratos de locação da imobiliária.
-          </p>
-        </div>
-        <Dialog open={openNew} onOpenChange={setOpenNew}>
-          <DialogTrigger asChild>
-            <Button><Plus className="size-4 mr-2" />Novo contrato</Button>
-          </DialogTrigger>
-          <ContractFormDialog onDone={() => setOpenNew(false)} />
-        </Dialog>
-      </div>
+    <PageShell>
+      <PageHeader
+        icon={FileText}
+        title="Contratos"
+        description="Contratos de locação da imobiliária."
+        actions={
+          <Dialog open={openNew} onOpenChange={setOpenNew}>
+            <DialogTrigger asChild>
+              <Button><Plus className="size-4 mr-2" />Novo contrato</Button>
+            </DialogTrigger>
+            <ContractFormDialog onDone={() => setOpenNew(false)} />
+          </Dialog>
+        }
+      />
 
       <Card className="p-4 flex flex-col sm:flex-row gap-3 sm:items-center">
         <div className="relative flex-1">
@@ -108,14 +109,19 @@ function ContratosPage() {
       </Card>
 
       {q.isLoading ? (
-        <p className="text-muted-foreground">Carregando...</p>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Skeleton key={i} className="h-56 w-full rounded-xl" />
+          ))}
+        </div>
       ) : filtered.length === 0 ? (
-        <Card className="p-12 text-center">
-          <FileText className="size-12 mx-auto text-muted-foreground mb-3" />
-          <p className="text-muted-foreground">Nenhum contrato encontrado.</p>
+        <Card className="p-12 text-center border-dashed">
+          <FileText className="size-12 mx-auto text-muted-foreground/60 mb-3" />
+          <p className="font-medium">Nenhum contrato encontrado</p>
+          <p className="text-sm text-muted-foreground mt-1">Ajuste os filtros ou crie um novo contrato.</p>
         </Card>
       ) : (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           {filtered.map((c) => {
             const end = new Date(c.end_date + "T00:00:00");
             const daysLeft = Math.round((end.getTime() - today.getTime()) / 86400000);
@@ -199,6 +205,6 @@ function ContratosPage() {
           })}
         </div>
       )}
-    </div>
+    </PageShell>
   );
 }

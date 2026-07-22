@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatBRL } from "@/lib/format";
@@ -15,6 +16,7 @@ import { PropertyFormDialog } from "@/components/PropertyFormDialog";
 import { ContractPdfUploader } from "@/components/ContractPdfUploader";
 import { useInvalidate, type Property } from "@/lib/queries";
 import { useConfirm } from "@/components/ui/confirm";
+import { PageHeader, PageShell } from "@/components/PageHeader";
 
 export const Route = createFileRoute("/_manager/manager/carteira")({
   component: Carteira,
@@ -58,24 +60,25 @@ function Carteira() {
   });
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
-      <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div className="min-w-0">
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Carteira de Imóveis</h1>
-          <p className="text-muted-foreground mt-1 text-sm">Gestão de portfólio e proprietários.</p>
-        </div>
-        <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) setEditing(null); }}>
-          <DialogTrigger asChild>
-            <Button><Plus className="size-4 mr-2" />Novo imóvel</Button>
-          </DialogTrigger>
-          <PropertyFormDialog
-            editing={editing}
-            mode="manager"
-            invalidateKeys={["mgr-carteira", "properties"]}
-            onDone={() => { setOpen(false); setEditing(null); qc.invalidateQueries({ queryKey: ["mgr-carteira"] }); }}
-          />
-        </Dialog>
-      </div>
+    <PageShell>
+      <PageHeader
+        icon={Building2}
+        title="Carteira de Imóveis"
+        description="Gestão de portfólio e proprietários."
+        actions={
+          <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) setEditing(null); }}>
+            <DialogTrigger asChild>
+              <Button><Plus className="size-4 mr-2" />Novo imóvel</Button>
+            </DialogTrigger>
+            <PropertyFormDialog
+              editing={editing}
+              mode="manager"
+              invalidateKeys={["mgr-carteira", "properties"]}
+              onDone={() => { setOpen(false); setEditing(null); qc.invalidateQueries({ queryKey: ["mgr-carteira"] }); }}
+            />
+          </Dialog>
+        }
+      />
 
       <Card className="p-4 flex flex-col sm:flex-row gap-3 sm:items-center">
         <div className="relative flex-1">
@@ -92,14 +95,19 @@ function Carteira() {
       </Card>
 
       {q.isLoading ? (
-        <p className="text-muted-foreground">Carregando...</p>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Skeleton key={i} className="h-64 w-full rounded-xl" />
+          ))}
+        </div>
       ) : filtered.length === 0 ? (
-        <Card className="p-12 text-center">
-          <Building2 className="size-12 mx-auto text-muted-foreground mb-3" />
-          <p className="text-muted-foreground">Nenhum imóvel encontrado.</p>
+        <Card className="p-12 text-center border-dashed">
+          <Building2 className="size-12 mx-auto text-muted-foreground/60 mb-3" />
+          <p className="font-medium">Nenhum imóvel encontrado</p>
+          <p className="text-sm text-muted-foreground mt-1">Ajuste os filtros ou cadastre um novo imóvel.</p>
         </Card>
       ) : (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           {filtered.map((p: any) => {
             const active = (p.contracts ?? []).find((c: any) => c.active);
             return (
@@ -142,7 +150,7 @@ function Carteira() {
           })}
         </div>
       )}
-    </div>
+    </PageShell>
   );
 }
 

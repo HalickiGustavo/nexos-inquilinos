@@ -196,7 +196,7 @@ function ManagerProprietariosPage() {
           </div>
         )}
       </Card>
-    </div>
+    </PageShell>
   );
 }
 

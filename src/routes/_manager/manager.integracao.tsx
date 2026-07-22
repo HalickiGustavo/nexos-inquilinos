@@ -50,24 +50,9 @@ function ManagerIntegracao() {
             <h3 className="font-semibold">Split Automático Ativo</h3>
           </div>
           <p className="text-sm text-muted-foreground">
-            A cada parcela paga, o valor é dividido automaticamente em 3 destinos.
+            A cada parcela paga, o valor é dividido automaticamente entre imobiliária e proprietário.
           </p>
-          <div className="grid sm:grid-cols-3 gap-3 mt-2">
-            <div className="rounded-md border bg-background p-3">
-              <p className="text-xs uppercase tracking-wide text-muted-foreground">Imobiliária</p>
-              <p className="text-lg font-semibold mt-1">
-                Taxa de administração <span className="text-xs font-normal text-muted-foreground">(% do aluguel)</span>
-              </p>
-            </div>
-            <div className="rounded-md border bg-background p-3">
-              <p className="text-xs uppercase tracking-wide text-muted-foreground">Proprietário</p>
-              <p className="text-lg font-semibold mt-1">
-                Valor líquido restante
-                <Badge variant="outline" className="ml-2 text-[10px] inline-flex items-center gap-1">
-                  <Coins className="size-2.5" /> Pix direto
-                </Badge>
-              </p>
-            </div>
+          <div className="grid sm:grid-cols-2 gap-3 mt-2">
             <div className="rounded-md border bg-background p-3">
               <p className="text-xs uppercase tracking-wide text-muted-foreground">Imobiliária</p>
               <p className="text-lg font-semibold mt-1">

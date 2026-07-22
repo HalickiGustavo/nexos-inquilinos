@@ -59,13 +59,12 @@ function ManagerPortaisPage() {
   }
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
-      <header>
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Integrações com Portais</h1>
-        <p className="text-muted-foreground mt-1">
-          Conecte seus imóveis aos principais portais imobiliários do Brasil de forma automática.
-        </p>
-      </header>
+    <PageShell>
+      <PageHeader
+        icon={Globe}
+        title="Integrações com Portais"
+        description="Conecte seus imóveis aos principais portais imobiliários do Brasil de forma automática."
+      />
 
       <CentralConexoesPanel />
 

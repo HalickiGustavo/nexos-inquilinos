@@ -40,6 +40,7 @@ import { Route as ManagerManagerProprietariosRouteImport } from './routes/_manag
 import { Route as ManagerManagerPortaisRouteImport } from './routes/_manager/manager.portais'
 import { Route as ManagerManagerPerfilRouteImport } from './routes/_manager/manager.perfil'
 import { Route as ManagerManagerMigrarDadosRouteImport } from './routes/_manager/manager.migrar-dados'
+import { Route as ManagerManagerManutencoesRouteImport } from './routes/_manager/manager.manutencoes'
 import { Route as ManagerManagerLeadsRouteImport } from './routes/_manager/manager.leads'
 import { Route as ManagerManagerIntegracaoRouteImport } from './routes/_manager/manager.integracao'
 import { Route as ManagerManagerInquilinosRouteImport } from './routes/_manager/manager.inquilinos'
@@ -239,6 +240,12 @@ const ManagerManagerMigrarDadosRoute =
   ManagerManagerMigrarDadosRouteImport.update({
     id: '/manager/migrar-dados',
     path: '/manager/migrar-dados',
+    getParentRoute: () => ManagerRoute,
+  } as any)
+const ManagerManagerManutencoesRoute =
+  ManagerManagerManutencoesRouteImport.update({
+    id: '/manager/manutencoes',
+    path: '/manager/manutencoes',
     getParentRoute: () => ManagerRoute,
   } as any)
 const ManagerManagerLeadsRoute = ManagerManagerLeadsRouteImport.update({
@@ -515,6 +522,7 @@ export interface FileRoutesByFullPath {
   '/manager/inquilinos': typeof ManagerManagerInquilinosRoute
   '/manager/integracao': typeof ManagerManagerIntegracaoRoute
   '/manager/leads': typeof ManagerManagerLeadsRoute
+  '/manager/manutencoes': typeof ManagerManagerManutencoesRoute
   '/manager/migrar-dados': typeof ManagerManagerMigrarDadosRoute
   '/manager/perfil': typeof ManagerManagerPerfilRoute
   '/manager/portais': typeof ManagerManagerPortaisRoute
@@ -586,6 +594,7 @@ export interface FileRoutesByTo {
   '/manager/inquilinos': typeof ManagerManagerInquilinosRoute
   '/manager/integracao': typeof ManagerManagerIntegracaoRoute
   '/manager/leads': typeof ManagerManagerLeadsRoute
+  '/manager/manutencoes': typeof ManagerManagerManutencoesRoute
   '/manager/migrar-dados': typeof ManagerManagerMigrarDadosRoute
   '/manager/perfil': typeof ManagerManagerPerfilRoute
   '/manager/portais': typeof ManagerManagerPortaisRoute
@@ -661,6 +670,7 @@ export interface FileRoutesById {
   '/_manager/manager/inquilinos': typeof ManagerManagerInquilinosRoute
   '/_manager/manager/integracao': typeof ManagerManagerIntegracaoRoute
   '/_manager/manager/leads': typeof ManagerManagerLeadsRoute
+  '/_manager/manager/manutencoes': typeof ManagerManagerManutencoesRoute
   '/_manager/manager/migrar-dados': typeof ManagerManagerMigrarDadosRoute
   '/_manager/manager/perfil': typeof ManagerManagerPerfilRoute
   '/_manager/manager/portais': typeof ManagerManagerPortaisRoute
@@ -734,6 +744,7 @@ export interface FileRouteTypes {
     | '/manager/inquilinos'
     | '/manager/integracao'
     | '/manager/leads'
+    | '/manager/manutencoes'
     | '/manager/migrar-dados'
     | '/manager/perfil'
     | '/manager/portais'
@@ -805,6 +816,7 @@ export interface FileRouteTypes {
     | '/manager/inquilinos'
     | '/manager/integracao'
     | '/manager/leads'
+    | '/manager/manutencoes'
     | '/manager/migrar-dados'
     | '/manager/perfil'
     | '/manager/portais'
@@ -879,6 +891,7 @@ export interface FileRouteTypes {
     | '/_manager/manager/inquilinos'
     | '/_manager/manager/integracao'
     | '/_manager/manager/leads'
+    | '/_manager/manager/manutencoes'
     | '/_manager/manager/migrar-dados'
     | '/_manager/manager/perfil'
     | '/_manager/manager/portais'
@@ -1159,6 +1172,13 @@ declare module '@tanstack/react-router' {
       path: '/manager/migrar-dados'
       fullPath: '/manager/migrar-dados'
       preLoaderRoute: typeof ManagerManagerMigrarDadosRouteImport
+      parentRoute: typeof ManagerRoute
+    }
+    '/_manager/manager/manutencoes': {
+      id: '/_manager/manager/manutencoes'
+      path: '/manager/manutencoes'
+      fullPath: '/manager/manutencoes'
+      preLoaderRoute: typeof ManagerManagerManutencoesRouteImport
       parentRoute: typeof ManagerRoute
     }
     '/_manager/manager/leads': {
@@ -1547,6 +1567,7 @@ interface ManagerRouteChildren {
   ManagerManagerInquilinosRoute: typeof ManagerManagerInquilinosRoute
   ManagerManagerIntegracaoRoute: typeof ManagerManagerIntegracaoRoute
   ManagerManagerLeadsRoute: typeof ManagerManagerLeadsRoute
+  ManagerManagerManutencoesRoute: typeof ManagerManagerManutencoesRoute
   ManagerManagerMigrarDadosRoute: typeof ManagerManagerMigrarDadosRoute
   ManagerManagerPerfilRoute: typeof ManagerManagerPerfilRoute
   ManagerManagerPortaisRoute: typeof ManagerManagerPortaisRoute
@@ -1568,6 +1589,7 @@ const ManagerRouteChildren: ManagerRouteChildren = {
   ManagerManagerInquilinosRoute: ManagerManagerInquilinosRoute,
   ManagerManagerIntegracaoRoute: ManagerManagerIntegracaoRoute,
   ManagerManagerLeadsRoute: ManagerManagerLeadsRoute,
+  ManagerManagerManutencoesRoute: ManagerManagerManutencoesRoute,
   ManagerManagerMigrarDadosRoute: ManagerManagerMigrarDadosRoute,
   ManagerManagerPerfilRoute: ManagerManagerPerfilRoute,
   ManagerManagerPortaisRoute: ManagerManagerPortaisRoute,

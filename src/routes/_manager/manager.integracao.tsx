@@ -1,13 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
 import { Banknote, Coins, ShieldCheck } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { PixSplitConfigPanel } from "@/components/PixSplitConfigPanel";
-import { getNexoFeeSetting } from "@/lib/asaas.functions";
-import { formatBRL } from "@/lib/format";
 
 export const Route = createFileRoute("/_manager/manager/integracao")({
   head: () => ({ meta: [{ title: "Saldo e Saque — NEXO Imobiliária" }] }),
@@ -15,19 +11,12 @@ export const Route = createFileRoute("/_manager/manager/integracao")({
 });
 
 function ManagerIntegracao() {
-  const fetchFee = useServerFn(getNexoFeeSetting);
-  const { data: feeData } = useQuery({
-    queryKey: ["nexo-fee-setting"],
-    queryFn: () => fetchFee(),
-  });
-  const nexoFee = feeData?.fee ?? 24.99;
-
   return (
     <div className="p-6 lg:p-8 max-w-4xl mx-auto space-y-6">
       <header>
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Saldo e Saque</h1>
         <p className="text-muted-foreground mt-1">
-          Configure a chave Pix de repasse da imobiliária. O split 3 vias (Nexo / Imobiliária / Proprietário) é gerado
+          Configure a chave Pix de repasse da imobiliária. O split entre imobiliária e proprietário é gerado
           automaticamente quando o inquilino paga.
         </p>
       </header>

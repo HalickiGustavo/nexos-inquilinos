@@ -1,9 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Wrench, AlertCircle, Clock, CheckCircle2 } from "lucide-react";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { useLandlordMaintenances } from "@/lib/landlord-queries";
 import { formatBRL, formatDate } from "@/lib/format";
+import { EmptyLine, LoadingLine, Panel, Pill, URBANIST } from "@/components/landlord/ui";
 
 export const Route = createFileRoute("/_landlord/landlord/manutencoes")({
   head: () => ({ meta: [{ title: "Manutenções — Proprietário NEXO" }] }),
@@ -13,57 +12,78 @@ export const Route = createFileRoute("/_landlord/landlord/manutencoes")({
 function LandlordMaintenances() {
   const { data: maintenances = [], isLoading } = useLandlordMaintenances();
 
-  return (
-    <div className="p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
-      <header>
-        <h1 className="text-3xl font-bold tracking-tight">Manutenções</h1>
-        <p className="text-muted-foreground mt-1">
-          Acompanhe os chamados nos seus imóveis. Apenas leitura — a imobiliária executa as ações.
-        </p>
-      </header>
+  if (isLoading) {
+    return (
+      <div className="mx-auto max-w-7xl">
+        <Panel>
+          <LoadingLine />
+        </Panel>
+      </div>
+    );
+  }
 
-      {isLoading ? (
-        <p className="text-sm text-muted-foreground py-12 text-center">Carregando…</p>
-      ) : maintenances.length === 0 ? (
-        <Card className="p-10 text-center">
-          <Wrench className="size-10 mx-auto text-muted-foreground mb-3" />
-          <p className="font-medium">Nenhuma manutenção registrada</p>
-          <p className="text-sm text-muted-foreground mt-1">
+  if ((maintenances as any[]).length === 0) {
+    return (
+      <div className="mx-auto max-w-7xl">
+        <Panel padded className="text-center">
+          <div className="mx-auto grid size-14 place-items-center rounded-2xl border border-[#1e1e5a] bg-[#1e1e5a]/30 text-[#a5b4fc]">
+            <Wrench className="size-6" />
+          </div>
+          <p className="mt-4 font-bold text-white" style={URBANIST}>
+            Nenhuma manutenção registrada
+          </p>
+          <p className="mt-1 text-sm text-slate-400">
             Quando sua imobiliária abrir um chamado, ele aparece aqui.
           </p>
-        </Card>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {(maintenances as any[]).map((m) => (
-            <Card key={m.id} className="p-5 space-y-3">
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <h3 className="font-semibold truncate">{m.title}</h3>
-                  <p className="text-xs text-muted-foreground truncate mt-0.5">
-                    {m.property?.nickname || m.property?.address || "—"}
-                  </p>
-                  {m.contract && (
-                    <div className="mt-1.5 flex items-center gap-1.5 flex-wrap">
-                      <Badge variant="secondary" className="text-[10px] font-normal">
-                        Contrato · {m.contract.tenant?.full_name ?? "inquilino"}
-                      </Badge>
-                      {m.contract.active && (
-                        <Badge variant="outline" className="text-[10px] font-normal border-emerald-500/40 text-emerald-400">
-                          vigente
-                        </Badge>
-                      )}
-                    </div>
-                  )}
+        </Panel>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mx-auto max-w-7xl">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+        {(maintenances as any[]).map((m) => {
+          const urgent = m.priority === "alta" || m.priority === "urgente";
+          const status = m.status ?? "aberta";
+          const border = urgent && status !== "concluida"
+            ? "border-rose-500/40"
+            : "border-[#1e1e5a]";
+          return (
+            <div
+              key={m.id}
+              className={`relative overflow-hidden rounded-2xl border ${border} bg-[#141432] p-5 shadow-2xl transition-all hover:-translate-y-0.5 hover:border-[#4f46e5]/40`}
+            >
+              {urgent && status !== "concluida" && (
+                <div className="absolute right-3 top-3">
+                  <span className="rounded bg-rose-500 px-2 py-0.5 text-[9px] font-black uppercase text-white">
+                    Urgente
+                  </span>
                 </div>
-                <StatusBadge status={m.status} />
+              )}
+              <div className="pr-16">
+                <h3 className="truncate text-base font-extrabold text-white" style={URBANIST}>
+                  {m.title}
+                </h3>
+                <p className="mt-0.5 truncate text-xs text-slate-400">
+                  {m.property?.nickname || m.property?.address || "—"}
+                </p>
               </div>
 
-
-              {m.description && (
-                <p className="text-sm text-muted-foreground line-clamp-3">{m.description}</p>
+              {m.contract && (
+                <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                  <Pill tone="indigo">
+                    Contrato · {m.contract.tenant?.full_name ?? "inquilino"}
+                  </Pill>
+                  {m.contract.active && <Pill tone="emerald">Vigente</Pill>}
+                </div>
               )}
 
-              <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-border">
+              {m.description && (
+                <p className="mt-3 line-clamp-3 text-sm text-slate-400">{m.description}</p>
+              )}
+
+              <div className="mt-4 grid grid-cols-2 gap-3 border-t border-[#1e1e5a] pt-4 text-xs">
                 <Field label="Aberto em" value={formatDate(m.created_at)} />
                 <Field label="Prioridade" value={m.priority || "—"} />
                 {m.budget_amount && (
@@ -73,10 +93,17 @@ function LandlordMaintenances() {
                   <Field label="Status do orçamento" value={m.budget_status} />
                 )}
               </div>
-            </Card>
-          ))}
-        </div>
-      )}
+
+              <div className="mt-4 flex items-center justify-between border-t border-[#1e1e5a] pt-4">
+                <StatusBadge status={status} />
+                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
+                  #{String(m.id).slice(0, 6).toUpperCase()}
+                </span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -84,22 +111,32 @@ function LandlordMaintenances() {
 function Field({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="text-muted-foreground uppercase text-[10px] tracking-wider">{label}</p>
-      <p className="font-medium">{value}</p>
+      <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">{label}</p>
+      <p className="mt-0.5 text-sm font-bold text-white" style={URBANIST}>
+        {value}
+      </p>
     </div>
   );
 }
 
 function StatusBadge({ status }: { status: string }) {
-  const map: Record<string, { label: string; cn: string; icon: React.ReactNode }> = {
-    aberta: { label: "Aberta", cn: "border-rose-500/40 text-rose-300", icon: <AlertCircle className="size-3" /> },
-    em_andamento: { label: "Em andamento", cn: "border-violet-500/40 text-violet-300", icon: <Clock className="size-3" /> },
-    concluida: { label: "Concluída", cn: "border-emerald-500/40 text-emerald-300", icon: <CheckCircle2 className="size-3" /> },
-  };
-  const cfg = map[status] ?? { label: status, cn: "border-zinc-700 text-zinc-300", icon: null };
+  if (status === "concluida") {
+    return (
+      <Pill tone="emerald">
+        <CheckCircle2 className="size-3" /> Concluída
+      </Pill>
+    );
+  }
+  if (status === "em_andamento") {
+    return (
+      <Pill tone="blue">
+        <Clock className="size-3" /> Em andamento
+      </Pill>
+    );
+  }
   return (
-    <Badge variant="outline" className={`inline-flex items-center gap-1 ${cfg.cn}`}>
-      {cfg.icon}{cfg.label}
-    </Badge>
+    <Pill tone="rose">
+      <AlertCircle className="size-3" /> Aberta
+    </Pill>
   );
 }

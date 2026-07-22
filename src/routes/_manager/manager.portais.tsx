@@ -99,8 +99,7 @@ function ManagerPortaisPage() {
         </Button>
       </Card>
 
-      
-    </div>
+    </PageShell>
   );
 }
 

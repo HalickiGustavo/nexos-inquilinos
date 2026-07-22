@@ -25,9 +25,8 @@ function ManagerIntegracao() {
         <ShieldCheck className="size-4" />
         <AlertTitle>Pix Split nativo — sem subconta, sem KYC</AlertTitle>
         <AlertDescription>
-          A plataforma Nexo recebe a taxa de serviço pela chave mestra fixa. Cada proprietário cadastra a própria chave
-          Pix em <strong>Saldo e Saque</strong> do painel dele e o sistema busca automaticamente pelo proprietário
-          vinculado ao imóvel ao gerar o Pix para o inquilino.
+          Cada proprietário cadastra a própria chave Pix em <strong>Saldo e Saque</strong> do painel dele e o sistema
+          busca automaticamente pelo proprietário vinculado ao imóvel ao gerar o Pix para o inquilino.
         </AlertDescription>
       </Alert>
 

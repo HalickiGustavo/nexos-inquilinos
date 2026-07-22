@@ -34,15 +34,12 @@ function AlertasPage() {
   };
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
-      <header>
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight flex items-center gap-2">
-          <Bell className="size-7 text-primary" /> Alertas
-        </h1>
-        <p className="text-muted-foreground mt-1">
-          Pendências computadas em tempo real a partir de contratos, parcelas, manutenções e vistorias.
-        </p>
-      </header>
+    <PageShell>
+      <PageHeader
+        icon={Bell}
+        title="Alertas"
+        description="Pendências computadas em tempo real a partir de contratos, parcelas, manutenções e vistorias."
+      />
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <SummaryCard severity="critico" count={counts.critico} />
@@ -51,11 +48,16 @@ function AlertasPage() {
       </div>
 
       {isLoading ? (
-        <p className="text-muted-foreground">Carregando...</p>
+        <div className="space-y-2">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-20 w-full rounded-lg" />
+          ))}
+        </div>
       ) : alerts.length === 0 ? (
-        <Card className="p-12 text-center">
-          <BellOff className="size-12 mx-auto text-muted-foreground mb-3" />
-          <p className="text-muted-foreground">Tudo em dia — nenhum alerta no momento. 🎉</p>
+        <Card className="p-12 text-center border-dashed">
+          <BellOff className="size-12 mx-auto text-muted-foreground/60 mb-3" />
+          <p className="font-medium">Tudo em dia</p>
+          <p className="text-sm text-muted-foreground mt-1">Nenhum alerta no momento. 🎉</p>
         </Card>
       ) : (
         <div className="space-y-2">
@@ -64,7 +66,7 @@ function AlertasPage() {
           ))}
         </div>
       )}
-    </div>
+    </PageShell>
   );
 }
 

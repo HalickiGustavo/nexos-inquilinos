@@ -109,14 +109,19 @@ function ContratosPage() {
       </Card>
 
       {q.isLoading ? (
-        <p className="text-muted-foreground">Carregando...</p>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Skeleton key={i} className="h-56 w-full rounded-xl" />
+          ))}
+        </div>
       ) : filtered.length === 0 ? (
-        <Card className="p-12 text-center">
-          <FileText className="size-12 mx-auto text-muted-foreground mb-3" />
-          <p className="text-muted-foreground">Nenhum contrato encontrado.</p>
+        <Card className="p-12 text-center border-dashed">
+          <FileText className="size-12 mx-auto text-muted-foreground/60 mb-3" />
+          <p className="font-medium">Nenhum contrato encontrado</p>
+          <p className="text-sm text-muted-foreground mt-1">Ajuste os filtros ou crie um novo contrato.</p>
         </Card>
       ) : (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           {filtered.map((c) => {
             const end = new Date(c.end_date + "T00:00:00");
             const daysLeft = Math.round((end.getTime() - today.getTime()) / 86400000);

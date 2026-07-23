@@ -94,5 +94,5 @@ export const scorePassword = (pw: string): PasswordStrength => {
   const hasNumber = /\d/.test(pw);
   const hasSpecial = /[^A-Za-z0-9]/.test(pw);
   const score = (Number(hasLength) + Number(hasUpper) + Number(hasNumber) + Number(hasSpecial)) as 0 | 1 | 2 | 3 | 4;
-  return { score, hasLength, hasUpper, hasNumber, hasSpecial, valid: score === 4 };
+  return { score, hasLength, hasUpper, hasNumber, hasSpecial, valid: hasLength && score >= 3 };
 };

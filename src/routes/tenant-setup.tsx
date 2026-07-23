@@ -402,7 +402,7 @@ function StrengthMeter({ strength }: { strength: ReturnType<typeof scorePassword
         ))}
       </div>
       <div className="flex justify-between text-[10px] text-zinc-500">
-        <span>8+ caracteres · 1 maiúscula · 1 número · 1 especial</span>
+        <span>8+ caracteres + 2 de: maiúscula, número, especial</span>
         {strength.score > 0 && (
           <span className={cn("font-medium", strength.valid ? "text-emerald-400" : "text-zinc-400")}>
             {labels[strength.score]}

@@ -15,11 +15,15 @@ import {
   Eye,
   EyeOff,
   CheckCircle2,
-  ShieldCheck,
   ArrowRight,
   ArrowLeft,
   Smartphone,
   Download,
+  User,
+  Phone,
+  IdCard,
+  Calendar,
+  AlertCircle,
 } from "lucide-react";
 import appQrCode from "@/assets/app-qrcode.png.asset.json";
 
@@ -45,9 +49,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { getRecaptchaSiteKey } from "@/lib/recaptcha.functions";
 
-
 type Role = "imobiliaria" | "proprietario";
-
 const ALLOWED_ROLES: Role[] = ["imobiliaria", "proprietario"];
 
 type Search = { role?: string; invite?: string };
@@ -77,30 +79,22 @@ function CadastroPage() {
     }
   }, [roleParam]);
 
-  // Persiste o token do convite para que login.tsx possa consumi-lo após o login.
   useEffect(() => {
     if (invite && typeof window !== "undefined") {
       window.localStorage.setItem("landlord_invite_token", invite);
     }
   }, [invite]);
 
-
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 relative overflow-hidden">
-      {/* Glow ambiente */}
-      <div className="pointer-events-none absolute inset-0 opacity-60" aria-hidden>
-        <div className="absolute -top-32 left-1/2 -translate-x-1/2 size-[600px] rounded-full bg-primary/20 blur-[120px]" />
-        <div className="absolute bottom-0 right-0 size-[400px] rounded-full bg-fuchsia-500/10 blur-[100px]" />
-      </div>
-
-      <div className="relative z-10 flex min-h-screen flex-col items-center justify-center p-4 sm:p-6">
-        <div className="w-full max-w-xl">
-          <div className="mb-6 flex items-center justify-between">
-            <Link to="/" className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors flex items-center gap-1">
+    <div className="min-h-screen bg-zinc-950 text-zinc-100">
+      <div className="flex min-h-screen flex-col items-center justify-center p-4 sm:p-6">
+        <div className="w-full max-w-md">
+          <div className="mb-5 flex items-center justify-between text-xs">
+            <Link to="/" className="text-zinc-500 hover:text-zinc-200 transition-colors inline-flex items-center gap-1">
               <ArrowLeft className="size-3.5" /> Voltar
             </Link>
-            <Link to="/login" className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors">
-              Já tenho conta
+            <Link to="/login" className="text-zinc-400 hover:text-white transition-colors">
+              Já tenho conta →
             </Link>
           </div>
 
@@ -115,30 +109,27 @@ function CadastroPage() {
   );
 }
 
-/* -------------------- Tela de seleção -------------------- */
+/* -------------------- Seleção de papel -------------------- */
 
 function RoleSelector({ onPick }: { onPick: (r: Role) => void }) {
   return (
-    <div className="rounded-2xl border border-zinc-800/80 bg-zinc-950/70 backdrop-blur-xl p-8 shadow-2xl">
-      <div className="text-center mb-8">
-        <div className="inline-flex size-12 items-center justify-center rounded-xl bg-violet-500/10 text-violet-400 ring-1 ring-violet-500/30 mb-4">
-          <ShieldCheck className="size-6" />
-        </div>
-        <h1 className="text-2xl font-semibold tracking-tight">Desejo me cadastrar como…</h1>
-        <p className="mt-2 text-sm text-zinc-400">Escolha o perfil que melhor descreve a sua operação.</p>
+    <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 sm:p-8">
+      <div className="text-center mb-7">
+        <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-white">Criar sua conta</h1>
+        <p className="mt-1.5 text-sm text-zinc-400">Como você vai usar a Nexo?</p>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="space-y-2.5">
         <RoleCard
-          icon={<Building2 className="size-6" />}
+          icon={<Building2 className="size-5" />}
           title="Imobiliária"
-          description="Gestão de carteira, equipe, repasses e DIMOB."
+          description="Gestão de carteira, equipe e repasses."
           onClick={() => onPick("imobiliaria")}
         />
         <RoleCard
-          icon={<HomeIcon className="size-6" />}
+          icon={<HomeIcon className="size-5" />}
           title="Proprietário"
-          description="Controle direto dos seus imóveis e contratos."
+          description="Controle direto dos seus imóveis."
           onClick={() => onPick("proprietario")}
         />
       </div>
@@ -161,16 +152,16 @@ function RoleCard({
     <button
       type="button"
       onClick={onClick}
-      className="group text-left rounded-xl border border-zinc-800 bg-zinc-900/60 p-5 transition-all hover:border-violet-500/60 hover:bg-zinc-900 hover:shadow-[0_0_30px_-10px_rgba(139,92,246,0.6)] focus:outline-none focus:ring-2 focus:ring-violet-500"
+      className="group w-full text-left rounded-xl border border-zinc-800 bg-zinc-900/60 p-4 flex items-center gap-4 transition-all hover:border-violet-500/70 hover:bg-zinc-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
     >
-      <div className="flex size-11 items-center justify-center rounded-lg bg-violet-500/10 text-violet-400 ring-1 ring-violet-500/20 group-hover:bg-violet-500/20">
+      <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-violet-500/10 text-violet-400 ring-1 ring-violet-500/20 transition-colors group-hover:bg-violet-500/20">
         {icon}
       </div>
-      <h3 className="mt-4 text-base font-medium text-zinc-100">{title}</h3>
-      <p className="mt-1 text-xs text-zinc-400 leading-relaxed">{description}</p>
-      <div className="mt-3 flex items-center gap-1 text-xs text-violet-400 opacity-0 transition-opacity group-hover:opacity-100">
-        Selecionar <ArrowRight className="size-3" />
+      <div className="flex-1 min-w-0">
+        <h3 className="text-sm font-medium text-zinc-100">{title}</h3>
+        <p className="mt-0.5 text-xs text-zinc-400 leading-relaxed">{description}</p>
       </div>
+      <ArrowRight className="size-4 text-zinc-600 transition-all group-hover:text-violet-400 group-hover:translate-x-0.5" />
     </button>
   );
 }
@@ -184,13 +175,11 @@ interface FormState {
   password: string;
   confirm: string;
   captchaToken: string | null;
-
   fullName: string;
-  document: string; // CPF ou CNPJ
+  document: string;
   phone: string;
   birthDate: string;
   companyName: string;
-
   acceptTerms: boolean;
   acceptLgpd: boolean;
 }
@@ -224,7 +213,7 @@ function OnboardingWizard({ role, onChangeRole }: { role: Role; onChangeRole: ()
     try {
       const fullName = role === "imobiliaria" ? form.companyName : form.fullName;
       const signUpPayload: Parameters<typeof supabase.auth.signUp>[0] = {
-        email: form.email.trim(),
+        email: form.email.trim().toLowerCase(),
         password: form.password,
         options: {
           captchaToken: form.captchaToken ?? undefined,
@@ -241,10 +230,9 @@ function OnboardingWizard({ role, onChangeRole }: { role: Role; onChangeRole: ()
       };
       const { error } = await supabase.auth.signUp(signUpPayload);
       if (error) throw error;
-      toast.success("Cadastro realizado com sucesso! Verifique seu e-mail para confirmação.");
-      // Garantir que nenhuma sessão fique ativa — usuário precisa confirmar email e logar
+      toast.success("Cadastro realizado! Verifique seu e-mail para confirmar.");
       await supabase.auth.signOut().catch(() => {});
-      navigate({ to: "/login", replace: true });
+      setSuccess(true);
     } catch (err: any) {
       captchaRef.current?.reset();
       update("captchaToken", null);
@@ -259,17 +247,19 @@ function OnboardingWizard({ role, onChangeRole }: { role: Role; onChangeRole: ()
   }
 
   return (
-    <div className="rounded-2xl border border-zinc-800/80 bg-zinc-950/70 backdrop-blur-xl p-6 sm:p-8 shadow-2xl">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <p className="text-xs uppercase tracking-wider text-violet-400 font-medium">
+    <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 sm:p-8">
+      <div className="flex items-start justify-between gap-3 mb-6">
+        <div className="min-w-0">
+          <p className="text-[10px] uppercase tracking-[0.14em] text-violet-400 font-semibold">
             {role === "imobiliaria" ? "Imobiliária" : "Proprietário"}
           </p>
-          <h1 className="mt-1 text-xl sm:text-2xl font-semibold tracking-tight">Criar sua conta Nexo</h1>
+          <h1 className="mt-1 text-lg sm:text-xl font-semibold tracking-tight text-white">
+            Criar sua conta Nexo
+          </h1>
         </div>
         <button
           onClick={onChangeRole}
-          className="text-xs text-zinc-500 hover:text-violet-400 transition-colors"
+          className="text-xs text-zinc-500 hover:text-violet-400 transition-colors shrink-0"
           type="button"
         >
           Trocar perfil
@@ -278,7 +268,7 @@ function OnboardingWizard({ role, onChangeRole }: { role: Role; onChangeRole: ()
 
       <StepperBar step={step} />
 
-      <div className="mt-6">
+      <div className="mt-7">
         {step === 1 && (
           <StepCredentials
             form={form}
@@ -312,49 +302,55 @@ function OnboardingWizard({ role, onChangeRole }: { role: Role; onChangeRole: ()
 
 function StepperBar({ step }: { step: Step }) {
   const items = [
-    { n: 1, label: "Credenciais" },
-    { n: 2, label: "Identidade" },
-    { n: 3, label: "Termos" },
+    { n: 1 as Step, label: "Acesso" },
+    { n: 2 as Step, label: "Identidade" },
+    { n: 3 as Step, label: "Termos" },
   ];
   return (
-    <div className="flex items-center gap-2">
-      {items.map((it, idx) => (
-        <div key={it.n} className="flex items-center flex-1">
-          <div
-            className={cn(
-              "flex items-center gap-2 transition-all",
-              step >= it.n ? "text-violet-400" : "text-zinc-500",
-            )}
-          >
-            <div
-              className={cn(
-                "grid place-items-center size-7 rounded-full text-xs font-medium transition-all",
-                step > it.n
-                  ? "bg-emerald-500/15 text-emerald-400 ring-1 ring-emerald-500/40"
-                  : step === it.n
-                    ? "bg-violet-500/20 text-violet-300 ring-1 ring-violet-500/60 shadow-[0_0_15px_-2px_rgba(139,92,246,0.6)]"
-                    : "bg-zinc-900 text-zinc-500 ring-1 ring-zinc-800",
-              )}
-            >
-              {step > it.n ? <CheckCircle2 className="size-4" /> : it.n}
+    <div className="flex items-center">
+      {items.map((it, idx) => {
+        const done = step > it.n;
+        const active = step === it.n;
+        return (
+          <div key={it.n} className="flex items-center flex-1 last:flex-none">
+            <div className="flex items-center gap-2 min-w-0">
+              <div
+                className={cn(
+                  "grid place-items-center size-6 rounded-full text-[11px] font-semibold transition-all shrink-0",
+                  done
+                    ? "bg-emerald-500 text-white"
+                    : active
+                      ? "bg-violet-500 text-white ring-4 ring-violet-500/20"
+                      : "bg-zinc-800 text-zinc-500",
+                )}
+              >
+                {done ? <CheckCircle2 className="size-3.5" /> : it.n}
+              </div>
+              <span
+                className={cn(
+                  "text-xs font-medium transition-colors hidden sm:inline",
+                  active ? "text-zinc-100" : done ? "text-zinc-400" : "text-zinc-600",
+                )}
+              >
+                {it.label}
+              </span>
             </div>
-            <span className="text-xs font-medium hidden sm:inline">{it.label}</span>
+            {idx < items.length - 1 && (
+              <div
+                className={cn(
+                  "mx-3 h-px flex-1 transition-colors",
+                  done ? "bg-emerald-500/50" : "bg-zinc-800",
+                )}
+              />
+            )}
           </div>
-          {idx < items.length - 1 && (
-            <div
-              className={cn(
-                "mx-2 h-px flex-1 transition-colors",
-                step > it.n ? "bg-emerald-500/40" : "bg-zinc-800",
-              )}
-            />
-          )}
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
 
-/* -------------------- Passo 1 -------------------- */
+/* -------------------- Passo 1 · Acesso -------------------- */
 
 function StepCredentials({
   form,
@@ -368,9 +364,11 @@ function StepCredentials({
   onNext: () => void;
 }) {
   const [showPw, setShowPw] = useState(false);
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
   const strength = useMemo(() => scorePassword(form.password), [form.password]);
-  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email);
+  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim());
   const matches = form.password.length > 0 && form.password === form.confirm;
+
   const fetchSiteKey = useServerFn(getRecaptchaSiteKey);
   const { data: siteKeyData } = useQuery({
     queryKey: ["recaptcha-site-key"],
@@ -382,41 +380,53 @@ function StepCredentials({
   const canNext =
     emailOk && strength.valid && matches && (!recaptchaEnabled || !!form.captchaToken);
 
+  const emailError = touched.email && form.email.length > 0 && !emailOk ? "Formato de e-mail inválido" : undefined;
+  const pwError = touched.password && form.password.length > 0 && !strength.valid
+    ? "A senha ainda não atende a todos os requisitos"
+    : undefined;
+  const confirmError = touched.confirm && form.confirm.length > 0 && !matches ? "As senhas não coincidem" : undefined;
 
   return (
     <form
       className="space-y-5"
       onSubmit={(e) => {
         e.preventDefault();
+        setTouched({ email: true, password: true, confirm: true });
         if (canNext) onNext();
       }}
     >
-      <Field label="E-mail" icon={<Mail className="size-4" />}>
+      <Field label="E-mail" icon={<Mail className="size-3.5" />} error={emailError}>
         <NeoInput
           type="email"
           autoComplete="email"
           value={form.email}
           onChange={(e) => update("email", e.target.value)}
+          onBlur={() => setTouched((t) => ({ ...t, email: true }))}
           placeholder="voce@empresa.com.br"
+          aria-invalid={!!emailError}
           required
         />
       </Field>
 
-      <Field label="Senha" icon={<Lock className="size-4" />}>
+      <Field label="Senha" icon={<Lock className="size-3.5" />} error={pwError}>
         <div className="relative">
           <NeoInput
             type={showPw ? "text" : "password"}
             value={form.password}
             onChange={(e) => update("password", e.target.value)}
+            onBlur={() => setTouched((t) => ({ ...t, password: true }))}
             placeholder="Mínimo 8 caracteres"
             autoComplete="new-password"
+            aria-invalid={!!pwError}
+            className="pr-10"
             required
           />
           <button
             type="button"
             onClick={() => setShowPw((v) => !v)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-200 transition-colors"
             tabIndex={-1}
+            aria-label={showPw ? "Ocultar senha" : "Mostrar senha"}
           >
             {showPw ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
           </button>
@@ -424,24 +434,26 @@ function StepCredentials({
         <StrengthMeter strength={strength} />
       </Field>
 
-      <Field label="Confirmar senha" icon={<Lock className="size-4" />}>
+      <Field label="Confirmar senha" icon={<Lock className="size-3.5" />} error={confirmError}>
         <NeoInput
           type="password"
           value={form.confirm}
           onChange={(e) => update("confirm", e.target.value)}
+          onBlur={() => setTouched((t) => ({ ...t, confirm: true }))}
           placeholder="Repita a senha"
           autoComplete="new-password"
+          aria-invalid={!!confirmError}
           required
         />
-        {form.confirm.length > 0 && (
-          <p className={cn("text-xs mt-1.5", matches ? "text-emerald-400" : "text-red-400")}>
-            {matches ? "✓ As senhas coincidem" : "As senhas não coincidem"}
+        {form.confirm.length > 0 && matches && (
+          <p className="text-xs mt-1.5 text-emerald-400 flex items-center gap-1">
+            <CheckCircle2 className="size-3" /> As senhas coincidem
           </p>
         )}
       </Field>
 
       {recaptchaEnabled && (
-        <div className="flex justify-center pt-2">
+        <div className="flex justify-center pt-1">
           <div className="w-[237px] h-[61px] sm:w-[304px] sm:h-[78px] max-w-full rounded-md overflow-hidden ring-1 ring-zinc-800">
             <div className="origin-top-left scale-[0.78] sm:scale-100 w-[304px] h-[78px]">
               {recaptchaSiteKey ? (
@@ -454,14 +466,14 @@ function StepCredentials({
                   onErrored={() => update("captchaToken", null)}
                 />
               ) : (
-                <div className="w-[304px] h-[78px] bg-muted animate-pulse rounded-md" />
+                <div className="w-[304px] h-[78px] bg-zinc-900 animate-pulse rounded-md" />
               )}
             </div>
           </div>
         </div>
       )}
 
-      <NextButton disabled={!canNext}>Próximo</NextButton>
+      <NextButton disabled={!canNext}>Continuar</NextButton>
     </form>
   );
 }
@@ -470,7 +482,7 @@ function StrengthMeter({ strength }: { strength: ReturnType<typeof scorePassword
   const colors = ["bg-zinc-800", "bg-red-500", "bg-orange-500", "bg-violet-500", "bg-emerald-500"];
   const labels = ["", "Fraca", "Razoável", "Boa", "Forte"];
   return (
-    <div className="mt-2 space-y-1.5">
+    <div className="mt-2.5 space-y-2">
       <div className="grid grid-cols-4 gap-1">
         {[1, 2, 3, 4].map((i) => (
           <div
@@ -478,20 +490,19 @@ function StrengthMeter({ strength }: { strength: ReturnType<typeof scorePassword
             className={cn(
               "h-1 rounded-full transition-all",
               strength.score >= i ? colors[strength.score] : "bg-zinc-800",
-              strength.score >= 4 && i <= strength.score && "shadow-[0_0_6px_rgba(16,185,129,0.6)]",
             )}
           />
         ))}
       </div>
-      <div className="flex justify-between text-[10px] text-zinc-500">
-        <span className="flex flex-wrap gap-x-2">
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex flex-wrap gap-x-2.5 gap-y-1 text-[10px]">
           <Check ok={strength.hasLength}>8+ caracteres</Check>
-          <Check ok={strength.hasUpper}>1 maiúscula</Check>
-          <Check ok={strength.hasNumber}>1 número</Check>
-          <Check ok={strength.hasSpecial}>1 especial</Check>
-        </span>
+          <Check ok={strength.hasUpper}>maiúscula</Check>
+          <Check ok={strength.hasNumber}>número</Check>
+          <Check ok={strength.hasSpecial}>especial</Check>
+        </div>
         {strength.score > 0 && (
-          <span className={cn("font-medium", strength.valid ? "text-emerald-400" : "text-zinc-400")}>
+          <span className={cn("text-[10px] font-medium shrink-0", strength.valid ? "text-emerald-400" : "text-zinc-400")}>
             {labels[strength.score]}
           </span>
         )}
@@ -502,13 +513,14 @@ function StrengthMeter({ strength }: { strength: ReturnType<typeof scorePassword
 
 function Check({ ok, children }: { ok: boolean; children: React.ReactNode }) {
   return (
-    <span className={cn("transition-colors", ok ? "text-emerald-400" : "text-zinc-600")}>
-      {ok ? "✓" : "○"} {children}
+    <span className={cn("inline-flex items-center gap-1 transition-colors", ok ? "text-emerald-400" : "text-zinc-500")}>
+      <span className={cn("size-1.5 rounded-full", ok ? "bg-emerald-400" : "bg-zinc-700")} />
+      {children}
     </span>
   );
 }
 
-/* -------------------- Passo 2 -------------------- */
+/* -------------------- Passo 2 · Identidade -------------------- */
 
 function StepIdentity({
   role,
@@ -532,6 +544,8 @@ function StepIdentity({
   const birthValid = isImob || (form.birthDate.length === 10 && new Date(form.birthDate) < new Date());
   const canNext = docValid && phoneValid && fullNameValid && companyValid && birthValid;
 
+  const touch = (k: string) => setTouched((t) => ({ ...t, [k]: true }));
+
   return (
     <form
       className="space-y-4"
@@ -542,80 +556,95 @@ function StepIdentity({
       }}
     >
       {isImob && (
-        <Field label="Razão Social">
+        <Field
+          label="Razão Social"
+          icon={<Building2 className="size-3.5" />}
+          error={touched.companyName && !companyValid ? "Informe a razão social" : undefined}
+        >
           <NeoInput
             value={form.companyName}
             onChange={(e) => update("companyName", e.target.value)}
+            onBlur={() => touch("companyName")}
             placeholder="Sua Imobiliária LTDA"
             required
           />
         </Field>
       )}
 
-      <Field label={isImob ? "Nome do responsável" : "Nome completo"}>
+      <Field
+        label={isImob ? "Nome do responsável" : "Nome completo"}
+        icon={<User className="size-3.5" />}
+        error={touched.fullName && !fullNameValid ? "Informe um nome válido (mín. 3 letras)" : undefined}
+      >
         <NeoInput
           value={form.fullName}
           onChange={(e) => update("fullName", e.target.value)}
-          onBlur={() => setTouched((t) => ({ ...t, fullName: true }))}
+          onBlur={() => touch("fullName")}
           placeholder={isImob ? "Responsável pela conta" : "Como aparece no documento"}
+          autoComplete="name"
           required
         />
-        {touched.fullName && !fullNameValid && (
-          <p className="text-xs text-red-400 mt-1">Informe um nome válido</p>
-        )}
       </Field>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Field label={isImob ? "CNPJ" : "CPF"}>
+        <Field
+          label={isImob ? "CNPJ" : "CPF"}
+          icon={<IdCard className="size-3.5" />}
+          error={touched.document && form.document.length > 0 && !docValid ? `${isImob ? "CNPJ" : "CPF"} inválido` : undefined}
+        >
           <NeoInput
             value={form.document}
             onChange={(e) => update("document", isImob ? maskCNPJ(e.target.value) : maskCPF(e.target.value))}
-            onBlur={() => setTouched((t) => ({ ...t, document: true }))}
+            onBlur={() => touch("document")}
             placeholder={isImob ? "00.000.000/0000-00" : "000.000.000-00"}
             inputMode="numeric"
             required
           />
-          {touched.document && form.document.length > 0 && !docValid && (
-            <p className="text-xs text-red-400 mt-1">{isImob ? "CNPJ" : "CPF"} inválido</p>
-          )}
         </Field>
 
-        <Field label={isImob ? "Telefone comercial" : "Telefone"}>
+        <Field
+          label={isImob ? "Telefone comercial" : "Telefone"}
+          icon={<Phone className="size-3.5" />}
+          error={touched.phone && form.phone.length > 0 && !phoneValid ? "Telefone inválido" : undefined}
+        >
           <NeoInput
             value={form.phone}
             onChange={(e) => update("phone", maskPhone(e.target.value))}
-            onBlur={() => setTouched((t) => ({ ...t, phone: true }))}
+            onBlur={() => touch("phone")}
             placeholder="(11) 99999-9999"
             inputMode="tel"
+            autoComplete="tel"
             required
           />
-          {touched.phone && form.phone.length > 0 && !phoneValid && (
-            <p className="text-xs text-red-400 mt-1">Telefone inválido</p>
-          )}
         </Field>
       </div>
 
       {!isImob && (
-        <Field label="Data de nascimento">
+        <Field
+          label="Data de nascimento"
+          icon={<Calendar className="size-3.5" />}
+          error={touched.birthDate && form.birthDate && !birthValid ? "Data inválida" : undefined}
+        >
           <NeoInput
             type="date"
             value={form.birthDate}
             onChange={(e) => update("birthDate", e.target.value)}
+            onBlur={() => touch("birthDate")}
             max={new Date().toISOString().slice(0, 10)}
             required
           />
         </Field>
       )}
 
-      <div className="flex gap-3 pt-2">
+      <div className="flex gap-3 pt-3">
         <BackButton onClick={onBack} />
-        <NextButton disabled={!canNext}>Próximo</NextButton>
+        <NextButton disabled={!canNext}>Continuar</NextButton>
       </div>
     </form>
   );
 }
 
-/* -------------------- Passo 3 -------------------- */
+/* -------------------- Passo 3 · Termos -------------------- */
 
 function StepTerms({
   form,
@@ -633,35 +662,25 @@ function StepTerms({
   const canSubmit = form.acceptTerms && form.acceptLgpd && !submitting;
   return (
     <div className="space-y-5">
-      <ScrollArea className="h-56 rounded-lg border border-zinc-800 bg-zinc-900/60 p-4 text-xs text-zinc-400 leading-relaxed">
-        <h3 className="text-sm font-medium text-zinc-200 mb-2">Termos de Serviço</h3>
+      <ScrollArea className="h-52 rounded-lg border border-zinc-800 bg-zinc-900/60 p-4 text-xs text-zinc-400 leading-relaxed">
+        <h3 className="text-sm font-semibold text-zinc-100 mb-2">Termos de Serviço</h3>
         <p className="mb-3">
           Ao utilizar a plataforma NEXO, você concorda em usá-la exclusivamente para a gestão lícita de
           imóveis, contratos de locação, inquilinos, parcelas, repasses, manutenções e demais operações
-          relacionadas. É vedado o uso para qualquer finalidade fraudulenta, ilegal ou que viole direitos
-          de terceiros.
+          relacionadas. É vedado o uso para qualquer finalidade fraudulenta ou ilegal.
         </p>
         <p className="mb-3">
           A NEXO disponibiliza a infraestrutura tecnológica e poderá, a qualquer momento, atualizar
-          funcionalidades, planos e políticas, comunicando alterações relevantes através do e-mail
-          cadastrado ou em painel próprio.
+          funcionalidades, planos e políticas, comunicando alterações relevantes.
         </p>
-        <h3 className="text-sm font-medium text-zinc-200 mb-2 mt-4">Política de Privacidade & LGPD</h3>
+        <h3 className="text-sm font-semibold text-zinc-100 mb-2 mt-4">Privacidade & LGPD</h3>
         <p className="mb-3">
-          Coletamos e tratamos dados cadastrais (nome, e-mail, CPF/CNPJ, telefone) e dados operacionais
-          (imóveis, contratos, financeiro) com finalidade legítima de execução de contrato e cumprimento
-          de obrigações legais, conforme a Lei nº 13.709/2018 (LGPD).
-        </p>
-        <p className="mb-3">
-          Você possui os direitos de acesso, correção, portabilidade e exclusão dos seus dados, mediante
-          solicitação ao encarregado (DPO) pelos canais oficiais da plataforma. Dados financeiros podem
-          ser compartilhados com nosso provedor de pagamentos (Asaas) estritamente para
-          processamento das transações autorizadas.
+          Coletamos dados cadastrais (nome, e-mail, CPF/CNPJ, telefone) e operacionais (imóveis, contratos,
+          financeiro) para execução de contrato e cumprimento legal, conforme Lei nº 13.709/2018.
         </p>
         <p>
-          Adotamos medidas técnicas e organizacionais para proteger seus dados contra acesso não
-          autorizado, perda ou destruição, incluindo criptografia em trânsito e em repouso, controle de
-          acesso baseado em papéis e auditoria contínua.
+          Você possui direitos de acesso, correção, portabilidade e exclusão. Adotamos criptografia em
+          trânsito/repouso, controle de acesso por papéis e auditoria contínua.
         </p>
       </ScrollArea>
 
@@ -672,9 +691,9 @@ function StepTerms({
             onCheckedChange={(c) => update("acceptTerms", c === true)}
             className="mt-0.5 border-zinc-700 data-[state=checked]:bg-violet-600 data-[state=checked]:border-violet-600"
           />
-          <span className="text-xs text-zinc-300 leading-relaxed group-hover:text-zinc-100">
-            Li e aceito os <span className="text-violet-400">Termos de Serviço</span> e a{" "}
-            <span className="text-violet-400">Política de Privacidade</span> da NEXO.
+          <span className="text-xs text-zinc-300 leading-relaxed group-hover:text-zinc-100 transition-colors">
+            Li e aceito os <span className="text-violet-400 font-medium">Termos de Serviço</span> e a{" "}
+            <span className="text-violet-400 font-medium">Política de Privacidade</span>.
           </span>
         </label>
         <label className="flex items-start gap-3 cursor-pointer group">
@@ -683,24 +702,20 @@ function StepTerms({
             onCheckedChange={(c) => update("acceptLgpd", c === true)}
             className="mt-0.5 border-zinc-700 data-[state=checked]:bg-violet-600 data-[state=checked]:border-violet-600"
           />
-          <span className="text-xs text-zinc-300 leading-relaxed group-hover:text-zinc-100">
-            Consinto com o processamento dos meus dados cadastrais e financeiros para fins de
-            provisionamento da plataforma, em conformidade com a LGPD.
+          <span className="text-xs text-zinc-300 leading-relaxed group-hover:text-zinc-100 transition-colors">
+            Consinto com o tratamento dos meus dados cadastrais e financeiros para provisionamento da
+            plataforma, conforme a LGPD.
           </span>
         </label>
       </div>
 
-      <div className="flex gap-3 pt-2">
+      <div className="flex gap-3 pt-1">
         <BackButton onClick={onBack} disabled={submitting} />
         <Button
           type="button"
           onClick={onSubmit}
           disabled={!canSubmit}
-          className={cn(
-            "flex-1 h-11 bg-violet-600 hover:bg-violet-500 text-white font-medium",
-            "shadow-[0_0_30px_-5px_rgba(139,92,246,0.6)]",
-            "disabled:opacity-40 disabled:shadow-none",
-          )}
+          className="flex-1 h-11 bg-violet-600 hover:bg-violet-500 text-white font-medium disabled:opacity-40"
         >
           {submitting ? (
             <>
@@ -716,24 +731,31 @@ function StepTerms({
   );
 }
 
-/* -------------------- UI building blocks -------------------- */
+/* -------------------- Building blocks -------------------- */
 
 function Field({
   label,
   icon,
+  error,
   children,
 }: {
   label: string;
   icon?: React.ReactNode;
+  error?: string;
   children: React.ReactNode;
 }) {
   return (
-    <div className="space-y-2">
+    <div className="space-y-1.5">
       <Label className="text-xs font-medium text-zinc-300 flex items-center gap-1.5">
         {icon && <span className="text-zinc-500">{icon}</span>}
         {label}
       </Label>
       {children}
+      {error && (
+        <p className="text-xs text-red-400 flex items-center gap-1" role="alert">
+          <AlertCircle className="size-3" /> {error}
+        </p>
+      )}
     </div>
   );
 }
@@ -742,9 +764,9 @@ const NeoInput = (props: React.ComponentProps<typeof Input>) => (
   <Input
     {...props}
     className={cn(
-      "h-11 bg-zinc-900/80 border-zinc-800 text-zinc-100 placeholder:text-zinc-600",
-      "focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:border-violet-500/50",
-      "focus-visible:shadow-[0_0_20px_-5px_rgba(139,92,246,0.5)] transition-shadow",
+      "h-11 bg-zinc-900 border-zinc-800 text-zinc-100 placeholder:text-zinc-600",
+      "focus-visible:ring-2 focus-visible:ring-violet-500/50 focus-visible:border-violet-500 transition-colors",
+      "aria-[invalid=true]:border-red-500/70 aria-[invalid=true]:focus-visible:ring-red-500/40",
       props.className,
     )}
   />
@@ -755,11 +777,7 @@ function NextButton({ disabled, children }: { disabled: boolean; children: React
     <Button
       type="submit"
       disabled={disabled}
-      className={cn(
-        "w-full h-11 bg-violet-600 hover:bg-violet-500 text-white font-medium",
-        "shadow-[0_0_30px_-5px_rgba(139,92,246,0.6)]",
-        "disabled:opacity-40 disabled:shadow-none",
-      )}
+      className="w-full h-11 bg-violet-600 hover:bg-violet-500 text-white font-medium disabled:opacity-40 transition-all"
     >
       {children}
     </Button>
@@ -773,28 +791,28 @@ function BackButton({ onClick, disabled }: { onClick: () => void; disabled?: boo
       variant="outline"
       onClick={onClick}
       disabled={disabled}
-      className="h-11 bg-transparent border-zinc-800 text-zinc-300 hover:bg-zinc-900 hover:text-zinc-100"
+      className="h-11 bg-transparent border-zinc-800 text-zinc-300 hover:bg-zinc-900 hover:text-white"
     >
       <ArrowLeft className="size-4 mr-1" /> Voltar
     </Button>
   );
 }
 
-/* -------------------- Tela de sucesso com QR -------------------- */
+/* -------------------- Sucesso -------------------- */
 
 function SuccessPanel({ role, email }: { role: Role; email: string }) {
   return (
-    <div className="rounded-2xl border border-zinc-800/80 bg-zinc-950/70 backdrop-blur-xl p-6 sm:p-8 shadow-2xl">
+    <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 sm:p-8">
       <div className="text-center">
-        <div className="mx-auto inline-flex size-14 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-500/40 shadow-[0_0_30px_-4px_rgba(16,185,129,0.6)]">
-          <CheckCircle2 className="size-7" />
+        <div className="mx-auto inline-flex size-12 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-500/40">
+          <CheckCircle2 className="size-6" />
         </div>
-        <h2 className="mt-4 text-2xl font-semibold tracking-tight">
-          Cadastro realizado com sucesso!
+        <h2 className="mt-4 text-xl sm:text-2xl font-semibold tracking-tight text-white">
+          Cadastro realizado!
         </h2>
         <p className="mt-2 text-sm text-zinc-400">
           Enviamos um link de confirmação para{" "}
-          <span className="text-zinc-200 font-medium">{email}</span>.
+          <span className="text-zinc-100 font-medium">{email}</span>.
         </p>
         <p className="mt-1 text-xs text-zinc-500">
           {role === "imobiliaria"
@@ -803,43 +821,37 @@ function SuccessPanel({ role, email }: { role: Role; email: string }) {
         </p>
       </div>
 
-      <div className="my-6 h-px bg-gradient-to-r from-transparent via-zinc-800 to-transparent" />
+      <div className="my-6 h-px bg-zinc-800" />
 
-      <div className="text-center mb-5">
-        <div className="inline-flex items-center gap-2 text-xs uppercase tracking-wider text-violet-400 font-medium">
-          <Smartphone className="size-3.5" /> Baixe o aplicativo
+      <div className="text-center mb-4">
+        <div className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[0.14em] text-violet-400 font-semibold">
+          <Smartphone className="size-3" /> Baixe o aplicativo
         </div>
-        <h3 className="mt-2 text-lg font-semibold">Leve o Nexo no seu bolso</h3>
-        <p className="mt-1 text-xs text-zinc-400">
-          Aponte a câmera do seu celular para o QR code abaixo.
-        </p>
+        <h3 className="mt-2 text-base font-semibold text-zinc-100">Leve o Nexo no bolso</h3>
+        <p className="mt-1 text-xs text-zinc-400">Aponte a câmera do celular para o QR code.</p>
       </div>
 
       <div className="flex justify-center">
-        <div className="rounded-2xl bg-zinc-900 p-4 ring-1 ring-zinc-800 shadow-[0_0_40px_-10px_rgba(139,92,246,0.5)]">
+        <div className="rounded-xl bg-white p-3 ring-1 ring-zinc-800">
           <img
             src={appQrCode.url}
             alt="QR code para baixar o app Nexo"
-            className="size-44 sm:size-52 rounded-lg"
+            className="size-40 sm:size-44 rounded-md"
           />
         </div>
       </div>
 
-      <div className="mt-6 flex flex-col sm:flex-row gap-3">
+      <div className="mt-6 flex flex-col sm:flex-row gap-2.5">
         <Link to="/login" className="flex-1">
-          <Button className="w-full h-11 bg-violet-600 hover:bg-violet-500 text-white shadow-[0_0_20px_-4px_rgba(139,92,246,0.7)]">
-            <ArrowRight className="size-4 mr-1" /> Ir para login
+          <Button className="w-full h-11 bg-violet-600 hover:bg-violet-500 text-white">
+            Ir para o login <ArrowRight className="size-4 ml-1" />
           </Button>
         </Link>
-        <a
-          href={appQrCode.url}
-          download="nexo-app-qrcode.png"
-          className="flex-1"
-        >
+        <a href={appQrCode.url} download="nexo-app-qrcode.png" className="flex-1">
           <Button
             type="button"
             variant="outline"
-            className="w-full h-11 bg-transparent border-zinc-800 text-zinc-300 hover:bg-zinc-900 hover:text-zinc-100"
+            className="w-full h-11 bg-transparent border-zinc-800 text-zinc-300 hover:bg-zinc-900 hover:text-white"
           >
             <Download className="size-4 mr-1" /> Baixar QR
           </Button>

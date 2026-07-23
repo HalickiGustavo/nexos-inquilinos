@@ -115,7 +115,7 @@ function RoleSelector({ onPick }: { onPick: (r: Role) => void }) {
   return (
     <div className="rounded-2xl border border-zinc-200 bg-white shadow-sm p-6 sm:p-8">
       <div className="text-center mb-7">
-        <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-white">Criar sua conta</h1>
+        <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-zinc-900">Criar sua conta</h1>
         <p className="mt-1.5 text-sm text-zinc-500">Como você vai usar a Nexo?</p>
       </div>
 
@@ -253,7 +253,7 @@ function OnboardingWizard({ role, onChangeRole }: { role: Role; onChangeRole: ()
           <p className="text-[10px] uppercase tracking-[0.14em] text-violet-600 font-semibold">
             {role === "imobiliaria" ? "Imobiliária" : "Proprietário"}
           </p>
-          <h1 className="mt-1 text-lg sm:text-xl font-semibold tracking-tight text-white">
+          <h1 className="mt-1 text-lg sm:text-xl font-semibold tracking-tight text-zinc-900">
             Criar sua conta Nexo
           </h1>
         </div>
@@ -808,7 +808,7 @@ function SuccessPanel({ role, email }: { role: Role; email: string }) {
         <div className="mx-auto inline-flex size-12 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600 ring-1 ring-emerald-500/40">
           <CheckCircle2 className="size-6" />
         </div>
-        <h2 className="mt-4 text-xl sm:text-2xl font-semibold tracking-tight text-white">
+        <h2 className="mt-4 text-xl sm:text-2xl font-semibold tracking-tight text-zinc-900">
           Cadastro realizado!
         </h2>
         <p className="mt-2 text-sm text-zinc-500">

@@ -507,6 +507,7 @@ function StrengthMeter({ strength }: { strength: ReturnType<typeof scorePassword
           </span>
         )}
       </div>
+      <p className="text-[10px] text-zinc-500">Atenda pelo menos 3 dos 4 requisitos (8+ caracteres obrigatório).</p>
     </div>
   );
 }

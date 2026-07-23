@@ -11,35 +11,21 @@ interface ThemeContextValue {
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 function readClientTheme(): Theme {
-  if (typeof window === "undefined") return "dark";
+  if (typeof window === "undefined") return "light";
   const stored = localStorage.getItem("nexo-theme") as Theme | null;
   if (stored === "light" || stored === "dark") return stored;
-  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  return "light";
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  // Start with "dark" on both server and first client render to avoid hydration mismatch.
-  const [theme, setThemeState] = useState<Theme>("dark");
+  // Default to "light" on both server and first client render to avoid hydration mismatch.
+  const [theme, setThemeState] = useState<Theme>("light");
   const [mounted, setMounted] = useState(false);
 
-  // After hydration, sync with the user's actual preference (localStorage or system).
+  // After hydration, sync with the user's stored preference (defaults to light).
   useEffect(() => {
     setThemeState(readClientTheme());
     setMounted(true);
-  }, []);
-
-  // Follow system preference changes when no explicit choice is stored.
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const mql = window.matchMedia("(prefers-color-scheme: dark)");
-    const handler = (e: MediaQueryListEvent) => {
-      const stored = localStorage.getItem("nexo-theme");
-      if (stored !== "light" && stored !== "dark") {
-        setThemeState(e.matches ? "dark" : "light");
-      }
-    };
-    mql.addEventListener("change", handler);
-    return () => mql.removeEventListener("change", handler);
   }, []);
 
   useEffect(() => {

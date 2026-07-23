@@ -86,14 +86,14 @@ function CadastroPage() {
   }, [invite]);
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100">
+    <div className="min-h-screen bg-zinc-50 text-zinc-900">
       <div className="flex min-h-screen flex-col items-center justify-center p-4 sm:p-6">
         <div className="w-full max-w-md">
           <div className="mb-5 flex items-center justify-between text-xs">
-            <Link to="/" className="text-zinc-500 hover:text-zinc-200 transition-colors inline-flex items-center gap-1">
+            <Link to="/" className="text-zinc-500 hover:text-zinc-900 transition-colors inline-flex items-center gap-1">
               <ArrowLeft className="size-3.5" /> Voltar
             </Link>
-            <Link to="/login" className="text-zinc-400 hover:text-white transition-colors">
+            <Link to="/login" className="text-zinc-500 hover:text-zinc-900 transition-colors">
               Já tenho conta →
             </Link>
           </div>
@@ -113,10 +113,10 @@ function CadastroPage() {
 
 function RoleSelector({ onPick }: { onPick: (r: Role) => void }) {
   return (
-    <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 sm:p-8">
+    <div className="rounded-2xl border border-zinc-200 bg-white shadow-sm p-6 sm:p-8">
       <div className="text-center mb-7">
-        <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-white">Criar sua conta</h1>
-        <p className="mt-1.5 text-sm text-zinc-400">Como você vai usar a Nexo?</p>
+        <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-zinc-900">Criar sua conta</h1>
+        <p className="mt-1.5 text-sm text-zinc-500">Como você vai usar a Nexo?</p>
       </div>
 
       <div className="space-y-2.5">
@@ -152,16 +152,16 @@ function RoleCard({
     <button
       type="button"
       onClick={onClick}
-      className="group w-full text-left rounded-xl border border-zinc-800 bg-zinc-900/60 p-4 flex items-center gap-4 transition-all hover:border-violet-500/70 hover:bg-zinc-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+      className="group w-full text-left rounded-xl border border-zinc-200 bg-white p-4 flex items-center gap-4 transition-all hover:border-violet-500/70 hover:bg-zinc-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
     >
-      <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-violet-500/10 text-violet-400 ring-1 ring-violet-500/20 transition-colors group-hover:bg-violet-500/20">
+      <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-violet-500/10 text-violet-600 ring-1 ring-violet-500/20 transition-colors group-hover:bg-violet-500/20">
         {icon}
       </div>
       <div className="flex-1 min-w-0">
-        <h3 className="text-sm font-medium text-zinc-100">{title}</h3>
-        <p className="mt-0.5 text-xs text-zinc-400 leading-relaxed">{description}</p>
+        <h3 className="text-sm font-medium text-zinc-900">{title}</h3>
+        <p className="mt-0.5 text-xs text-zinc-500 leading-relaxed">{description}</p>
       </div>
-      <ArrowRight className="size-4 text-zinc-600 transition-all group-hover:text-violet-400 group-hover:translate-x-0.5" />
+      <ArrowRight className="size-4 text-zinc-500 transition-all group-hover:text-violet-600 group-hover:translate-x-0.5" />
     </button>
   );
 }
@@ -247,19 +247,19 @@ function OnboardingWizard({ role, onChangeRole }: { role: Role; onChangeRole: ()
   }
 
   return (
-    <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 sm:p-8">
+    <div className="rounded-2xl border border-zinc-200 bg-white shadow-sm p-6 sm:p-8">
       <div className="flex items-start justify-between gap-3 mb-6">
         <div className="min-w-0">
-          <p className="text-[10px] uppercase tracking-[0.14em] text-violet-400 font-semibold">
+          <p className="text-[10px] uppercase tracking-[0.14em] text-violet-600 font-semibold">
             {role === "imobiliaria" ? "Imobiliária" : "Proprietário"}
           </p>
-          <h1 className="mt-1 text-lg sm:text-xl font-semibold tracking-tight text-white">
+          <h1 className="mt-1 text-lg sm:text-xl font-semibold tracking-tight text-zinc-900">
             Criar sua conta Nexo
           </h1>
         </div>
         <button
           onClick={onChangeRole}
-          className="text-xs text-zinc-500 hover:text-violet-400 transition-colors shrink-0"
+          className="text-xs text-zinc-500 hover:text-violet-600 transition-colors shrink-0"
           type="button"
         >
           Trocar perfil
@@ -321,7 +321,7 @@ function StepperBar({ step }: { step: Step }) {
                     ? "bg-emerald-500 text-white"
                     : active
                       ? "bg-violet-500 text-white ring-4 ring-violet-500/20"
-                      : "bg-zinc-800 text-zinc-500",
+                      : "bg-zinc-200 text-zinc-500",
                 )}
               >
                 {done ? <CheckCircle2 className="size-3.5" /> : it.n}
@@ -329,7 +329,7 @@ function StepperBar({ step }: { step: Step }) {
               <span
                 className={cn(
                   "text-xs font-medium transition-colors hidden sm:inline",
-                  active ? "text-zinc-100" : done ? "text-zinc-400" : "text-zinc-600",
+                  active ? "text-zinc-900" : done ? "text-zinc-500" : "text-zinc-500",
                 )}
               >
                 {it.label}
@@ -339,7 +339,7 @@ function StepperBar({ step }: { step: Step }) {
               <div
                 className={cn(
                   "mx-3 h-px flex-1 transition-colors",
-                  done ? "bg-emerald-500/50" : "bg-zinc-800",
+                  done ? "bg-emerald-500/50" : "bg-zinc-200",
                 )}
               />
             )}
@@ -424,7 +424,7 @@ function StepCredentials({
           <button
             type="button"
             onClick={() => setShowPw((v) => !v)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-200 transition-colors"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-900 transition-colors"
             tabIndex={-1}
             aria-label={showPw ? "Ocultar senha" : "Mostrar senha"}
           >
@@ -446,7 +446,7 @@ function StepCredentials({
           required
         />
         {form.confirm.length > 0 && matches && (
-          <p className="text-xs mt-1.5 text-emerald-400 flex items-center gap-1">
+          <p className="text-xs mt-1.5 text-emerald-600 flex items-center gap-1">
             <CheckCircle2 className="size-3" /> As senhas coincidem
           </p>
         )}
@@ -454,19 +454,19 @@ function StepCredentials({
 
       {recaptchaEnabled && (
         <div className="flex justify-center pt-1">
-          <div className="w-[237px] h-[61px] sm:w-[304px] sm:h-[78px] max-w-full rounded-md overflow-hidden ring-1 ring-zinc-800">
+          <div className="w-[237px] h-[61px] sm:w-[304px] sm:h-[78px] max-w-full rounded-md overflow-hidden ring-1 ring-zinc-200">
             <div className="origin-top-left scale-[0.78] sm:scale-100 w-[304px] h-[78px]">
               {recaptchaSiteKey ? (
                 <ReCAPTCHA
                   ref={captchaRef}
                   sitekey={recaptchaSiteKey}
-                  theme="dark"
+                  theme="light"
                   onChange={(token) => update("captchaToken", token)}
                   onExpired={() => update("captchaToken", null)}
                   onErrored={() => update("captchaToken", null)}
                 />
               ) : (
-                <div className="w-[304px] h-[78px] bg-zinc-900 animate-pulse rounded-md" />
+                <div className="w-[304px] h-[78px] bg-white animate-pulse rounded-md" />
               )}
             </div>
           </div>
@@ -479,7 +479,7 @@ function StepCredentials({
 }
 
 function StrengthMeter({ strength }: { strength: ReturnType<typeof scorePassword> }) {
-  const colors = ["bg-zinc-800", "bg-red-500", "bg-orange-500", "bg-violet-500", "bg-emerald-500"];
+  const colors = ["bg-zinc-200", "bg-red-500", "bg-orange-500", "bg-violet-500", "bg-emerald-500"];
   const labels = ["", "Fraca", "Razoável", "Boa", "Forte"];
   return (
     <div className="mt-2.5 space-y-2">
@@ -489,7 +489,7 @@ function StrengthMeter({ strength }: { strength: ReturnType<typeof scorePassword
             key={i}
             className={cn(
               "h-1 rounded-full transition-all",
-              strength.score >= i ? colors[strength.score] : "bg-zinc-800",
+              strength.score >= i ? colors[strength.score] : "bg-zinc-200",
             )}
           />
         ))}
@@ -502,7 +502,7 @@ function StrengthMeter({ strength }: { strength: ReturnType<typeof scorePassword
           <Check ok={strength.hasSpecial}>especial</Check>
         </div>
         {strength.score > 0 && (
-          <span className={cn("text-[10px] font-medium shrink-0", strength.valid ? "text-emerald-400" : "text-zinc-400")}>
+          <span className={cn("text-[10px] font-medium shrink-0", strength.valid ? "text-emerald-600" : "text-zinc-500")}>
             {labels[strength.score]}
           </span>
         )}
@@ -514,8 +514,8 @@ function StrengthMeter({ strength }: { strength: ReturnType<typeof scorePassword
 
 function Check({ ok, children }: { ok: boolean; children: React.ReactNode }) {
   return (
-    <span className={cn("inline-flex items-center gap-1 transition-colors", ok ? "text-emerald-400" : "text-zinc-500")}>
-      <span className={cn("size-1.5 rounded-full", ok ? "bg-emerald-400" : "bg-zinc-700")} />
+    <span className={cn("inline-flex items-center gap-1 transition-colors", ok ? "text-emerald-600" : "text-zinc-500")}>
+      <span className={cn("size-1.5 rounded-full", ok ? "bg-emerald-400" : "bg-zinc-300")} />
       {children}
     </span>
   );
@@ -663,8 +663,8 @@ function StepTerms({
   const canSubmit = form.acceptTerms && form.acceptLgpd && !submitting;
   return (
     <div className="space-y-5">
-      <ScrollArea className="h-52 rounded-lg border border-zinc-800 bg-zinc-900/60 p-4 text-xs text-zinc-400 leading-relaxed">
-        <h3 className="text-sm font-semibold text-zinc-100 mb-2">Termos de Serviço</h3>
+      <ScrollArea className="h-52 rounded-lg border border-zinc-200 bg-white p-4 text-xs text-zinc-500 leading-relaxed">
+        <h3 className="text-sm font-semibold text-zinc-900 mb-2">Termos de Serviço</h3>
         <p className="mb-3">
           Ao utilizar a plataforma NEXO, você concorda em usá-la exclusivamente para a gestão lícita de
           imóveis, contratos de locação, inquilinos, parcelas, repasses, manutenções e demais operações
@@ -674,7 +674,7 @@ function StepTerms({
           A NEXO disponibiliza a infraestrutura tecnológica e poderá, a qualquer momento, atualizar
           funcionalidades, planos e políticas, comunicando alterações relevantes.
         </p>
-        <h3 className="text-sm font-semibold text-zinc-100 mb-2 mt-4">Privacidade & LGPD</h3>
+        <h3 className="text-sm font-semibold text-zinc-900 mb-2 mt-4">Privacidade & LGPD</h3>
         <p className="mb-3">
           Coletamos dados cadastrais (nome, e-mail, CPF/CNPJ, telefone) e operacionais (imóveis, contratos,
           financeiro) para execução de contrato e cumprimento legal, conforme Lei nº 13.709/2018.
@@ -692,9 +692,9 @@ function StepTerms({
             onCheckedChange={(c) => update("acceptTerms", c === true)}
             className="mt-0.5 border-zinc-700 data-[state=checked]:bg-violet-600 data-[state=checked]:border-violet-600"
           />
-          <span className="text-xs text-zinc-300 leading-relaxed group-hover:text-zinc-100 transition-colors">
-            Li e aceito os <span className="text-violet-400 font-medium">Termos de Serviço</span> e a{" "}
-            <span className="text-violet-400 font-medium">Política de Privacidade</span>.
+          <span className="text-xs text-zinc-700 leading-relaxed group-hover:text-zinc-900 transition-colors">
+            Li e aceito os <span className="text-violet-600 font-medium">Termos de Serviço</span> e a{" "}
+            <span className="text-violet-600 font-medium">Política de Privacidade</span>.
           </span>
         </label>
         <label className="flex items-start gap-3 cursor-pointer group">
@@ -703,7 +703,7 @@ function StepTerms({
             onCheckedChange={(c) => update("acceptLgpd", c === true)}
             className="mt-0.5 border-zinc-700 data-[state=checked]:bg-violet-600 data-[state=checked]:border-violet-600"
           />
-          <span className="text-xs text-zinc-300 leading-relaxed group-hover:text-zinc-100 transition-colors">
+          <span className="text-xs text-zinc-700 leading-relaxed group-hover:text-zinc-900 transition-colors">
             Consinto com o tratamento dos meus dados cadastrais e financeiros para provisionamento da
             plataforma, conforme a LGPD.
           </span>
@@ -747,7 +747,7 @@ function Field({
 }) {
   return (
     <div className="space-y-1.5">
-      <Label className="text-xs font-medium text-zinc-300 flex items-center gap-1.5">
+      <Label className="text-xs font-medium text-zinc-700 flex items-center gap-1.5">
         {icon && <span className="text-zinc-500">{icon}</span>}
         {label}
       </Label>
@@ -765,7 +765,7 @@ const NeoInput = (props: React.ComponentProps<typeof Input>) => (
   <Input
     {...props}
     className={cn(
-      "h-11 bg-zinc-900 border-zinc-800 text-zinc-100 placeholder:text-zinc-600",
+      "h-11 bg-white border-zinc-200 text-zinc-900 placeholder:text-zinc-400",
       "focus-visible:ring-2 focus-visible:ring-violet-500/50 focus-visible:border-violet-500 transition-colors",
       "aria-[invalid=true]:border-red-500/70 aria-[invalid=true]:focus-visible:ring-red-500/40",
       props.className,
@@ -792,7 +792,7 @@ function BackButton({ onClick, disabled }: { onClick: () => void; disabled?: boo
       variant="outline"
       onClick={onClick}
       disabled={disabled}
-      className="h-11 bg-transparent border-zinc-800 text-zinc-300 hover:bg-zinc-900 hover:text-white"
+      className="h-11 bg-transparent border-zinc-200 text-zinc-700 hover:bg-zinc-50 hover:text-zinc-900"
     >
       <ArrowLeft className="size-4 mr-1" /> Voltar
     </Button>
@@ -803,17 +803,17 @@ function BackButton({ onClick, disabled }: { onClick: () => void; disabled?: boo
 
 function SuccessPanel({ role, email }: { role: Role; email: string }) {
   return (
-    <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 sm:p-8">
+    <div className="rounded-2xl border border-zinc-200 bg-white shadow-sm p-6 sm:p-8">
       <div className="text-center">
-        <div className="mx-auto inline-flex size-12 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-500/40">
+        <div className="mx-auto inline-flex size-12 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600 ring-1 ring-emerald-500/40">
           <CheckCircle2 className="size-6" />
         </div>
-        <h2 className="mt-4 text-xl sm:text-2xl font-semibold tracking-tight text-white">
+        <h2 className="mt-4 text-xl sm:text-2xl font-semibold tracking-tight text-zinc-900">
           Cadastro realizado!
         </h2>
-        <p className="mt-2 text-sm text-zinc-400">
+        <p className="mt-2 text-sm text-zinc-500">
           Enviamos um link de confirmação para{" "}
-          <span className="text-zinc-100 font-medium">{email}</span>.
+          <span className="text-zinc-900 font-medium">{email}</span>.
         </p>
         <p className="mt-1 text-xs text-zinc-500">
           {role === "imobiliaria"
@@ -822,18 +822,18 @@ function SuccessPanel({ role, email }: { role: Role; email: string }) {
         </p>
       </div>
 
-      <div className="my-6 h-px bg-zinc-800" />
+      <div className="my-6 h-px bg-zinc-200" />
 
       <div className="text-center mb-4">
-        <div className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[0.14em] text-violet-400 font-semibold">
+        <div className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[0.14em] text-violet-600 font-semibold">
           <Smartphone className="size-3" /> Baixe o aplicativo
         </div>
-        <h3 className="mt-2 text-base font-semibold text-zinc-100">Leve o Nexo no bolso</h3>
-        <p className="mt-1 text-xs text-zinc-400">Aponte a câmera do celular para o QR code.</p>
+        <h3 className="mt-2 text-base font-semibold text-zinc-900">Leve o Nexo no bolso</h3>
+        <p className="mt-1 text-xs text-zinc-500">Aponte a câmera do celular para o QR code.</p>
       </div>
 
       <div className="flex justify-center">
-        <div className="rounded-xl bg-white p-3 ring-1 ring-zinc-800">
+        <div className="rounded-xl bg-white p-3 ring-1 ring-zinc-200">
           <img
             src={appQrCode.url}
             alt="QR code para baixar o app Nexo"
@@ -852,7 +852,7 @@ function SuccessPanel({ role, email }: { role: Role; email: string }) {
           <Button
             type="button"
             variant="outline"
-            className="w-full h-11 bg-transparent border-zinc-800 text-zinc-300 hover:bg-zinc-900 hover:text-white"
+            className="w-full h-11 bg-transparent border-zinc-200 text-zinc-700 hover:bg-zinc-50 hover:text-zinc-900"
           >
             <Download className="size-4 mr-1" /> Baixar QR
           </Button>

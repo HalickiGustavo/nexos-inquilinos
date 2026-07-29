@@ -152,7 +152,7 @@ export function useChatRealtime(conversationId: string | null) {
 
   useEffect(() => {
     const channel = supabase
-      .channel("chat-messages-stream")
+      .channel(`chat-messages-${conversationId ?? "all"}`)
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "chat_messages" },

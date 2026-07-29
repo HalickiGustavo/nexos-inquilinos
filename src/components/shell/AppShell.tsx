@@ -9,7 +9,22 @@ import { AlertsBell } from "@/components/AlertsBell";
 import { OnboardingTour, type TourStep } from "@/components/OnboardingTour";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
+import { useTotalUnread } from "@/lib/chat";
 import { cn } from "@/lib/utils";
+
+function UnreadBadge({ count, className }: { count: number; className?: string }) {
+  if (count <= 0) return null;
+  return (
+    <span
+      className={cn(
+        "min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center",
+        className,
+      )}
+    >
+      {count > 9 ? "9+" : count}
+    </span>
+  );
+}
 
 export type ShellNavItem = {
   to: string;

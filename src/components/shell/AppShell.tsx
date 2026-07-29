@@ -193,6 +193,7 @@ export function AppShell({
                     >
                       <Icon className="size-4" />
                       <span className="flex-1">{item.label}</span>
+                      {isChat(item.to) && <UnreadBadge count={unread} />}
                     </Link>
                   );
                 })}

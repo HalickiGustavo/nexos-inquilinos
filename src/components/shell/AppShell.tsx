@@ -9,7 +9,22 @@ import { AlertsBell } from "@/components/AlertsBell";
 import { OnboardingTour, type TourStep } from "@/components/OnboardingTour";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
+import { useTotalUnread } from "@/lib/chat";
 import { cn } from "@/lib/utils";
+
+function UnreadBadge({ count, className }: { count: number; className?: string }) {
+  if (count <= 0) return null;
+  return (
+    <span
+      className={cn(
+        "min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center",
+        className,
+      )}
+    >
+      {count > 9 ? "9+" : count}
+    </span>
+  );
+}
 
 export type ShellNavItem = {
   to: string;
@@ -77,6 +92,8 @@ export function AppShell({
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const unread = useTotalUnread();
+  const isChat = (to: string) => to.endsWith("/chat");
 
   const doSignOut = async () => {
     if (onSignOut) return onSignOut();
@@ -157,7 +174,8 @@ export function AppShell({
                           className={cn("size-4 shrink-0", active && "text-primary")}
                           strokeWidth={active ? 2.2 : 1.75}
                         />
-                        <span className="truncate">{item.label}</span>
+                        <span className="truncate flex-1">{item.label}</span>
+                        {isChat(item.to) && <UnreadBadge count={unread} />}
                       </Link>
                     );
                   }
@@ -175,6 +193,7 @@ export function AppShell({
                     >
                       <Icon className="size-4" />
                       <span className="flex-1">{item.label}</span>
+                      {isChat(item.to) && <UnreadBadge count={unread} />}
                     </Link>
                   );
                 })}
@@ -274,6 +293,7 @@ export function AppShell({
                 >
                   <Icon className="size-3.5" />
                   {item.label}
+                  {isChat(item.to) && <UnreadBadge count={unread} />}
                 </Link>
               );
             })}

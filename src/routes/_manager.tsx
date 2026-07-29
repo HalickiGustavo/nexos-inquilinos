@@ -18,6 +18,7 @@ import {
   UserCog,
   BarChart3,
   Wrench,
+  MessageSquare,
 } from "lucide-react";
 import { AppShell, type ShellNavGroup } from "@/components/shell/AppShell";
 import { GlobalSearch } from "@/components/GlobalSearch";
@@ -61,6 +62,7 @@ const navGroups: ShellNavGroup[] = [
       { to: "/manager/contratos", label: "Contratos", icon: FileText, tour: "nav-manager-contratos" },
       { to: "/manager/vistorias", label: "Vistorias", icon: ClipboardCheck, tour: "nav-manager-vistorias" },
       { to: "/manager/manutencoes", label: "Manutenções", icon: Wrench, tour: "nav-manager-manutencoes" },
+      { to: "/manager/chat", label: "Chat", icon: MessageSquare, tour: "nav-manager-chat" },
     ],
   },
   {

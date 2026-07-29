@@ -375,8 +375,10 @@ function StepCredentials({
     queryFn: () => fetchSiteKey(),
     staleTime: Infinity,
   });
+  const [previewClient, setPreviewClient] = useState(false);
+  useEffect(() => setPreviewClient(isPreviewClient()), []);
   const recaptchaSiteKey = siteKeyData?.siteKey ?? null;
-  const recaptchaEnabled = siteKeyData?.enabled ?? true;
+  const recaptchaEnabled = !previewClient && (siteKeyData?.enabled ?? true);
   const canNext =
     emailOk && strength.valid && matches && (!recaptchaEnabled || !!form.captchaToken);
 

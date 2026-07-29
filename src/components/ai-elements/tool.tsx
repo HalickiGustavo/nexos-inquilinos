@@ -147,10 +147,16 @@ export const ToolOutput = ({
 
   if (typeof output === "object" && !isValidElement(output)) {
     Output = (
-      <CodeBlock code={JSON.stringify(output, null, 2)} language="json" />
+      <pre className="overflow-x-auto p-3 text-xs font-mono whitespace-pre-wrap break-words">
+        {JSON.stringify(output, null, 2)}
+      </pre>
     );
   } else if (typeof output === "string") {
-    Output = <CodeBlock code={output} language="json" />;
+    Output = (
+      <pre className="overflow-x-auto p-3 text-xs font-mono whitespace-pre-wrap break-words">
+        {output}
+      </pre>
+    );
   }
 
   return (

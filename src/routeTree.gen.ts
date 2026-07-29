@@ -18,7 +18,6 @@ import { Route as ManagerRouteImport } from './routes/_manager'
 import { Route as LandlordRouteImport } from './routes/_landlord'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
-import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AuthenticatedVistoriasRouteImport } from './routes/_authenticated/vistorias'
 import { Route as AuthenticatedTenantsRouteImport } from './routes/_authenticated/tenants'
 import { Route as AuthenticatedRelatoriosRouteImport } from './routes/_authenticated/relatorios'
@@ -50,17 +49,19 @@ import { Route as ManagerManagerEquipeRouteImport } from './routes/_manager/mana
 import { Route as ManagerManagerDimobRouteImport } from './routes/_manager/manager.dimob'
 import { Route as ManagerManagerCrmRouteImport } from './routes/_manager/manager.crm'
 import { Route as ManagerManagerContratosRouteImport } from './routes/_manager/manager.contratos'
+import { Route as ManagerManagerChatRouteImport } from './routes/_manager/manager.chat'
 import { Route as ManagerManagerCarteiraRouteImport } from './routes/_manager/manager.carteira'
 import { Route as ManagerManagerAlertasRouteImport } from './routes/_manager/manager.alertas'
 import { Route as LandlordLandlordSaldoRouteImport } from './routes/_landlord/landlord.saldo'
 import { Route as LandlordLandlordManutencoesRouteImport } from './routes/_landlord/landlord.manutencoes'
 import { Route as LandlordLandlordFinanceiroRouteImport } from './routes/_landlord/landlord.financeiro'
-import { Route as AuthenticatedTenantSuporteRouteImport } from './routes/_authenticated/tenant.suporte'
+import { Route as LandlordLandlordChatRouteImport } from './routes/_landlord/landlord.chat'
 import { Route as AuthenticatedTenantPerfilRouteImport } from './routes/_authenticated/tenant.perfil'
 import { Route as AuthenticatedTenantManutencoesRouteImport } from './routes/_authenticated/tenant.manutencoes'
 import { Route as AuthenticatedTenantFinanceiroRouteImport } from './routes/_authenticated/tenant.financeiro'
 import { Route as AuthenticatedTenantDocumentosRouteImport } from './routes/_authenticated/tenant.documentos'
 import { Route as AuthenticatedTenantContratoRouteImport } from './routes/_authenticated/tenant.contrato'
+import { Route as AuthenticatedTenantChatRouteImport } from './routes/_authenticated/tenant.chat'
 import { Route as AuthenticatedTenantAlertasRouteImport } from './routes/_authenticated/tenant.alertas'
 import { Route as AuthenticatedPropertiesIdRouteImport } from './routes/_authenticated/properties.$id'
 import { Route as AuthenticatedAdminIntegracoesRouteImport } from './routes/_authenticated/admin.integracoes'
@@ -126,11 +127,6 @@ const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AuthenticatedRoute,
-} as any)
-const ApiChatRoute = ApiChatRouteImport.update({
-  id: '/api/chat',
-  path: '/api/chat',
-  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedVistoriasRoute = AuthenticatedVistoriasRouteImport.update({
   id: '/vistorias',
@@ -298,6 +294,11 @@ const ManagerManagerContratosRoute = ManagerManagerContratosRouteImport.update({
   path: '/manager/contratos',
   getParentRoute: () => ManagerRoute,
 } as any)
+const ManagerManagerChatRoute = ManagerManagerChatRouteImport.update({
+  id: '/manager/chat',
+  path: '/manager/chat',
+  getParentRoute: () => ManagerRoute,
+} as any)
 const ManagerManagerCarteiraRoute = ManagerManagerCarteiraRouteImport.update({
   id: '/manager/carteira',
   path: '/manager/carteira',
@@ -325,12 +326,11 @@ const LandlordLandlordFinanceiroRoute =
     path: '/landlord/financeiro',
     getParentRoute: () => LandlordRoute,
   } as any)
-const AuthenticatedTenantSuporteRoute =
-  AuthenticatedTenantSuporteRouteImport.update({
-    id: '/tenant/suporte',
-    path: '/tenant/suporte',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
+const LandlordLandlordChatRoute = LandlordLandlordChatRouteImport.update({
+  id: '/landlord/chat',
+  path: '/landlord/chat',
+  getParentRoute: () => LandlordRoute,
+} as any)
 const AuthenticatedTenantPerfilRoute =
   AuthenticatedTenantPerfilRouteImport.update({
     id: '/tenant/perfil',
@@ -361,6 +361,11 @@ const AuthenticatedTenantContratoRoute =
     path: '/tenant/contrato',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedTenantChatRoute = AuthenticatedTenantChatRouteImport.update({
+  id: '/tenant/chat',
+  path: '/tenant/chat',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedTenantAlertasRoute =
   AuthenticatedTenantAlertasRouteImport.update({
     id: '/tenant/alertas',
@@ -514,21 +519,22 @@ export interface FileRoutesByFullPath {
   '/relatorios': typeof AuthenticatedRelatoriosRoute
   '/tenants': typeof AuthenticatedTenantsRoute
   '/vistorias': typeof AuthenticatedVistoriasRoute
-  '/api/chat': typeof ApiChatRoute
   '/admin/integracoes': typeof AuthenticatedAdminIntegracoesRoute
   '/properties/$id': typeof AuthenticatedPropertiesIdRoute
   '/tenant/alertas': typeof AuthenticatedTenantAlertasRoute
+  '/tenant/chat': typeof AuthenticatedTenantChatRoute
   '/tenant/contrato': typeof AuthenticatedTenantContratoRoute
   '/tenant/documentos': typeof AuthenticatedTenantDocumentosRoute
   '/tenant/financeiro': typeof AuthenticatedTenantFinanceiroRoute
   '/tenant/manutencoes': typeof AuthenticatedTenantManutencoesRoute
   '/tenant/perfil': typeof AuthenticatedTenantPerfilRoute
-  '/tenant/suporte': typeof AuthenticatedTenantSuporteRoute
+  '/landlord/chat': typeof LandlordLandlordChatRoute
   '/landlord/financeiro': typeof LandlordLandlordFinanceiroRoute
   '/landlord/manutencoes': typeof LandlordLandlordManutencoesRoute
   '/landlord/saldo': typeof LandlordLandlordSaldoRoute
   '/manager/alertas': typeof ManagerManagerAlertasRoute
   '/manager/carteira': typeof ManagerManagerCarteiraRoute
+  '/manager/chat': typeof ManagerManagerChatRoute
   '/manager/contratos': typeof ManagerManagerContratosRoute
   '/manager/crm': typeof ManagerManagerCrmRoute
   '/manager/dimob': typeof ManagerManagerDimobRoute
@@ -588,21 +594,22 @@ export interface FileRoutesByTo {
   '/relatorios': typeof AuthenticatedRelatoriosRoute
   '/tenants': typeof AuthenticatedTenantsRoute
   '/vistorias': typeof AuthenticatedVistoriasRoute
-  '/api/chat': typeof ApiChatRoute
   '/admin/integracoes': typeof AuthenticatedAdminIntegracoesRoute
   '/properties/$id': typeof AuthenticatedPropertiesIdRoute
   '/tenant/alertas': typeof AuthenticatedTenantAlertasRoute
+  '/tenant/chat': typeof AuthenticatedTenantChatRoute
   '/tenant/contrato': typeof AuthenticatedTenantContratoRoute
   '/tenant/documentos': typeof AuthenticatedTenantDocumentosRoute
   '/tenant/financeiro': typeof AuthenticatedTenantFinanceiroRoute
   '/tenant/manutencoes': typeof AuthenticatedTenantManutencoesRoute
   '/tenant/perfil': typeof AuthenticatedTenantPerfilRoute
-  '/tenant/suporte': typeof AuthenticatedTenantSuporteRoute
+  '/landlord/chat': typeof LandlordLandlordChatRoute
   '/landlord/financeiro': typeof LandlordLandlordFinanceiroRoute
   '/landlord/manutencoes': typeof LandlordLandlordManutencoesRoute
   '/landlord/saldo': typeof LandlordLandlordSaldoRoute
   '/manager/alertas': typeof ManagerManagerAlertasRoute
   '/manager/carteira': typeof ManagerManagerCarteiraRoute
+  '/manager/chat': typeof ManagerManagerChatRoute
   '/manager/contratos': typeof ManagerManagerContratosRoute
   '/manager/crm': typeof ManagerManagerCrmRoute
   '/manager/dimob': typeof ManagerManagerDimobRoute
@@ -665,22 +672,23 @@ export interface FileRoutesById {
   '/_authenticated/relatorios': typeof AuthenticatedRelatoriosRoute
   '/_authenticated/tenants': typeof AuthenticatedTenantsRoute
   '/_authenticated/vistorias': typeof AuthenticatedVistoriasRoute
-  '/api/chat': typeof ApiChatRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/admin/integracoes': typeof AuthenticatedAdminIntegracoesRoute
   '/_authenticated/properties/$id': typeof AuthenticatedPropertiesIdRoute
   '/_authenticated/tenant/alertas': typeof AuthenticatedTenantAlertasRoute
+  '/_authenticated/tenant/chat': typeof AuthenticatedTenantChatRoute
   '/_authenticated/tenant/contrato': typeof AuthenticatedTenantContratoRoute
   '/_authenticated/tenant/documentos': typeof AuthenticatedTenantDocumentosRoute
   '/_authenticated/tenant/financeiro': typeof AuthenticatedTenantFinanceiroRoute
   '/_authenticated/tenant/manutencoes': typeof AuthenticatedTenantManutencoesRoute
   '/_authenticated/tenant/perfil': typeof AuthenticatedTenantPerfilRoute
-  '/_authenticated/tenant/suporte': typeof AuthenticatedTenantSuporteRoute
+  '/_landlord/landlord/chat': typeof LandlordLandlordChatRoute
   '/_landlord/landlord/financeiro': typeof LandlordLandlordFinanceiroRoute
   '/_landlord/landlord/manutencoes': typeof LandlordLandlordManutencoesRoute
   '/_landlord/landlord/saldo': typeof LandlordLandlordSaldoRoute
   '/_manager/manager/alertas': typeof ManagerManagerAlertasRoute
   '/_manager/manager/carteira': typeof ManagerManagerCarteiraRoute
+  '/_manager/manager/chat': typeof ManagerManagerChatRoute
   '/_manager/manager/contratos': typeof ManagerManagerContratosRoute
   '/_manager/manager/crm': typeof ManagerManagerCrmRoute
   '/_manager/manager/dimob': typeof ManagerManagerDimobRoute
@@ -742,21 +750,22 @@ export interface FileRouteTypes {
     | '/relatorios'
     | '/tenants'
     | '/vistorias'
-    | '/api/chat'
     | '/admin/integracoes'
     | '/properties/$id'
     | '/tenant/alertas'
+    | '/tenant/chat'
     | '/tenant/contrato'
     | '/tenant/documentos'
     | '/tenant/financeiro'
     | '/tenant/manutencoes'
     | '/tenant/perfil'
-    | '/tenant/suporte'
+    | '/landlord/chat'
     | '/landlord/financeiro'
     | '/landlord/manutencoes'
     | '/landlord/saldo'
     | '/manager/alertas'
     | '/manager/carteira'
+    | '/manager/chat'
     | '/manager/contratos'
     | '/manager/crm'
     | '/manager/dimob'
@@ -816,21 +825,22 @@ export interface FileRouteTypes {
     | '/relatorios'
     | '/tenants'
     | '/vistorias'
-    | '/api/chat'
     | '/admin/integracoes'
     | '/properties/$id'
     | '/tenant/alertas'
+    | '/tenant/chat'
     | '/tenant/contrato'
     | '/tenant/documentos'
     | '/tenant/financeiro'
     | '/tenant/manutencoes'
     | '/tenant/perfil'
-    | '/tenant/suporte'
+    | '/landlord/chat'
     | '/landlord/financeiro'
     | '/landlord/manutencoes'
     | '/landlord/saldo'
     | '/manager/alertas'
     | '/manager/carteira'
+    | '/manager/chat'
     | '/manager/contratos'
     | '/manager/crm'
     | '/manager/dimob'
@@ -892,22 +902,23 @@ export interface FileRouteTypes {
     | '/_authenticated/relatorios'
     | '/_authenticated/tenants'
     | '/_authenticated/vistorias'
-    | '/api/chat'
     | '/_authenticated/'
     | '/_authenticated/admin/integracoes'
     | '/_authenticated/properties/$id'
     | '/_authenticated/tenant/alertas'
+    | '/_authenticated/tenant/chat'
     | '/_authenticated/tenant/contrato'
     | '/_authenticated/tenant/documentos'
     | '/_authenticated/tenant/financeiro'
     | '/_authenticated/tenant/manutencoes'
     | '/_authenticated/tenant/perfil'
-    | '/_authenticated/tenant/suporte'
+    | '/_landlord/landlord/chat'
     | '/_landlord/landlord/financeiro'
     | '/_landlord/landlord/manutencoes'
     | '/_landlord/landlord/saldo'
     | '/_manager/manager/alertas'
     | '/_manager/manager/carteira'
+    | '/_manager/manager/chat'
     | '/_manager/manager/contratos'
     | '/_manager/manager/crm'
     | '/_manager/manager/dimob'
@@ -959,7 +970,6 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   ManagerSetupRoute: typeof ManagerSetupRoute
   TenantSetupRoute: typeof TenantSetupRoute
-  ApiChatRoute: typeof ApiChatRoute
   ApiPublicEfiWebhookRoute: typeof ApiPublicEfiWebhookRouteWithChildren
   ApiPublicStarkWebhookRoute: typeof ApiPublicStarkWebhookRoute
   ApiPublicHooksEfiSaldoRoute: typeof ApiPublicHooksEfiSaldoRoute
@@ -1045,13 +1055,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
-    }
-    '/api/chat': {
-      id: '/api/chat'
-      path: '/api/chat'
-      fullPath: '/api/chat'
-      preLoaderRoute: typeof ApiChatRouteImport
-      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/vistorias': {
       id: '/_authenticated/vistorias'
@@ -1270,6 +1273,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ManagerManagerContratosRouteImport
       parentRoute: typeof ManagerRoute
     }
+    '/_manager/manager/chat': {
+      id: '/_manager/manager/chat'
+      path: '/manager/chat'
+      fullPath: '/manager/chat'
+      preLoaderRoute: typeof ManagerManagerChatRouteImport
+      parentRoute: typeof ManagerRoute
+    }
     '/_manager/manager/carteira': {
       id: '/_manager/manager/carteira'
       path: '/manager/carteira'
@@ -1305,12 +1315,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LandlordLandlordFinanceiroRouteImport
       parentRoute: typeof LandlordRoute
     }
-    '/_authenticated/tenant/suporte': {
-      id: '/_authenticated/tenant/suporte'
-      path: '/tenant/suporte'
-      fullPath: '/tenant/suporte'
-      preLoaderRoute: typeof AuthenticatedTenantSuporteRouteImport
-      parentRoute: typeof AuthenticatedRoute
+    '/_landlord/landlord/chat': {
+      id: '/_landlord/landlord/chat'
+      path: '/landlord/chat'
+      fullPath: '/landlord/chat'
+      preLoaderRoute: typeof LandlordLandlordChatRouteImport
+      parentRoute: typeof LandlordRoute
     }
     '/_authenticated/tenant/perfil': {
       id: '/_authenticated/tenant/perfil'
@@ -1345,6 +1355,13 @@ declare module '@tanstack/react-router' {
       path: '/tenant/contrato'
       fullPath: '/tenant/contrato'
       preLoaderRoute: typeof AuthenticatedTenantContratoRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/tenant/chat': {
+      id: '/_authenticated/tenant/chat'
+      path: '/tenant/chat'
+      fullPath: '/tenant/chat'
+      preLoaderRoute: typeof AuthenticatedTenantChatRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/tenant/alertas': {
@@ -1540,12 +1557,12 @@ interface AuthenticatedRouteChildren {
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedAdminIntegracoesRoute: typeof AuthenticatedAdminIntegracoesRoute
   AuthenticatedTenantAlertasRoute: typeof AuthenticatedTenantAlertasRoute
+  AuthenticatedTenantChatRoute: typeof AuthenticatedTenantChatRoute
   AuthenticatedTenantContratoRoute: typeof AuthenticatedTenantContratoRoute
   AuthenticatedTenantDocumentosRoute: typeof AuthenticatedTenantDocumentosRoute
   AuthenticatedTenantFinanceiroRoute: typeof AuthenticatedTenantFinanceiroRoute
   AuthenticatedTenantManutencoesRoute: typeof AuthenticatedTenantManutencoesRoute
   AuthenticatedTenantPerfilRoute: typeof AuthenticatedTenantPerfilRoute
-  AuthenticatedTenantSuporteRoute: typeof AuthenticatedTenantSuporteRoute
   AuthenticatedTenantIndexRoute: typeof AuthenticatedTenantIndexRoute
   AuthenticatedAdminConfiguracoesSubcontaRoute: typeof AuthenticatedAdminConfiguracoesSubcontaRoute
 }
@@ -1565,12 +1582,12 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedAdminIntegracoesRoute: AuthenticatedAdminIntegracoesRoute,
   AuthenticatedTenantAlertasRoute: AuthenticatedTenantAlertasRoute,
+  AuthenticatedTenantChatRoute: AuthenticatedTenantChatRoute,
   AuthenticatedTenantContratoRoute: AuthenticatedTenantContratoRoute,
   AuthenticatedTenantDocumentosRoute: AuthenticatedTenantDocumentosRoute,
   AuthenticatedTenantFinanceiroRoute: AuthenticatedTenantFinanceiroRoute,
   AuthenticatedTenantManutencoesRoute: AuthenticatedTenantManutencoesRoute,
   AuthenticatedTenantPerfilRoute: AuthenticatedTenantPerfilRoute,
-  AuthenticatedTenantSuporteRoute: AuthenticatedTenantSuporteRoute,
   AuthenticatedTenantIndexRoute: AuthenticatedTenantIndexRoute,
   AuthenticatedAdminConfiguracoesSubcontaRoute:
     AuthenticatedAdminConfiguracoesSubcontaRoute,
@@ -1581,6 +1598,7 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
 )
 
 interface LandlordRouteChildren {
+  LandlordLandlordChatRoute: typeof LandlordLandlordChatRoute
   LandlordLandlordFinanceiroRoute: typeof LandlordLandlordFinanceiroRoute
   LandlordLandlordManutencoesRoute: typeof LandlordLandlordManutencoesRoute
   LandlordLandlordSaldoRoute: typeof LandlordLandlordSaldoRoute
@@ -1588,6 +1606,7 @@ interface LandlordRouteChildren {
 }
 
 const LandlordRouteChildren: LandlordRouteChildren = {
+  LandlordLandlordChatRoute: LandlordLandlordChatRoute,
   LandlordLandlordFinanceiroRoute: LandlordLandlordFinanceiroRoute,
   LandlordLandlordManutencoesRoute: LandlordLandlordManutencoesRoute,
   LandlordLandlordSaldoRoute: LandlordLandlordSaldoRoute,
@@ -1601,6 +1620,7 @@ const LandlordRouteWithChildren = LandlordRoute._addFileChildren(
 interface ManagerRouteChildren {
   ManagerManagerAlertasRoute: typeof ManagerManagerAlertasRoute
   ManagerManagerCarteiraRoute: typeof ManagerManagerCarteiraRoute
+  ManagerManagerChatRoute: typeof ManagerManagerChatRoute
   ManagerManagerContratosRoute: typeof ManagerManagerContratosRoute
   ManagerManagerCrmRoute: typeof ManagerManagerCrmRoute
   ManagerManagerDimobRoute: typeof ManagerManagerDimobRoute
@@ -1623,6 +1643,7 @@ interface ManagerRouteChildren {
 const ManagerRouteChildren: ManagerRouteChildren = {
   ManagerManagerAlertasRoute: ManagerManagerAlertasRoute,
   ManagerManagerCarteiraRoute: ManagerManagerCarteiraRoute,
+  ManagerManagerChatRoute: ManagerManagerChatRoute,
   ManagerManagerContratosRoute: ManagerManagerContratosRoute,
   ManagerManagerCrmRoute: ManagerManagerCrmRoute,
   ManagerManagerDimobRoute: ManagerManagerDimobRoute,
@@ -1666,7 +1687,6 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   ManagerSetupRoute: ManagerSetupRoute,
   TenantSetupRoute: TenantSetupRoute,
-  ApiChatRoute: ApiChatRoute,
   ApiPublicEfiWebhookRoute: ApiPublicEfiWebhookRouteWithChildren,
   ApiPublicStarkWebhookRoute: ApiPublicStarkWebhookRoute,
   ApiPublicHooksEfiSaldoRoute: ApiPublicHooksEfiSaldoRoute,

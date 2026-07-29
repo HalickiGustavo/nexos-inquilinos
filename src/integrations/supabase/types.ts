@@ -1143,6 +1143,7 @@ export type Database = {
           payment_notes: string | null
           payment_paid_amount: number | null
           payment_receipt_urls: string[]
+          priority: string
           property_id: string
           provider_name: string | null
           provider_phone: string | null
@@ -1180,6 +1181,7 @@ export type Database = {
           payment_notes?: string | null
           payment_paid_amount?: number | null
           payment_receipt_urls?: string[]
+          priority?: string
           property_id: string
           provider_name?: string | null
           provider_phone?: string | null
@@ -1217,6 +1219,7 @@ export type Database = {
           payment_notes?: string | null
           payment_paid_amount?: number | null
           payment_receipt_urls?: string[]
+          priority?: string
           property_id?: string
           provider_name?: string | null
           provider_phone?: string | null
@@ -1861,6 +1864,36 @@ export type Database = {
           processed_at?: string | null
           raw?: Json
           subscription?: string
+        }
+        Relationships: []
+      }
+      support_chat_messages: {
+        Row: {
+          client_message_id: string | null
+          created_at: string
+          id: string
+          parts: Json
+          role: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          client_message_id?: string | null
+          created_at?: string
+          id?: string
+          parts?: Json
+          role: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          client_message_id?: string | null
+          created_at?: string
+          id?: string
+          parts?: Json
+          role?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }

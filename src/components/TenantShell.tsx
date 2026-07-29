@@ -1,5 +1,5 @@
 import { Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
-import { Home, Wallet, FileText, Wrench, LogOut, User, FolderOpen } from "lucide-react";
+import { Home, Wallet, FileText, Wrench, LogOut, User, FolderOpen, MessageCircleQuestion } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -18,6 +18,7 @@ const tenantNav: ReadonlyArray<{ to: string; label: string; icon: typeof Home; e
   { to: "/tenant/contrato", label: "Contrato", icon: FileText, tour: "nav-tenant-contrato" },
   { to: "/tenant/documentos", label: "Documentos", icon: FolderOpen, tour: "nav-tenant-documentos" },
   { to: "/tenant/manutencoes", label: "Manutenções", icon: Wrench, tour: "nav-tenant-manutencoes" },
+  { to: "/tenant/suporte", label: "Suporte", icon: MessageCircleQuestion, tour: "nav-tenant-suporte" },
   { to: "/tenant/perfil", label: "Perfil", icon: User, tour: "nav-tenant-perfil" },
 ];
 

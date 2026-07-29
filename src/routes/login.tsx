@@ -23,6 +23,7 @@ import { useTheme } from "@/components/ThemeProvider";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { getRecaptchaSiteKey } from "@/lib/recaptcha.functions";
+import { isPreviewClient } from "@/lib/recaptcha-client";
 
 
 export const Route = createFileRoute("/login")({
@@ -153,8 +154,10 @@ function SignInForm() {
     queryFn: () => fetchSiteKey(),
     staleTime: Infinity,
   });
+  const [previewClient, setPreviewClient] = useState(false);
+  useEffect(() => setPreviewClient(isPreviewClient()), []);
   const recaptchaSiteKey = siteKeyData?.siteKey ?? null;
-  const recaptchaEnabled = siteKeyData?.enabled ?? true;
+  const recaptchaEnabled = !previewClient && (siteKeyData?.enabled ?? true);
 
   const canSubmit =
     !!email && !!password && (!recaptchaEnabled || !!captchaToken) && !busy;

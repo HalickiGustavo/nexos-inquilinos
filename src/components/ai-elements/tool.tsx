@@ -19,7 +19,6 @@ import {
 import type { ComponentProps, ReactNode } from "react";
 import { isValidElement } from "react";
 
-import { CodeBlock } from "./code-block";
 
 export type ToolProps = ComponentProps<typeof Collapsible>;
 
@@ -122,7 +121,9 @@ export const ToolInput = ({ className, input, ...props }: ToolInputProps) => (
       Parameters
     </h4>
     <div className="rounded-md bg-muted/50">
-      <CodeBlock code={JSON.stringify(input, null, 2)} language="json" />
+      <pre className="overflow-x-auto p-3 text-xs font-mono whitespace-pre-wrap break-words">
+        {JSON.stringify(input, null, 2)}
+      </pre>
     </div>
   </div>
 );
@@ -146,10 +147,16 @@ export const ToolOutput = ({
 
   if (typeof output === "object" && !isValidElement(output)) {
     Output = (
-      <CodeBlock code={JSON.stringify(output, null, 2)} language="json" />
+      <pre className="overflow-x-auto p-3 text-xs font-mono whitespace-pre-wrap break-words">
+        {JSON.stringify(output, null, 2)}
+      </pre>
     );
   } else if (typeof output === "string") {
-    Output = <CodeBlock code={output} language="json" />;
+    Output = (
+      <pre className="overflow-x-auto p-3 text-xs font-mono whitespace-pre-wrap break-words">
+        {output}
+      </pre>
+    );
   }
 
   return (

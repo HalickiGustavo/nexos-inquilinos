@@ -1,5 +1,5 @@
 import { Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
-import { Home, Wallet, FileText, Wrench, LogOut, User, FolderOpen, MessageCircleQuestion } from "lucide-react";
+import { Home, Wallet, FileText, Wrench, LogOut, User, FolderOpen, MessageSquare } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";

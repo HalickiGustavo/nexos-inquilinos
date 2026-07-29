@@ -14,11 +14,11 @@ import { useTenantAlerts } from "@/lib/alerts";
 
 const tenantNav: ReadonlyArray<{ to: string; label: string; icon: typeof Home; exact?: boolean; tour: string }> = [
   { to: "/tenant", label: "Início", icon: Home, exact: true, tour: "nav-tenant" },
+  { to: "/tenant/chat", label: "Chat", icon: MessageSquare, tour: "nav-tenant-chat" },
   { to: "/tenant/financeiro", label: "Financeiro", icon: Wallet, tour: "nav-tenant-financeiro" },
   { to: "/tenant/contrato", label: "Contrato", icon: FileText, tour: "nav-tenant-contrato" },
   { to: "/tenant/documentos", label: "Documentos", icon: FolderOpen, tour: "nav-tenant-documentos" },
   { to: "/tenant/manutencoes", label: "Manutenções", icon: Wrench, tour: "nav-tenant-manutencoes" },
-  { to: "/tenant/chat", label: "Chat", icon: MessageSquare, tour: "nav-tenant-chat" },
   { to: "/tenant/perfil", label: "Perfil", icon: User, tour: "nav-tenant-perfil" },
 ];
 

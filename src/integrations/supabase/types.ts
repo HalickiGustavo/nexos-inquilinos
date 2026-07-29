@@ -187,6 +187,140 @@ export type Database = {
         }
         Relationships: []
       }
+      chat_conversations: {
+        Row: {
+          contract_id: string | null
+          created_at: string
+          id: string
+          kind: string
+          last_message_at: string | null
+          last_message_preview: string | null
+          property_id: string | null
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          contract_id?: string | null
+          created_at?: string
+          id?: string
+          kind: string
+          last_message_at?: string | null
+          last_message_preview?: string | null
+          property_id?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          contract_id?: string | null
+          created_at?: string
+          id?: string
+          kind?: string
+          last_message_at?: string | null
+          last_message_preview?: string | null
+          property_id?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_conversations_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_conversations_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_messages: {
+        Row: {
+          attachments: Json
+          content: string
+          conversation_id: string
+          created_at: string
+          id: string
+          is_system: boolean
+          maintenance_id: string | null
+          sender_user_id: string | null
+        }
+        Insert: {
+          attachments?: Json
+          content?: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          is_system?: boolean
+          maintenance_id?: string | null
+          sender_user_id?: string | null
+        }
+        Update: {
+          attachments?: Json
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          is_system?: boolean
+          maintenance_id?: string | null
+          sender_user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "chat_conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_messages_maintenance_id_fkey"
+            columns: ["maintenance_id"]
+            isOneToOne: false
+            referencedRelation: "maintenances"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_participants: {
+        Row: {
+          conversation_id: string
+          created_at: string
+          id: string
+          last_read_at: string | null
+          role_label: string
+          user_id: string
+        }
+        Insert: {
+          conversation_id: string
+          created_at?: string
+          id?: string
+          last_read_at?: string | null
+          role_label?: string
+          user_id: string
+        }
+        Update: {
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          last_read_at?: string | null
+          role_label?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_participants_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "chat_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contracts: {
         Row: {
           active: boolean
@@ -1125,6 +1259,7 @@ export type Database = {
           budget_notes: string | null
           budget_rent_deduction: boolean
           budget_status: string
+          category: string
           completed_date: string | null
           completion_photo_urls: string[]
           contract_id: string | null
@@ -1163,6 +1298,7 @@ export type Database = {
           budget_notes?: string | null
           budget_rent_deduction?: boolean
           budget_status?: string
+          category?: string
           completed_date?: string | null
           completion_photo_urls?: string[]
           contract_id?: string | null
@@ -1201,6 +1337,7 @@ export type Database = {
           budget_notes?: string | null
           budget_rent_deduction?: boolean
           budget_status?: string
+          category?: string
           completed_date?: string | null
           completion_photo_urls?: string[]
           contract_id?: string | null
@@ -1527,6 +1664,7 @@ export type Database = {
           address: string | null
           address_complement: string | null
           address_number: string | null
+          avatar_url: string | null
           birth_date: string | null
           city: string | null
           created_at: string
@@ -1552,6 +1690,7 @@ export type Database = {
           address?: string | null
           address_complement?: string | null
           address_number?: string | null
+          avatar_url?: string | null
           birth_date?: string | null
           city?: string | null
           created_at?: string
@@ -1577,6 +1716,7 @@ export type Database = {
           address?: string | null
           address_complement?: string | null
           address_number?: string | null
+          avatar_url?: string | null
           birth_date?: string | null
           city?: string | null
           created_at?: string
@@ -1867,36 +2007,6 @@ export type Database = {
         }
         Relationships: []
       }
-      support_chat_messages: {
-        Row: {
-          client_message_id: string | null
-          created_at: string
-          id: string
-          parts: Json
-          role: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          client_message_id?: string | null
-          created_at?: string
-          id?: string
-          parts?: Json
-          role: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          client_message_id?: string | null
-          created_at?: string
-          id?: string
-          parts?: Json
-          role?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       tenants: {
         Row: {
           created_at: string
@@ -2010,12 +2120,17 @@ export type Database = {
       current_landlord_id: { Args: never; Returns: string }
       current_manager_id: { Args: never; Returns: string }
       current_tenant_id: { Args: never; Returns: string }
+      ensure_chat_conversations: { Args: never; Returns: undefined }
       generate_org_slug: { Args: { _manager_user_id: string }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      is_chat_participant: {
+        Args: { _conversation_id: string; _user_id: string }
         Returns: boolean
       }
       is_current_tenant_property: {

@@ -11,6 +11,7 @@ import { OnboardingTour } from "@/components/OnboardingTour";
 import { tenantTourSteps } from "@/lib/tour-steps";
 import { AlertsBell } from "@/components/AlertsBell";
 import { useTenantAlerts } from "@/lib/alerts";
+import { useTotalUnread } from "@/lib/chat";
 
 const tenantNav: ReadonlyArray<{ to: string; label: string; icon: typeof Home; exact?: boolean; tour: string }> = [
   { to: "/tenant", label: "Início", icon: Home, exact: true, tour: "nav-tenant" },
@@ -28,6 +29,7 @@ export function TenantShell() {
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { alerts } = useTenantAlerts();
+  const unread = useTotalUnread();
 
   const isActive = (to: string, exact?: boolean) =>
     exact ? pathname === to : pathname === to || pathname.startsWith(to + "/");
@@ -90,7 +92,14 @@ export function TenantShell() {
                     aria-hidden
                   />
                 )}
-                <Icon className={cn("size-[18px] shrink-0", active && "text-primary")} />
+                <span className="relative">
+                  <Icon className={cn("size-[18px] shrink-0", active && "text-primary")} />
+                  {item.to === "/tenant/chat" && unread > 0 && (
+                    <span className="absolute -top-1.5 -right-2 min-w-4 h-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center">
+                      {unread > 9 ? "9+" : unread}
+                    </span>
+                  )}
+                </span>
                 <span className="truncate max-w-full px-1 font-medium">{item.label}</span>
               </Link>
             );
@@ -128,6 +137,11 @@ export function TenantShell() {
               >
                 <Icon className="size-4" />
                 {item.label}
+                {item.to === "/tenant/chat" && unread > 0 && (
+                  <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center">
+                    {unread > 9 ? "9+" : unread}
+                  </span>
+                )}
               </Link>
             );
           })}

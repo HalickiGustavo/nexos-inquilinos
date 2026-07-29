@@ -174,7 +174,8 @@ export function AppShell({
                           className={cn("size-4 shrink-0", active && "text-primary")}
                           strokeWidth={active ? 2.2 : 1.75}
                         />
-                        <span className="truncate">{item.label}</span>
+                        <span className="truncate flex-1">{item.label}</span>
+                        {isChat(item.to) && <UnreadBadge count={unread} />}
                       </Link>
                     );
                   }

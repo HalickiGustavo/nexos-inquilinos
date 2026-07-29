@@ -63,7 +63,6 @@ const navGroups: ShellNavGroup[] = [
       { to: "/manager/contratos", label: "Contratos", icon: FileText, tour: "nav-manager-contratos" },
       { to: "/manager/vistorias", label: "Vistorias", icon: ClipboardCheck, tour: "nav-manager-vistorias" },
       { to: "/manager/manutencoes", label: "Manutenções", icon: Wrench, tour: "nav-manager-manutencoes" },
-      { to: "/manager/chat", label: "Chat", icon: MessageSquare, tour: "nav-manager-chat" },
     ],
   },
   {

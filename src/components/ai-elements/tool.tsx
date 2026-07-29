@@ -19,7 +19,6 @@ import {
 import type { ComponentProps, ReactNode } from "react";
 import { isValidElement } from "react";
 
-import { CodeBlock } from "./code-block";
 
 export type ToolProps = ComponentProps<typeof Collapsible>;
 
@@ -122,7 +121,9 @@ export const ToolInput = ({ className, input, ...props }: ToolInputProps) => (
       Parameters
     </h4>
     <div className="rounded-md bg-muted/50">
-      <CodeBlock code={JSON.stringify(input, null, 2)} language="json" />
+      <pre className="overflow-x-auto p-3 text-xs font-mono whitespace-pre-wrap break-words">
+        {JSON.stringify(input, null, 2)}
+      </pre>
     </div>
   </div>
 );

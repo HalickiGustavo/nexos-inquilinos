@@ -840,10 +840,11 @@ function SuccessPanel({ role, email }: { role: Role; email: string }) {
           <img
             src={appQrCode.url}
             alt="QR code para baixar o app Nexo"
-            className="size-40 sm:size-44 rounded-md"
+            className="size-56 sm:size-64 rounded-md object-contain"
           />
         </div>
       </div>
+
 
       <div className="mt-6 flex flex-col sm:flex-row gap-2.5">
         <Link to="/login" className="flex-1">

@@ -18,6 +18,7 @@ import { Route as ManagerRouteImport } from './routes/_manager'
 import { Route as LandlordRouteImport } from './routes/_landlord'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
+import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AuthenticatedVistoriasRouteImport } from './routes/_authenticated/vistorias'
 import { Route as AuthenticatedTenantsRouteImport } from './routes/_authenticated/tenants'
 import { Route as AuthenticatedRelatoriosRouteImport } from './routes/_authenticated/relatorios'
@@ -54,6 +55,7 @@ import { Route as ManagerManagerAlertasRouteImport } from './routes/_manager/man
 import { Route as LandlordLandlordSaldoRouteImport } from './routes/_landlord/landlord.saldo'
 import { Route as LandlordLandlordManutencoesRouteImport } from './routes/_landlord/landlord.manutencoes'
 import { Route as LandlordLandlordFinanceiroRouteImport } from './routes/_landlord/landlord.financeiro'
+import { Route as AuthenticatedTenantSuporteRouteImport } from './routes/_authenticated/tenant.suporte'
 import { Route as AuthenticatedTenantPerfilRouteImport } from './routes/_authenticated/tenant.perfil'
 import { Route as AuthenticatedTenantManutencoesRouteImport } from './routes/_authenticated/tenant.manutencoes'
 import { Route as AuthenticatedTenantFinanceiroRouteImport } from './routes/_authenticated/tenant.financeiro'
@@ -124,6 +126,11 @@ const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AuthenticatedRoute,
+} as any)
+const ApiChatRoute = ApiChatRouteImport.update({
+  id: '/api/chat',
+  path: '/api/chat',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedVistoriasRoute = AuthenticatedVistoriasRouteImport.update({
   id: '/vistorias',
@@ -318,6 +325,12 @@ const LandlordLandlordFinanceiroRoute =
     path: '/landlord/financeiro',
     getParentRoute: () => LandlordRoute,
   } as any)
+const AuthenticatedTenantSuporteRoute =
+  AuthenticatedTenantSuporteRouteImport.update({
+    id: '/tenant/suporte',
+    path: '/tenant/suporte',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedTenantPerfilRoute =
   AuthenticatedTenantPerfilRouteImport.update({
     id: '/tenant/perfil',
@@ -501,6 +514,7 @@ export interface FileRoutesByFullPath {
   '/relatorios': typeof AuthenticatedRelatoriosRoute
   '/tenants': typeof AuthenticatedTenantsRoute
   '/vistorias': typeof AuthenticatedVistoriasRoute
+  '/api/chat': typeof ApiChatRoute
   '/admin/integracoes': typeof AuthenticatedAdminIntegracoesRoute
   '/properties/$id': typeof AuthenticatedPropertiesIdRoute
   '/tenant/alertas': typeof AuthenticatedTenantAlertasRoute
@@ -509,6 +523,7 @@ export interface FileRoutesByFullPath {
   '/tenant/financeiro': typeof AuthenticatedTenantFinanceiroRoute
   '/tenant/manutencoes': typeof AuthenticatedTenantManutencoesRoute
   '/tenant/perfil': typeof AuthenticatedTenantPerfilRoute
+  '/tenant/suporte': typeof AuthenticatedTenantSuporteRoute
   '/landlord/financeiro': typeof LandlordLandlordFinanceiroRoute
   '/landlord/manutencoes': typeof LandlordLandlordManutencoesRoute
   '/landlord/saldo': typeof LandlordLandlordSaldoRoute
@@ -573,6 +588,7 @@ export interface FileRoutesByTo {
   '/relatorios': typeof AuthenticatedRelatoriosRoute
   '/tenants': typeof AuthenticatedTenantsRoute
   '/vistorias': typeof AuthenticatedVistoriasRoute
+  '/api/chat': typeof ApiChatRoute
   '/admin/integracoes': typeof AuthenticatedAdminIntegracoesRoute
   '/properties/$id': typeof AuthenticatedPropertiesIdRoute
   '/tenant/alertas': typeof AuthenticatedTenantAlertasRoute
@@ -581,6 +597,7 @@ export interface FileRoutesByTo {
   '/tenant/financeiro': typeof AuthenticatedTenantFinanceiroRoute
   '/tenant/manutencoes': typeof AuthenticatedTenantManutencoesRoute
   '/tenant/perfil': typeof AuthenticatedTenantPerfilRoute
+  '/tenant/suporte': typeof AuthenticatedTenantSuporteRoute
   '/landlord/financeiro': typeof LandlordLandlordFinanceiroRoute
   '/landlord/manutencoes': typeof LandlordLandlordManutencoesRoute
   '/landlord/saldo': typeof LandlordLandlordSaldoRoute
@@ -648,6 +665,7 @@ export interface FileRoutesById {
   '/_authenticated/relatorios': typeof AuthenticatedRelatoriosRoute
   '/_authenticated/tenants': typeof AuthenticatedTenantsRoute
   '/_authenticated/vistorias': typeof AuthenticatedVistoriasRoute
+  '/api/chat': typeof ApiChatRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/admin/integracoes': typeof AuthenticatedAdminIntegracoesRoute
   '/_authenticated/properties/$id': typeof AuthenticatedPropertiesIdRoute
@@ -657,6 +675,7 @@ export interface FileRoutesById {
   '/_authenticated/tenant/financeiro': typeof AuthenticatedTenantFinanceiroRoute
   '/_authenticated/tenant/manutencoes': typeof AuthenticatedTenantManutencoesRoute
   '/_authenticated/tenant/perfil': typeof AuthenticatedTenantPerfilRoute
+  '/_authenticated/tenant/suporte': typeof AuthenticatedTenantSuporteRoute
   '/_landlord/landlord/financeiro': typeof LandlordLandlordFinanceiroRoute
   '/_landlord/landlord/manutencoes': typeof LandlordLandlordManutencoesRoute
   '/_landlord/landlord/saldo': typeof LandlordLandlordSaldoRoute
@@ -723,6 +742,7 @@ export interface FileRouteTypes {
     | '/relatorios'
     | '/tenants'
     | '/vistorias'
+    | '/api/chat'
     | '/admin/integracoes'
     | '/properties/$id'
     | '/tenant/alertas'
@@ -731,6 +751,7 @@ export interface FileRouteTypes {
     | '/tenant/financeiro'
     | '/tenant/manutencoes'
     | '/tenant/perfil'
+    | '/tenant/suporte'
     | '/landlord/financeiro'
     | '/landlord/manutencoes'
     | '/landlord/saldo'
@@ -795,6 +816,7 @@ export interface FileRouteTypes {
     | '/relatorios'
     | '/tenants'
     | '/vistorias'
+    | '/api/chat'
     | '/admin/integracoes'
     | '/properties/$id'
     | '/tenant/alertas'
@@ -803,6 +825,7 @@ export interface FileRouteTypes {
     | '/tenant/financeiro'
     | '/tenant/manutencoes'
     | '/tenant/perfil'
+    | '/tenant/suporte'
     | '/landlord/financeiro'
     | '/landlord/manutencoes'
     | '/landlord/saldo'
@@ -869,6 +892,7 @@ export interface FileRouteTypes {
     | '/_authenticated/relatorios'
     | '/_authenticated/tenants'
     | '/_authenticated/vistorias'
+    | '/api/chat'
     | '/_authenticated/'
     | '/_authenticated/admin/integracoes'
     | '/_authenticated/properties/$id'
@@ -878,6 +902,7 @@ export interface FileRouteTypes {
     | '/_authenticated/tenant/financeiro'
     | '/_authenticated/tenant/manutencoes'
     | '/_authenticated/tenant/perfil'
+    | '/_authenticated/tenant/suporte'
     | '/_landlord/landlord/financeiro'
     | '/_landlord/landlord/manutencoes'
     | '/_landlord/landlord/saldo'
@@ -934,6 +959,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   ManagerSetupRoute: typeof ManagerSetupRoute
   TenantSetupRoute: typeof TenantSetupRoute
+  ApiChatRoute: typeof ApiChatRoute
   ApiPublicEfiWebhookRoute: typeof ApiPublicEfiWebhookRouteWithChildren
   ApiPublicStarkWebhookRoute: typeof ApiPublicStarkWebhookRoute
   ApiPublicHooksEfiSaldoRoute: typeof ApiPublicHooksEfiSaldoRoute
@@ -1019,6 +1045,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
+    }
+    '/api/chat': {
+      id: '/api/chat'
+      path: '/api/chat'
+      fullPath: '/api/chat'
+      preLoaderRoute: typeof ApiChatRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/vistorias': {
       id: '/_authenticated/vistorias'
@@ -1272,6 +1305,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LandlordLandlordFinanceiroRouteImport
       parentRoute: typeof LandlordRoute
     }
+    '/_authenticated/tenant/suporte': {
+      id: '/_authenticated/tenant/suporte'
+      path: '/tenant/suporte'
+      fullPath: '/tenant/suporte'
+      preLoaderRoute: typeof AuthenticatedTenantSuporteRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/tenant/perfil': {
       id: '/_authenticated/tenant/perfil'
       path: '/tenant/perfil'
@@ -1505,6 +1545,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedTenantFinanceiroRoute: typeof AuthenticatedTenantFinanceiroRoute
   AuthenticatedTenantManutencoesRoute: typeof AuthenticatedTenantManutencoesRoute
   AuthenticatedTenantPerfilRoute: typeof AuthenticatedTenantPerfilRoute
+  AuthenticatedTenantSuporteRoute: typeof AuthenticatedTenantSuporteRoute
   AuthenticatedTenantIndexRoute: typeof AuthenticatedTenantIndexRoute
   AuthenticatedAdminConfiguracoesSubcontaRoute: typeof AuthenticatedAdminConfiguracoesSubcontaRoute
 }
@@ -1529,6 +1570,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedTenantFinanceiroRoute: AuthenticatedTenantFinanceiroRoute,
   AuthenticatedTenantManutencoesRoute: AuthenticatedTenantManutencoesRoute,
   AuthenticatedTenantPerfilRoute: AuthenticatedTenantPerfilRoute,
+  AuthenticatedTenantSuporteRoute: AuthenticatedTenantSuporteRoute,
   AuthenticatedTenantIndexRoute: AuthenticatedTenantIndexRoute,
   AuthenticatedAdminConfiguracoesSubcontaRoute:
     AuthenticatedAdminConfiguracoesSubcontaRoute,
@@ -1624,6 +1666,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   ManagerSetupRoute: ManagerSetupRoute,
   TenantSetupRoute: TenantSetupRoute,
+  ApiChatRoute: ApiChatRoute,
   ApiPublicEfiWebhookRoute: ApiPublicEfiWebhookRouteWithChildren,
   ApiPublicStarkWebhookRoute: ApiPublicStarkWebhookRoute,
   ApiPublicHooksEfiSaldoRoute: ApiPublicHooksEfiSaldoRoute,
@@ -1655,13 +1698,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

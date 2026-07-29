@@ -92,6 +92,8 @@ export function AppShell({
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const unread = useTotalUnread();
+  const isChat = (to: string) => to.endsWith("/chat");
 
   const doSignOut = async () => {
     if (onSignOut) return onSignOut();

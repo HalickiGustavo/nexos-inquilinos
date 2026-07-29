@@ -59,6 +59,7 @@ import { Route as AuthenticatedTenantManutencoesRouteImport } from './routes/_au
 import { Route as AuthenticatedTenantFinanceiroRouteImport } from './routes/_authenticated/tenant.financeiro'
 import { Route as AuthenticatedTenantDocumentosRouteImport } from './routes/_authenticated/tenant.documentos'
 import { Route as AuthenticatedTenantContratoRouteImport } from './routes/_authenticated/tenant.contrato'
+import { Route as AuthenticatedTenantChatRouteImport } from './routes/_authenticated/tenant.chat'
 import { Route as AuthenticatedTenantAlertasRouteImport } from './routes/_authenticated/tenant.alertas'
 import { Route as AuthenticatedPropertiesIdRouteImport } from './routes/_authenticated/properties.$id'
 import { Route as AuthenticatedAdminIntegracoesRouteImport } from './routes/_authenticated/admin.integracoes'
@@ -348,6 +349,11 @@ const AuthenticatedTenantContratoRoute =
     path: '/tenant/contrato',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedTenantChatRoute = AuthenticatedTenantChatRouteImport.update({
+  id: '/tenant/chat',
+  path: '/tenant/chat',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedTenantAlertasRoute =
   AuthenticatedTenantAlertasRouteImport.update({
     id: '/tenant/alertas',
@@ -504,6 +510,7 @@ export interface FileRoutesByFullPath {
   '/admin/integracoes': typeof AuthenticatedAdminIntegracoesRoute
   '/properties/$id': typeof AuthenticatedPropertiesIdRoute
   '/tenant/alertas': typeof AuthenticatedTenantAlertasRoute
+  '/tenant/chat': typeof AuthenticatedTenantChatRoute
   '/tenant/contrato': typeof AuthenticatedTenantContratoRoute
   '/tenant/documentos': typeof AuthenticatedTenantDocumentosRoute
   '/tenant/financeiro': typeof AuthenticatedTenantFinanceiroRoute
@@ -576,6 +583,7 @@ export interface FileRoutesByTo {
   '/admin/integracoes': typeof AuthenticatedAdminIntegracoesRoute
   '/properties/$id': typeof AuthenticatedPropertiesIdRoute
   '/tenant/alertas': typeof AuthenticatedTenantAlertasRoute
+  '/tenant/chat': typeof AuthenticatedTenantChatRoute
   '/tenant/contrato': typeof AuthenticatedTenantContratoRoute
   '/tenant/documentos': typeof AuthenticatedTenantDocumentosRoute
   '/tenant/financeiro': typeof AuthenticatedTenantFinanceiroRoute
@@ -652,6 +660,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/integracoes': typeof AuthenticatedAdminIntegracoesRoute
   '/_authenticated/properties/$id': typeof AuthenticatedPropertiesIdRoute
   '/_authenticated/tenant/alertas': typeof AuthenticatedTenantAlertasRoute
+  '/_authenticated/tenant/chat': typeof AuthenticatedTenantChatRoute
   '/_authenticated/tenant/contrato': typeof AuthenticatedTenantContratoRoute
   '/_authenticated/tenant/documentos': typeof AuthenticatedTenantDocumentosRoute
   '/_authenticated/tenant/financeiro': typeof AuthenticatedTenantFinanceiroRoute
@@ -726,6 +735,7 @@ export interface FileRouteTypes {
     | '/admin/integracoes'
     | '/properties/$id'
     | '/tenant/alertas'
+    | '/tenant/chat'
     | '/tenant/contrato'
     | '/tenant/documentos'
     | '/tenant/financeiro'
@@ -798,6 +808,7 @@ export interface FileRouteTypes {
     | '/admin/integracoes'
     | '/properties/$id'
     | '/tenant/alertas'
+    | '/tenant/chat'
     | '/tenant/contrato'
     | '/tenant/documentos'
     | '/tenant/financeiro'
@@ -873,6 +884,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/integracoes'
     | '/_authenticated/properties/$id'
     | '/_authenticated/tenant/alertas'
+    | '/_authenticated/tenant/chat'
     | '/_authenticated/tenant/contrato'
     | '/_authenticated/tenant/documentos'
     | '/_authenticated/tenant/financeiro'
@@ -1307,6 +1319,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTenantContratoRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/tenant/chat': {
+      id: '/_authenticated/tenant/chat'
+      path: '/tenant/chat'
+      fullPath: '/tenant/chat'
+      preLoaderRoute: typeof AuthenticatedTenantChatRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/tenant/alertas': {
       id: '/_authenticated/tenant/alertas'
       path: '/tenant/alertas'
@@ -1500,6 +1519,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedAdminIntegracoesRoute: typeof AuthenticatedAdminIntegracoesRoute
   AuthenticatedTenantAlertasRoute: typeof AuthenticatedTenantAlertasRoute
+  AuthenticatedTenantChatRoute: typeof AuthenticatedTenantChatRoute
   AuthenticatedTenantContratoRoute: typeof AuthenticatedTenantContratoRoute
   AuthenticatedTenantDocumentosRoute: typeof AuthenticatedTenantDocumentosRoute
   AuthenticatedTenantFinanceiroRoute: typeof AuthenticatedTenantFinanceiroRoute
@@ -1524,6 +1544,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedAdminIntegracoesRoute: AuthenticatedAdminIntegracoesRoute,
   AuthenticatedTenantAlertasRoute: AuthenticatedTenantAlertasRoute,
+  AuthenticatedTenantChatRoute: AuthenticatedTenantChatRoute,
   AuthenticatedTenantContratoRoute: AuthenticatedTenantContratoRoute,
   AuthenticatedTenantDocumentosRoute: AuthenticatedTenantDocumentosRoute,
   AuthenticatedTenantFinanceiroRoute: AuthenticatedTenantFinanceiroRoute,

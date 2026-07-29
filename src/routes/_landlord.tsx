@@ -15,9 +15,9 @@ const navGroups: ShellNavGroup[] = [
   {
     items: [
       { to: "/landlord", label: "Dashboard", icon: LayoutDashboard, exact: true },
+      { to: "/landlord/chat", label: "Chat", icon: MessageSquare },
       { to: "/landlord/financeiro", label: "Finanças", icon: Wallet },
       { to: "/landlord/manutencoes", label: "Manutenções", icon: Wrench },
-      { to: "/landlord/chat", label: "Chat", icon: MessageSquare },
     ],
   },
 ];

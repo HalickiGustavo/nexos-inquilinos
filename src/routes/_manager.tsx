@@ -37,6 +37,7 @@ const navGroups: ShellNavGroup[] = [
     label: null,
     items: [
       { to: "/manager", label: "Dashboard", icon: LayoutDashboard, exact: true, tour: "nav-manager" },
+      { to: "/manager/chat", label: "Chat", icon: MessageSquare, tour: "nav-manager-chat" },
     ],
   },
   {

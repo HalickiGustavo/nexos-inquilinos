@@ -49,6 +49,7 @@ import { Route as ManagerManagerEquipeRouteImport } from './routes/_manager/mana
 import { Route as ManagerManagerDimobRouteImport } from './routes/_manager/manager.dimob'
 import { Route as ManagerManagerCrmRouteImport } from './routes/_manager/manager.crm'
 import { Route as ManagerManagerContratosRouteImport } from './routes/_manager/manager.contratos'
+import { Route as ManagerManagerChatRouteImport } from './routes/_manager/manager.chat'
 import { Route as ManagerManagerCarteiraRouteImport } from './routes/_manager/manager.carteira'
 import { Route as ManagerManagerAlertasRouteImport } from './routes/_manager/manager.alertas'
 import { Route as LandlordLandlordSaldoRouteImport } from './routes/_landlord/landlord.saldo'
@@ -292,6 +293,11 @@ const ManagerManagerContratosRoute = ManagerManagerContratosRouteImport.update({
   path: '/manager/contratos',
   getParentRoute: () => ManagerRoute,
 } as any)
+const ManagerManagerChatRoute = ManagerManagerChatRouteImport.update({
+  id: '/manager/chat',
+  path: '/manager/chat',
+  getParentRoute: () => ManagerRoute,
+} as any)
 const ManagerManagerCarteiraRoute = ManagerManagerCarteiraRouteImport.update({
   id: '/manager/carteira',
   path: '/manager/carteira',
@@ -521,6 +527,7 @@ export interface FileRoutesByFullPath {
   '/landlord/saldo': typeof LandlordLandlordSaldoRoute
   '/manager/alertas': typeof ManagerManagerAlertasRoute
   '/manager/carteira': typeof ManagerManagerCarteiraRoute
+  '/manager/chat': typeof ManagerManagerChatRoute
   '/manager/contratos': typeof ManagerManagerContratosRoute
   '/manager/crm': typeof ManagerManagerCrmRoute
   '/manager/dimob': typeof ManagerManagerDimobRoute
@@ -594,6 +601,7 @@ export interface FileRoutesByTo {
   '/landlord/saldo': typeof LandlordLandlordSaldoRoute
   '/manager/alertas': typeof ManagerManagerAlertasRoute
   '/manager/carteira': typeof ManagerManagerCarteiraRoute
+  '/manager/chat': typeof ManagerManagerChatRoute
   '/manager/contratos': typeof ManagerManagerContratosRoute
   '/manager/crm': typeof ManagerManagerCrmRoute
   '/manager/dimob': typeof ManagerManagerDimobRoute
@@ -671,6 +679,7 @@ export interface FileRoutesById {
   '/_landlord/landlord/saldo': typeof LandlordLandlordSaldoRoute
   '/_manager/manager/alertas': typeof ManagerManagerAlertasRoute
   '/_manager/manager/carteira': typeof ManagerManagerCarteiraRoute
+  '/_manager/manager/chat': typeof ManagerManagerChatRoute
   '/_manager/manager/contratos': typeof ManagerManagerContratosRoute
   '/_manager/manager/crm': typeof ManagerManagerCrmRoute
   '/_manager/manager/dimob': typeof ManagerManagerDimobRoute
@@ -746,6 +755,7 @@ export interface FileRouteTypes {
     | '/landlord/saldo'
     | '/manager/alertas'
     | '/manager/carteira'
+    | '/manager/chat'
     | '/manager/contratos'
     | '/manager/crm'
     | '/manager/dimob'
@@ -819,6 +829,7 @@ export interface FileRouteTypes {
     | '/landlord/saldo'
     | '/manager/alertas'
     | '/manager/carteira'
+    | '/manager/chat'
     | '/manager/contratos'
     | '/manager/crm'
     | '/manager/dimob'
@@ -895,6 +906,7 @@ export interface FileRouteTypes {
     | '/_landlord/landlord/saldo'
     | '/_manager/manager/alertas'
     | '/_manager/manager/carteira'
+    | '/_manager/manager/chat'
     | '/_manager/manager/contratos'
     | '/_manager/manager/crm'
     | '/_manager/manager/dimob'
@@ -1249,6 +1261,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ManagerManagerContratosRouteImport
       parentRoute: typeof ManagerRoute
     }
+    '/_manager/manager/chat': {
+      id: '/_manager/manager/chat'
+      path: '/manager/chat'
+      fullPath: '/manager/chat'
+      preLoaderRoute: typeof ManagerManagerChatRouteImport
+      parentRoute: typeof ManagerRoute
+    }
     '/_manager/manager/carteira': {
       id: '/_manager/manager/carteira'
       path: '/manager/carteira'
@@ -1580,6 +1599,7 @@ const LandlordRouteWithChildren = LandlordRoute._addFileChildren(
 interface ManagerRouteChildren {
   ManagerManagerAlertasRoute: typeof ManagerManagerAlertasRoute
   ManagerManagerCarteiraRoute: typeof ManagerManagerCarteiraRoute
+  ManagerManagerChatRoute: typeof ManagerManagerChatRoute
   ManagerManagerContratosRoute: typeof ManagerManagerContratosRoute
   ManagerManagerCrmRoute: typeof ManagerManagerCrmRoute
   ManagerManagerDimobRoute: typeof ManagerManagerDimobRoute
@@ -1602,6 +1622,7 @@ interface ManagerRouteChildren {
 const ManagerRouteChildren: ManagerRouteChildren = {
   ManagerManagerAlertasRoute: ManagerManagerAlertasRoute,
   ManagerManagerCarteiraRoute: ManagerManagerCarteiraRoute,
+  ManagerManagerChatRoute: ManagerManagerChatRoute,
   ManagerManagerContratosRoute: ManagerManagerContratosRoute,
   ManagerManagerCrmRoute: ManagerManagerCrmRoute,
   ManagerManagerDimobRoute: ManagerManagerDimobRoute,

@@ -150,7 +150,7 @@ function PerfilPage() {
       document: docDigits || null,
       document_type: docDigits ? document_type : null,
       pix_key: pix_key.trim() || null,
-      pix_key_type: pix_key_type || null,
+      pix_key_type: normalizePixKeyType(pix_key_type) || null,
       birth_date: birth_date || null,
       income_value: income,
       postal_code: cepDigits || null,

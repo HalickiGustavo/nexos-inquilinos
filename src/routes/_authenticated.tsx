@@ -12,6 +12,7 @@ import {
   ClipboardCheck,
   FolderOpen,
   BarChart3,
+  UserCog,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useUserRole } from "@/lib/useUserRole";

@@ -39,7 +39,7 @@ export function SupportWhatsAppButton({ bottomOffset = 24 }: SupportWhatsAppButt
           "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
         )}
       >
-        <MessageCircle className="size-5" strokeWidth={2} />
+        <WhatsAppIcon className="size-5" />
       </a>
     </div>
   );

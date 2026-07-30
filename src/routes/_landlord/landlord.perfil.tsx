@@ -2,17 +2,29 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Loader2, Save, User as UserIcon, MapPin } from "lucide-react";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { PageShell } from "@/components/PageHeader";
 import { ChangePasswordCard } from "@/components/ChangePasswordCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 
-export const Route = createFileRoute("/_manager/manager/perfil")({
-  component: PerfilPage,
+export const Route = createFileRoute("/_landlord/landlord/perfil")({
+  head: () => ({
+    meta: [
+      { title: "Meu Perfil — Proprietário NEXO" },
+      { name: "description", content: "Atualize seus dados pessoais, chave PIX e senha de acesso." },
+      { property: "og:title", content: "Meu Perfil — Proprietário NEXO" },
+      { property: "og:description", content: "Atualize seus dados pessoais, chave PIX e senha de acesso." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
+  component: LandlordPerfil,
 });
 
 function maskDoc(v: string) {
@@ -38,22 +50,7 @@ function maskCep(v: string) {
   const d = v.replace(/\D/g, "").slice(0, 8);
   return d.replace(/(\d{5})(\d)/, "$1-$2");
 }
-function validateCpf(c: string) {
-  if (!/^\d{11}$/.test(c) || /^(\d)\1{10}$/.test(c)) return false;
-  let s = 0; for (let i = 0; i < 9; i++) s += +c[i] * (10 - i);
-  let d = (s * 10) % 11; if (d === 10) d = 0; if (d !== +c[9]) return false;
-  s = 0; for (let i = 0; i < 10; i++) s += +c[i] * (11 - i);
-  let d2 = (s * 10) % 11; if (d2 === 10) d2 = 0; return d2 === +c[10];
-}
-function validateCnpj(c: string) {
-  if (!/^\d{14}$/.test(c) || /^(\d)\1{13}$/.test(c)) return false;
-  const calc = (b: string, w: number[]) => { const s = w.reduce((a, x, i) => a + +b[i] * x, 0); const r = s % 11; return r < 2 ? 0 : 11 - r; };
-  const w1 = [5,4,3,2,9,8,7,6,5,4,3,2], w2 = [6,5,4,3,2,9,8,7,6,5,4,3,2];
-  const d1 = calc(c.slice(0, 12), w1), d2 = calc(c.slice(0, 12) + d1, w2);
-  return d1 === +c[12] && d2 === +c[13];
-}
 
-// O banco aceita apenas: cpf | cnpj | email | phone | random
 const PIX_KEY_TYPES = ["cpf", "cnpj", "email", "phone", "random"] as const;
 function normalizePixKeyType(value?: string | null): string {
   const v = (value ?? "").trim().toLowerCase();
@@ -62,8 +59,9 @@ function normalizePixKeyType(value?: string | null): string {
   return (PIX_KEY_TYPES as readonly string[]).includes(v) ? v : "";
 }
 
-function PerfilPage() {
+function LandlordPerfil() {
   const { user } = useAuth();
+  const qc = useQueryClient();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [cepLoading, setCepLoading] = useState(false);
@@ -75,9 +73,6 @@ function PerfilPage() {
   const [document_type, setDocumentType] = useState<"CPF" | "CNPJ">("CPF");
   const [pix_key, setPixKey] = useState("");
   const [pix_key_type, setPixKeyType] = useState<string>("");
-
-  const [birth_date, setBirthDate] = useState("");
-  const [income_value, setIncomeValue] = useState<string>("");
   const [postal_code, setPostalCode] = useState("");
   const [address, setAddress] = useState("");
   const [address_number, setAddressNumber] = useState("");
@@ -91,7 +86,7 @@ function PerfilPage() {
     (async () => {
       const { data, error } = await supabase
         .from("profiles")
-        .select("full_name, email, phone, document, document_type, pix_key, pix_key_type, birth_date, income_value, postal_code, address, address_number, address_complement, province, city, state")
+        .select("full_name, email, phone, document, document_type, pix_key, pix_key_type, postal_code, address, address_number, address_complement, province, city, state")
         .eq("id", user.id)
         .maybeSingle();
       if (error) toast.error("Erro ao carregar perfil: " + error.message);
@@ -103,8 +98,6 @@ function PerfilPage() {
         setDocumentType((data.document_type as "CPF" | "CNPJ") ?? (((data.document ?? "").replace(/\D/g, "").length === 14) ? "CNPJ" : "CPF"));
         setPixKey(data.pix_key ?? "");
         setPixKeyType(normalizePixKeyType(data.pix_key_type));
-        setBirthDate((data as any).birth_date ?? "");
-        setIncomeValue((data as any).income_value != null ? String((data as any).income_value) : "");
         setPostalCode((data as any).postal_code ? maskCep((data as any).postal_code) : "");
         setAddress((data as any).address ?? "");
         setAddressNumber((data as any).address_number ?? "");
@@ -139,30 +132,21 @@ function PerfilPage() {
   async function onSave(e: React.FormEvent) {
     e.preventDefault();
     if (!user) return;
-    const docDigits = document.replace(/\D/g, "");
-    if (docDigits) {
-      const ok = document_type === "CPF" ? validateCpf(docDigits) : validateCnpj(docDigits);
-      if (!ok) { toast.error(`${document_type} inválido. Confira os dígitos.`); return; }
-    }
     const phoneDigits = phone.replace(/\D/g, "");
     if (phoneDigits && (phoneDigits.length < 10 || phoneDigits.length > 11)) {
       toast.error("Telefone deve ter 10 ou 11 dígitos (com DDD)."); return;
     }
     const cepDigits = postal_code.replace(/\D/g, "");
     if (cepDigits && cepDigits.length !== 8) { toast.error("CEP deve ter 8 dígitos."); return; }
-    const income = income_value ? Number(income_value) : null;
-    if (income_value && !(income! > 0)) { toast.error("Faturamento mensal inválido."); return; }
 
     setSaving(true);
     const { error } = await supabase.from("profiles").update({
       full_name: full_name.trim(),
       phone: phoneDigits || null,
-      document: docDigits || null,
-      document_type: docDigits ? document_type : null,
+      document: document.replace(/\D/g, "") || null,
+      document_type: document.replace(/\D/g, "") ? document_type : null,
       pix_key: pix_key.trim() || null,
       pix_key_type: normalizePixKeyType(pix_key_type) || null,
-      birth_date: birth_date || null,
-      income_value: income,
       postal_code: cepDigits || null,
       address: address.trim() || null,
       address_number: address_number.trim() || null,
@@ -172,8 +156,9 @@ function PerfilPage() {
       state: stateUf.trim() || null,
     } as any).eq("id", user.id);
     setSaving(false);
-    if (error) toast.error("Erro ao salvar: " + error.message);
-    else toast.success("Perfil atualizado!");
+    if (error) { toast.error("Erro ao salvar: " + error.message); return; }
+    await qc.invalidateQueries({ queryKey: ["landlord", "profile"] });
+    toast.success("Perfil atualizado!");
   }
 
   if (loading) {
@@ -181,17 +166,19 @@ function PerfilPage() {
   }
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-3xl mx-auto space-y-6">
+    <PageShell narrow>
       <div>
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight flex items-center gap-2"><UserIcon className="size-6 text-primary" />Meu Perfil</h1>
-        <p className="text-sm text-muted-foreground mt-1">Informações usadas no cadastro Asaas, contratos e comunicações.</p>
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight flex items-center gap-2">
+          <UserIcon className="size-6 text-primary" />Meu Perfil
+        </h1>
+        <p className="text-sm text-muted-foreground mt-1">Seus dados, chave PIX de repasse e senha de acesso.</p>
       </div>
 
       <form onSubmit={onSave} className="space-y-6">
         <Card>
           <CardHeader>
             <CardTitle>Dados pessoais</CardTitle>
-            <CardDescription>Mantenha CPF/CNPJ e telefone corretos — são exigidos pelo gateway de pagamentos.</CardDescription>
+            <CardDescription>Usados em contratos, repasses e comunicações.</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4 md:grid-cols-2">
             <div className="md:col-span-2">
@@ -201,7 +188,6 @@ function PerfilPage() {
             <div>
               <Label htmlFor="email">E-mail</Label>
               <Input id="email" value={email} disabled />
-              <p className="text-[11px] text-muted-foreground mt-1">Para alterar e-mail, use a tela de login.</p>
             </div>
             <div>
               <Label htmlFor="phone">Celular (com DDD)</Label>
@@ -219,17 +205,7 @@ function PerfilPage() {
             </div>
             <div>
               <Label htmlFor="document">{document_type}</Label>
-              <Input id="document" value={document} onChange={(e) => setDocument(maskDoc(e.target.value))} placeholder={document_type === "CPF" ? "000.000.000-00" : "00.000.000/0000-00"} />
-            </div>
-            {document_type === "CPF" && (
-              <div>
-                <Label htmlFor="birth_date">Data de nascimento</Label>
-                <Input id="birth_date" type="date" value={birth_date} onChange={(e) => setBirthDate(e.target.value)} />
-              </div>
-            )}
-            <div>
-              <Label htmlFor="income_value">Faturamento mensal (R$)</Label>
-              <Input id="income_value" type="number" min="1" step="0.01" value={income_value} onChange={(e) => setIncomeValue(e.target.value)} placeholder="10000" />
+              <Input id="document" value={document} onChange={(e) => setDocument(maskDoc(e.target.value))} />
             </div>
           </CardContent>
         </Card>
@@ -237,7 +213,6 @@ function PerfilPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2"><MapPin className="size-5" />Endereço</CardTitle>
-            <CardDescription>Endereço comercial/residencial enviado ao cadastro Asaas. Sem placeholders — use seus dados reais.</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4 md:grid-cols-6">
             <div className="md:col-span-2">
@@ -255,26 +230,26 @@ function PerfilPage() {
               </div>
             </div>
             <div className="md:col-span-4">
-              <Label htmlFor="address">Endereço (rua/avenida)</Label>
+              <Label htmlFor="address">Endereço</Label>
               <Input id="address" value={address} onChange={(e) => setAddress(e.target.value)} />
             </div>
-            <div className="md:col-span-1">
+            <div className="md:col-span-2">
               <Label htmlFor="address_number">Número</Label>
               <Input id="address_number" value={address_number} onChange={(e) => setAddressNumber(e.target.value)} />
             </div>
-            <div className="md:col-span-2">
+            <div className="md:col-span-4">
               <Label htmlFor="address_complement">Complemento</Label>
-              <Input id="address_complement" value={address_complement} onChange={(e) => setAddressComplement(e.target.value)} placeholder="Apto, sala, etc." />
+              <Input id="address_complement" value={address_complement} onChange={(e) => setAddressComplement(e.target.value)} />
             </div>
             <div className="md:col-span-3">
               <Label htmlFor="province">Bairro</Label>
               <Input id="province" value={province} onChange={(e) => setProvince(e.target.value)} />
             </div>
-            <div className="md:col-span-4">
+            <div className="md:col-span-2">
               <Label htmlFor="city">Cidade</Label>
               <Input id="city" value={city} onChange={(e) => setCity(e.target.value)} />
             </div>
-            <div className="md:col-span-2">
+            <div className="md:col-span-1">
               <Label htmlFor="state">UF</Label>
               <Input id="state" value={stateUf} maxLength={2} onChange={(e) => setStateUf(e.target.value.toUpperCase())} />
             </div>
@@ -284,6 +259,7 @@ function PerfilPage() {
         <Card>
           <CardHeader>
             <CardTitle>Chave PIX para repasses</CardTitle>
+            <CardDescription>É para essa chave que os aluguéis são transferidos.</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4 md:grid-cols-2">
             <div>
@@ -316,7 +292,6 @@ function PerfilPage() {
       </form>
 
       <ChangePasswordCard />
-
-    </div>
+    </PageShell>
   );
 }

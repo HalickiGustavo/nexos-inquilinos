@@ -53,6 +53,7 @@ import { Route as ManagerManagerChatRouteImport } from './routes/_manager/manage
 import { Route as ManagerManagerCarteiraRouteImport } from './routes/_manager/manager.carteira'
 import { Route as ManagerManagerAlertasRouteImport } from './routes/_manager/manager.alertas'
 import { Route as LandlordLandlordSaldoRouteImport } from './routes/_landlord/landlord.saldo'
+import { Route as LandlordLandlordPerfilRouteImport } from './routes/_landlord/landlord.perfil'
 import { Route as LandlordLandlordManutencoesRouteImport } from './routes/_landlord/landlord.manutencoes'
 import { Route as LandlordLandlordFinanceiroRouteImport } from './routes/_landlord/landlord.financeiro'
 import { Route as LandlordLandlordChatRouteImport } from './routes/_landlord/landlord.chat'
@@ -315,6 +316,11 @@ const LandlordLandlordSaldoRoute = LandlordLandlordSaldoRouteImport.update({
   path: '/landlord/saldo',
   getParentRoute: () => LandlordRoute,
 } as any)
+const LandlordLandlordPerfilRoute = LandlordLandlordPerfilRouteImport.update({
+  id: '/landlord/perfil',
+  path: '/landlord/perfil',
+  getParentRoute: () => LandlordRoute,
+} as any)
 const LandlordLandlordManutencoesRoute =
   LandlordLandlordManutencoesRouteImport.update({
     id: '/landlord/manutencoes',
@@ -538,6 +544,7 @@ export interface FileRoutesByFullPath {
   '/landlord/chat': typeof LandlordLandlordChatRoute
   '/landlord/financeiro': typeof LandlordLandlordFinanceiroRoute
   '/landlord/manutencoes': typeof LandlordLandlordManutencoesRoute
+  '/landlord/perfil': typeof LandlordLandlordPerfilRoute
   '/landlord/saldo': typeof LandlordLandlordSaldoRoute
   '/manager/alertas': typeof ManagerManagerAlertasRoute
   '/manager/carteira': typeof ManagerManagerCarteiraRoute
@@ -614,6 +621,7 @@ export interface FileRoutesByTo {
   '/landlord/chat': typeof LandlordLandlordChatRoute
   '/landlord/financeiro': typeof LandlordLandlordFinanceiroRoute
   '/landlord/manutencoes': typeof LandlordLandlordManutencoesRoute
+  '/landlord/perfil': typeof LandlordLandlordPerfilRoute
   '/landlord/saldo': typeof LandlordLandlordSaldoRoute
   '/manager/alertas': typeof ManagerManagerAlertasRoute
   '/manager/carteira': typeof ManagerManagerCarteiraRoute
@@ -694,6 +702,7 @@ export interface FileRoutesById {
   '/_landlord/landlord/chat': typeof LandlordLandlordChatRoute
   '/_landlord/landlord/financeiro': typeof LandlordLandlordFinanceiroRoute
   '/_landlord/landlord/manutencoes': typeof LandlordLandlordManutencoesRoute
+  '/_landlord/landlord/perfil': typeof LandlordLandlordPerfilRoute
   '/_landlord/landlord/saldo': typeof LandlordLandlordSaldoRoute
   '/_manager/manager/alertas': typeof ManagerManagerAlertasRoute
   '/_manager/manager/carteira': typeof ManagerManagerCarteiraRoute
@@ -772,6 +781,7 @@ export interface FileRouteTypes {
     | '/landlord/chat'
     | '/landlord/financeiro'
     | '/landlord/manutencoes'
+    | '/landlord/perfil'
     | '/landlord/saldo'
     | '/manager/alertas'
     | '/manager/carteira'
@@ -848,6 +858,7 @@ export interface FileRouteTypes {
     | '/landlord/chat'
     | '/landlord/financeiro'
     | '/landlord/manutencoes'
+    | '/landlord/perfil'
     | '/landlord/saldo'
     | '/manager/alertas'
     | '/manager/carteira'
@@ -927,6 +938,7 @@ export interface FileRouteTypes {
     | '/_landlord/landlord/chat'
     | '/_landlord/landlord/financeiro'
     | '/_landlord/landlord/manutencoes'
+    | '/_landlord/landlord/perfil'
     | '/_landlord/landlord/saldo'
     | '/_manager/manager/alertas'
     | '/_manager/manager/carteira'
@@ -1315,6 +1327,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LandlordLandlordSaldoRouteImport
       parentRoute: typeof LandlordRoute
     }
+    '/_landlord/landlord/perfil': {
+      id: '/_landlord/landlord/perfil'
+      path: '/landlord/perfil'
+      fullPath: '/landlord/perfil'
+      preLoaderRoute: typeof LandlordLandlordPerfilRouteImport
+      parentRoute: typeof LandlordRoute
+    }
     '/_landlord/landlord/manutencoes': {
       id: '/_landlord/landlord/manutencoes'
       path: '/landlord/manutencoes'
@@ -1622,6 +1641,7 @@ interface LandlordRouteChildren {
   LandlordLandlordChatRoute: typeof LandlordLandlordChatRoute
   LandlordLandlordFinanceiroRoute: typeof LandlordLandlordFinanceiroRoute
   LandlordLandlordManutencoesRoute: typeof LandlordLandlordManutencoesRoute
+  LandlordLandlordPerfilRoute: typeof LandlordLandlordPerfilRoute
   LandlordLandlordSaldoRoute: typeof LandlordLandlordSaldoRoute
   LandlordLandlordIndexRoute: typeof LandlordLandlordIndexRoute
 }
@@ -1630,6 +1650,7 @@ const LandlordRouteChildren: LandlordRouteChildren = {
   LandlordLandlordChatRoute: LandlordLandlordChatRoute,
   LandlordLandlordFinanceiroRoute: LandlordLandlordFinanceiroRoute,
   LandlordLandlordManutencoesRoute: LandlordLandlordManutencoesRoute,
+  LandlordLandlordPerfilRoute: LandlordLandlordPerfilRoute,
   LandlordLandlordSaldoRoute: LandlordLandlordSaldoRoute,
   LandlordLandlordIndexRoute: LandlordLandlordIndexRoute,
 }
@@ -1740,13 +1761,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Wallet, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 
@@ -23,6 +23,7 @@ export const Route = createFileRoute("/landlord-setup")({
 function LandlordSetup() {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
+  const qc = useQueryClient();
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -79,6 +80,10 @@ function LandlordSetup() {
     setBusy(false);
 
     if (error) return toast.error(error.message);
+    // O portão do layout /_landlord lê o perfil cacheado; sem invalidar, ele
+    // ainda vê pix_key vazio e joga o usuário de volta pra esta tela.
+    await qc.invalidateQueries({ queryKey: ["landlord", "profile"] });
+    await qc.refetchQueries({ queryKey: ["landlord", "profile"], type: "active" });
     toast.success("Chave PIX salva! Os repasses serão depositados nela.");
     navigate({ to: "/landlord", replace: true });
   }

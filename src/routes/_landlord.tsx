@@ -18,6 +18,7 @@ const navGroups: ShellNavGroup[] = [
       { to: "/landlord/chat", label: "Chat", icon: MessageSquare },
       { to: "/landlord/financeiro", label: "Finanças", icon: Wallet },
       { to: "/landlord/manutencoes", label: "Manutenções", icon: Wrench },
+      { to: "/landlord/perfil", label: "Meu Perfil", icon: UserCog },
     ],
   },
 ];

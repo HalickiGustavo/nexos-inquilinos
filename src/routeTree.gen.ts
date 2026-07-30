@@ -65,6 +65,7 @@ import { Route as AuthenticatedTenantChatRouteImport } from './routes/_authentic
 import { Route as AuthenticatedTenantAlertasRouteImport } from './routes/_authenticated/tenant.alertas'
 import { Route as AuthenticatedPropertiesIdRouteImport } from './routes/_authenticated/properties.$id'
 import { Route as AuthenticatedAdminIntegracoesRouteImport } from './routes/_authenticated/admin.integracoes'
+import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as ApiPublicWebhooksLeadsRouteImport } from './routes/api/public/webhooks/leads'
 import { Route as ApiPublicListingsXmlRouteImport } from './routes/api/public/listings.xml'
 import { Route as ApiPublicHooksSyncCronSecretRouteImport } from './routes/api/public/hooks/sync-cron-secret'
@@ -384,6 +385,12 @@ const AuthenticatedAdminIntegracoesRoute =
     path: '/admin/integracoes',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const LovableEmailQueueProcessRoute =
+  LovableEmailQueueProcessRouteImport.update({
+    id: '/lovable/email/queue/process',
+    path: '/lovable/email/queue/process',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicWebhooksLeadsRoute = ApiPublicWebhooksLeadsRouteImport.update({
   id: '/api/public/webhooks/leads',
   path: '/api/public/webhooks/leads',
@@ -573,6 +580,7 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/sync-cron-secret': typeof ApiPublicHooksSyncCronSecretRoute
   '/api/public/listings/xml': typeof ApiPublicListingsXmlRoute
   '/api/public/webhooks/leads': typeof ApiPublicWebhooksLeadsRoute
+  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/api/v1/integrations/$orgSlug/leads': typeof ApiV1IntegrationsOrgSlugLeadsRoute
   '/api/v1/integrations/$orgSlug/listings.xml': typeof ApiV1IntegrationsOrgSlugListingsDotxmlRoute
 }
@@ -648,6 +656,7 @@ export interface FileRoutesByTo {
   '/api/public/hooks/sync-cron-secret': typeof ApiPublicHooksSyncCronSecretRoute
   '/api/public/listings/xml': typeof ApiPublicListingsXmlRoute
   '/api/public/webhooks/leads': typeof ApiPublicWebhooksLeadsRoute
+  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/api/v1/integrations/$orgSlug/leads': typeof ApiV1IntegrationsOrgSlugLeadsRoute
   '/api/v1/integrations/$orgSlug/listings.xml': typeof ApiV1IntegrationsOrgSlugListingsDotxmlRoute
 }
@@ -727,6 +736,7 @@ export interface FileRoutesById {
   '/api/public/hooks/sync-cron-secret': typeof ApiPublicHooksSyncCronSecretRoute
   '/api/public/listings/xml': typeof ApiPublicListingsXmlRoute
   '/api/public/webhooks/leads': typeof ApiPublicWebhooksLeadsRoute
+  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/api/v1/integrations/$orgSlug/leads': typeof ApiV1IntegrationsOrgSlugLeadsRoute
   '/api/v1/integrations/$orgSlug/listings.xml': typeof ApiV1IntegrationsOrgSlugListingsDotxmlRoute
 }
@@ -804,6 +814,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/sync-cron-secret'
     | '/api/public/listings/xml'
     | '/api/public/webhooks/leads'
+    | '/lovable/email/queue/process'
     | '/api/v1/integrations/$orgSlug/leads'
     | '/api/v1/integrations/$orgSlug/listings.xml'
   fileRoutesByTo: FileRoutesByTo
@@ -879,6 +890,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/sync-cron-secret'
     | '/api/public/listings/xml'
     | '/api/public/webhooks/leads'
+    | '/lovable/email/queue/process'
     | '/api/v1/integrations/$orgSlug/leads'
     | '/api/v1/integrations/$orgSlug/listings.xml'
   id:
@@ -957,6 +969,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/sync-cron-secret'
     | '/api/public/listings/xml'
     | '/api/public/webhooks/leads'
+    | '/lovable/email/queue/process'
     | '/api/v1/integrations/$orgSlug/leads'
     | '/api/v1/integrations/$orgSlug/listings.xml'
   fileRoutesById: FileRoutesById
@@ -987,6 +1000,7 @@ export interface RootRouteChildren {
   ApiPublicHooksSyncCronSecretRoute: typeof ApiPublicHooksSyncCronSecretRoute
   ApiPublicListingsXmlRoute: typeof ApiPublicListingsXmlRoute
   ApiPublicWebhooksLeadsRoute: typeof ApiPublicWebhooksLeadsRoute
+  LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
   ApiV1IntegrationsOrgSlugLeadsRoute: typeof ApiV1IntegrationsOrgSlugLeadsRoute
   ApiV1IntegrationsOrgSlugListingsDotxmlRoute: typeof ApiV1IntegrationsOrgSlugListingsDotxmlRoute
 }
@@ -1385,6 +1399,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminIntegracoesRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/lovable/email/queue/process': {
+      id: '/lovable/email/queue/process'
+      path: '/lovable/email/queue/process'
+      fullPath: '/lovable/email/queue/process'
+      preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/webhooks/leads': {
       id: '/api/public/webhooks/leads'
       path: '/api/public/webhooks/leads'
@@ -1711,6 +1732,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksSyncCronSecretRoute: ApiPublicHooksSyncCronSecretRoute,
   ApiPublicListingsXmlRoute: ApiPublicListingsXmlRoute,
   ApiPublicWebhooksLeadsRoute: ApiPublicWebhooksLeadsRoute,
+  LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
   ApiV1IntegrationsOrgSlugLeadsRoute: ApiV1IntegrationsOrgSlugLeadsRoute,
   ApiV1IntegrationsOrgSlugListingsDotxmlRoute:
     ApiV1IntegrationsOrgSlugListingsDotxmlRoute,

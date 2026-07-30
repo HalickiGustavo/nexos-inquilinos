@@ -314,6 +314,9 @@ function PerfilPage() {
           </Button>
         </div>
       </form>
+
+      <ChangePasswordCard />
+
     </div>
   );
 }

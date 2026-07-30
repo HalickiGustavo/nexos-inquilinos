@@ -63,9 +63,12 @@ function LandlordSetup() {
     if (!pixKey.trim()) return toast.error("Informe a chave PIX para recebimento");
 
     setBusy(true);
+    const PROFILE_KEY_TYPE: Record<string, string> = {
+      CPF: "cpf", CNPJ: "cnpj", EMAIL: "email", PHONE: "phone", EVP: "random",
+    };
     const { error } = await supabase.from("profiles").update({
       pix_key: pixKey.trim(),
-      pix_key_type: pixKeyType,
+      pix_key_type: PROFILE_KEY_TYPE[pixKeyType] ?? "random",
     } as any).eq("id", user.id);
     if (!error) {
       await supabase.from("properties").update({

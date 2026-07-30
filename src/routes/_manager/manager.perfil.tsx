@@ -52,6 +52,15 @@ function validateCnpj(c: string) {
   return d1 === +c[12] && d2 === +c[13];
 }
 
+// O banco aceita apenas: cpf | cnpj | email | phone | random
+const PIX_KEY_TYPES = ["cpf", "cnpj", "email", "phone", "random"] as const;
+function normalizePixKeyType(value?: string | null): string {
+  const v = (value ?? "").trim().toLowerCase();
+  if (!v) return "";
+  if (v === "evp" || v === "aleatoria" || v === "aleatória") return "random";
+  return (PIX_KEY_TYPES as readonly string[]).includes(v) ? v : "";
+}
+
 function PerfilPage() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
@@ -92,7 +101,7 @@ function PerfilPage() {
         setDocument(data.document ? maskDoc(data.document) : "");
         setDocumentType((data.document_type as "CPF" | "CNPJ") ?? (((data.document ?? "").replace(/\D/g, "").length === 14) ? "CNPJ" : "CPF"));
         setPixKey(data.pix_key ?? "");
-        setPixKeyType(data.pix_key_type ?? "");
+        setPixKeyType(normalizePixKeyType(data.pix_key_type));
         setBirthDate((data as any).birth_date ?? "");
         setIncomeValue((data as any).income_value != null ? String((data as any).income_value) : "");
         setPostalCode((data as any).postal_code ? maskCep((data as any).postal_code) : "");
@@ -150,7 +159,7 @@ function PerfilPage() {
       document: docDigits || null,
       document_type: docDigits ? document_type : null,
       pix_key: pix_key.trim() || null,
-      pix_key_type: pix_key_type || null,
+      pix_key_type: normalizePixKeyType(pix_key_type) || null,
       birth_date: birth_date || null,
       income_value: income,
       postal_code: cepDigits || null,
@@ -282,11 +291,11 @@ function PerfilPage() {
                 <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">— Nenhuma —</SelectItem>
-                  <SelectItem value="CPF">CPF</SelectItem>
-                  <SelectItem value="CNPJ">CNPJ</SelectItem>
-                  <SelectItem value="EMAIL">E-mail</SelectItem>
-                  <SelectItem value="PHONE">Telefone</SelectItem>
-                  <SelectItem value="EVP">Aleatória (EVP)</SelectItem>
+                  <SelectItem value="cpf">CPF</SelectItem>
+                  <SelectItem value="cnpj">CNPJ</SelectItem>
+                  <SelectItem value="email">E-mail</SelectItem>
+                  <SelectItem value="phone">Telefone</SelectItem>
+                  <SelectItem value="random">Aleatória (EVP)</SelectItem>
                 </SelectContent>
               </Select>
             </div>

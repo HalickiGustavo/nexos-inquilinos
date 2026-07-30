@@ -92,7 +92,7 @@ function PerfilPage() {
         setDocument(data.document ? maskDoc(data.document) : "");
         setDocumentType((data.document_type as "CPF" | "CNPJ") ?? (((data.document ?? "").replace(/\D/g, "").length === 14) ? "CNPJ" : "CPF"));
         setPixKey(data.pix_key ?? "");
-        setPixKeyType(data.pix_key_type ?? "");
+        setPixKeyType(normalizePixKeyType(data.pix_key_type));
         setBirthDate((data as any).birth_date ?? "");
         setIncomeValue((data as any).income_value != null ? String((data as any).income_value) : "");
         setPostalCode((data as any).postal_code ? maskCep((data as any).postal_code) : "");

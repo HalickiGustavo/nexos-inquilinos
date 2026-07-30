@@ -52,6 +52,15 @@ function validateCnpj(c: string) {
   return d1 === +c[12] && d2 === +c[13];
 }
 
+// O banco aceita apenas: cpf | cnpj | email | phone | random
+const PIX_KEY_TYPES = ["cpf", "cnpj", "email", "phone", "random"] as const;
+function normalizePixKeyType(value?: string | null): string {
+  const v = (value ?? "").trim().toLowerCase();
+  if (!v) return "";
+  if (v === "evp" || v === "aleatoria" || v === "aleatória") return "random";
+  return (PIX_KEY_TYPES as readonly string[]).includes(v) ? v : "";
+}
+
 function PerfilPage() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);

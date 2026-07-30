@@ -22,6 +22,7 @@ import { Route as AuthenticatedVistoriasRouteImport } from './routes/_authentica
 import { Route as AuthenticatedTenantsRouteImport } from './routes/_authenticated/tenants'
 import { Route as AuthenticatedRelatoriosRouteImport } from './routes/_authenticated/relatorios'
 import { Route as AuthenticatedPropertiesRouteImport } from './routes/_authenticated/properties'
+import { Route as AuthenticatedPerfilRouteImport } from './routes/_authenticated/perfil'
 import { Route as AuthenticatedMaintenancesRouteImport } from './routes/_authenticated/maintenances'
 import { Route as AuthenticatedIntegrationsRouteImport } from './routes/_authenticated/integrations'
 import { Route as AuthenticatedFinancialsRouteImport } from './routes/_authenticated/financials'
@@ -148,6 +149,11 @@ const AuthenticatedRelatoriosRoute = AuthenticatedRelatoriosRouteImport.update({
 const AuthenticatedPropertiesRoute = AuthenticatedPropertiesRouteImport.update({
   id: '/properties',
   path: '/properties',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedPerfilRoute = AuthenticatedPerfilRouteImport.update({
+  id: '/perfil',
+  path: '/perfil',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedMaintenancesRoute =
@@ -528,6 +534,7 @@ export interface FileRoutesByFullPath {
   '/financials': typeof AuthenticatedFinancialsRoute
   '/integrations': typeof AuthenticatedIntegrationsRoute
   '/maintenances': typeof AuthenticatedMaintenancesRoute
+  '/perfil': typeof AuthenticatedPerfilRoute
   '/properties': typeof AuthenticatedPropertiesRouteWithChildren
   '/relatorios': typeof AuthenticatedRelatoriosRoute
   '/tenants': typeof AuthenticatedTenantsRoute
@@ -605,6 +612,7 @@ export interface FileRoutesByTo {
   '/financials': typeof AuthenticatedFinancialsRoute
   '/integrations': typeof AuthenticatedIntegrationsRoute
   '/maintenances': typeof AuthenticatedMaintenancesRoute
+  '/perfil': typeof AuthenticatedPerfilRoute
   '/properties': typeof AuthenticatedPropertiesRouteWithChildren
   '/relatorios': typeof AuthenticatedRelatoriosRoute
   '/tenants': typeof AuthenticatedTenantsRoute
@@ -685,6 +693,7 @@ export interface FileRoutesById {
   '/_authenticated/financials': typeof AuthenticatedFinancialsRoute
   '/_authenticated/integrations': typeof AuthenticatedIntegrationsRoute
   '/_authenticated/maintenances': typeof AuthenticatedMaintenancesRoute
+  '/_authenticated/perfil': typeof AuthenticatedPerfilRoute
   '/_authenticated/properties': typeof AuthenticatedPropertiesRouteWithChildren
   '/_authenticated/relatorios': typeof AuthenticatedRelatoriosRoute
   '/_authenticated/tenants': typeof AuthenticatedTenantsRoute
@@ -765,6 +774,7 @@ export interface FileRouteTypes {
     | '/financials'
     | '/integrations'
     | '/maintenances'
+    | '/perfil'
     | '/properties'
     | '/relatorios'
     | '/tenants'
@@ -842,6 +852,7 @@ export interface FileRouteTypes {
     | '/financials'
     | '/integrations'
     | '/maintenances'
+    | '/perfil'
     | '/properties'
     | '/relatorios'
     | '/tenants'
@@ -921,6 +932,7 @@ export interface FileRouteTypes {
     | '/_authenticated/financials'
     | '/_authenticated/integrations'
     | '/_authenticated/maintenances'
+    | '/_authenticated/perfil'
     | '/_authenticated/properties'
     | '/_authenticated/relatorios'
     | '/_authenticated/tenants'
@@ -1108,6 +1120,13 @@ declare module '@tanstack/react-router' {
       path: '/properties'
       fullPath: '/properties'
       preLoaderRoute: typeof AuthenticatedPropertiesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/perfil': {
+      id: '/_authenticated/perfil'
+      path: '/perfil'
+      fullPath: '/perfil'
+      preLoaderRoute: typeof AuthenticatedPerfilRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/maintenances': {
@@ -1590,6 +1609,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedFinancialsRoute: typeof AuthenticatedFinancialsRoute
   AuthenticatedIntegrationsRoute: typeof AuthenticatedIntegrationsRoute
   AuthenticatedMaintenancesRoute: typeof AuthenticatedMaintenancesRoute
+  AuthenticatedPerfilRoute: typeof AuthenticatedPerfilRoute
   AuthenticatedPropertiesRoute: typeof AuthenticatedPropertiesRouteWithChildren
   AuthenticatedRelatoriosRoute: typeof AuthenticatedRelatoriosRoute
   AuthenticatedTenantsRoute: typeof AuthenticatedTenantsRoute
@@ -1615,6 +1635,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedFinancialsRoute: AuthenticatedFinancialsRoute,
   AuthenticatedIntegrationsRoute: AuthenticatedIntegrationsRoute,
   AuthenticatedMaintenancesRoute: AuthenticatedMaintenancesRoute,
+  AuthenticatedPerfilRoute: AuthenticatedPerfilRoute,
   AuthenticatedPropertiesRoute: AuthenticatedPropertiesRouteWithChildren,
   AuthenticatedRelatoriosRoute: AuthenticatedRelatoriosRoute,
   AuthenticatedTenantsRoute: AuthenticatedTenantsRoute,

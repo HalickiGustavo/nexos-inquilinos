@@ -37,6 +37,7 @@ const navGroups: ShellNavGroup[] = [
       { to: "/documentos", label: "Documentos", icon: FolderOpen },
       { to: "/relatorios", label: "Relatórios", icon: BarChart3 },
       { to: "/financials", label: "Finanças (detalhado)", icon: Wallet, tour: "nav-financials" },
+      { to: "/perfil", label: "Meu Perfil", icon: UserCog },
     ],
   },
 ];

@@ -80,12 +80,20 @@ function LandlordSetup() {
     setBusy(false);
 
     if (error) return toast.error(error.message);
-    // O portão do layout /_landlord lê o perfil cacheado; sem invalidar, ele
-    // ainda vê pix_key vazio e joga o usuário de volta pra esta tela.
+    // O portão do layout /_landlord lê o perfil cacheado. Invalidate sozinho não
+    // basta: a query não está ativa aqui, então o layout monta com o dado antigo
+    // (pix_key vazio) e devolve o usuário pra esta tela antes do refetch chegar.
+    // Por isso gravamos o valor novo direto no cache antes de navegar.
+    const profileKeyType = PROFILE_KEY_TYPE[pixKeyType] ?? "random";
+    qc.setQueryData(["landlord", "profile", user.id], (old: any) => ({
+      ...(old ?? { id: user.id, full_name: null, email: user.email ?? null }),
+      pix_key: pixKey.trim(),
+      pix_key_type: profileKeyType,
+    }));
     await qc.invalidateQueries({ queryKey: ["landlord", "profile"] });
-    await qc.refetchQueries({ queryKey: ["landlord", "profile"], type: "active" });
     toast.success("Chave PIX salva! Os repasses serão depositados nela.");
     navigate({ to: "/landlord", replace: true });
+
   }
 
   return (

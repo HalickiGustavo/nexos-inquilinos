@@ -40,12 +40,15 @@ function LandlordLayout() {
 
   // Reaproveita o hook cacheado (staleTime longo) em vez de rodar uma segunda
   // query dedicada só pra portão — evita refetch em cada troca de rota.
-  const { data: profile, isLoading: profileLoading } = useLandlordProfile();
+  const { data: profile, isLoading: profileLoading, isFetching: profileFetching } = useLandlordProfile();
 
   useEffect(() => {
-    if (role !== "landlord" || profileLoading || !profile) return;
+    // Não redireciona enquanto houver refetch em voo: o dado em cache pode ser
+    // uma versão antiga (sem pix_key) recém-salva na tela de setup.
+    if (role !== "landlord" || profileLoading || profileFetching || !profile) return;
     if (!profile.pix_key) navigate({ to: "/landlord-setup", replace: true });
-  }, [role, profile, profileLoading, navigate]);
+  }, [role, profile, profileLoading, profileFetching, navigate]);
+
 
   if (loading || !user || roleLoading || role !== "landlord" || profileLoading) {
     return (

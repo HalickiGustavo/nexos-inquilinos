@@ -24,6 +24,7 @@ import { formatBRL, monthRange } from "@/lib/format";
 import { PortfolioSummary } from "@/components/owner/PortfolioSummary";
 import { PortfolioInsights } from "@/components/owner/PortfolioInsights";
 import { PendingApprovalsPanel } from "@/components/owner/PendingApprovalsPanel";
+import { OperationalIndicators } from "@/components/owner/OperationalIndicators";
 import { buildOwnerInsights } from "@/lib/owner-insights";
 
 const DashboardCollectionChart = lazy(
@@ -130,6 +131,32 @@ function Dashboard() {
       (d) => d.status === "pendente" || d.pending === true,
     ).length;
 
+    // Mês anterior (para tendências)
+    const now = new Date();
+    const prev = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const prevRange = monthRange(prev);
+    const prevMonthly = installments.filter(
+      (i) => i.due_date >= prevRange.start && i.due_date <= prevRange.end,
+    );
+    const prevForecast = prevMonthly.reduce((s, i) => s + Number(i.amount || 0), 0);
+    const prevPaid = prevMonthly
+      .filter((i) => i.status === "pago")
+      .reduce((s, i) => s + Number(i.paid_amount || i.amount || 0), 0);
+    const prevPending = prevMonthly
+      .filter((i) => i.status !== "pago")
+      .reduce((s, i) => s + Number(i.amount) + Number(i.extra_fees || 0), 0);
+    const prevOverdue = installments
+      .filter(
+        (i) =>
+          i.status !== "pago" &&
+          i.due_date < prevRange.end &&
+          i.due_date >= prevRange.start,
+      )
+      .reduce((s, i) => s + Number(i.amount) + Number(i.extra_fees || 0), 0);
+
+    const delta = (curr: number, before: number) =>
+      before > 0 ? ((curr - before) / before) * 100 : null;
+
     return {
       forecast,
       paid,
@@ -143,6 +170,12 @@ function Dashboard() {
       netRevenue,
       ytdPaid,
       avgMonthly,
+      trends: {
+        forecast: delta(forecast, prevForecast),
+        received: delta(paid, prevPaid),
+        pending: delta(pending, prevPending),
+        overdue: delta(overdue, prevOverdue),
+      },
       openMaintenances: (maintenances as any[]).filter(
         (m) => m.status !== "concluido" && m.status !== "cancelado",
       ).length,
@@ -152,6 +185,7 @@ function Dashboard() {
       ).length,
     };
   }, [properties, installments, contracts, maintenances, occupiedIds, documents]);
+
 
   const monthsCount = period === "6m" ? 6 : period === "12m" ? 12 : new Date().getMonth() + 1;
 
@@ -232,7 +266,7 @@ function Dashboard() {
   );
 
   return (
-    <div className="p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
+    <div className="p-6 lg:p-8 max-w-7xl mx-auto space-y-8">
       <header className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-4">
         <div className="min-w-0">
           <div className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-primary/80 font-medium mb-2">
@@ -243,7 +277,7 @@ function Dashboard() {
             Bem-vindo de volta
           </h1>
           <p className="text-muted-foreground mt-1 text-sm">
-            Sua carteira em uma tela — dados em tempo real.
+            Acompanhe rapidamente a saúde da sua carteira — em tempo real.
           </p>
         </div>
         <Tabs value={period} onValueChange={(v) => setPeriod(v as Period)}>
@@ -266,25 +300,19 @@ function Dashboard() {
           receivedRevenue: stats.paid,
           pendingRevenue: stats.pending,
           overdueAmount: stats.overdue,
-          openMaintenances: stats.openMaintenances,
-          pendingDocuments: stats.pendingDocs,
+          trends: stats.trends,
         }}
       />
 
       {/* Aprovações pendentes acionáveis */}
       <PendingApprovalsPanel items={pendingApprovals} />
 
-      {/* KPIs financeiros expandidos */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <KpiCard title="Receita líquida (mês)" value={formatBRL(stats.netRevenue)} icon={<Wallet className="size-4" />} tone="primary" />
-        <KpiCard title="Retido em manutenção" value={formatBRL(stats.maintCost)} icon={<TrendingDown className="size-4" />} />
-        <KpiCard title="Taxa admin. paga" value={formatBRL(stats.mgmtFee)} icon={<Percent className="size-4" />} />
-        <KpiCard title="Ticket médio mensal" value={formatBRL(stats.avgMonthly)} icon={<BarChart3 className="size-4" />} />
-        <KpiCard title="Receita acumulada (ano)" value={formatBRL(stats.ytdPaid)} icon={<Landmark className="size-4" />} tone="emerald" />
-        <KpiCard title="Receita prevista (mês)" value={formatBRL(stats.forecast)} icon={<Calendar className="size-4" />} />
-        <KpiCard title="Receita pendente (mês)" value={formatBRL(stats.pending)} icon={<TrendingUp className="size-4" />} tone="amber" />
-        <KpiCard title="Inadimplência total" value={formatBRL(stats.overdue)} icon={<TrendingDown className="size-4" />} tone="destructive" />
-      </div>
+      {/* Indicadores operacionais (abaixo da dobra) */}
+      <OperationalIndicators
+        openMaintenances={stats.openMaintenances}
+        pendingDocuments={stats.pendingDocs}
+        activeContracts={stats.activeContracts}
+      />
 
       {/* Insights + Coleta */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -309,6 +337,19 @@ function Dashboard() {
           </div>
         </Card>
       </div>
+
+      {/* KPIs financeiros detalhados */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <KpiCard title="Receita líquida (mês)" value={formatBRL(stats.netRevenue)} icon={<Wallet className="size-4" />} tone="primary" />
+        <KpiCard title="Retido em manutenção" value={formatBRL(stats.maintCost)} icon={<TrendingDown className="size-4" />} />
+        <KpiCard title="Taxa admin. paga" value={formatBRL(stats.mgmtFee)} icon={<Percent className="size-4" />} />
+        <KpiCard title="Ticket médio mensal" value={formatBRL(stats.avgMonthly)} icon={<BarChart3 className="size-4" />} />
+        <KpiCard title="Receita acumulada (ano)" value={formatBRL(stats.ytdPaid)} icon={<Landmark className="size-4" />} tone="emerald" />
+        <KpiCard title="Receita prevista (mês)" value={formatBRL(stats.forecast)} icon={<Calendar className="size-4" />} />
+        <KpiCard title="Receita pendente (mês)" value={formatBRL(stats.pending)} icon={<TrendingUp className="size-4" />} tone="amber" />
+        <KpiCard title="Inadimplência total" value={formatBRL(stats.overdue)} icon={<TrendingDown className="size-4" />} tone="destructive" />
+      </div>
+
 
       {/* Previsto × recebido + Ocupação */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -342,7 +383,28 @@ function Dashboard() {
               <OccupancyChart data={occupancyData} />
             </Suspense>
           </div>
+          <div className="mt-4">
+            <div className="flex h-2.5 w-full overflow-hidden rounded-full bg-muted">
+              <div
+                className="h-full bg-primary"
+                style={{
+                  width: `${stats.total > 0 ? (stats.rented / stats.total) * 100 : 0}%`,
+                }}
+              />
+            </div>
+            <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
+              <span className="inline-flex items-center gap-1.5">
+                <span className="size-2 rounded-full bg-primary" />
+                Ocupados · {stats.rented}
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <span className="size-2 rounded-full bg-muted-foreground/40" />
+                Disponíveis · {stats.available}
+              </span>
+            </div>
+          </div>
         </Card>
+
       </div>
     </div>
   );

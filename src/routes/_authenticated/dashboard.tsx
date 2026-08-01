@@ -24,6 +24,7 @@ import { formatBRL, monthRange } from "@/lib/format";
 import { PortfolioSummary } from "@/components/owner/PortfolioSummary";
 import { PortfolioInsights } from "@/components/owner/PortfolioInsights";
 import { PendingApprovalsPanel } from "@/components/owner/PendingApprovalsPanel";
+import { OperationalIndicators } from "@/components/owner/OperationalIndicators";
 import { buildOwnerInsights } from "@/lib/owner-insights";
 
 const DashboardCollectionChart = lazy(

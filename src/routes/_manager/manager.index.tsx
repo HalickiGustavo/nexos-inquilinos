@@ -14,6 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { PortfolioSummary } from "@/components/owner/PortfolioSummary";
 
 const DashboardCollectionChart = lazy(() => import("@/components/charts/DashboardCollectionChart"));
 

@@ -265,7 +265,7 @@ function Dashboard() {
   );
 
   return (
-    <div className="p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
+    <div className="p-6 lg:p-8 max-w-7xl mx-auto space-y-8">
       <header className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-4">
         <div className="min-w-0">
           <div className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-primary/80 font-medium mb-2">
@@ -276,7 +276,7 @@ function Dashboard() {
             Bem-vindo de volta
           </h1>
           <p className="text-muted-foreground mt-1 text-sm">
-            Sua carteira em uma tela — dados em tempo real.
+            Acompanhe rapidamente a saúde da sua carteira — em tempo real.
           </p>
         </div>
         <Tabs value={period} onValueChange={(v) => setPeriod(v as Period)}>
@@ -299,25 +299,19 @@ function Dashboard() {
           receivedRevenue: stats.paid,
           pendingRevenue: stats.pending,
           overdueAmount: stats.overdue,
-          openMaintenances: stats.openMaintenances,
-          pendingDocuments: stats.pendingDocs,
+          trends: stats.trends,
         }}
       />
 
       {/* Aprovações pendentes acionáveis */}
       <PendingApprovalsPanel items={pendingApprovals} />
 
-      {/* KPIs financeiros expandidos */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <KpiCard title="Receita líquida (mês)" value={formatBRL(stats.netRevenue)} icon={<Wallet className="size-4" />} tone="primary" />
-        <KpiCard title="Retido em manutenção" value={formatBRL(stats.maintCost)} icon={<TrendingDown className="size-4" />} />
-        <KpiCard title="Taxa admin. paga" value={formatBRL(stats.mgmtFee)} icon={<Percent className="size-4" />} />
-        <KpiCard title="Ticket médio mensal" value={formatBRL(stats.avgMonthly)} icon={<BarChart3 className="size-4" />} />
-        <KpiCard title="Receita acumulada (ano)" value={formatBRL(stats.ytdPaid)} icon={<Landmark className="size-4" />} tone="emerald" />
-        <KpiCard title="Receita prevista (mês)" value={formatBRL(stats.forecast)} icon={<Calendar className="size-4" />} />
-        <KpiCard title="Receita pendente (mês)" value={formatBRL(stats.pending)} icon={<TrendingUp className="size-4" />} tone="amber" />
-        <KpiCard title="Inadimplência total" value={formatBRL(stats.overdue)} icon={<TrendingDown className="size-4" />} tone="destructive" />
-      </div>
+      {/* Indicadores operacionais (abaixo da dobra) */}
+      <OperationalIndicators
+        openMaintenances={stats.openMaintenances}
+        pendingDocuments={stats.pendingDocs}
+        activeContracts={stats.activeContracts}
+      />
 
       {/* Insights + Coleta */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -342,6 +336,19 @@ function Dashboard() {
           </div>
         </Card>
       </div>
+
+      {/* KPIs financeiros detalhados */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <KpiCard title="Receita líquida (mês)" value={formatBRL(stats.netRevenue)} icon={<Wallet className="size-4" />} tone="primary" />
+        <KpiCard title="Retido em manutenção" value={formatBRL(stats.maintCost)} icon={<TrendingDown className="size-4" />} />
+        <KpiCard title="Taxa admin. paga" value={formatBRL(stats.mgmtFee)} icon={<Percent className="size-4" />} />
+        <KpiCard title="Ticket médio mensal" value={formatBRL(stats.avgMonthly)} icon={<BarChart3 className="size-4" />} />
+        <KpiCard title="Receita acumulada (ano)" value={formatBRL(stats.ytdPaid)} icon={<Landmark className="size-4" />} tone="emerald" />
+        <KpiCard title="Receita prevista (mês)" value={formatBRL(stats.forecast)} icon={<Calendar className="size-4" />} />
+        <KpiCard title="Receita pendente (mês)" value={formatBRL(stats.pending)} icon={<TrendingUp className="size-4" />} tone="amber" />
+        <KpiCard title="Inadimplência total" value={formatBRL(stats.overdue)} icon={<TrendingDown className="size-4" />} tone="destructive" />
+      </div>
+
 
       {/* Previsto × recebido + Ocupação */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

@@ -7,9 +7,12 @@ import {
   ArrowDownCircle,
   ArrowUpCircle,
   AlertCircle,
-  Wrench,
-  FolderClock,
+  Gauge,
+  TrendingUp,
+  TrendingDown,
+  Minus,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { formatBRL } from "@/lib/format";
 
@@ -22,31 +25,25 @@ export type PortfolioSummaryData = {
   receivedRevenue: number;
   pendingRevenue: number;
   overdueAmount: number;
-  openMaintenances: number;
-  pendingDocuments: number;
+  /** variação percentual vs. mês anterior (null = sem histórico suficiente) */
+  trends?: {
+    forecast?: number | null;
+    received?: number | null;
+    pending?: number | null;
+    overdue?: number | null;
+  };
 };
 
-const items = (d: PortfolioSummaryData) => [
-  { label: "Imóveis", value: String(d.totalProperties), icon: Building2, tone: "muted" as const },
-  { label: "Alugados", value: String(d.rentedProperties), icon: CheckCircle2, tone: "primary" as const },
-  { label: "Disponíveis", value: String(d.availableProperties), icon: DoorOpen, tone: "muted" as const },
-  { label: "Contratos ativos", value: String(d.activeContracts), icon: FileText, tone: "muted" as const },
-  { label: "Receita prevista", value: formatBRL(d.forecastRevenue), icon: Wallet, tone: "muted" as const },
-  { label: "Receita recebida", value: formatBRL(d.receivedRevenue), icon: ArrowDownCircle, tone: "emerald" as const },
-  { label: "Receita pendente", value: formatBRL(d.pendingRevenue), icon: ArrowUpCircle, tone: "amber" as const },
-  { label: "Inadimplência", value: formatBRL(d.overdueAmount), icon: AlertCircle, tone: "destructive" as const },
-  { label: "Manutenções abertas", value: String(d.openMaintenances), icon: Wrench, tone: "muted" as const },
-  { label: "Documentos pendentes", value: String(d.pendingDocuments), icon: FolderClock, tone: "muted" as const },
-];
+type Tone = "muted" | "primary" | "emerald" | "amber" | "destructive";
 
-function toneClass(t: "muted" | "primary" | "emerald" | "amber" | "destructive") {
+function toneClass(t: Tone) {
   switch (t) {
     case "primary":
       return "text-primary";
     case "emerald":
-      return "text-emerald-500";
+      return "text-emerald-600 dark:text-emerald-500";
     case "amber":
-      return "text-amber-500";
+      return "text-amber-600 dark:text-amber-500";
     case "destructive":
       return "text-destructive";
     default:
@@ -54,9 +51,98 @@ function toneClass(t: "muted" | "primary" | "emerald" | "amber" | "destructive")
   }
 }
 
-export function PortfolioSummary({ data }: { data: PortfolioSummaryData }) {
+function Trend({
+  value,
+  goodWhenUp = true,
+}: {
+  value?: number | null;
+  goodWhenUp?: boolean;
+}) {
+  if (value === null || value === undefined || !Number.isFinite(value)) return null;
+  const rounded = Math.abs(value) < 0.05 ? 0 : value;
+  const Icon = rounded === 0 ? Minus : rounded > 0 ? TrendingUp : TrendingDown;
+  const improving = rounded === 0 ? null : rounded > 0 === goodWhenUp;
+  const color =
+    improving === null
+      ? "text-muted-foreground"
+      : improving
+        ? "text-emerald-600 dark:text-emerald-500"
+        : "text-destructive";
+  const sign = rounded > 0 ? "+" : rounded < 0 ? "" : "";
   return (
-    <Card className="p-5 lg:p-6 relative overflow-hidden">
+    <span className={`inline-flex items-center gap-1 text-[11px] font-medium ${color}`}>
+      <Icon className="size-3 shrink-0" />
+      {sign}
+      {rounded.toLocaleString("pt-BR", { maximumFractionDigits: 1 })}%
+    </span>
+  );
+}
+
+function StatCard({
+  label,
+  value,
+  icon: Icon,
+  tone = "muted",
+  hint,
+  trend,
+  goodWhenUp = true,
+  progress,
+}: {
+  label: string;
+  value: string;
+  icon: LucideIcon;
+  tone?: Tone;
+  hint?: string;
+  trend?: number | null;
+  goodWhenUp?: boolean;
+  progress?: number;
+}) {
+  return (
+    <div className="h-full rounded-xl border border-border/60 bg-muted/15 px-4 py-4 flex flex-col justify-between gap-3 min-w-0">
+      <div className="flex items-start justify-between gap-2">
+        <span className="text-[11px] uppercase tracking-wide text-muted-foreground leading-tight">
+          {label}
+        </span>
+        <Icon className={`size-4 shrink-0 ${toneClass(tone)}`} />
+      </div>
+      <div className="min-w-0">
+        <div className={`text-xl font-bold tabular-nums truncate ${toneClass(tone)}`}>
+          {value}
+        </div>
+        <div className="mt-1 flex items-center gap-2 min-h-[16px]">
+          <Trend value={trend} goodWhenUp={goodWhenUp} />
+          {hint && (
+            <span className="text-[11px] text-muted-foreground truncate">{hint}</span>
+          )}
+        </div>
+        {progress !== undefined && (
+          <div className="mt-2 h-1.5 w-full rounded-full bg-muted overflow-hidden">
+            <div
+              className="h-full rounded-full bg-emerald-500/80"
+              style={{ width: `${Math.min(100, Math.max(0, progress))}%` }}
+            />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export function PortfolioSummary({ data }: { data: PortfolioSummaryData }) {
+  const t = data.trends ?? {};
+  const occupancy =
+    data.totalProperties > 0
+      ? Math.round((data.rentedProperties / data.totalProperties) * 100)
+      : 0;
+  const receivedPct =
+    data.forecastRevenue > 0
+      ? Math.round((data.receivedRevenue / data.forecastRevenue) * 100)
+      : 0;
+  const overduePct =
+    data.forecastRevenue > 0 ? (data.overdueAmount / data.forecastRevenue) * 100 : 0;
+
+  return (
+    <Card className="p-6 lg:p-7 relative overflow-hidden">
       <div
         className="absolute inset-x-0 top-0 h-px opacity-60"
         style={{
@@ -65,7 +151,7 @@ export function PortfolioSummary({ data }: { data: PortfolioSummaryData }) {
         }}
         aria-hidden
       />
-      <div className="flex items-center justify-between gap-4 mb-5">
+      <div className="flex items-center justify-between gap-4 mb-6">
         <div className="min-w-0">
           <h2 className="text-lg font-semibold tracking-tight">Minha Carteira</h2>
           <p className="text-sm text-muted-foreground">
@@ -73,21 +159,68 @@ export function PortfolioSummary({ data }: { data: PortfolioSummaryData }) {
           </p>
         </div>
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-        {items(data).map(({ label, value, icon: Icon, tone }) => (
-          <div
-            key={label}
-            className="rounded-lg border border-border/60 bg-muted/20 px-3 py-3 flex flex-col gap-1 min-w-0"
-          >
-            <div className="flex items-center justify-between gap-2 text-muted-foreground">
-              <span className="text-[11px] uppercase tracking-wide truncate">{label}</span>
-              <Icon className={`size-3.5 shrink-0 ${toneClass(tone)}`} />
-            </div>
-            <div className={`text-lg font-bold tabular-nums truncate ${toneClass(tone)}`}>
-              {value}
-            </div>
-          </div>
-        ))}
+
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+        <StatCard label="Imóveis" value={String(data.totalProperties)} icon={Building2} />
+        <StatCard
+          label="Alugados"
+          value={String(data.rentedProperties)}
+          icon={CheckCircle2}
+          tone="primary"
+        />
+        <StatCard
+          label="Disponíveis"
+          value={String(data.availableProperties)}
+          icon={DoorOpen}
+        />
+        <StatCard
+          label="Contratos ativos"
+          value={String(data.activeContracts)}
+          icon={FileText}
+        />
+        <StatCard
+          label="Receita prevista"
+          value={formatBRL(data.forecastRevenue)}
+          icon={Wallet}
+          trend={t.forecast}
+        />
+      </div>
+
+      <div className="mt-4 grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard
+          label="Receita recebida"
+          value={formatBRL(data.receivedRevenue)}
+          icon={ArrowDownCircle}
+          tone="emerald"
+          trend={t.received}
+          hint={`${receivedPct}% da meta`}
+          progress={receivedPct}
+        />
+        <StatCard
+          label="Receita pendente"
+          value={formatBRL(data.pendingRevenue)}
+          icon={ArrowUpCircle}
+          tone="amber"
+          trend={t.pending}
+          goodWhenUp={false}
+        />
+        <StatCard
+          label="Inadimplência"
+          value={formatBRL(data.overdueAmount)}
+          icon={AlertCircle}
+          tone="destructive"
+          trend={t.overdue}
+          goodWhenUp={false}
+          hint={`${overduePct.toLocaleString("pt-BR", { maximumFractionDigits: 1 })}% da carteira`}
+        />
+        <StatCard
+          label="Taxa de ocupação"
+          value={`${occupancy}%`}
+          icon={Gauge}
+          tone="primary"
+          hint={`${data.rentedProperties} de ${data.totalProperties} imóveis alugados`}
+          progress={occupancy}
+        />
       </div>
     </Card>
   );

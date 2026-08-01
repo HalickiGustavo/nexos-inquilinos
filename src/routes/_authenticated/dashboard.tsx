@@ -130,6 +130,32 @@ function Dashboard() {
       (d) => d.status === "pendente" || d.pending === true,
     ).length;
 
+    // Mês anterior (para tendências)
+    const now = new Date();
+    const prev = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const prevRange = monthRange(prev);
+    const prevMonthly = installments.filter(
+      (i) => i.due_date >= prevRange.start && i.due_date <= prevRange.end,
+    );
+    const prevForecast = prevMonthly.reduce((s, i) => s + Number(i.amount || 0), 0);
+    const prevPaid = prevMonthly
+      .filter((i) => i.status === "pago")
+      .reduce((s, i) => s + Number(i.paid_amount || i.amount || 0), 0);
+    const prevPending = prevMonthly
+      .filter((i) => i.status !== "pago")
+      .reduce((s, i) => s + Number(i.amount) + Number(i.extra_fees || 0), 0);
+    const prevOverdue = installments
+      .filter(
+        (i) =>
+          i.status !== "pago" &&
+          i.due_date < prevRange.end &&
+          i.due_date >= prevRange.start,
+      )
+      .reduce((s, i) => s + Number(i.amount) + Number(i.extra_fees || 0), 0);
+
+    const delta = (curr: number, before: number) =>
+      before > 0 ? ((curr - before) / before) * 100 : null;
+
     return {
       forecast,
       paid,
@@ -143,6 +169,12 @@ function Dashboard() {
       netRevenue,
       ytdPaid,
       avgMonthly,
+      trends: {
+        forecast: delta(forecast, prevForecast),
+        received: delta(paid, prevPaid),
+        pending: delta(pending, prevPending),
+        overdue: delta(overdue, prevOverdue),
+      },
       openMaintenances: (maintenances as any[]).filter(
         (m) => m.status !== "concluido" && m.status !== "cancelado",
       ).length,
@@ -152,6 +184,7 @@ function Dashboard() {
       ).length,
     };
   }, [properties, installments, contracts, maintenances, occupiedIds, documents]);
+
 
   const monthsCount = period === "6m" ? 6 : period === "12m" ? 12 : new Date().getMonth() + 1;
 

@@ -14,6 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { PortfolioSummary } from "@/components/owner/PortfolioSummary";
 
 const DashboardCollectionChart = lazy(() => import("@/components/charts/DashboardCollectionChart"));
 
@@ -328,49 +329,62 @@ function ManagerDashboard() {
 
   return (
     <TooltipProvider delayDuration={200}>
-      <div className="p-4 sm:p-6 lg:p-8 max-w-[1400px] mx-auto space-y-5">
-        {/* ============ HERO ============ */}
-        <section
-          className="relative overflow-hidden rounded-2xl border border-primary/25 p-5 sm:p-6"
-          style={{
-            background:
-              "radial-gradient(120% 80% at 0% 0%, color-mix(in oklab, var(--primary) 30%, transparent) 0%, color-mix(in oklab, var(--primary) 12%, transparent) 45%, transparent 90%)",
-          }}
-        >
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div className="min-w-0">
-              <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
-                {greeting()}, {firstName || "gestor"} <span aria-hidden>👋</span>
-              </h1>
-              <p className="text-sm text-muted-foreground mt-1">
-                {new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long" })}
-              </p>
+      <div className="p-4 sm:p-6 lg:p-8 max-w-[1400px] mx-auto space-y-6">
+        {/* ============ Cabeçalho executivo ============ */}
+        <header className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-4">
+          <div className="min-w-0">
+            <div className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-primary/80 font-medium mb-2">
+              <span className="size-1.5 rounded-full bg-primary shadow-[0_0_8px_var(--primary)]" />
+              Painel executivo
             </div>
-            <div className="flex flex-wrap gap-2">
-              {pendencies.approvals > 0 && (
-                <Link to="/maintenances" className="inline-flex items-center gap-2 rounded-full bg-primary/15 border border-primary/40 px-3 py-1.5 text-xs font-medium text-primary hover:bg-primary/25 transition">
-                  <Bell className="size-3.5" /> {pendencies.approvals} aprovação{pendencies.approvals > 1 ? "ões" : ""} pendente{pendencies.approvals > 1 ? "s" : ""}
-                </Link>
-              )}
-              {kpis.overdue > 0 && (
-                <Link to="/manager/financeiro" className="inline-flex items-center gap-2 rounded-full bg-destructive/15 border border-destructive/40 px-3 py-1.5 text-xs font-medium text-destructive hover:bg-destructive/25 transition">
-                  <AlertTriangle className="size-3.5" /> {formatBRLCompact(kpis.overdue)} em atraso
-                </Link>
-              )}
-            </div>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight truncate">
+              {greeting()}, {firstName || "gestor"}
+            </h1>
+            <p className="text-muted-foreground mt-1 text-sm">
+              {new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long" })} — saúde da carteira em tempo real.
+            </p>
           </div>
-          <div className="mt-4 flex flex-wrap gap-x-5 gap-y-1.5 text-sm">
-            {heroBullets.map((b) => (
-              <Link key={b.label} to={b.to} className="group inline-flex items-baseline gap-1.5 text-muted-foreground hover:text-foreground transition">
-                <span className="text-base font-bold text-foreground tabular-nums">{qCounts.isLoading ? "—" : (b.value ?? 0)}</span>
-                <span>{b.label}</span>
-                <ArrowRight className="size-3 opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0 transition" />
+          <div className="flex flex-wrap justify-end gap-2">
+            {pendencies.approvals > 0 && (
+              <Link to="/maintenances" className="inline-flex items-center gap-2 rounded-full bg-primary/15 border border-primary/40 px-3 py-1.5 text-xs font-medium text-primary hover:bg-primary/25 transition">
+                <Bell className="size-3.5" /> {pendencies.approvals} aprovação{pendencies.approvals > 1 ? "ões" : ""} pendente{pendencies.approvals > 1 ? "s" : ""}
               </Link>
-            ))}
+            )}
+            {kpis.overdue > 0 && (
+              <Link to="/manager/financeiro" className="inline-flex items-center gap-2 rounded-full bg-destructive/15 border border-destructive/40 px-3 py-1.5 text-xs font-medium text-destructive hover:bg-destructive/25 transition">
+                <AlertTriangle className="size-3.5" /> {formatBRLCompact(kpis.overdue)} em atraso
+              </Link>
+            )}
           </div>
+        </header>
+
+        {/* ============ Carteira consolidada ============ */}
+        <PortfolioSummary
+          data={{
+            totalProperties: counts.properties ?? 0,
+            rentedProperties: counts.rented ?? 0,
+            availableProperties: Math.max(0, (counts.properties ?? 0) - (counts.rented ?? 0)),
+            activeContracts: counts.contracts ?? 0,
+            forecastRevenue: kpis.revenue,
+            receivedRevenue: kpis.paid,
+            pendingRevenue: kpis.toReceive,
+            overdueAmount: kpis.overdue,
+            trends: { received: kpis.deltaPaid },
+          }}
+        />
+
+        {/* ============ Atalhos de navegação da carteira ============ */}
+        <section className="flex flex-wrap gap-x-5 gap-y-1.5 text-sm">
+          {heroBullets.map((b) => (
+            <Link key={b.label} to={b.to} className="group inline-flex items-baseline gap-1.5 text-muted-foreground hover:text-foreground transition">
+              <span className="text-base font-bold text-foreground tabular-nums">{qCounts.isLoading ? "—" : (b.value ?? 0)}</span>
+              <span>{b.label}</span>
+              <ArrowRight className="size-3 opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0 transition" />
+            </Link>
+          ))}
         </section>
 
-        {/* ============ KPIs ============ */}
+        {/* ============ KPIs financeiros ============ */}
         <section className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           <Kpi title="Recebido hoje" value={formatBRL(kpis.paidToday)} icon={<CheckCircle2 className="size-4" />} loading={qPaidToday.isLoading} accent />
           <Kpi title="A receber (mês)" value={formatBRL(kpis.toReceive)} icon={<Wallet className="size-4" />} loading={qMonth.isLoading} />
@@ -379,6 +393,7 @@ function ManagerDashboard() {
           <Kpi title="Taxa NEXO" value={formatBRL(kpis.managementFee)} icon={<Coins className="size-4" />} loading={qMonth.isLoading} delta={kpis.deltaFee} />
           <Kpi title="Repasses pendentes" value={formatBRL(kpis.payoutsPending)} icon={<CircleDollarSign className="size-4" />} loading={qMonth.isLoading} />
         </section>
+
 
         {/* ============ Atalhos rápidos ============ */}
         <section>

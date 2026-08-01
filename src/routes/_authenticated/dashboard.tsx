@@ -383,7 +383,28 @@ function Dashboard() {
               <OccupancyChart data={occupancyData} />
             </Suspense>
           </div>
+          <div className="mt-4">
+            <div className="flex h-2.5 w-full overflow-hidden rounded-full bg-muted">
+              <div
+                className="h-full bg-primary"
+                style={{
+                  width: `${stats.total > 0 ? (stats.rented / stats.total) * 100 : 0}%`,
+                }}
+              />
+            </div>
+            <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
+              <span className="inline-flex items-center gap-1.5">
+                <span className="size-2 rounded-full bg-primary" />
+                Ocupados · {stats.rented}
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <span className="size-2 rounded-full bg-muted-foreground/40" />
+                Disponíveis · {stats.available}
+              </span>
+            </div>
+          </div>
         </Card>
+
       </div>
     </div>
   );

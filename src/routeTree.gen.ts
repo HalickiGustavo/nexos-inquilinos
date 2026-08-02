@@ -9,104 +9,96 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as TenantSetupRouteImport } from './routes/tenant-setup'
-import { Route as ManagerSetupRouteImport } from './routes/manager-setup'
-import { Route as LoginRouteImport } from './routes/login'
-import { Route as LandlordSetupRouteImport } from './routes/landlord-setup'
-import { Route as CadastroRouteImport } from './routes/cadastro'
-import { Route as ManagerRouteImport } from './routes/_manager'
-import { Route as LandlordRouteImport } from './routes/_landlord'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
+import { Route as LandlordRouteImport } from './routes/_landlord'
+import { Route as ManagerRouteImport } from './routes/_manager'
+import { Route as CadastroRouteImport } from './routes/cadastro'
+import { Route as LandlordSetupRouteImport } from './routes/landlord-setup'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as ManagerSetupRouteImport } from './routes/manager-setup'
+import { Route as TenantSetupRouteImport } from './routes/tenant-setup'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
-import { Route as AuthenticatedVistoriasRouteImport } from './routes/_authenticated/vistorias'
-import { Route as AuthenticatedTenantsRouteImport } from './routes/_authenticated/tenants'
-import { Route as AuthenticatedRelatoriosRouteImport } from './routes/_authenticated/relatorios'
-import { Route as AuthenticatedPropertiesRouteImport } from './routes/_authenticated/properties'
-import { Route as AuthenticatedPerfilRouteImport } from './routes/_authenticated/perfil'
-import { Route as AuthenticatedMaintenancesRouteImport } from './routes/_authenticated/maintenances'
-import { Route as AuthenticatedIntegrationsRouteImport } from './routes/_authenticated/integrations'
-import { Route as AuthenticatedFinancialsRouteImport } from './routes/_authenticated/financials'
-import { Route as AuthenticatedDocumentosRouteImport } from './routes/_authenticated/documentos'
-import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
-import { Route as AuthenticatedContractsRouteImport } from './routes/_authenticated/contracts'
 import { Route as AuthenticatedContaCorrenteRouteImport } from './routes/_authenticated/conta-corrente'
-import { Route as ManagerManagerIndexRouteImport } from './routes/_manager/manager.index'
-import { Route as LandlordLandlordIndexRouteImport } from './routes/_landlord/landlord.index'
-import { Route as AuthenticatedTenantIndexRouteImport } from './routes/_authenticated/tenant.index'
-import { Route as ApiPublicStarkWebhookRouteImport } from './routes/api/public/stark-webhook'
-import { Route as ApiPublicEfiWebhookRouteImport } from './routes/api/public/efi-webhook'
-import { Route as ManagerManagerVistoriasRouteImport } from './routes/_manager/manager.vistorias'
-import { Route as ManagerManagerRelatoriosRouteImport } from './routes/_manager/manager.relatorios'
-import { Route as ManagerManagerProprietariosRouteImport } from './routes/_manager/manager.proprietarios'
-import { Route as ManagerManagerPortaisRouteImport } from './routes/_manager/manager.portais'
-import { Route as ManagerManagerPerfilRouteImport } from './routes/_manager/manager.perfil'
-import { Route as ManagerManagerMigrarDadosRouteImport } from './routes/_manager/manager.migrar-dados'
-import { Route as ManagerManagerManutencoesRouteImport } from './routes/_manager/manager.manutencoes'
-import { Route as ManagerManagerLeadsRouteImport } from './routes/_manager/manager.leads'
-import { Route as ManagerManagerIntegracaoRouteImport } from './routes/_manager/manager.integracao'
-import { Route as ManagerManagerInquilinosRouteImport } from './routes/_manager/manager.inquilinos'
-import { Route as ManagerManagerFinanceiroRouteImport } from './routes/_manager/manager.financeiro'
-import { Route as ManagerManagerEquipeRouteImport } from './routes/_manager/manager.equipe'
-import { Route as ManagerManagerDimobRouteImport } from './routes/_manager/manager.dimob'
-import { Route as ManagerManagerCrmRouteImport } from './routes/_manager/manager.crm'
-import { Route as ManagerManagerContratosRouteImport } from './routes/_manager/manager.contratos'
-import { Route as ManagerManagerChatRouteImport } from './routes/_manager/manager.chat'
-import { Route as ManagerManagerCarteiraRouteImport } from './routes/_manager/manager.carteira'
-import { Route as ManagerManagerAlertasRouteImport } from './routes/_manager/manager.alertas'
-import { Route as LandlordLandlordSaldoRouteImport } from './routes/_landlord/landlord.saldo'
-import { Route as LandlordLandlordPerfilRouteImport } from './routes/_landlord/landlord.perfil'
-import { Route as LandlordLandlordManutencoesRouteImport } from './routes/_landlord/landlord.manutencoes'
-import { Route as LandlordLandlordFinanceiroRouteImport } from './routes/_landlord/landlord.financeiro'
-import { Route as LandlordLandlordChatRouteImport } from './routes/_landlord/landlord.chat'
-import { Route as AuthenticatedTenantPerfilRouteImport } from './routes/_authenticated/tenant.perfil'
-import { Route as AuthenticatedTenantManutencoesRouteImport } from './routes/_authenticated/tenant.manutencoes'
-import { Route as AuthenticatedTenantFinanceiroRouteImport } from './routes/_authenticated/tenant.financeiro'
-import { Route as AuthenticatedTenantDocumentosRouteImport } from './routes/_authenticated/tenant.documentos'
-import { Route as AuthenticatedTenantContratoRouteImport } from './routes/_authenticated/tenant.contrato'
-import { Route as AuthenticatedTenantChatRouteImport } from './routes/_authenticated/tenant.chat'
-import { Route as AuthenticatedTenantAlertasRouteImport } from './routes/_authenticated/tenant.alertas'
-import { Route as AuthenticatedPropertiesIdRouteImport } from './routes/_authenticated/properties.$id'
+import { Route as AuthenticatedContractsRouteImport } from './routes/_authenticated/contracts'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedDocumentosRouteImport } from './routes/_authenticated/documentos'
+import { Route as AuthenticatedFinancialsRouteImport } from './routes/_authenticated/financials'
+import { Route as AuthenticatedIntegrationsRouteImport } from './routes/_authenticated/integrations'
+import { Route as AuthenticatedMaintenancesRouteImport } from './routes/_authenticated/maintenances'
+import { Route as AuthenticatedPerfilRouteImport } from './routes/_authenticated/perfil'
+import { Route as AuthenticatedPropertiesRouteImport } from './routes/_authenticated/properties'
+import { Route as AuthenticatedRelatoriosRouteImport } from './routes/_authenticated/relatorios'
+import { Route as AuthenticatedTenantsRouteImport } from './routes/_authenticated/tenants'
+import { Route as AuthenticatedVistoriasRouteImport } from './routes/_authenticated/vistorias'
 import { Route as AuthenticatedAdminIntegracoesRouteImport } from './routes/_authenticated/admin.integracoes'
-import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
-import { Route as ApiPublicWebhooksLeadsRouteImport } from './routes/api/public/webhooks/leads'
-import { Route as ApiPublicListingsXmlRouteImport } from './routes/api/public/listings.xml'
-import { Route as ApiPublicHooksSyncCronSecretRouteImport } from './routes/api/public/hooks/sync-cron-secret'
-import { Route as ApiPublicHooksStarkE2eSandboxRouteImport } from './routes/api/public/hooks/stark-e2e-sandbox'
-import { Route as ApiPublicHooksSendTenantRemindersRouteImport } from './routes/api/public/hooks/send-tenant-reminders'
-import { Route as ApiPublicHooksSendMaintenanceResponseRemindersRouteImport } from './routes/api/public/hooks/send-maintenance-response-reminders'
-import { Route as ApiPublicHooksRegisterStarkWebhookRouteImport } from './routes/api/public/hooks/register-stark-webhook'
-import { Route as ApiPublicHooksRegisterEfiWebhookRouteImport } from './routes/api/public/hooks/register-efi-webhook'
-import { Route as ApiPublicHooksReconcileStarkChargesRouteImport } from './routes/api/public/hooks/reconcile-stark-charges'
-import { Route as ApiPublicHooksReconcileEfiTransfersRouteImport } from './routes/api/public/hooks/reconcile-efi-transfers'
-import { Route as ApiPublicHooksReconcileEfiChargesRouteImport } from './routes/api/public/hooks/reconcile-efi-charges'
-import { Route as ApiPublicHooksProcessPayoutQueueRouteImport } from './routes/api/public/hooks/process-payout-queue'
-import { Route as ApiPublicHooksIssueSingleBoletoRouteImport } from './routes/api/public/hooks/issue-single-boleto'
-import { Route as ApiPublicHooksGenerateUpcomingBoletosRouteImport } from './routes/api/public/hooks/generate-upcoming-boletos'
-import { Route as ApiPublicHooksEfiSaldoRouteImport } from './routes/api/public/hooks/efi-saldo'
-import { Route as ApiPublicEfiWebhookPixRouteImport } from './routes/api/public/efi-webhook.pix'
-import { Route as ManagerManagerConfiguracoesRoletaRouteImport } from './routes/_manager/manager.configuracoes.roleta'
+import { Route as AuthenticatedPropertiesIdRouteImport } from './routes/_authenticated/properties.$id'
+import { Route as AuthenticatedTenantIndexRouteImport } from './routes/_authenticated/tenant.index'
+import { Route as AuthenticatedTenantAlertasRouteImport } from './routes/_authenticated/tenant.alertas'
+import { Route as AuthenticatedTenantChatRouteImport } from './routes/_authenticated/tenant.chat'
+import { Route as AuthenticatedTenantContratoRouteImport } from './routes/_authenticated/tenant.contrato'
+import { Route as AuthenticatedTenantDocumentosRouteImport } from './routes/_authenticated/tenant.documentos'
+import { Route as AuthenticatedTenantFinanceiroRouteImport } from './routes/_authenticated/tenant.financeiro'
+import { Route as AuthenticatedTenantManutencoesRouteImport } from './routes/_authenticated/tenant.manutencoes'
+import { Route as AuthenticatedTenantPerfilRouteImport } from './routes/_authenticated/tenant.perfil'
+import { Route as LandlordLandlordIndexRouteImport } from './routes/_landlord/landlord.index'
+import { Route as LandlordLandlordChatRouteImport } from './routes/_landlord/landlord.chat'
+import { Route as LandlordLandlordFinanceiroRouteImport } from './routes/_landlord/landlord.financeiro'
+import { Route as LandlordLandlordManutencoesRouteImport } from './routes/_landlord/landlord.manutencoes'
+import { Route as LandlordLandlordPerfilRouteImport } from './routes/_landlord/landlord.perfil'
+import { Route as LandlordLandlordSaldoRouteImport } from './routes/_landlord/landlord.saldo'
+import { Route as ManagerManagerIndexRouteImport } from './routes/_manager/manager.index'
+import { Route as ManagerManagerAlertasRouteImport } from './routes/_manager/manager.alertas'
+import { Route as ManagerManagerCarteiraRouteImport } from './routes/_manager/manager.carteira'
+import { Route as ManagerManagerChatRouteImport } from './routes/_manager/manager.chat'
+import { Route as ManagerManagerContratosRouteImport } from './routes/_manager/manager.contratos'
+import { Route as ManagerManagerCrmRouteImport } from './routes/_manager/manager.crm'
+import { Route as ManagerManagerDimobRouteImport } from './routes/_manager/manager.dimob'
+import { Route as ManagerManagerEquipeRouteImport } from './routes/_manager/manager.equipe'
+import { Route as ManagerManagerFinanceiroRouteImport } from './routes/_manager/manager.financeiro'
+import { Route as ManagerManagerInquilinosRouteImport } from './routes/_manager/manager.inquilinos'
+import { Route as ManagerManagerIntegracaoRouteImport } from './routes/_manager/manager.integracao'
+import { Route as ManagerManagerLeadsRouteImport } from './routes/_manager/manager.leads'
+import { Route as ManagerManagerManutencoesRouteImport } from './routes/_manager/manager.manutencoes'
+import { Route as ManagerManagerMigrarDadosRouteImport } from './routes/_manager/manager.migrar-dados'
+import { Route as ManagerManagerPerfilRouteImport } from './routes/_manager/manager.perfil'
+import { Route as ManagerManagerPortaisRouteImport } from './routes/_manager/manager.portais'
+import { Route as ManagerManagerProprietariosRouteImport } from './routes/_manager/manager.proprietarios'
+import { Route as ManagerManagerRelatoriosRouteImport } from './routes/_manager/manager.relatorios'
+import { Route as ManagerManagerVistoriasRouteImport } from './routes/_manager/manager.vistorias'
+import { Route as ApiPublicEfiWebhookRouteImport } from './routes/api/public/efi-webhook'
+import { Route as ApiPublicStarkWebhookRouteImport } from './routes/api/public/stark-webhook'
 import { Route as AuthenticatedAdminConfiguracoesSubcontaRouteImport } from './routes/_authenticated/admin.configuracoes.subconta'
-import { Route as ApiV1IntegrationsOrgSlugListingsDotxmlRouteImport } from './routes/api/v1/integrations/$orgSlug/listings[.]xml'
+import { Route as ManagerManagerConfiguracoesRoletaRouteImport } from './routes/_manager/manager.configuracoes.roleta'
+import { Route as ApiPublicEfiWebhookPixRouteImport } from './routes/api/public/efi-webhook.pix'
+import { Route as ApiPublicHooksEfiSaldoRouteImport } from './routes/api/public/hooks/efi-saldo'
+import { Route as ApiPublicHooksGenerateUpcomingBoletosRouteImport } from './routes/api/public/hooks/generate-upcoming-boletos'
+import { Route as ApiPublicHooksIssueSingleBoletoRouteImport } from './routes/api/public/hooks/issue-single-boleto'
+import { Route as ApiPublicHooksProcessPayoutQueueRouteImport } from './routes/api/public/hooks/process-payout-queue'
+import { Route as ApiPublicHooksReconcileEfiChargesRouteImport } from './routes/api/public/hooks/reconcile-efi-charges'
+import { Route as ApiPublicHooksReconcileEfiTransfersRouteImport } from './routes/api/public/hooks/reconcile-efi-transfers'
+import { Route as ApiPublicHooksReconcileStarkChargesRouteImport } from './routes/api/public/hooks/reconcile-stark-charges'
+import { Route as ApiPublicHooksRegisterEfiWebhookRouteImport } from './routes/api/public/hooks/register-efi-webhook'
+import { Route as ApiPublicHooksRegisterStarkWebhookRouteImport } from './routes/api/public/hooks/register-stark-webhook'
+import { Route as ApiPublicHooksSendMaintenanceResponseRemindersRouteImport } from './routes/api/public/hooks/send-maintenance-response-reminders'
+import { Route as ApiPublicHooksSendTenantRemindersRouteImport } from './routes/api/public/hooks/send-tenant-reminders'
+import { Route as ApiPublicHooksStarkE2eSandboxRouteImport } from './routes/api/public/hooks/stark-e2e-sandbox'
+import { Route as ApiPublicHooksSyncCronSecretRouteImport } from './routes/api/public/hooks/sync-cron-secret'
+import { Route as ApiPublicListingsXmlRouteImport } from './routes/api/public/listings.xml'
+import { Route as ApiPublicWebhooksLeadsRouteImport } from './routes/api/public/webhooks/leads'
+import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as ApiV1IntegrationsOrgSlugLeadsRouteImport } from './routes/api/v1/integrations/$orgSlug/leads'
+import { Route as ApiV1IntegrationsOrgSlugListingsDotxmlRouteImport } from './routes/api/v1/integrations/$orgSlug/listings[.]xml'
 
-const TenantSetupRoute = TenantSetupRouteImport.update({
-  id: '/tenant-setup',
-  path: '/tenant-setup',
+const AuthenticatedRoute = AuthenticatedRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ManagerSetupRoute = ManagerSetupRouteImport.update({
-  id: '/manager-setup',
-  path: '/manager-setup',
+const LandlordRoute = LandlordRouteImport.update({
+  id: '/_landlord',
   getParentRoute: () => rootRouteImport,
 } as any)
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LandlordSetupRoute = LandlordSetupRouteImport.update({
-  id: '/landlord-setup',
-  path: '/landlord-setup',
+const ManagerRoute = ManagerRouteImport.update({
+  id: '/_manager',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CadastroRoute = CadastroRouteImport.update({
@@ -114,78 +106,29 @@ const CadastroRoute = CadastroRouteImport.update({
   path: '/cadastro',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ManagerRoute = ManagerRouteImport.update({
-  id: '/_manager',
+const LandlordSetupRoute = LandlordSetupRouteImport.update({
+  id: '/landlord-setup',
+  path: '/landlord-setup',
   getParentRoute: () => rootRouteImport,
 } as any)
-const LandlordRoute = LandlordRouteImport.update({
-  id: '/_landlord',
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedRoute = AuthenticatedRouteImport.update({
-  id: '/_authenticated',
+const ManagerSetupRoute = ManagerSetupRouteImport.update({
+  id: '/manager-setup',
+  path: '/manager-setup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TenantSetupRoute = TenantSetupRouteImport.update({
+  id: '/tenant-setup',
+  path: '/tenant-setup',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedVistoriasRoute = AuthenticatedVistoriasRouteImport.update({
-  id: '/vistorias',
-  path: '/vistorias',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedTenantsRoute = AuthenticatedTenantsRouteImport.update({
-  id: '/tenants',
-  path: '/tenants',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedRelatoriosRoute = AuthenticatedRelatoriosRouteImport.update({
-  id: '/relatorios',
-  path: '/relatorios',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedPropertiesRoute = AuthenticatedPropertiesRouteImport.update({
-  id: '/properties',
-  path: '/properties',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedPerfilRoute = AuthenticatedPerfilRouteImport.update({
-  id: '/perfil',
-  path: '/perfil',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedMaintenancesRoute =
-  AuthenticatedMaintenancesRouteImport.update({
-    id: '/maintenances',
-    path: '/maintenances',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
-const AuthenticatedIntegrationsRoute =
-  AuthenticatedIntegrationsRouteImport.update({
-    id: '/integrations',
-    path: '/integrations',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
-const AuthenticatedFinancialsRoute = AuthenticatedFinancialsRouteImport.update({
-  id: '/financials',
-  path: '/financials',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedDocumentosRoute = AuthenticatedDocumentosRouteImport.update({
-  id: '/documentos',
-  path: '/documentos',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedContractsRoute = AuthenticatedContractsRouteImport.update({
-  id: '/contracts',
-  path: '/contracts',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedContaCorrenteRoute =
@@ -194,195 +137,67 @@ const AuthenticatedContaCorrenteRoute =
     path: '/conta-corrente',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
-const ManagerManagerIndexRoute = ManagerManagerIndexRouteImport.update({
-  id: '/manager/',
-  path: '/manager/',
-  getParentRoute: () => ManagerRoute,
-} as any)
-const LandlordLandlordIndexRoute = LandlordLandlordIndexRouteImport.update({
-  id: '/landlord/',
-  path: '/landlord/',
-  getParentRoute: () => LandlordRoute,
-} as any)
-const AuthenticatedTenantIndexRoute =
-  AuthenticatedTenantIndexRouteImport.update({
-    id: '/tenant/',
-    path: '/tenant/',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
-const ApiPublicStarkWebhookRoute = ApiPublicStarkWebhookRouteImport.update({
-  id: '/api/public/stark-webhook',
-  path: '/api/public/stark-webhook',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicEfiWebhookRoute = ApiPublicEfiWebhookRouteImport.update({
-  id: '/api/public/efi-webhook',
-  path: '/api/public/efi-webhook',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ManagerManagerVistoriasRoute = ManagerManagerVistoriasRouteImport.update({
-  id: '/manager/vistorias',
-  path: '/manager/vistorias',
-  getParentRoute: () => ManagerRoute,
-} as any)
-const ManagerManagerRelatoriosRoute =
-  ManagerManagerRelatoriosRouteImport.update({
-    id: '/manager/relatorios',
-    path: '/manager/relatorios',
-    getParentRoute: () => ManagerRoute,
-  } as any)
-const ManagerManagerProprietariosRoute =
-  ManagerManagerProprietariosRouteImport.update({
-    id: '/manager/proprietarios',
-    path: '/manager/proprietarios',
-    getParentRoute: () => ManagerRoute,
-  } as any)
-const ManagerManagerPortaisRoute = ManagerManagerPortaisRouteImport.update({
-  id: '/manager/portais',
-  path: '/manager/portais',
-  getParentRoute: () => ManagerRoute,
-} as any)
-const ManagerManagerPerfilRoute = ManagerManagerPerfilRouteImport.update({
-  id: '/manager/perfil',
-  path: '/manager/perfil',
-  getParentRoute: () => ManagerRoute,
-} as any)
-const ManagerManagerMigrarDadosRoute =
-  ManagerManagerMigrarDadosRouteImport.update({
-    id: '/manager/migrar-dados',
-    path: '/manager/migrar-dados',
-    getParentRoute: () => ManagerRoute,
-  } as any)
-const ManagerManagerManutencoesRoute =
-  ManagerManagerManutencoesRouteImport.update({
-    id: '/manager/manutencoes',
-    path: '/manager/manutencoes',
-    getParentRoute: () => ManagerRoute,
-  } as any)
-const ManagerManagerLeadsRoute = ManagerManagerLeadsRouteImport.update({
-  id: '/manager/leads',
-  path: '/manager/leads',
-  getParentRoute: () => ManagerRoute,
-} as any)
-const ManagerManagerIntegracaoRoute =
-  ManagerManagerIntegracaoRouteImport.update({
-    id: '/manager/integracao',
-    path: '/manager/integracao',
-    getParentRoute: () => ManagerRoute,
-  } as any)
-const ManagerManagerInquilinosRoute =
-  ManagerManagerInquilinosRouteImport.update({
-    id: '/manager/inquilinos',
-    path: '/manager/inquilinos',
-    getParentRoute: () => ManagerRoute,
-  } as any)
-const ManagerManagerFinanceiroRoute =
-  ManagerManagerFinanceiroRouteImport.update({
-    id: '/manager/financeiro',
-    path: '/manager/financeiro',
-    getParentRoute: () => ManagerRoute,
-  } as any)
-const ManagerManagerEquipeRoute = ManagerManagerEquipeRouteImport.update({
-  id: '/manager/equipe',
-  path: '/manager/equipe',
-  getParentRoute: () => ManagerRoute,
-} as any)
-const ManagerManagerDimobRoute = ManagerManagerDimobRouteImport.update({
-  id: '/manager/dimob',
-  path: '/manager/dimob',
-  getParentRoute: () => ManagerRoute,
-} as any)
-const ManagerManagerCrmRoute = ManagerManagerCrmRouteImport.update({
-  id: '/manager/crm',
-  path: '/manager/crm',
-  getParentRoute: () => ManagerRoute,
-} as any)
-const ManagerManagerContratosRoute = ManagerManagerContratosRouteImport.update({
-  id: '/manager/contratos',
-  path: '/manager/contratos',
-  getParentRoute: () => ManagerRoute,
-} as any)
-const ManagerManagerChatRoute = ManagerManagerChatRouteImport.update({
-  id: '/manager/chat',
-  path: '/manager/chat',
-  getParentRoute: () => ManagerRoute,
-} as any)
-const ManagerManagerCarteiraRoute = ManagerManagerCarteiraRouteImport.update({
-  id: '/manager/carteira',
-  path: '/manager/carteira',
-  getParentRoute: () => ManagerRoute,
-} as any)
-const ManagerManagerAlertasRoute = ManagerManagerAlertasRouteImport.update({
-  id: '/manager/alertas',
-  path: '/manager/alertas',
-  getParentRoute: () => ManagerRoute,
-} as any)
-const LandlordLandlordSaldoRoute = LandlordLandlordSaldoRouteImport.update({
-  id: '/landlord/saldo',
-  path: '/landlord/saldo',
-  getParentRoute: () => LandlordRoute,
-} as any)
-const LandlordLandlordPerfilRoute = LandlordLandlordPerfilRouteImport.update({
-  id: '/landlord/perfil',
-  path: '/landlord/perfil',
-  getParentRoute: () => LandlordRoute,
-} as any)
-const LandlordLandlordManutencoesRoute =
-  LandlordLandlordManutencoesRouteImport.update({
-    id: '/landlord/manutencoes',
-    path: '/landlord/manutencoes',
-    getParentRoute: () => LandlordRoute,
-  } as any)
-const LandlordLandlordFinanceiroRoute =
-  LandlordLandlordFinanceiroRouteImport.update({
-    id: '/landlord/financeiro',
-    path: '/landlord/financeiro',
-    getParentRoute: () => LandlordRoute,
-  } as any)
-const LandlordLandlordChatRoute = LandlordLandlordChatRouteImport.update({
-  id: '/landlord/chat',
-  path: '/landlord/chat',
-  getParentRoute: () => LandlordRoute,
-} as any)
-const AuthenticatedTenantPerfilRoute =
-  AuthenticatedTenantPerfilRouteImport.update({
-    id: '/tenant/perfil',
-    path: '/tenant/perfil',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
-const AuthenticatedTenantManutencoesRoute =
-  AuthenticatedTenantManutencoesRouteImport.update({
-    id: '/tenant/manutencoes',
-    path: '/tenant/manutencoes',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
-const AuthenticatedTenantFinanceiroRoute =
-  AuthenticatedTenantFinanceiroRouteImport.update({
-    id: '/tenant/financeiro',
-    path: '/tenant/financeiro',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
-const AuthenticatedTenantDocumentosRoute =
-  AuthenticatedTenantDocumentosRouteImport.update({
-    id: '/tenant/documentos',
-    path: '/tenant/documentos',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
-const AuthenticatedTenantContratoRoute =
-  AuthenticatedTenantContratoRouteImport.update({
-    id: '/tenant/contrato',
-    path: '/tenant/contrato',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
-const AuthenticatedTenantChatRoute = AuthenticatedTenantChatRouteImport.update({
-  id: '/tenant/chat',
-  path: '/tenant/chat',
+const AuthenticatedContractsRoute = AuthenticatedContractsRouteImport.update({
+  id: '/contracts',
+  path: '/contracts',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedTenantAlertasRoute =
-  AuthenticatedTenantAlertasRouteImport.update({
-    id: '/tenant/alertas',
-    path: '/tenant/alertas',
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedDocumentosRoute = AuthenticatedDocumentosRouteImport.update({
+  id: '/documentos',
+  path: '/documentos',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedFinancialsRoute = AuthenticatedFinancialsRouteImport.update({
+  id: '/financials',
+  path: '/financials',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedIntegrationsRoute =
+  AuthenticatedIntegrationsRouteImport.update({
+    id: '/integrations',
+    path: '/integrations',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedMaintenancesRoute =
+  AuthenticatedMaintenancesRouteImport.update({
+    id: '/maintenances',
+    path: '/maintenances',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedPerfilRoute = AuthenticatedPerfilRouteImport.update({
+  id: '/perfil',
+  path: '/perfil',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedPropertiesRoute = AuthenticatedPropertiesRouteImport.update({
+  id: '/properties',
+  path: '/properties',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedRelatoriosRoute = AuthenticatedRelatoriosRouteImport.update({
+  id: '/relatorios',
+  path: '/relatorios',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedTenantsRoute = AuthenticatedTenantsRouteImport.update({
+  id: '/tenants',
+  path: '/tenants',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedVistoriasRoute = AuthenticatedVistoriasRouteImport.update({
+  id: '/vistorias',
+  path: '/vistorias',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedAdminIntegracoesRoute =
+  AuthenticatedAdminIntegracoesRouteImport.update({
+    id: '/admin/integracoes',
+    path: '/admin/integracoes',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedPropertiesIdRoute =
@@ -391,86 +206,223 @@ const AuthenticatedPropertiesIdRoute =
     path: '/$id',
     getParentRoute: () => AuthenticatedPropertiesRoute,
   } as any)
-const AuthenticatedAdminIntegracoesRoute =
-  AuthenticatedAdminIntegracoesRouteImport.update({
-    id: '/admin/integracoes',
-    path: '/admin/integracoes',
+const AuthenticatedTenantIndexRoute =
+  AuthenticatedTenantIndexRouteImport.update({
+    id: '/tenant/',
+    path: '/tenant/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
-const LovableEmailQueueProcessRoute =
-  LovableEmailQueueProcessRouteImport.update({
-    id: '/lovable/email/queue/process',
-    path: '/lovable/email/queue/process',
-    getParentRoute: () => rootRouteImport,
+const AuthenticatedTenantAlertasRoute =
+  AuthenticatedTenantAlertasRouteImport.update({
+    id: '/tenant/alertas',
+    path: '/tenant/alertas',
+    getParentRoute: () => AuthenticatedRoute,
   } as any)
-const ApiPublicWebhooksLeadsRoute = ApiPublicWebhooksLeadsRouteImport.update({
-  id: '/api/public/webhooks/leads',
-  path: '/api/public/webhooks/leads',
+const AuthenticatedTenantChatRoute = AuthenticatedTenantChatRouteImport.update({
+  id: '/tenant/chat',
+  path: '/tenant/chat',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedTenantContratoRoute =
+  AuthenticatedTenantContratoRouteImport.update({
+    id: '/tenant/contrato',
+    path: '/tenant/contrato',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedTenantDocumentosRoute =
+  AuthenticatedTenantDocumentosRouteImport.update({
+    id: '/tenant/documentos',
+    path: '/tenant/documentos',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedTenantFinanceiroRoute =
+  AuthenticatedTenantFinanceiroRouteImport.update({
+    id: '/tenant/financeiro',
+    path: '/tenant/financeiro',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedTenantManutencoesRoute =
+  AuthenticatedTenantManutencoesRouteImport.update({
+    id: '/tenant/manutencoes',
+    path: '/tenant/manutencoes',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedTenantPerfilRoute =
+  AuthenticatedTenantPerfilRouteImport.update({
+    id: '/tenant/perfil',
+    path: '/tenant/perfil',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const LandlordLandlordIndexRoute = LandlordLandlordIndexRouteImport.update({
+  id: '/landlord/',
+  path: '/landlord/',
+  getParentRoute: () => LandlordRoute,
+} as any)
+const LandlordLandlordChatRoute = LandlordLandlordChatRouteImport.update({
+  id: '/landlord/chat',
+  path: '/landlord/chat',
+  getParentRoute: () => LandlordRoute,
+} as any)
+const LandlordLandlordFinanceiroRoute =
+  LandlordLandlordFinanceiroRouteImport.update({
+    id: '/landlord/financeiro',
+    path: '/landlord/financeiro',
+    getParentRoute: () => LandlordRoute,
+  } as any)
+const LandlordLandlordManutencoesRoute =
+  LandlordLandlordManutencoesRouteImport.update({
+    id: '/landlord/manutencoes',
+    path: '/landlord/manutencoes',
+    getParentRoute: () => LandlordRoute,
+  } as any)
+const LandlordLandlordPerfilRoute = LandlordLandlordPerfilRouteImport.update({
+  id: '/landlord/perfil',
+  path: '/landlord/perfil',
+  getParentRoute: () => LandlordRoute,
+} as any)
+const LandlordLandlordSaldoRoute = LandlordLandlordSaldoRouteImport.update({
+  id: '/landlord/saldo',
+  path: '/landlord/saldo',
+  getParentRoute: () => LandlordRoute,
+} as any)
+const ManagerManagerIndexRoute = ManagerManagerIndexRouteImport.update({
+  id: '/manager/',
+  path: '/manager/',
+  getParentRoute: () => ManagerRoute,
+} as any)
+const ManagerManagerAlertasRoute = ManagerManagerAlertasRouteImport.update({
+  id: '/manager/alertas',
+  path: '/manager/alertas',
+  getParentRoute: () => ManagerRoute,
+} as any)
+const ManagerManagerCarteiraRoute = ManagerManagerCarteiraRouteImport.update({
+  id: '/manager/carteira',
+  path: '/manager/carteira',
+  getParentRoute: () => ManagerRoute,
+} as any)
+const ManagerManagerChatRoute = ManagerManagerChatRouteImport.update({
+  id: '/manager/chat',
+  path: '/manager/chat',
+  getParentRoute: () => ManagerRoute,
+} as any)
+const ManagerManagerContratosRoute = ManagerManagerContratosRouteImport.update({
+  id: '/manager/contratos',
+  path: '/manager/contratos',
+  getParentRoute: () => ManagerRoute,
+} as any)
+const ManagerManagerCrmRoute = ManagerManagerCrmRouteImport.update({
+  id: '/manager/crm',
+  path: '/manager/crm',
+  getParentRoute: () => ManagerRoute,
+} as any)
+const ManagerManagerDimobRoute = ManagerManagerDimobRouteImport.update({
+  id: '/manager/dimob',
+  path: '/manager/dimob',
+  getParentRoute: () => ManagerRoute,
+} as any)
+const ManagerManagerEquipeRoute = ManagerManagerEquipeRouteImport.update({
+  id: '/manager/equipe',
+  path: '/manager/equipe',
+  getParentRoute: () => ManagerRoute,
+} as any)
+const ManagerManagerFinanceiroRoute =
+  ManagerManagerFinanceiroRouteImport.update({
+    id: '/manager/financeiro',
+    path: '/manager/financeiro',
+    getParentRoute: () => ManagerRoute,
+  } as any)
+const ManagerManagerInquilinosRoute =
+  ManagerManagerInquilinosRouteImport.update({
+    id: '/manager/inquilinos',
+    path: '/manager/inquilinos',
+    getParentRoute: () => ManagerRoute,
+  } as any)
+const ManagerManagerIntegracaoRoute =
+  ManagerManagerIntegracaoRouteImport.update({
+    id: '/manager/integracao',
+    path: '/manager/integracao',
+    getParentRoute: () => ManagerRoute,
+  } as any)
+const ManagerManagerLeadsRoute = ManagerManagerLeadsRouteImport.update({
+  id: '/manager/leads',
+  path: '/manager/leads',
+  getParentRoute: () => ManagerRoute,
+} as any)
+const ManagerManagerManutencoesRoute =
+  ManagerManagerManutencoesRouteImport.update({
+    id: '/manager/manutencoes',
+    path: '/manager/manutencoes',
+    getParentRoute: () => ManagerRoute,
+  } as any)
+const ManagerManagerMigrarDadosRoute =
+  ManagerManagerMigrarDadosRouteImport.update({
+    id: '/manager/migrar-dados',
+    path: '/manager/migrar-dados',
+    getParentRoute: () => ManagerRoute,
+  } as any)
+const ManagerManagerPerfilRoute = ManagerManagerPerfilRouteImport.update({
+  id: '/manager/perfil',
+  path: '/manager/perfil',
+  getParentRoute: () => ManagerRoute,
+} as any)
+const ManagerManagerPortaisRoute = ManagerManagerPortaisRouteImport.update({
+  id: '/manager/portais',
+  path: '/manager/portais',
+  getParentRoute: () => ManagerRoute,
+} as any)
+const ManagerManagerProprietariosRoute =
+  ManagerManagerProprietariosRouteImport.update({
+    id: '/manager/proprietarios',
+    path: '/manager/proprietarios',
+    getParentRoute: () => ManagerRoute,
+  } as any)
+const ManagerManagerRelatoriosRoute =
+  ManagerManagerRelatoriosRouteImport.update({
+    id: '/manager/relatorios',
+    path: '/manager/relatorios',
+    getParentRoute: () => ManagerRoute,
+  } as any)
+const ManagerManagerVistoriasRoute = ManagerManagerVistoriasRouteImport.update({
+  id: '/manager/vistorias',
+  path: '/manager/vistorias',
+  getParentRoute: () => ManagerRoute,
+} as any)
+const ApiPublicEfiWebhookRoute = ApiPublicEfiWebhookRouteImport.update({
+  id: '/api/public/efi-webhook',
+  path: '/api/public/efi-webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicListingsXmlRoute = ApiPublicListingsXmlRouteImport.update({
-  id: '/api/public/listings/xml',
-  path: '/api/public/listings/xml',
+const ApiPublicStarkWebhookRoute = ApiPublicStarkWebhookRouteImport.update({
+  id: '/api/public/stark-webhook',
+  path: '/api/public/stark-webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicHooksSyncCronSecretRoute =
-  ApiPublicHooksSyncCronSecretRouteImport.update({
-    id: '/api/public/hooks/sync-cron-secret',
-    path: '/api/public/hooks/sync-cron-secret',
-    getParentRoute: () => rootRouteImport,
+const AuthenticatedAdminConfiguracoesSubcontaRoute =
+  AuthenticatedAdminConfiguracoesSubcontaRouteImport.update({
+    id: '/admin/configuracoes/subconta',
+    path: '/admin/configuracoes/subconta',
+    getParentRoute: () => AuthenticatedRoute,
   } as any)
-const ApiPublicHooksStarkE2eSandboxRoute =
-  ApiPublicHooksStarkE2eSandboxRouteImport.update({
-    id: '/api/public/hooks/stark-e2e-sandbox',
-    path: '/api/public/hooks/stark-e2e-sandbox',
-    getParentRoute: () => rootRouteImport,
+const ManagerManagerConfiguracoesRoletaRoute =
+  ManagerManagerConfiguracoesRoletaRouteImport.update({
+    id: '/manager/configuracoes/roleta',
+    path: '/manager/configuracoes/roleta',
+    getParentRoute: () => ManagerRoute,
   } as any)
-const ApiPublicHooksSendTenantRemindersRoute =
-  ApiPublicHooksSendTenantRemindersRouteImport.update({
-    id: '/api/public/hooks/send-tenant-reminders',
-    path: '/api/public/hooks/send-tenant-reminders',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiPublicHooksSendMaintenanceResponseRemindersRoute =
-  ApiPublicHooksSendMaintenanceResponseRemindersRouteImport.update({
-    id: '/api/public/hooks/send-maintenance-response-reminders',
-    path: '/api/public/hooks/send-maintenance-response-reminders',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiPublicHooksRegisterStarkWebhookRoute =
-  ApiPublicHooksRegisterStarkWebhookRouteImport.update({
-    id: '/api/public/hooks/register-stark-webhook',
-    path: '/api/public/hooks/register-stark-webhook',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiPublicHooksRegisterEfiWebhookRoute =
-  ApiPublicHooksRegisterEfiWebhookRouteImport.update({
-    id: '/api/public/hooks/register-efi-webhook',
-    path: '/api/public/hooks/register-efi-webhook',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiPublicHooksReconcileStarkChargesRoute =
-  ApiPublicHooksReconcileStarkChargesRouteImport.update({
-    id: '/api/public/hooks/reconcile-stark-charges',
-    path: '/api/public/hooks/reconcile-stark-charges',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiPublicHooksReconcileEfiTransfersRoute =
-  ApiPublicHooksReconcileEfiTransfersRouteImport.update({
-    id: '/api/public/hooks/reconcile-efi-transfers',
-    path: '/api/public/hooks/reconcile-efi-transfers',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiPublicHooksReconcileEfiChargesRoute =
-  ApiPublicHooksReconcileEfiChargesRouteImport.update({
-    id: '/api/public/hooks/reconcile-efi-charges',
-    path: '/api/public/hooks/reconcile-efi-charges',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiPublicHooksProcessPayoutQueueRoute =
-  ApiPublicHooksProcessPayoutQueueRouteImport.update({
-    id: '/api/public/hooks/process-payout-queue',
-    path: '/api/public/hooks/process-payout-queue',
+const ApiPublicEfiWebhookPixRoute = ApiPublicEfiWebhookPixRouteImport.update({
+  id: '/pix',
+  path: '/pix',
+  getParentRoute: () => ApiPublicEfiWebhookRoute,
+} as any)
+const ApiPublicHooksEfiSaldoRoute = ApiPublicHooksEfiSaldoRouteImport.update({
+  id: '/api/public/hooks/efi-saldo',
+  path: '/api/public/hooks/efi-saldo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicHooksGenerateUpcomingBoletosRoute =
+  ApiPublicHooksGenerateUpcomingBoletosRouteImport.update({
+    id: '/api/public/hooks/generate-upcoming-boletos',
+    path: '/api/public/hooks/generate-upcoming-boletos',
     getParentRoute: () => rootRouteImport,
   } as any)
 const ApiPublicHooksIssueSingleBoletoRoute =
@@ -479,44 +431,92 @@ const ApiPublicHooksIssueSingleBoletoRoute =
     path: '/api/public/hooks/issue-single-boleto',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ApiPublicHooksGenerateUpcomingBoletosRoute =
-  ApiPublicHooksGenerateUpcomingBoletosRouteImport.update({
-    id: '/api/public/hooks/generate-upcoming-boletos',
-    path: '/api/public/hooks/generate-upcoming-boletos',
+const ApiPublicHooksProcessPayoutQueueRoute =
+  ApiPublicHooksProcessPayoutQueueRouteImport.update({
+    id: '/api/public/hooks/process-payout-queue',
+    path: '/api/public/hooks/process-payout-queue',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ApiPublicHooksEfiSaldoRoute = ApiPublicHooksEfiSaldoRouteImport.update({
-  id: '/api/public/hooks/efi-saldo',
-  path: '/api/public/hooks/efi-saldo',
+const ApiPublicHooksReconcileEfiChargesRoute =
+  ApiPublicHooksReconcileEfiChargesRouteImport.update({
+    id: '/api/public/hooks/reconcile-efi-charges',
+    path: '/api/public/hooks/reconcile-efi-charges',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicHooksReconcileEfiTransfersRoute =
+  ApiPublicHooksReconcileEfiTransfersRouteImport.update({
+    id: '/api/public/hooks/reconcile-efi-transfers',
+    path: '/api/public/hooks/reconcile-efi-transfers',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicHooksReconcileStarkChargesRoute =
+  ApiPublicHooksReconcileStarkChargesRouteImport.update({
+    id: '/api/public/hooks/reconcile-stark-charges',
+    path: '/api/public/hooks/reconcile-stark-charges',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicHooksRegisterEfiWebhookRoute =
+  ApiPublicHooksRegisterEfiWebhookRouteImport.update({
+    id: '/api/public/hooks/register-efi-webhook',
+    path: '/api/public/hooks/register-efi-webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicHooksRegisterStarkWebhookRoute =
+  ApiPublicHooksRegisterStarkWebhookRouteImport.update({
+    id: '/api/public/hooks/register-stark-webhook',
+    path: '/api/public/hooks/register-stark-webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicHooksSendMaintenanceResponseRemindersRoute =
+  ApiPublicHooksSendMaintenanceResponseRemindersRouteImport.update({
+    id: '/api/public/hooks/send-maintenance-response-reminders',
+    path: '/api/public/hooks/send-maintenance-response-reminders',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicHooksSendTenantRemindersRoute =
+  ApiPublicHooksSendTenantRemindersRouteImport.update({
+    id: '/api/public/hooks/send-tenant-reminders',
+    path: '/api/public/hooks/send-tenant-reminders',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicHooksStarkE2eSandboxRoute =
+  ApiPublicHooksStarkE2eSandboxRouteImport.update({
+    id: '/api/public/hooks/stark-e2e-sandbox',
+    path: '/api/public/hooks/stark-e2e-sandbox',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicHooksSyncCronSecretRoute =
+  ApiPublicHooksSyncCronSecretRouteImport.update({
+    id: '/api/public/hooks/sync-cron-secret',
+    path: '/api/public/hooks/sync-cron-secret',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicListingsXmlRoute = ApiPublicListingsXmlRouteImport.update({
+  id: '/api/public/listings/xml',
+  path: '/api/public/listings/xml',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicEfiWebhookPixRoute = ApiPublicEfiWebhookPixRouteImport.update({
-  id: '/pix',
-  path: '/pix',
-  getParentRoute: () => ApiPublicEfiWebhookRoute,
+const ApiPublicWebhooksLeadsRoute = ApiPublicWebhooksLeadsRouteImport.update({
+  id: '/api/public/webhooks/leads',
+  path: '/api/public/webhooks/leads',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const ManagerManagerConfiguracoesRoletaRoute =
-  ManagerManagerConfiguracoesRoletaRouteImport.update({
-    id: '/manager/configuracoes/roleta',
-    path: '/manager/configuracoes/roleta',
-    getParentRoute: () => ManagerRoute,
-  } as any)
-const AuthenticatedAdminConfiguracoesSubcontaRoute =
-  AuthenticatedAdminConfiguracoesSubcontaRouteImport.update({
-    id: '/admin/configuracoes/subconta',
-    path: '/admin/configuracoes/subconta',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
-const ApiV1IntegrationsOrgSlugListingsDotxmlRoute =
-  ApiV1IntegrationsOrgSlugListingsDotxmlRouteImport.update({
-    id: '/api/v1/integrations/$orgSlug/listings.xml',
-    path: '/api/v1/integrations/$orgSlug/listings.xml',
+const LovableEmailQueueProcessRoute =
+  LovableEmailQueueProcessRouteImport.update({
+    id: '/lovable/email/queue/process',
+    path: '/lovable/email/queue/process',
     getParentRoute: () => rootRouteImport,
   } as any)
 const ApiV1IntegrationsOrgSlugLeadsRoute =
   ApiV1IntegrationsOrgSlugLeadsRouteImport.update({
     id: '/api/v1/integrations/$orgSlug/leads',
     path: '/api/v1/integrations/$orgSlug/leads',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiV1IntegrationsOrgSlugListingsDotxmlRoute =
+  ApiV1IntegrationsOrgSlugListingsDotxmlRouteImport.update({
+    id: '/api/v1/integrations/$orgSlug/listings.xml',
+    path: '/api/v1/integrations/$orgSlug/listings.xml',
     getParentRoute: () => rootRouteImport,
   } as any)
 
@@ -1031,46 +1031,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/tenant-setup': {
-      id: '/tenant-setup'
-      path: '/tenant-setup'
-      fullPath: '/tenant-setup'
-      preLoaderRoute: typeof TenantSetupRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/manager-setup': {
-      id: '/manager-setup'
-      path: '/manager-setup'
-      fullPath: '/manager-setup'
-      preLoaderRoute: typeof ManagerSetupRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/landlord-setup': {
-      id: '/landlord-setup'
-      path: '/landlord-setup'
-      fullPath: '/landlord-setup'
-      preLoaderRoute: typeof LandlordSetupRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/cadastro': {
-      id: '/cadastro'
-      path: '/cadastro'
-      fullPath: '/cadastro'
-      preLoaderRoute: typeof CadastroRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_manager': {
-      id: '/_manager'
+    '/_authenticated': {
+      id: '/_authenticated'
       path: ''
       fullPath: '/'
-      preLoaderRoute: typeof ManagerRouteImport
+      preLoaderRoute: typeof AuthenticatedRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_landlord': {
@@ -1080,11 +1045,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LandlordRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated': {
-      id: '/_authenticated'
+    '/_manager': {
+      id: '/_manager'
       path: ''
       fullPath: '/'
-      preLoaderRoute: typeof AuthenticatedRouteImport
+      preLoaderRoute: typeof ManagerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cadastro': {
+      id: '/cadastro'
+      path: '/cadastro'
+      fullPath: '/cadastro'
+      preLoaderRoute: typeof CadastroRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/landlord-setup': {
+      id: '/landlord-setup'
+      path: '/landlord-setup'
+      fullPath: '/landlord-setup'
+      preLoaderRoute: typeof LandlordSetupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/manager-setup': {
+      id: '/manager-setup'
+      path: '/manager-setup'
+      fullPath: '/manager-setup'
+      preLoaderRoute: typeof ManagerSetupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tenant-setup': {
+      id: '/tenant-setup'
+      path: '/tenant-setup'
+      fullPath: '/tenant-setup'
+      preLoaderRoute: typeof TenantSetupRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/': {
@@ -1094,74 +1094,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/vistorias': {
-      id: '/_authenticated/vistorias'
-      path: '/vistorias'
-      fullPath: '/vistorias'
-      preLoaderRoute: typeof AuthenticatedVistoriasRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/tenants': {
-      id: '/_authenticated/tenants'
-      path: '/tenants'
-      fullPath: '/tenants'
-      preLoaderRoute: typeof AuthenticatedTenantsRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/relatorios': {
-      id: '/_authenticated/relatorios'
-      path: '/relatorios'
-      fullPath: '/relatorios'
-      preLoaderRoute: typeof AuthenticatedRelatoriosRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/properties': {
-      id: '/_authenticated/properties'
-      path: '/properties'
-      fullPath: '/properties'
-      preLoaderRoute: typeof AuthenticatedPropertiesRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/perfil': {
-      id: '/_authenticated/perfil'
-      path: '/perfil'
-      fullPath: '/perfil'
-      preLoaderRoute: typeof AuthenticatedPerfilRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/maintenances': {
-      id: '/_authenticated/maintenances'
-      path: '/maintenances'
-      fullPath: '/maintenances'
-      preLoaderRoute: typeof AuthenticatedMaintenancesRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/integrations': {
-      id: '/_authenticated/integrations'
-      path: '/integrations'
-      fullPath: '/integrations'
-      preLoaderRoute: typeof AuthenticatedIntegrationsRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/financials': {
-      id: '/_authenticated/financials'
-      path: '/financials'
-      fullPath: '/financials'
-      preLoaderRoute: typeof AuthenticatedFinancialsRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/documentos': {
-      id: '/_authenticated/documentos'
-      path: '/documentos'
-      fullPath: '/documentos'
-      preLoaderRoute: typeof AuthenticatedDocumentosRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/dashboard': {
-      id: '/_authenticated/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+    '/_authenticated/conta-corrente': {
+      id: '/_authenticated/conta-corrente'
+      path: '/conta-corrente'
+      fullPath: '/conta-corrente'
+      preLoaderRoute: typeof AuthenticatedContaCorrenteRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/contracts': {
@@ -1171,256 +1108,81 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedContractsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/conta-corrente': {
-      id: '/_authenticated/conta-corrente'
-      path: '/conta-corrente'
-      fullPath: '/conta-corrente'
-      preLoaderRoute: typeof AuthenticatedContaCorrenteRouteImport
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_manager/manager/': {
-      id: '/_manager/manager/'
-      path: '/manager'
-      fullPath: '/manager/'
-      preLoaderRoute: typeof ManagerManagerIndexRouteImport
-      parentRoute: typeof ManagerRoute
-    }
-    '/_landlord/landlord/': {
-      id: '/_landlord/landlord/'
-      path: '/landlord'
-      fullPath: '/landlord/'
-      preLoaderRoute: typeof LandlordLandlordIndexRouteImport
-      parentRoute: typeof LandlordRoute
-    }
-    '/_authenticated/tenant/': {
-      id: '/_authenticated/tenant/'
-      path: '/tenant'
-      fullPath: '/tenant/'
-      preLoaderRoute: typeof AuthenticatedTenantIndexRouteImport
+    '/_authenticated/documentos': {
+      id: '/_authenticated/documentos'
+      path: '/documentos'
+      fullPath: '/documentos'
+      preLoaderRoute: typeof AuthenticatedDocumentosRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/api/public/stark-webhook': {
-      id: '/api/public/stark-webhook'
-      path: '/api/public/stark-webhook'
-      fullPath: '/api/public/stark-webhook'
-      preLoaderRoute: typeof ApiPublicStarkWebhookRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/efi-webhook': {
-      id: '/api/public/efi-webhook'
-      path: '/api/public/efi-webhook'
-      fullPath: '/api/public/efi-webhook'
-      preLoaderRoute: typeof ApiPublicEfiWebhookRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_manager/manager/vistorias': {
-      id: '/_manager/manager/vistorias'
-      path: '/manager/vistorias'
-      fullPath: '/manager/vistorias'
-      preLoaderRoute: typeof ManagerManagerVistoriasRouteImport
-      parentRoute: typeof ManagerRoute
-    }
-    '/_manager/manager/relatorios': {
-      id: '/_manager/manager/relatorios'
-      path: '/manager/relatorios'
-      fullPath: '/manager/relatorios'
-      preLoaderRoute: typeof ManagerManagerRelatoriosRouteImport
-      parentRoute: typeof ManagerRoute
-    }
-    '/_manager/manager/proprietarios': {
-      id: '/_manager/manager/proprietarios'
-      path: '/manager/proprietarios'
-      fullPath: '/manager/proprietarios'
-      preLoaderRoute: typeof ManagerManagerProprietariosRouteImport
-      parentRoute: typeof ManagerRoute
-    }
-    '/_manager/manager/portais': {
-      id: '/_manager/manager/portais'
-      path: '/manager/portais'
-      fullPath: '/manager/portais'
-      preLoaderRoute: typeof ManagerManagerPortaisRouteImport
-      parentRoute: typeof ManagerRoute
-    }
-    '/_manager/manager/perfil': {
-      id: '/_manager/manager/perfil'
-      path: '/manager/perfil'
-      fullPath: '/manager/perfil'
-      preLoaderRoute: typeof ManagerManagerPerfilRouteImport
-      parentRoute: typeof ManagerRoute
-    }
-    '/_manager/manager/migrar-dados': {
-      id: '/_manager/manager/migrar-dados'
-      path: '/manager/migrar-dados'
-      fullPath: '/manager/migrar-dados'
-      preLoaderRoute: typeof ManagerManagerMigrarDadosRouteImport
-      parentRoute: typeof ManagerRoute
-    }
-    '/_manager/manager/manutencoes': {
-      id: '/_manager/manager/manutencoes'
-      path: '/manager/manutencoes'
-      fullPath: '/manager/manutencoes'
-      preLoaderRoute: typeof ManagerManagerManutencoesRouteImport
-      parentRoute: typeof ManagerRoute
-    }
-    '/_manager/manager/leads': {
-      id: '/_manager/manager/leads'
-      path: '/manager/leads'
-      fullPath: '/manager/leads'
-      preLoaderRoute: typeof ManagerManagerLeadsRouteImport
-      parentRoute: typeof ManagerRoute
-    }
-    '/_manager/manager/integracao': {
-      id: '/_manager/manager/integracao'
-      path: '/manager/integracao'
-      fullPath: '/manager/integracao'
-      preLoaderRoute: typeof ManagerManagerIntegracaoRouteImport
-      parentRoute: typeof ManagerRoute
-    }
-    '/_manager/manager/inquilinos': {
-      id: '/_manager/manager/inquilinos'
-      path: '/manager/inquilinos'
-      fullPath: '/manager/inquilinos'
-      preLoaderRoute: typeof ManagerManagerInquilinosRouteImport
-      parentRoute: typeof ManagerRoute
-    }
-    '/_manager/manager/financeiro': {
-      id: '/_manager/manager/financeiro'
-      path: '/manager/financeiro'
-      fullPath: '/manager/financeiro'
-      preLoaderRoute: typeof ManagerManagerFinanceiroRouteImport
-      parentRoute: typeof ManagerRoute
-    }
-    '/_manager/manager/equipe': {
-      id: '/_manager/manager/equipe'
-      path: '/manager/equipe'
-      fullPath: '/manager/equipe'
-      preLoaderRoute: typeof ManagerManagerEquipeRouteImport
-      parentRoute: typeof ManagerRoute
-    }
-    '/_manager/manager/dimob': {
-      id: '/_manager/manager/dimob'
-      path: '/manager/dimob'
-      fullPath: '/manager/dimob'
-      preLoaderRoute: typeof ManagerManagerDimobRouteImport
-      parentRoute: typeof ManagerRoute
-    }
-    '/_manager/manager/crm': {
-      id: '/_manager/manager/crm'
-      path: '/manager/crm'
-      fullPath: '/manager/crm'
-      preLoaderRoute: typeof ManagerManagerCrmRouteImport
-      parentRoute: typeof ManagerRoute
-    }
-    '/_manager/manager/contratos': {
-      id: '/_manager/manager/contratos'
-      path: '/manager/contratos'
-      fullPath: '/manager/contratos'
-      preLoaderRoute: typeof ManagerManagerContratosRouteImport
-      parentRoute: typeof ManagerRoute
-    }
-    '/_manager/manager/chat': {
-      id: '/_manager/manager/chat'
-      path: '/manager/chat'
-      fullPath: '/manager/chat'
-      preLoaderRoute: typeof ManagerManagerChatRouteImport
-      parentRoute: typeof ManagerRoute
-    }
-    '/_manager/manager/carteira': {
-      id: '/_manager/manager/carteira'
-      path: '/manager/carteira'
-      fullPath: '/manager/carteira'
-      preLoaderRoute: typeof ManagerManagerCarteiraRouteImport
-      parentRoute: typeof ManagerRoute
-    }
-    '/_manager/manager/alertas': {
-      id: '/_manager/manager/alertas'
-      path: '/manager/alertas'
-      fullPath: '/manager/alertas'
-      preLoaderRoute: typeof ManagerManagerAlertasRouteImport
-      parentRoute: typeof ManagerRoute
-    }
-    '/_landlord/landlord/saldo': {
-      id: '/_landlord/landlord/saldo'
-      path: '/landlord/saldo'
-      fullPath: '/landlord/saldo'
-      preLoaderRoute: typeof LandlordLandlordSaldoRouteImport
-      parentRoute: typeof LandlordRoute
-    }
-    '/_landlord/landlord/perfil': {
-      id: '/_landlord/landlord/perfil'
-      path: '/landlord/perfil'
-      fullPath: '/landlord/perfil'
-      preLoaderRoute: typeof LandlordLandlordPerfilRouteImport
-      parentRoute: typeof LandlordRoute
-    }
-    '/_landlord/landlord/manutencoes': {
-      id: '/_landlord/landlord/manutencoes'
-      path: '/landlord/manutencoes'
-      fullPath: '/landlord/manutencoes'
-      preLoaderRoute: typeof LandlordLandlordManutencoesRouteImport
-      parentRoute: typeof LandlordRoute
-    }
-    '/_landlord/landlord/financeiro': {
-      id: '/_landlord/landlord/financeiro'
-      path: '/landlord/financeiro'
-      fullPath: '/landlord/financeiro'
-      preLoaderRoute: typeof LandlordLandlordFinanceiroRouteImport
-      parentRoute: typeof LandlordRoute
-    }
-    '/_landlord/landlord/chat': {
-      id: '/_landlord/landlord/chat'
-      path: '/landlord/chat'
-      fullPath: '/landlord/chat'
-      preLoaderRoute: typeof LandlordLandlordChatRouteImport
-      parentRoute: typeof LandlordRoute
-    }
-    '/_authenticated/tenant/perfil': {
-      id: '/_authenticated/tenant/perfil'
-      path: '/tenant/perfil'
-      fullPath: '/tenant/perfil'
-      preLoaderRoute: typeof AuthenticatedTenantPerfilRouteImport
+    '/_authenticated/financials': {
+      id: '/_authenticated/financials'
+      path: '/financials'
+      fullPath: '/financials'
+      preLoaderRoute: typeof AuthenticatedFinancialsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/tenant/manutencoes': {
-      id: '/_authenticated/tenant/manutencoes'
-      path: '/tenant/manutencoes'
-      fullPath: '/tenant/manutencoes'
-      preLoaderRoute: typeof AuthenticatedTenantManutencoesRouteImport
+    '/_authenticated/integrations': {
+      id: '/_authenticated/integrations'
+      path: '/integrations'
+      fullPath: '/integrations'
+      preLoaderRoute: typeof AuthenticatedIntegrationsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/tenant/financeiro': {
-      id: '/_authenticated/tenant/financeiro'
-      path: '/tenant/financeiro'
-      fullPath: '/tenant/financeiro'
-      preLoaderRoute: typeof AuthenticatedTenantFinanceiroRouteImport
+    '/_authenticated/maintenances': {
+      id: '/_authenticated/maintenances'
+      path: '/maintenances'
+      fullPath: '/maintenances'
+      preLoaderRoute: typeof AuthenticatedMaintenancesRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/tenant/documentos': {
-      id: '/_authenticated/tenant/documentos'
-      path: '/tenant/documentos'
-      fullPath: '/tenant/documentos'
-      preLoaderRoute: typeof AuthenticatedTenantDocumentosRouteImport
+    '/_authenticated/perfil': {
+      id: '/_authenticated/perfil'
+      path: '/perfil'
+      fullPath: '/perfil'
+      preLoaderRoute: typeof AuthenticatedPerfilRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/tenant/contrato': {
-      id: '/_authenticated/tenant/contrato'
-      path: '/tenant/contrato'
-      fullPath: '/tenant/contrato'
-      preLoaderRoute: typeof AuthenticatedTenantContratoRouteImport
+    '/_authenticated/properties': {
+      id: '/_authenticated/properties'
+      path: '/properties'
+      fullPath: '/properties'
+      preLoaderRoute: typeof AuthenticatedPropertiesRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/tenant/chat': {
-      id: '/_authenticated/tenant/chat'
-      path: '/tenant/chat'
-      fullPath: '/tenant/chat'
-      preLoaderRoute: typeof AuthenticatedTenantChatRouteImport
+    '/_authenticated/relatorios': {
+      id: '/_authenticated/relatorios'
+      path: '/relatorios'
+      fullPath: '/relatorios'
+      preLoaderRoute: typeof AuthenticatedRelatoriosRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/tenant/alertas': {
-      id: '/_authenticated/tenant/alertas'
-      path: '/tenant/alertas'
-      fullPath: '/tenant/alertas'
-      preLoaderRoute: typeof AuthenticatedTenantAlertasRouteImport
+    '/_authenticated/tenants': {
+      id: '/_authenticated/tenants'
+      path: '/tenants'
+      fullPath: '/tenants'
+      preLoaderRoute: typeof AuthenticatedTenantsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/vistorias': {
+      id: '/_authenticated/vistorias'
+      path: '/vistorias'
+      fullPath: '/vistorias'
+      preLoaderRoute: typeof AuthenticatedVistoriasRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/admin/integracoes': {
+      id: '/_authenticated/admin/integracoes'
+      path: '/admin/integracoes'
+      fullPath: '/admin/integracoes'
+      preLoaderRoute: typeof AuthenticatedAdminIntegracoesRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/properties/$id': {
@@ -1430,109 +1192,277 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPropertiesIdRouteImport
       parentRoute: typeof AuthenticatedPropertiesRoute
     }
-    '/_authenticated/admin/integracoes': {
-      id: '/_authenticated/admin/integracoes'
-      path: '/admin/integracoes'
-      fullPath: '/admin/integracoes'
-      preLoaderRoute: typeof AuthenticatedAdminIntegracoesRouteImport
+    '/_authenticated/tenant/': {
+      id: '/_authenticated/tenant/'
+      path: '/tenant'
+      fullPath: '/tenant/'
+      preLoaderRoute: typeof AuthenticatedTenantIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/lovable/email/queue/process': {
-      id: '/lovable/email/queue/process'
-      path: '/lovable/email/queue/process'
-      fullPath: '/lovable/email/queue/process'
-      preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
+    '/_authenticated/tenant/alertas': {
+      id: '/_authenticated/tenant/alertas'
+      path: '/tenant/alertas'
+      fullPath: '/tenant/alertas'
+      preLoaderRoute: typeof AuthenticatedTenantAlertasRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/tenant/chat': {
+      id: '/_authenticated/tenant/chat'
+      path: '/tenant/chat'
+      fullPath: '/tenant/chat'
+      preLoaderRoute: typeof AuthenticatedTenantChatRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/tenant/contrato': {
+      id: '/_authenticated/tenant/contrato'
+      path: '/tenant/contrato'
+      fullPath: '/tenant/contrato'
+      preLoaderRoute: typeof AuthenticatedTenantContratoRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/tenant/documentos': {
+      id: '/_authenticated/tenant/documentos'
+      path: '/tenant/documentos'
+      fullPath: '/tenant/documentos'
+      preLoaderRoute: typeof AuthenticatedTenantDocumentosRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/tenant/financeiro': {
+      id: '/_authenticated/tenant/financeiro'
+      path: '/tenant/financeiro'
+      fullPath: '/tenant/financeiro'
+      preLoaderRoute: typeof AuthenticatedTenantFinanceiroRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/tenant/manutencoes': {
+      id: '/_authenticated/tenant/manutencoes'
+      path: '/tenant/manutencoes'
+      fullPath: '/tenant/manutencoes'
+      preLoaderRoute: typeof AuthenticatedTenantManutencoesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/tenant/perfil': {
+      id: '/_authenticated/tenant/perfil'
+      path: '/tenant/perfil'
+      fullPath: '/tenant/perfil'
+      preLoaderRoute: typeof AuthenticatedTenantPerfilRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_landlord/landlord/': {
+      id: '/_landlord/landlord/'
+      path: '/landlord'
+      fullPath: '/landlord/'
+      preLoaderRoute: typeof LandlordLandlordIndexRouteImport
+      parentRoute: typeof LandlordRoute
+    }
+    '/_landlord/landlord/chat': {
+      id: '/_landlord/landlord/chat'
+      path: '/landlord/chat'
+      fullPath: '/landlord/chat'
+      preLoaderRoute: typeof LandlordLandlordChatRouteImport
+      parentRoute: typeof LandlordRoute
+    }
+    '/_landlord/landlord/financeiro': {
+      id: '/_landlord/landlord/financeiro'
+      path: '/landlord/financeiro'
+      fullPath: '/landlord/financeiro'
+      preLoaderRoute: typeof LandlordLandlordFinanceiroRouteImport
+      parentRoute: typeof LandlordRoute
+    }
+    '/_landlord/landlord/manutencoes': {
+      id: '/_landlord/landlord/manutencoes'
+      path: '/landlord/manutencoes'
+      fullPath: '/landlord/manutencoes'
+      preLoaderRoute: typeof LandlordLandlordManutencoesRouteImport
+      parentRoute: typeof LandlordRoute
+    }
+    '/_landlord/landlord/perfil': {
+      id: '/_landlord/landlord/perfil'
+      path: '/landlord/perfil'
+      fullPath: '/landlord/perfil'
+      preLoaderRoute: typeof LandlordLandlordPerfilRouteImport
+      parentRoute: typeof LandlordRoute
+    }
+    '/_landlord/landlord/saldo': {
+      id: '/_landlord/landlord/saldo'
+      path: '/landlord/saldo'
+      fullPath: '/landlord/saldo'
+      preLoaderRoute: typeof LandlordLandlordSaldoRouteImport
+      parentRoute: typeof LandlordRoute
+    }
+    '/_manager/manager/': {
+      id: '/_manager/manager/'
+      path: '/manager'
+      fullPath: '/manager/'
+      preLoaderRoute: typeof ManagerManagerIndexRouteImport
+      parentRoute: typeof ManagerRoute
+    }
+    '/_manager/manager/alertas': {
+      id: '/_manager/manager/alertas'
+      path: '/manager/alertas'
+      fullPath: '/manager/alertas'
+      preLoaderRoute: typeof ManagerManagerAlertasRouteImport
+      parentRoute: typeof ManagerRoute
+    }
+    '/_manager/manager/carteira': {
+      id: '/_manager/manager/carteira'
+      path: '/manager/carteira'
+      fullPath: '/manager/carteira'
+      preLoaderRoute: typeof ManagerManagerCarteiraRouteImport
+      parentRoute: typeof ManagerRoute
+    }
+    '/_manager/manager/chat': {
+      id: '/_manager/manager/chat'
+      path: '/manager/chat'
+      fullPath: '/manager/chat'
+      preLoaderRoute: typeof ManagerManagerChatRouteImport
+      parentRoute: typeof ManagerRoute
+    }
+    '/_manager/manager/contratos': {
+      id: '/_manager/manager/contratos'
+      path: '/manager/contratos'
+      fullPath: '/manager/contratos'
+      preLoaderRoute: typeof ManagerManagerContratosRouteImport
+      parentRoute: typeof ManagerRoute
+    }
+    '/_manager/manager/crm': {
+      id: '/_manager/manager/crm'
+      path: '/manager/crm'
+      fullPath: '/manager/crm'
+      preLoaderRoute: typeof ManagerManagerCrmRouteImport
+      parentRoute: typeof ManagerRoute
+    }
+    '/_manager/manager/dimob': {
+      id: '/_manager/manager/dimob'
+      path: '/manager/dimob'
+      fullPath: '/manager/dimob'
+      preLoaderRoute: typeof ManagerManagerDimobRouteImport
+      parentRoute: typeof ManagerRoute
+    }
+    '/_manager/manager/equipe': {
+      id: '/_manager/manager/equipe'
+      path: '/manager/equipe'
+      fullPath: '/manager/equipe'
+      preLoaderRoute: typeof ManagerManagerEquipeRouteImport
+      parentRoute: typeof ManagerRoute
+    }
+    '/_manager/manager/financeiro': {
+      id: '/_manager/manager/financeiro'
+      path: '/manager/financeiro'
+      fullPath: '/manager/financeiro'
+      preLoaderRoute: typeof ManagerManagerFinanceiroRouteImport
+      parentRoute: typeof ManagerRoute
+    }
+    '/_manager/manager/inquilinos': {
+      id: '/_manager/manager/inquilinos'
+      path: '/manager/inquilinos'
+      fullPath: '/manager/inquilinos'
+      preLoaderRoute: typeof ManagerManagerInquilinosRouteImport
+      parentRoute: typeof ManagerRoute
+    }
+    '/_manager/manager/integracao': {
+      id: '/_manager/manager/integracao'
+      path: '/manager/integracao'
+      fullPath: '/manager/integracao'
+      preLoaderRoute: typeof ManagerManagerIntegracaoRouteImport
+      parentRoute: typeof ManagerRoute
+    }
+    '/_manager/manager/leads': {
+      id: '/_manager/manager/leads'
+      path: '/manager/leads'
+      fullPath: '/manager/leads'
+      preLoaderRoute: typeof ManagerManagerLeadsRouteImport
+      parentRoute: typeof ManagerRoute
+    }
+    '/_manager/manager/manutencoes': {
+      id: '/_manager/manager/manutencoes'
+      path: '/manager/manutencoes'
+      fullPath: '/manager/manutencoes'
+      preLoaderRoute: typeof ManagerManagerManutencoesRouteImport
+      parentRoute: typeof ManagerRoute
+    }
+    '/_manager/manager/migrar-dados': {
+      id: '/_manager/manager/migrar-dados'
+      path: '/manager/migrar-dados'
+      fullPath: '/manager/migrar-dados'
+      preLoaderRoute: typeof ManagerManagerMigrarDadosRouteImport
+      parentRoute: typeof ManagerRoute
+    }
+    '/_manager/manager/perfil': {
+      id: '/_manager/manager/perfil'
+      path: '/manager/perfil'
+      fullPath: '/manager/perfil'
+      preLoaderRoute: typeof ManagerManagerPerfilRouteImport
+      parentRoute: typeof ManagerRoute
+    }
+    '/_manager/manager/portais': {
+      id: '/_manager/manager/portais'
+      path: '/manager/portais'
+      fullPath: '/manager/portais'
+      preLoaderRoute: typeof ManagerManagerPortaisRouteImport
+      parentRoute: typeof ManagerRoute
+    }
+    '/_manager/manager/proprietarios': {
+      id: '/_manager/manager/proprietarios'
+      path: '/manager/proprietarios'
+      fullPath: '/manager/proprietarios'
+      preLoaderRoute: typeof ManagerManagerProprietariosRouteImport
+      parentRoute: typeof ManagerRoute
+    }
+    '/_manager/manager/relatorios': {
+      id: '/_manager/manager/relatorios'
+      path: '/manager/relatorios'
+      fullPath: '/manager/relatorios'
+      preLoaderRoute: typeof ManagerManagerRelatoriosRouteImport
+      parentRoute: typeof ManagerRoute
+    }
+    '/_manager/manager/vistorias': {
+      id: '/_manager/manager/vistorias'
+      path: '/manager/vistorias'
+      fullPath: '/manager/vistorias'
+      preLoaderRoute: typeof ManagerManagerVistoriasRouteImport
+      parentRoute: typeof ManagerRoute
+    }
+    '/api/public/efi-webhook': {
+      id: '/api/public/efi-webhook'
+      path: '/api/public/efi-webhook'
+      fullPath: '/api/public/efi-webhook'
+      preLoaderRoute: typeof ApiPublicEfiWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/webhooks/leads': {
-      id: '/api/public/webhooks/leads'
-      path: '/api/public/webhooks/leads'
-      fullPath: '/api/public/webhooks/leads'
-      preLoaderRoute: typeof ApiPublicWebhooksLeadsRouteImport
+    '/api/public/stark-webhook': {
+      id: '/api/public/stark-webhook'
+      path: '/api/public/stark-webhook'
+      fullPath: '/api/public/stark-webhook'
+      preLoaderRoute: typeof ApiPublicStarkWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/listings/xml': {
-      id: '/api/public/listings/xml'
-      path: '/api/public/listings/xml'
-      fullPath: '/api/public/listings/xml'
-      preLoaderRoute: typeof ApiPublicListingsXmlRouteImport
-      parentRoute: typeof rootRouteImport
+    '/_authenticated/admin/configuracoes/subconta': {
+      id: '/_authenticated/admin/configuracoes/subconta'
+      path: '/admin/configuracoes/subconta'
+      fullPath: '/admin/configuracoes/subconta'
+      preLoaderRoute: typeof AuthenticatedAdminConfiguracoesSubcontaRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
-    '/api/public/hooks/sync-cron-secret': {
-      id: '/api/public/hooks/sync-cron-secret'
-      path: '/api/public/hooks/sync-cron-secret'
-      fullPath: '/api/public/hooks/sync-cron-secret'
-      preLoaderRoute: typeof ApiPublicHooksSyncCronSecretRouteImport
-      parentRoute: typeof rootRouteImport
+    '/_manager/manager/configuracoes/roleta': {
+      id: '/_manager/manager/configuracoes/roleta'
+      path: '/manager/configuracoes/roleta'
+      fullPath: '/manager/configuracoes/roleta'
+      preLoaderRoute: typeof ManagerManagerConfiguracoesRoletaRouteImport
+      parentRoute: typeof ManagerRoute
     }
-    '/api/public/hooks/stark-e2e-sandbox': {
-      id: '/api/public/hooks/stark-e2e-sandbox'
-      path: '/api/public/hooks/stark-e2e-sandbox'
-      fullPath: '/api/public/hooks/stark-e2e-sandbox'
-      preLoaderRoute: typeof ApiPublicHooksStarkE2eSandboxRouteImport
-      parentRoute: typeof rootRouteImport
+    '/api/public/efi-webhook/pix': {
+      id: '/api/public/efi-webhook/pix'
+      path: '/pix'
+      fullPath: '/api/public/efi-webhook/pix'
+      preLoaderRoute: typeof ApiPublicEfiWebhookPixRouteImport
+      parentRoute: typeof ApiPublicEfiWebhookRoute
     }
-    '/api/public/hooks/send-tenant-reminders': {
-      id: '/api/public/hooks/send-tenant-reminders'
-      path: '/api/public/hooks/send-tenant-reminders'
-      fullPath: '/api/public/hooks/send-tenant-reminders'
-      preLoaderRoute: typeof ApiPublicHooksSendTenantRemindersRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/hooks/send-maintenance-response-reminders': {
-      id: '/api/public/hooks/send-maintenance-response-reminders'
-      path: '/api/public/hooks/send-maintenance-response-reminders'
-      fullPath: '/api/public/hooks/send-maintenance-response-reminders'
-      preLoaderRoute: typeof ApiPublicHooksSendMaintenanceResponseRemindersRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/hooks/register-stark-webhook': {
-      id: '/api/public/hooks/register-stark-webhook'
-      path: '/api/public/hooks/register-stark-webhook'
-      fullPath: '/api/public/hooks/register-stark-webhook'
-      preLoaderRoute: typeof ApiPublicHooksRegisterStarkWebhookRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/hooks/register-efi-webhook': {
-      id: '/api/public/hooks/register-efi-webhook'
-      path: '/api/public/hooks/register-efi-webhook'
-      fullPath: '/api/public/hooks/register-efi-webhook'
-      preLoaderRoute: typeof ApiPublicHooksRegisterEfiWebhookRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/hooks/reconcile-stark-charges': {
-      id: '/api/public/hooks/reconcile-stark-charges'
-      path: '/api/public/hooks/reconcile-stark-charges'
-      fullPath: '/api/public/hooks/reconcile-stark-charges'
-      preLoaderRoute: typeof ApiPublicHooksReconcileStarkChargesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/hooks/reconcile-efi-transfers': {
-      id: '/api/public/hooks/reconcile-efi-transfers'
-      path: '/api/public/hooks/reconcile-efi-transfers'
-      fullPath: '/api/public/hooks/reconcile-efi-transfers'
-      preLoaderRoute: typeof ApiPublicHooksReconcileEfiTransfersRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/hooks/reconcile-efi-charges': {
-      id: '/api/public/hooks/reconcile-efi-charges'
-      path: '/api/public/hooks/reconcile-efi-charges'
-      fullPath: '/api/public/hooks/reconcile-efi-charges'
-      preLoaderRoute: typeof ApiPublicHooksReconcileEfiChargesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/hooks/process-payout-queue': {
-      id: '/api/public/hooks/process-payout-queue'
-      path: '/api/public/hooks/process-payout-queue'
-      fullPath: '/api/public/hooks/process-payout-queue'
-      preLoaderRoute: typeof ApiPublicHooksProcessPayoutQueueRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/hooks/issue-single-boleto': {
-      id: '/api/public/hooks/issue-single-boleto'
-      path: '/api/public/hooks/issue-single-boleto'
-      fullPath: '/api/public/hooks/issue-single-boleto'
-      preLoaderRoute: typeof ApiPublicHooksIssueSingleBoletoRouteImport
+    '/api/public/hooks/efi-saldo': {
+      id: '/api/public/hooks/efi-saldo'
+      path: '/api/public/hooks/efi-saldo'
+      fullPath: '/api/public/hooks/efi-saldo'
+      preLoaderRoute: typeof ApiPublicHooksEfiSaldoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/hooks/generate-upcoming-boletos': {
@@ -1542,39 +1472,102 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksGenerateUpcomingBoletosRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/hooks/efi-saldo': {
-      id: '/api/public/hooks/efi-saldo'
-      path: '/api/public/hooks/efi-saldo'
-      fullPath: '/api/public/hooks/efi-saldo'
-      preLoaderRoute: typeof ApiPublicHooksEfiSaldoRouteImport
+    '/api/public/hooks/issue-single-boleto': {
+      id: '/api/public/hooks/issue-single-boleto'
+      path: '/api/public/hooks/issue-single-boleto'
+      fullPath: '/api/public/hooks/issue-single-boleto'
+      preLoaderRoute: typeof ApiPublicHooksIssueSingleBoletoRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/efi-webhook/pix': {
-      id: '/api/public/efi-webhook/pix'
-      path: '/pix'
-      fullPath: '/api/public/efi-webhook/pix'
-      preLoaderRoute: typeof ApiPublicEfiWebhookPixRouteImport
-      parentRoute: typeof ApiPublicEfiWebhookRoute
+    '/api/public/hooks/process-payout-queue': {
+      id: '/api/public/hooks/process-payout-queue'
+      path: '/api/public/hooks/process-payout-queue'
+      fullPath: '/api/public/hooks/process-payout-queue'
+      preLoaderRoute: typeof ApiPublicHooksProcessPayoutQueueRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_manager/manager/configuracoes/roleta': {
-      id: '/_manager/manager/configuracoes/roleta'
-      path: '/manager/configuracoes/roleta'
-      fullPath: '/manager/configuracoes/roleta'
-      preLoaderRoute: typeof ManagerManagerConfiguracoesRoletaRouteImport
-      parentRoute: typeof ManagerRoute
+    '/api/public/hooks/reconcile-efi-charges': {
+      id: '/api/public/hooks/reconcile-efi-charges'
+      path: '/api/public/hooks/reconcile-efi-charges'
+      fullPath: '/api/public/hooks/reconcile-efi-charges'
+      preLoaderRoute: typeof ApiPublicHooksReconcileEfiChargesRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/admin/configuracoes/subconta': {
-      id: '/_authenticated/admin/configuracoes/subconta'
-      path: '/admin/configuracoes/subconta'
-      fullPath: '/admin/configuracoes/subconta'
-      preLoaderRoute: typeof AuthenticatedAdminConfiguracoesSubcontaRouteImport
-      parentRoute: typeof AuthenticatedRoute
+    '/api/public/hooks/reconcile-efi-transfers': {
+      id: '/api/public/hooks/reconcile-efi-transfers'
+      path: '/api/public/hooks/reconcile-efi-transfers'
+      fullPath: '/api/public/hooks/reconcile-efi-transfers'
+      preLoaderRoute: typeof ApiPublicHooksReconcileEfiTransfersRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/api/v1/integrations/$orgSlug/listings.xml': {
-      id: '/api/v1/integrations/$orgSlug/listings.xml'
-      path: '/api/v1/integrations/$orgSlug/listings.xml'
-      fullPath: '/api/v1/integrations/$orgSlug/listings.xml'
-      preLoaderRoute: typeof ApiV1IntegrationsOrgSlugListingsDotxmlRouteImport
+    '/api/public/hooks/reconcile-stark-charges': {
+      id: '/api/public/hooks/reconcile-stark-charges'
+      path: '/api/public/hooks/reconcile-stark-charges'
+      fullPath: '/api/public/hooks/reconcile-stark-charges'
+      preLoaderRoute: typeof ApiPublicHooksReconcileStarkChargesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/register-efi-webhook': {
+      id: '/api/public/hooks/register-efi-webhook'
+      path: '/api/public/hooks/register-efi-webhook'
+      fullPath: '/api/public/hooks/register-efi-webhook'
+      preLoaderRoute: typeof ApiPublicHooksRegisterEfiWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/register-stark-webhook': {
+      id: '/api/public/hooks/register-stark-webhook'
+      path: '/api/public/hooks/register-stark-webhook'
+      fullPath: '/api/public/hooks/register-stark-webhook'
+      preLoaderRoute: typeof ApiPublicHooksRegisterStarkWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/send-maintenance-response-reminders': {
+      id: '/api/public/hooks/send-maintenance-response-reminders'
+      path: '/api/public/hooks/send-maintenance-response-reminders'
+      fullPath: '/api/public/hooks/send-maintenance-response-reminders'
+      preLoaderRoute: typeof ApiPublicHooksSendMaintenanceResponseRemindersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/send-tenant-reminders': {
+      id: '/api/public/hooks/send-tenant-reminders'
+      path: '/api/public/hooks/send-tenant-reminders'
+      fullPath: '/api/public/hooks/send-tenant-reminders'
+      preLoaderRoute: typeof ApiPublicHooksSendTenantRemindersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/stark-e2e-sandbox': {
+      id: '/api/public/hooks/stark-e2e-sandbox'
+      path: '/api/public/hooks/stark-e2e-sandbox'
+      fullPath: '/api/public/hooks/stark-e2e-sandbox'
+      preLoaderRoute: typeof ApiPublicHooksStarkE2eSandboxRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/sync-cron-secret': {
+      id: '/api/public/hooks/sync-cron-secret'
+      path: '/api/public/hooks/sync-cron-secret'
+      fullPath: '/api/public/hooks/sync-cron-secret'
+      preLoaderRoute: typeof ApiPublicHooksSyncCronSecretRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/listings/xml': {
+      id: '/api/public/listings/xml'
+      path: '/api/public/listings/xml'
+      fullPath: '/api/public/listings/xml'
+      preLoaderRoute: typeof ApiPublicListingsXmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/webhooks/leads': {
+      id: '/api/public/webhooks/leads'
+      path: '/api/public/webhooks/leads'
+      fullPath: '/api/public/webhooks/leads'
+      preLoaderRoute: typeof ApiPublicWebhooksLeadsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lovable/email/queue/process': {
+      id: '/lovable/email/queue/process'
+      path: '/lovable/email/queue/process'
+      fullPath: '/lovable/email/queue/process'
+      preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/v1/integrations/$orgSlug/leads': {
@@ -1582,6 +1575,13 @@ declare module '@tanstack/react-router' {
       path: '/api/v1/integrations/$orgSlug/leads'
       fullPath: '/api/v1/integrations/$orgSlug/leads'
       preLoaderRoute: typeof ApiV1IntegrationsOrgSlugLeadsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/v1/integrations/$orgSlug/listings.xml': {
+      id: '/api/v1/integrations/$orgSlug/listings.xml'
+      path: '/api/v1/integrations/$orgSlug/listings.xml'
+      fullPath: '/api/v1/integrations/$orgSlug/listings.xml'
+      preLoaderRoute: typeof ApiV1IntegrationsOrgSlugListingsDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
   }

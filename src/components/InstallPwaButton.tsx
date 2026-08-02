@@ -73,11 +73,12 @@ export function InstallPwaButton({ floating = true, bottomOffset = 80 }: Install
   return (
     <button
       onClick={handleInstall}
-      style={{ bottom: `${bottomOffset}px` }}
+      style={{ bottom: `calc(${bottomOffset}px + env(safe-area-inset-bottom))` }}
       className={cn(
-        "fixed right-4 z-40 inline-flex items-center gap-2 rounded-full bg-primary text-primary-foreground",
-        "px-4 py-2.5 text-sm font-medium shadow-lg shadow-primary/30",
+        "fixed right-4 z-30 inline-flex items-center gap-2 rounded-full bg-primary text-primary-foreground",
+        "px-4 py-2.5 text-sm font-medium shadow-lg shadow-primary/30 print:hidden",
         "hover:opacity-90 active:scale-95 transition",
+        "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
       )}
       aria-label="Instalar aplicativo"
     >

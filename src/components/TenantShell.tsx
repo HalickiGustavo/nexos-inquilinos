@@ -71,8 +71,11 @@ export function TenantShell() {
       </main>
 
       {/* Bottom nav (mobile + small tablet) */}
-      <nav className="fixed bottom-0 inset-x-0 z-30 backdrop-blur-xl bg-card/90 border-t border-border/60 md:hidden pb-[env(safe-area-inset-bottom)]">
-        <div className="grid" style={{ gridTemplateColumns: `repeat(${tenantNav.length + 1}, minmax(0, 1fr))` }}>
+      <nav
+        aria-label="Navegação principal"
+        className="fixed bottom-0 inset-x-0 z-30 backdrop-blur-xl bg-card/90 border-t border-border/60 md:hidden pb-[env(safe-area-inset-bottom)] print:hidden"
+      >
+        <div className="flex overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {tenantNav.map((item) => {
             const active = isActive(item.to, item.exact);
             const Icon = item.icon;
@@ -81,9 +84,10 @@ export function TenantShell() {
                 key={item.to}
                 to={item.to as any}
                 data-tour={item.tour}
+                aria-current={active ? "page" : undefined}
                 className={cn(
-                  "relative flex flex-col items-center justify-center gap-1 py-2 text-[11px] transition-colors min-w-0",
-                  active ? "text-primary" : "text-muted-foreground hover:text-foreground",
+                  "relative flex flex-1 shrink-0 basis-[68px] flex-col items-center justify-center gap-1 py-2 text-[11px] transition-colors",
+                  active ? "text-primary" : "text-muted-foreground hover:text-foreground active:bg-muted/50",
                 )}
               >
                 {active && (
@@ -100,7 +104,7 @@ export function TenantShell() {
                     </span>
                   )}
                 </span>
-                <span className="truncate max-w-full px-1 font-medium">{item.label}</span>
+                <span className="max-w-full truncate px-1 font-medium">{item.label}</span>
               </Link>
             );
           })}
@@ -109,7 +113,7 @@ export function TenantShell() {
               await signOut();
               navigate({ to: "/login", replace: true });
             }}
-            className="flex flex-col items-center justify-center gap-1 py-2 text-[11px] transition-colors text-muted-foreground hover:text-foreground min-w-0"
+            className="flex flex-1 shrink-0 basis-[68px] flex-col items-center justify-center gap-1 py-2 text-[11px] transition-colors text-muted-foreground hover:text-foreground active:bg-muted/50"
           >
             <LogOut className="size-[18px] shrink-0" />
             <span className="truncate font-medium">Sair</span>

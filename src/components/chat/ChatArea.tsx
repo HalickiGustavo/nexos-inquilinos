@@ -290,16 +290,19 @@ function Thread({
             {files.map((f, i) => (
               <span
                 key={`${f.name}-${i}`}
-                className="flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-[11px]"
+                className="flex items-center gap-1.5 rounded-full bg-muted py-1 pl-2.5 pr-1 text-[11px] max-w-full"
               >
-                {f.type.startsWith("image/") ? <ImageIcon className="size-3" /> : <FileText className="size-3" />}
+                {f.type.startsWith("image/") ? <ImageIcon className="size-3 shrink-0" /> : <FileText className="size-3 shrink-0" />}
                 <span className="truncate max-w-[140px]">{f.name}</span>
                 <button
+                  type="button"
                   onClick={() => setFiles(files.filter((_, idx) => idx !== i))}
                   aria-label={`Remover ${f.name}`}
+                  className="grid size-5 shrink-0 place-items-center rounded-full hover:bg-background/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <X className="size-3" />
                 </button>
+
               </span>
             ))}
           </div>

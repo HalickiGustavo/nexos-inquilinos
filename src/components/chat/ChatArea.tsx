@@ -6,10 +6,12 @@ import {
   Loader2,
   MessageSquare,
   Paperclip,
+  Search,
   Send,
   Wrench,
   X,
 } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";

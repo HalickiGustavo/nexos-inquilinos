@@ -20,10 +20,13 @@ export function SupportWhatsAppButton({ bottomOffset = 24 }: SupportWhatsAppButt
   const href = `https://wa.me/${PHONE}?text=${encodeURIComponent(MESSAGE)}`;
 
   return (
-    <div className="fixed right-4 z-50 group" style={{ bottom: bottomOffset }}>
+    <div
+      className="fixed right-4 z-30 group print:hidden"
+      style={{ bottom: `calc(${bottomOffset}px + env(safe-area-inset-bottom))` }}
+    >
       <span
         role="tooltip"
-        className="pointer-events-none absolute right-full top-1/2 -translate-y-1/2 mr-2 whitespace-nowrap rounded-md bg-foreground px-2 py-1 text-xs font-medium text-background opacity-0 transition-opacity group-hover:opacity-100"
+        className="pointer-events-none absolute right-full top-1/2 -translate-y-1/2 mr-2 hidden whitespace-nowrap rounded-md bg-foreground px-2 py-1 text-xs font-medium text-background opacity-0 transition-opacity group-hover:opacity-100 md:block"
       >
         Suporte NEXO
       </span>
@@ -35,8 +38,8 @@ export function SupportWhatsAppButton({ bottomOffset = 24 }: SupportWhatsAppButt
         title="Suporte NEXO"
         className={cn(
           "flex items-center justify-center size-11 rounded-full border border-border/60 shadow-sm transition-all",
-          "bg-card/90 backdrop-blur text-muted-foreground hover:text-foreground hover:shadow-md",
-          "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+          "bg-card/90 backdrop-blur text-muted-foreground hover:text-foreground hover:shadow-md hover:scale-105 active:scale-95",
+          "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
         )}
       >
         <WhatsAppIcon className="size-5" />

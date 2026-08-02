@@ -350,29 +350,67 @@ function Thread({
 }
 
 export function ChatArea() {
-  const { data: conversations, isLoading } = useConversations();
+  const { data: conversations, isLoading, isError, refetch } = useConversations();
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
   useChatRealtime(null);
 
-  const active = (conversations ?? []).find((c) => c.id === activeId) ?? null;
+  const all = conversations ?? [];
+  const active = all.find((c) => c.id === activeId) ?? null;
+  const q = query.trim().toLowerCase();
+  const filtered = q
+    ? all.filter(
+        (c) =>
+          c.counterpartName.toLowerCase().includes(q) ||
+          (c.title ?? "").toLowerCase().includes(q) ||
+          (c.last_message_preview ?? "").toLowerCase().includes(q),
+      )
+    : all;
 
   return (
-    <Card className="overflow-hidden h-[calc(100vh-13rem)] min-h-[480px] flex">
+    <Card className="overflow-hidden flex h-[calc(100dvh-15rem)] min-h-[420px] max-h-[860px] p-0 gap-0">
       <div
         className={cn(
-          "w-full md:w-80 md:border-r border-border/60 overflow-y-auto shrink-0",
-          active && "hidden md:block",
+          "w-full md:w-80 md:border-r border-border/60 flex flex-col min-h-0 shrink-0",
+          active && "hidden md:flex",
         )}
       >
-        <ConversationList
-          conversations={conversations ?? []}
-          activeId={activeId}
-          onSelect={(c) => setActiveId(c.id)}
-          loading={isLoading}
-        />
+        <div className="p-3 border-b border-border/60 shrink-0">
+          <div className="relative">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
+            <Input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Pesquisar conversa"
+              aria-label="Pesquisar conversa"
+              className="pl-8 h-9"
+            />
+          </div>
+        </div>
+        <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
+          {isError ? (
+            <div className="p-8 text-center text-sm text-muted-foreground space-y-3">
+              <p>Não foi possível carregar suas conversas.</p>
+              <Button variant="outline" size="sm" onClick={() => void refetch()}>
+                Tentar novamente
+              </Button>
+            </div>
+          ) : !isLoading && all.length > 0 && filtered.length === 0 ? (
+            <p className="p-8 text-center text-sm text-muted-foreground">
+              Nenhuma conversa encontrada para “{query}”.
+            </p>
+          ) : (
+            <ConversationList
+              conversations={filtered}
+              activeId={activeId}
+              onSelect={(c) => setActiveId(c.id)}
+              loading={isLoading}
+            />
+          )}
+        </div>
       </div>
 
-      <div className={cn("flex-1 min-w-0", !active && "hidden md:flex md:items-center md:justify-center")}>
+      <div className={cn("flex-1 min-w-0 min-h-0", !active && "hidden md:flex md:items-center md:justify-center")}>
         {active ? (
           <Thread conversation={active} onBack={() => setActiveId(null)} />
         ) : (

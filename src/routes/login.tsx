@@ -127,7 +127,7 @@ function LoginPage() {
       <div className="flex items-center justify-center p-6 lg:p-12 lg:bg-background">
         <Card className="w-full max-w-md p-8 border-border/60 shadow-card surface-1">
           <div className="lg:hidden flex justify-center items-center mb-6">
-            <img src={nexoLogo} alt="Nexo" className="h-14 w-auto" />
+            <img src={nexoLogo} alt="Nexo" className="h-14 w-auto max-w-full object-contain" />
           </div>
 
           <div className="text-center mb-7">

@@ -11,5 +11,5 @@ interface NexoLogoProps {
 export function NexoLogo({ className, alt = "Nexo" }: NexoLogoProps) {
   const { theme } = useTheme();
   const src = theme === "dark" ? nexoLogoDark.url : nexoLogoLight.url;
-  return <img src={src} alt={alt} className={cn("h-7 w-auto", className)} />;
+  return <img src={src} alt={alt} className={cn("h-7 w-auto max-w-full object-contain", className)} />;
 }

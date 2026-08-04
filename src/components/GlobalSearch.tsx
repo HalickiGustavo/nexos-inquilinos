@@ -109,7 +109,7 @@ export function GlobalSearch() {
         variant="outline"
         size="sm"
         onClick={() => setOpen(true)}
-        className="h-9 gap-2 pl-2.5 pr-2 text-muted-foreground hover:text-foreground w-full sm:w-72 justify-between"
+        className="h-10 gap-2 pl-3 pr-2 text-muted-foreground hover:text-foreground w-full sm:w-80 justify-between bg-muted/30 border-muted-foreground/20"
         aria-label="Abrir pesquisa global"
       >
         <span className="flex items-center gap-2">

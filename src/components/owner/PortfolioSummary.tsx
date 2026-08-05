@@ -203,7 +203,9 @@ export function PortfolioSummary({ data }: { data: PortfolioSummaryData }) {
           value={formatBRL(data.forecastRevenue)}
           icon={Wallet}
           trend={t.forecast}
+          tooltip="Soma dos valores previstos para recebimento no período selecionado."
         />
+
       </div>
 
       <div className="mt-4 grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -225,7 +227,9 @@ export function PortfolioSummary({ data }: { data: PortfolioSummaryData }) {
           tone="amber"
           trend={t.pending}
           goodWhenUp={false}
+          tooltip="Valores previstos que ainda não foram recebidos."
         />
+
         <StatCard
           label="Inadimplência"
           value={formatBRL(data.overdueAmount)}
@@ -234,6 +238,7 @@ export function PortfolioSummary({ data }: { data: PortfolioSummaryData }) {
           trend={t.overdue}
           goodWhenUp={false}
           hint={`${overduePct.toLocaleString("pt-BR", { maximumFractionDigits: 1 })}% da carteira`}
+          tooltip="Valores vencidos e não pagos dentro do período considerado."
         />
         <StatCard
           label="Taxa de ocupação"
@@ -242,7 +247,9 @@ export function PortfolioSummary({ data }: { data: PortfolioSummaryData }) {
           tone="primary"
           hint={`${data.rentedProperties} de ${data.totalProperties} imóveis alugados`}
           progress={occupancy}
+          tooltip="Percentual de imóveis alugados em relação aos imóveis disponíveis para locação."
         />
+
       </div>
     </Card>
   );

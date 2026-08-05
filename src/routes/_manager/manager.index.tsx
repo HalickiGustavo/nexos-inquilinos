@@ -340,12 +340,6 @@ function ManagerDashboard() {
   const expiring = (qExpiring.data as any[]) ?? [];
   const activity = (qActivity.data as any) ?? { contracts: [], paid: [], maint: [], leads: [] };
 
-  const heroBullets = [
-    { label: "contratos ativos", value: counts.contracts, to: "/manager/carteira" },
-    { label: "cobranças pendentes", value: (qMonth.data as any[] ?? []).filter((r: any) => r.status !== "pago").length, to: "/manager/financeiro" },
-    { label: "manutenções abertas", value: counts.maintenancesOpen, to: "/manager/vistorias" },
-    { label: "contratos vencendo (30d)", value: expiring.length, to: "/manager/carteira" },
-  ];
 
   return (
     <TooltipProvider delayDuration={200}>
@@ -401,14 +395,23 @@ function ManagerDashboard() {
 
         {/* ============ Atalhos de navegação da carteira ============ */}
         <section className="flex flex-wrap gap-x-5 gap-y-1.5 text-sm">
-          {heroBullets.map((b) => (
-            <Link key={b.label} to={b.to} className="group inline-flex items-baseline gap-1.5 text-muted-foreground hover:text-foreground transition">
-              <span className="text-base font-bold text-foreground tabular-nums">{qCounts.isLoading ? "—" : (b.value ?? 0)}</span>
-              <span>{b.label}</span>
-              <ArrowRight className="size-3 opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0 transition" />
-            </Link>
-          ))}
+          <Link to="/manager/vistorias" className="group inline-flex items-baseline gap-1.5 text-muted-foreground hover:text-foreground transition">
+            <span className="text-base font-bold text-foreground tabular-nums">{qCounts.isLoading ? "—" : (counts.maintenancesOpen ?? 0)}</span>
+            <span>manutenções abertas</span>
+            <ArrowRight className="size-3 opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0 transition" />
+          </Link>
+          <Link to="/manager/financeiro" className="group inline-flex items-baseline gap-1.5 text-muted-foreground hover:text-foreground transition">
+            <span className="text-base font-bold text-foreground tabular-nums">{qCounts.isLoading ? "—" : ((qMonth.data as any[] ?? []).filter((r: any) => r.status !== "pago").length)}</span>
+            <span>cobranças pendentes</span>
+            <ArrowRight className="size-3 opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0 transition" />
+          </Link>
+          <Link to="/manager/carteira" className="group inline-flex items-baseline gap-1.5 text-muted-foreground hover:text-foreground transition">
+            <span className="text-base font-bold text-foreground tabular-nums">{qCounts.isLoading ? "—" : (expiring.length)}</span>
+            <span>contratos vencendo (30d)</span>
+            <ArrowRight className="size-3 opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0 transition" />
+          </Link>
         </section>
+
 
         {/* ============ KPIs financeiros ============ */}
         <section className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
@@ -581,7 +584,14 @@ function ManagerDashboard() {
                   <div className="flex justify-between"><span className="text-muted-foreground">Previsto total</span><span className="font-medium tabular-nums">{formatBRL(kpis.revenue)}</span></div>
                 </div>
               </div>
+              <div className="mt-2 text-[11px] text-muted-foreground">
+                <TrendBadge 
+                  comparison={calculateComparison(kpis.paid, (qPrev.data as any[] ?? []).reduce((s: number, r: any) => s + Number(r.paid_amount ?? 0), 0))}
+                  periodLabel="mês anterior"
+                />
+              </div>
             </Card>
+
           </div>
         </section>
       </div>

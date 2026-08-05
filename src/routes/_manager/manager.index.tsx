@@ -343,7 +343,7 @@ function ManagerDashboard() {
 
   return (
     <TooltipProvider delayDuration={200}>
-      <div className="p-4 sm:p-6 lg:p-8 max-w-[1400px] mx-auto space-y-6">
+      <div className="p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto space-y-6">
         {/* ============ Cabeçalho executivo ============ */}
         <header className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-4">
           <div className="min-w-0">
@@ -509,7 +509,8 @@ function ManagerDashboard() {
         <section className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* --- coluna esquerda --- */}
           <div className="lg:col-span-2 space-y-4">
-            <Card>
+                    <Card className="lg:col-span-2 space-y-4">
+
               <div className="p-5 pb-3 flex items-center justify-between gap-4">
                 <div>
                   <h3 className="text-sm font-semibold">Fluxo financeiro</h3>

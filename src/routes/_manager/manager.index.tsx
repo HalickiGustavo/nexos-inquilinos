@@ -412,12 +412,13 @@ function ManagerDashboard() {
 
         {/* ============ KPIs financeiros ============ */}
         <section className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-          <Kpi title="Recebido hoje" value={formatBRL(kpis.paidToday)} icon={<CheckCircle2 className="size-4" />} loading={qPaidToday.isLoading} accent />
-          <Kpi title="A receber (mês)" value={formatBRL(kpis.toReceive)} icon={<Wallet className="size-4" />} loading={qMonth.isLoading} />
-          <Kpi title="Receita do mês" value={formatBRL(kpis.revenue)} icon={<TrendingUp className="size-4" />} loading={qMonth.isLoading} delta={kpis.deltaPaid} />
-          <Kpi title="Em atraso" value={formatBRL(kpis.overdue)} icon={<AlertTriangle className="size-4" />} loading={qOverdue.isLoading} negative={kpis.overdue > 0} />
-          <Kpi title="Taxa NEXO" value={formatBRL(kpis.managementFee)} icon={<Coins className="size-4" />} loading={qMonth.isLoading} delta={kpis.deltaFee} />
-          <Kpi title="Repasses pendentes" value={formatBRL(kpis.payoutsPending)} icon={<CircleDollarSign className="size-4" />} loading={qMonth.isLoading} />
+          <Kpi title="Recebido hoje" value={formatBRL(kpis.paidToday)} icon={<CheckCircle2 className="size-4" />} loading={qPaidToday.isLoading} accent tooltip="Total efetivamente recebido na data de hoje." />
+          <Kpi title="A receber (mês)" value={formatBRL(kpis.toReceive)} icon={<Wallet className="size-4" />} loading={qMonth.isLoading} tooltip="Valores previstos para este mês que ainda não foram quitados." />
+          <Kpi title="Receita do mês" value={formatBRL(kpis.revenue)} icon={<TrendingUp className="size-4" />} loading={qMonth.isLoading} delta={kpis.deltaPaid} tooltip="Total de receitas (pagas + pendentes) previstas para o mês atual." />
+          <Kpi title="Em atraso" value={formatBRL(kpis.overdue)} icon={<AlertTriangle className="size-4" />} loading={qOverdue.isLoading} negative={kpis.overdue > 0} goodWhenUp={false} tooltip="Soma de todos os valores vencidos e não pagos." />
+          <Kpi title="Taxa NEXO" value={formatBRL(kpis.managementFee)} icon={<Coins className="size-4" />} loading={qMonth.isLoading} delta={kpis.deltaFee} tooltip="Valor das taxas de administração calculadas sobre os recebimentos do período." />
+          <Kpi title="Repasses pendentes" value={formatBRL(kpis.payoutsPending)} icon={<CircleDollarSign className="size-4" />} loading={qMonth.isLoading} goodWhenUp={false} tooltip="Total de valores já recebidos que aguardam repasse aos proprietários." />
+
         </section>
 
 
@@ -605,18 +606,31 @@ function Card({ children, className }: { children: React.ReactNode; className?: 
 }
 
 function Kpi({
-  title, value, icon, loading, delta, accent, negative,
+  title, value, icon, loading, delta, accent, negative, tooltip, goodWhenUp = true,
 }: {
   title: string; value: string; icon?: React.ReactNode; loading?: boolean;
-  delta?: number | null; accent?: boolean; negative?: boolean;
+  delta?: number | null; accent?: boolean; negative?: boolean; tooltip?: string;
+  goodWhenUp?: boolean;
 }) {
+  const comparison = useMemo(() => calculateComparison(kpiValueNumber(value), delta === null ? null : (kpiValueNumber(value) / (1 + (delta || 0) / 100))), [value, delta]);
+
   return (
     <div className={cn(
-      "rounded-xl border bg-card p-3.5 relative overflow-hidden transition hover:border-primary/40",
+      "rounded-xl border bg-card p-3.5 relative overflow-hidden transition hover:border-primary/40 group",
       accent ? "border-primary/30" : "border-border",
     )}>
       <div className="flex items-center justify-between text-muted-foreground">
-        <span className="text-[11px] uppercase tracking-wide font-medium">{title}</span>
+        <div className="flex items-center gap-1">
+          <span className="text-[11px] uppercase tracking-wide font-medium">{title}</span>
+          {tooltip && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Info className="size-3 opacity-0 group-hover:opacity-40 transition-opacity" />
+              </TooltipTrigger>
+              <TooltipContent>{tooltip}</TooltipContent>
+            </Tooltip>
+          )}
+        </div>
         <span className={cn(negative && kpiValueNumber(value) > 0 ? "text-destructive" : accent ? "text-primary" : "")}>{icon}</span>
       </div>
       {loading ? (
@@ -627,17 +641,25 @@ function Kpi({
         </div>
       )}
       {typeof delta === "number" && (
-        <div className={cn(
-          "mt-1 inline-flex items-center gap-0.5 text-[11px] font-medium",
-          delta >= 0 ? "text-emerald-500" : "text-destructive",
-        )}>
-          {delta >= 0 ? <ArrowUpRight className="size-3" /> : <ArrowDownRight className="size-3" />}
-          {Math.abs(delta)}% vs mês anterior
+        <div className="mt-1">
+          <TrendBadge 
+            comparison={{
+              ...calculateComparison(100 + delta, 100), // Hack para usar o delta percentual direto
+              percentageChange: delta,
+              absoluteChange: delta,
+              direction: delta > 0 ? "up" : delta < 0 ? "down" : "neutral",
+              hasComparison: true,
+              currentValue: delta,
+              previousValue: 0
+            }}
+            goodWhenUp={goodWhenUp}
+          />
         </div>
       )}
     </div>
   );
 }
+
 
 function kpiValueNumber(v: string) {
   const n = Number(v.replace(/[^0-9,-]/g, "").replace(",", "."));

@@ -425,7 +425,70 @@ function ManagerDashboard() {
         </section>
 
 
-        {/* ============ Atalhos rápidos ============ */}
+        {/* ============ Resumo Executivo e Comparativo ============ */}
+        <section className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+          <Card className="lg:col-span-3 p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="p-1.5 rounded-lg bg-primary/10 text-primary">
+                <TrendingUp className="size-4" />
+              </div>
+              <h3 className="text-sm font-semibold">Resumo do período</h3>
+            </div>
+            <div className="space-y-2 text-sm text-muted-foreground leading-relaxed">
+              <p>
+                {kpis.comparisons.paid.hasComparison ? (
+                  <>
+                    A receita recebida {kpis.comparisons.paid.absoluteChange && kpis.comparisons.paid.absoluteChange >= 0 ? 'aumentou' : 'diminuiu'} {kpis.comparisons.paid.percentageChange && Math.abs(kpis.comparisons.paid.percentageChange).toLocaleString("pt-BR", { maximumFractionDigits: 1 })}% em relação ao mês anterior.
+                  </>
+                ) : (
+                  "Ainda não existem dados históricos suficientes para comparar a receita deste período."
+                )}
+                {" "}
+                {counts.rented > 0 && `A taxa de ocupação está em ${Math.round((counts.rented / counts.properties) * 100)}%.`}
+                {" "}
+                {overdueList.length > 0 ? (
+                  <span className="text-destructive font-medium">Existem {overdueList.length} cobranças vencidas que precisam de atenção.</span>
+                ) : (
+                  "Todas as cobranças estão em dia."
+                )}
+                {" "}
+                {expiring.length > 0 && `Temos ${expiring.length} contrato${expiring.length > 1 ? 's' : ''} vencendo nos próximos 30 dias.`}
+              </p>
+            </div>
+          </Card>
+
+          <Card className="p-5 flex flex-col justify-center">
+            <h3 className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold mb-4 text-center">Comparativo do mês</h3>
+            <div className="grid grid-cols-2 gap-y-4 gap-x-2">
+              <div className="text-center">
+                <div className="text-[10px] text-muted-foreground uppercase mb-1">Receita</div>
+                <div className="font-bold text-sm">
+                  {kpis.deltaPaid ? (kpis.deltaPaid > 0 ? '+' : '') + kpis.deltaPaid + '%' : '—'}
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="text-[10px] text-muted-foreground uppercase mb-1">Taxa Nexo</div>
+                <div className="font-bold text-sm">
+                  {kpis.deltaFee ? (kpis.deltaFee > 0 ? '+' : '') + kpis.deltaFee + '%' : '—'}
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="text-[10px] text-muted-foreground uppercase mb-1">Inquilinos</div>
+                <div className="font-bold text-sm">
+                  {counts.tenants || 0}
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="text-[10px] text-muted-foreground uppercase mb-1">Leads</div>
+                <div className="font-bold text-sm">
+                  {counts.leads || 0}
+                </div>
+              </div>
+            </div>
+          </Card>
+        </section>
+
+
         <section>
           <SectionHeader title="Atalhos rápidos" />
           <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-10 gap-3">

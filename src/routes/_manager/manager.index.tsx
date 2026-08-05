@@ -5,7 +5,7 @@ import {
   ArrowDownRight, ArrowUpRight, ArrowRight, AlertTriangle, Bell, Building2, Calendar,
   ClipboardCheck, FilePlus, FileSearch, Inbox, Home as HomeIcon, KeyRound, Users,
   Wallet, Coins, TrendingUp, CheckCircle2, CircleDollarSign, PlusCircle,
-  UserPlus, Database,
+  UserPlus, Database, Info, HelpCircle
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
@@ -15,6 +15,9 @@ import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { PortfolioSummary } from "@/components/owner/PortfolioSummary";
+import { calculateComparison, ComparisonResult } from "@/lib/dashboard-utils";
+import { TrendBadge } from "@/components/dashboard/TrendBadge";
+
 
 const DashboardCollectionChart = lazy(() => import("@/components/charts/DashboardCollectionChart"));
 
@@ -238,7 +241,15 @@ function ManagerDashboard() {
     const prevPaid = prev.reduce((s, r) => s + Number(r.paid_amount ?? 0), 0);
     const prevFee = prev.reduce((s, r) => s + Number(r.paid_amount ?? 0) * Number(r.management_fee_percent ?? 0) / 100, 0);
 
-    const delta = (curr: number, base: number) => base === 0 ? null : Math.round(((curr - base) / base) * 100);
+    // Adicionando comparativos estendidos
+    const compPaid = calculateComparison(paid, prevPaid);
+    const compFee = calculateComparison(managementFee, prevFee);
+    
+    // Para receita prevista, receita pendente e inadimplência (overdue), 
+    // idealmente teríamos os dados históricos do período anterior completo.
+    // Como qPrev só traz installments pagos no momento, as variações de pendência e inadimplência
+    // dependem de uma query mais ampla do período anterior que inclua não pagos.
+    // Para esta etapa, vamos focar no que temos dados: Recebido e Taxa Nexo.
 
     return {
       paidToday: (qPaidToday.data as number) ?? 0,
@@ -248,11 +259,20 @@ function ManagerDashboard() {
       managementFee,
       payoutsPending,
       paid,
-      deltaPaid: delta(paid, prevPaid),
-      deltaFee: delta(managementFee, prevFee),
+      deltaPaid: compPaid.percentageChange,
+      deltaFee: compFee.percentageChange,
+      // Placeholders para os outros enquanto não expandimos as queries
+      deltaForecast: null,
+      deltaPending: null,
+      deltaOverdue: null,
       collected: revenue === 0 ? 0 : Math.round((paid / revenue) * 100),
+      comparisons: {
+        paid: compPaid,
+        fee: compFee,
+      }
     };
   }, [qMonth.data, qOverdue.data, qPaidToday.data, qPrev.data]);
+
 
   /* ---------- chart series ---------- */
   const chartData = useMemo(() => {
@@ -320,16 +340,10 @@ function ManagerDashboard() {
   const expiring = (qExpiring.data as any[]) ?? [];
   const activity = (qActivity.data as any) ?? { contracts: [], paid: [], maint: [], leads: [] };
 
-  const heroBullets = [
-    { label: "contratos ativos", value: counts.contracts, to: "/manager/carteira" },
-    { label: "cobranças pendentes", value: (qMonth.data as any[] ?? []).filter((r: any) => r.status !== "pago").length, to: "/manager/financeiro" },
-    { label: "manutenções abertas", value: counts.maintenancesOpen, to: "/manager/vistorias" },
-    { label: "contratos vencendo (30d)", value: expiring.length, to: "/manager/carteira" },
-  ];
 
   return (
     <TooltipProvider delayDuration={200}>
-      <div className="p-4 sm:p-6 lg:p-8 max-w-[1400px] mx-auto space-y-6">
+      <div className="p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto space-y-6">
         {/* ============ Cabeçalho executivo ============ */}
         <header className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-4">
           <div className="min-w-0">
@@ -369,33 +383,112 @@ function ManagerDashboard() {
             receivedRevenue: kpis.paid,
             pendingRevenue: kpis.toReceive,
             overdueAmount: kpis.overdue,
-            trends: { received: kpis.deltaPaid },
+            trends: { 
+              received: kpis.deltaPaid,
+              forecast: kpis.deltaForecast,
+              pending: kpis.deltaPending,
+              overdue: kpis.deltaOverdue,
+            },
           }}
         />
 
+
         {/* ============ Atalhos de navegação da carteira ============ */}
         <section className="flex flex-wrap gap-x-5 gap-y-1.5 text-sm">
-          {heroBullets.map((b) => (
-            <Link key={b.label} to={b.to} className="group inline-flex items-baseline gap-1.5 text-muted-foreground hover:text-foreground transition">
-              <span className="text-base font-bold text-foreground tabular-nums">{qCounts.isLoading ? "—" : (b.value ?? 0)}</span>
-              <span>{b.label}</span>
-              <ArrowRight className="size-3 opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0 transition" />
-            </Link>
-          ))}
+          <Link to="/manager/vistorias" className="group inline-flex items-baseline gap-1.5 text-muted-foreground hover:text-foreground transition">
+            <span className="text-base font-bold text-foreground tabular-nums">{qCounts.isLoading ? "—" : (counts.maintenancesOpen ?? 0)}</span>
+            <span>manutenções abertas</span>
+            <ArrowRight className="size-3 opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0 transition" />
+          </Link>
+          <Link to="/manager/financeiro" className="group inline-flex items-baseline gap-1.5 text-muted-foreground hover:text-foreground transition">
+            <span className="text-base font-bold text-foreground tabular-nums">{qCounts.isLoading ? "—" : ((qMonth.data as any[] ?? []).filter((r: any) => r.status !== "pago").length)}</span>
+            <span>cobranças pendentes</span>
+            <ArrowRight className="size-3 opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0 transition" />
+          </Link>
+          <Link to="/manager/carteira" className="group inline-flex items-baseline gap-1.5 text-muted-foreground hover:text-foreground transition">
+            <span className="text-base font-bold text-foreground tabular-nums">{qCounts.isLoading ? "—" : (expiring.length)}</span>
+            <span>contratos vencendo (30d)</span>
+            <ArrowRight className="size-3 opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0 transition" />
+          </Link>
         </section>
+
 
         {/* ============ KPIs financeiros ============ */}
         <section className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-          <Kpi title="Recebido hoje" value={formatBRL(kpis.paidToday)} icon={<CheckCircle2 className="size-4" />} loading={qPaidToday.isLoading} accent />
-          <Kpi title="A receber (mês)" value={formatBRL(kpis.toReceive)} icon={<Wallet className="size-4" />} loading={qMonth.isLoading} />
-          <Kpi title="Receita do mês" value={formatBRL(kpis.revenue)} icon={<TrendingUp className="size-4" />} loading={qMonth.isLoading} delta={kpis.deltaPaid} />
-          <Kpi title="Em atraso" value={formatBRL(kpis.overdue)} icon={<AlertTriangle className="size-4" />} loading={qOverdue.isLoading} negative={kpis.overdue > 0} />
-          <Kpi title="Taxa NEXO" value={formatBRL(kpis.managementFee)} icon={<Coins className="size-4" />} loading={qMonth.isLoading} delta={kpis.deltaFee} />
-          <Kpi title="Repasses pendentes" value={formatBRL(kpis.payoutsPending)} icon={<CircleDollarSign className="size-4" />} loading={qMonth.isLoading} />
+          <Kpi title="Recebido hoje" value={formatBRL(kpis.paidToday)} icon={<CheckCircle2 className="size-4" />} loading={qPaidToday.isLoading} accent tooltip="Total efetivamente recebido na data de hoje." />
+          <Kpi title="A receber (mês)" value={formatBRL(kpis.toReceive)} icon={<Wallet className="size-4" />} loading={qMonth.isLoading} tooltip="Valores previstos para este mês que ainda não foram quitados." />
+          <Kpi title="Receita do mês" value={formatBRL(kpis.revenue)} icon={<TrendingUp className="size-4" />} loading={qMonth.isLoading} delta={kpis.deltaPaid} tooltip="Total de receitas (pagas + pendentes) previstas para o mês atual." />
+          <Kpi title="Em atraso" value={formatBRL(kpis.overdue)} icon={<AlertTriangle className="size-4" />} loading={qOverdue.isLoading} negative={kpis.overdue > 0} goodWhenUp={false} tooltip="Soma de todos os valores vencidos e não pagos." />
+          <Kpi title="Taxa NEXO" value={formatBRL(kpis.managementFee)} icon={<Coins className="size-4" />} loading={qMonth.isLoading} delta={kpis.deltaFee} tooltip="Valor das taxas de administração calculadas sobre os recebimentos do período." />
+          <Kpi title="Repasses pendentes" value={formatBRL(kpis.payoutsPending)} icon={<CircleDollarSign className="size-4" />} loading={qMonth.isLoading} goodWhenUp={false} tooltip="Total de valores já recebidos que aguardam repasse aos proprietários." />
+
         </section>
 
 
-        {/* ============ Atalhos rápidos ============ */}
+        {/* ============ Resumo Executivo e Comparativo ============ */}
+        <section className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+          <Card className="lg:col-span-3 p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="p-1.5 rounded-lg bg-primary/10 text-primary">
+                <TrendingUp className="size-4" />
+              </div>
+              <h3 className="text-sm font-semibold">Resumo do período</h3>
+            </div>
+            <div className="space-y-2 text-sm text-muted-foreground leading-relaxed">
+              <p>
+                {kpis.comparisons.paid.hasComparison ? (
+                  <>
+                    A receita recebida {kpis.comparisons.paid.absoluteChange && kpis.comparisons.paid.absoluteChange >= 0 ? 'aumentou' : 'diminuiu'} {kpis.comparisons.paid.percentageChange && Math.abs(kpis.comparisons.paid.percentageChange).toLocaleString("pt-BR", { maximumFractionDigits: 1 })}% em relação ao mês anterior.
+                  </>
+                ) : (
+                  "Ainda não existem dados históricos suficientes para comparar a receita deste período."
+                )}
+                {" "}
+                {counts.rented > 0 && `A taxa de ocupação está em ${Math.round((counts.rented / counts.properties) * 100)}%.`}
+                {" "}
+                {overdueList.length > 0 ? (
+                  <span className="text-destructive font-medium">Existem {overdueList.length} cobranças vencidas que precisam de atenção.</span>
+                ) : (
+                  "Todas as cobranças estão em dia."
+                )}
+                {" "}
+                {expiring.length > 0 && `Temos ${expiring.length} contrato${expiring.length > 1 ? 's' : ''} vencendo nos próximos 30 dias.`}
+              </p>
+            </div>
+          </Card>
+
+          <Card className="p-5 flex flex-col justify-center">
+            <h3 className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold mb-4 text-center">Comparativo do mês</h3>
+            <div className="grid grid-cols-2 gap-y-4 gap-x-2">
+              <div className="text-center">
+                <div className="text-[10px] text-muted-foreground uppercase mb-1">Receita</div>
+                <div className="font-bold text-sm">
+                  {kpis.deltaPaid ? (kpis.deltaPaid > 0 ? '+' : '') + kpis.deltaPaid + '%' : '—'}
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="text-[10px] text-muted-foreground uppercase mb-1">Taxa Nexo</div>
+                <div className="font-bold text-sm">
+                  {kpis.deltaFee ? (kpis.deltaFee > 0 ? '+' : '') + kpis.deltaFee + '%' : '—'}
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="text-[10px] text-muted-foreground uppercase mb-1">Inquilinos</div>
+                <div className="font-bold text-sm">
+                  {counts.tenants || 0}
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="text-[10px] text-muted-foreground uppercase mb-1">Leads</div>
+                <div className="font-bold text-sm">
+                  {counts.leads || 0}
+                </div>
+              </div>
+            </div>
+          </Card>
+        </section>
+
+
         <section>
           <SectionHeader title="Atalhos rápidos" />
           <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-10 gap-3">
@@ -416,7 +509,8 @@ function ManagerDashboard() {
         <section className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* --- coluna esquerda --- */}
           <div className="lg:col-span-2 space-y-4">
-            <Card>
+                    <Card className="lg:col-span-2 space-y-4">
+
               <div className="p-5 pb-3 flex items-center justify-between gap-4">
                 <div>
                   <h3 className="text-sm font-semibold">Fluxo financeiro</h3>
@@ -554,7 +648,14 @@ function ManagerDashboard() {
                   <div className="flex justify-between"><span className="text-muted-foreground">Previsto total</span><span className="font-medium tabular-nums">{formatBRL(kpis.revenue)}</span></div>
                 </div>
               </div>
+              <div className="mt-2 text-[11px] text-muted-foreground">
+                <TrendBadge 
+                  comparison={calculateComparison(kpis.paid, (qPrev.data as any[] ?? []).reduce((s: number, r: any) => s + Number(r.paid_amount ?? 0), 0))}
+                  periodLabel="mês anterior"
+                />
+              </div>
             </Card>
+
           </div>
         </section>
       </div>
@@ -579,18 +680,31 @@ function Card({ children, className }: { children: React.ReactNode; className?: 
 }
 
 function Kpi({
-  title, value, icon, loading, delta, accent, negative,
+  title, value, icon, loading, delta, accent, negative, tooltip, goodWhenUp = true,
 }: {
   title: string; value: string; icon?: React.ReactNode; loading?: boolean;
-  delta?: number | null; accent?: boolean; negative?: boolean;
+  delta?: number | null; accent?: boolean; negative?: boolean; tooltip?: string;
+  goodWhenUp?: boolean;
 }) {
+  const comparison = useMemo(() => calculateComparison(kpiValueNumber(value), delta === null ? null : (kpiValueNumber(value) / (1 + (delta || 0) / 100))), [value, delta]);
+
   return (
     <div className={cn(
-      "rounded-xl border bg-card p-3.5 relative overflow-hidden transition hover:border-primary/40",
+      "rounded-xl border bg-card p-3.5 relative overflow-hidden transition hover:border-primary/40 group",
       accent ? "border-primary/30" : "border-border",
     )}>
       <div className="flex items-center justify-between text-muted-foreground">
-        <span className="text-[11px] uppercase tracking-wide font-medium">{title}</span>
+        <div className="flex items-center gap-1">
+          <span className="text-[11px] uppercase tracking-wide font-medium">{title}</span>
+          {tooltip && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Info className="size-3 opacity-0 group-hover:opacity-40 transition-opacity" />
+              </TooltipTrigger>
+              <TooltipContent>{tooltip}</TooltipContent>
+            </Tooltip>
+          )}
+        </div>
         <span className={cn(negative && kpiValueNumber(value) > 0 ? "text-destructive" : accent ? "text-primary" : "")}>{icon}</span>
       </div>
       {loading ? (
@@ -601,17 +715,25 @@ function Kpi({
         </div>
       )}
       {typeof delta === "number" && (
-        <div className={cn(
-          "mt-1 inline-flex items-center gap-0.5 text-[11px] font-medium",
-          delta >= 0 ? "text-emerald-500" : "text-destructive",
-        )}>
-          {delta >= 0 ? <ArrowUpRight className="size-3" /> : <ArrowDownRight className="size-3" />}
-          {Math.abs(delta)}% vs mês anterior
+        <div className="mt-1">
+          <TrendBadge 
+            comparison={{
+              ...calculateComparison(100 + delta, 100), // Hack para usar o delta percentual direto
+              percentageChange: delta,
+              absoluteChange: delta,
+              direction: delta > 0 ? "up" : delta < 0 ? "down" : "neutral",
+              hasComparison: true,
+              currentValue: delta,
+              previousValue: 0
+            }}
+            goodWhenUp={goodWhenUp}
+          />
         </div>
       )}
     </div>
   );
 }
+
 
 function kpiValueNumber(v: string) {
   const n = Number(v.replace(/[^0-9,-]/g, "").replace(",", "."));

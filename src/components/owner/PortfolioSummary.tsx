@@ -11,10 +11,14 @@ import {
   TrendingUp,
   TrendingDown,
   Minus,
+  Info,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { formatBRL } from "@/lib/format";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
+
 
 export type PortfolioSummaryData = {
   totalProperties: number;
@@ -193,8 +197,10 @@ export function PortfolioSummary({ data }: { data: PortfolioSummaryData }) {
           icon={ArrowDownCircle}
           tone="emerald"
           trend={t.received}
-          hint={`${receivedPct}% da meta`}
+          hint={`${receivedPct}% do previsto`}
           progress={receivedPct}
+          tooltip="Total efetivamente recebido no período selecionado."
+
         />
         <StatCard
           label="Receita pendente"

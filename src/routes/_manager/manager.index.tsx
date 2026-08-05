@@ -5,7 +5,7 @@ import {
   ArrowDownRight, ArrowUpRight, ArrowRight, AlertTriangle, Bell, Building2, Calendar,
   ClipboardCheck, FilePlus, FileSearch, Inbox, Home as HomeIcon, KeyRound, Users,
   Wallet, Coins, TrendingUp, CheckCircle2, CircleDollarSign, PlusCircle,
-  UserPlus, Database,
+  UserPlus, Database, Info, HelpCircle
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
@@ -15,6 +15,9 @@ import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { PortfolioSummary } from "@/components/owner/PortfolioSummary";
+import { calculateComparison, ComparisonResult } from "@/lib/dashboard-utils";
+import { TrendBadge } from "@/components/dashboard/TrendBadge";
+
 
 const DashboardCollectionChart = lazy(() => import("@/components/charts/DashboardCollectionChart"));
 
@@ -238,7 +241,15 @@ function ManagerDashboard() {
     const prevPaid = prev.reduce((s, r) => s + Number(r.paid_amount ?? 0), 0);
     const prevFee = prev.reduce((s, r) => s + Number(r.paid_amount ?? 0) * Number(r.management_fee_percent ?? 0) / 100, 0);
 
-    const delta = (curr: number, base: number) => base === 0 ? null : Math.round(((curr - base) / base) * 100);
+    // Adicionando comparativos estendidos
+    const compPaid = calculateComparison(paid, prevPaid);
+    const compFee = calculateComparison(managementFee, prevFee);
+    
+    // Para receita prevista, receita pendente e inadimplência (overdue), 
+    // idealmente teríamos os dados históricos do período anterior completo.
+    // Como qPrev só traz installments pagos no momento, as variações de pendência e inadimplência
+    // dependem de uma query mais ampla do período anterior que inclua não pagos.
+    // Para esta etapa, vamos focar no que temos dados: Recebido e Taxa Nexo.
 
     return {
       paidToday: (qPaidToday.data as number) ?? 0,
@@ -248,11 +259,20 @@ function ManagerDashboard() {
       managementFee,
       payoutsPending,
       paid,
-      deltaPaid: delta(paid, prevPaid),
-      deltaFee: delta(managementFee, prevFee),
+      deltaPaid: compPaid.percentageChange,
+      deltaFee: compFee.percentageChange,
+      // Placeholders para os outros enquanto não expandimos as queries
+      deltaForecast: null,
+      deltaPending: null,
+      deltaOverdue: null,
       collected: revenue === 0 ? 0 : Math.round((paid / revenue) * 100),
+      comparisons: {
+        paid: compPaid,
+        fee: compFee,
+      }
     };
   }, [qMonth.data, qOverdue.data, qPaidToday.data, qPrev.data]);
+
 
   /* ---------- chart series ---------- */
   const chartData = useMemo(() => {
@@ -369,9 +389,15 @@ function ManagerDashboard() {
             receivedRevenue: kpis.paid,
             pendingRevenue: kpis.toReceive,
             overdueAmount: kpis.overdue,
-            trends: { received: kpis.deltaPaid },
+            trends: { 
+              received: kpis.deltaPaid,
+              forecast: kpis.deltaForecast,
+              pending: kpis.deltaPending,
+              overdue: kpis.deltaOverdue,
+            },
           }}
         />
+
 
         {/* ============ Atalhos de navegação da carteira ============ */}
         <section className="flex flex-wrap gap-x-5 gap-y-1.5 text-sm">

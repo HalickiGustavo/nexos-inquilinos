@@ -78,7 +78,7 @@ export function formatTrendText(
 
   const value = comparison.percentageChange !== null 
     ? Math.abs(comparison.percentageChange).toLocaleString("pt-BR", { maximumFractionDigits: 1 }) + "%"
-    : Math.abs(comparison.absoluteChange).toLocaleString("pt-BR", { maximumFractionDigits: 1 });
+    : comparison.absoluteChange !== null ? Math.abs(comparison.absoluteChange).toLocaleString("pt-BR", { maximumFractionDigits: 1 }) : "0";
 
   const suffix = isPercentagePoints ? " p.p." : "";
   const label = value + suffix;

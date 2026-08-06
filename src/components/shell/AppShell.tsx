@@ -250,7 +250,7 @@ export function AppShell({
         <MobileDrawer
           brand={brand}
           navGroups={navGroups}
-          alerts={alerts}
+          alerts={alerts ? { alerts: alerts.alerts, seeAllHref: alerts.seeAllHref } : undefined}
           onSignOut={onSignOut}
         />
 

@@ -211,7 +211,7 @@ export function MobileDrawer({ brand, navGroups, alerts, onSignOut }: MobileDraw
       </div>
 
       <div className="flex items-center gap-1">
-        <ThemeToggle size="icon" variant="ghost" className="h-10 w-10" />
+        <ThemeToggle size="icon" variant="ghost" />
         <Avatar className="h-8 w-8 ml-2 border border-border">
           <AvatarImage src={user?.user_metadata?.avatar_url || ""} />
           <AvatarFallback className="bg-primary/5 text-primary text-[10px]">

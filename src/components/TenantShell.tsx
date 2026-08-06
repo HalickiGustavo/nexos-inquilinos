@@ -40,7 +40,7 @@ export function TenantShell() {
       <MobileDrawer
         brand={{ to: "/tenant" }}
         navGroups={[{ items: tenantNav.map(item => ({ ...item })) }]}
-        alerts={{ alerts, seeAllHref: "/tenant/alertas" }}
+        alerts={alerts ? { alerts, seeAllHref: "/tenant/alertas" } : undefined}
       />
 
       {/* Desktop Top header */}

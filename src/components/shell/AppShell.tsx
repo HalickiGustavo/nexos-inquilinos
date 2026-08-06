@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
 import { useTotalUnread } from "@/lib/chat";
 import { cn } from "@/lib/utils";
+import { MobileDrawer } from "./MobileDrawer";
 
 function UnreadBadge({ count, className }: { count: number; className?: string }) {
   if (count <= 0) return null;
@@ -232,10 +233,10 @@ export function AppShell({
       </aside>
 
       {/* ============ CONTENT ============ */}
-      <div className={cn("flex-1 flex flex-col min-w-0", mlClass)}>
+      <div className={cn("flex-1 flex flex-col min-w-0 md:pl-0", mlClass)}>
         {/* Desktop top bar (only when search or alerts exist) */}
         {(search || alerts) && (
-          <div className="hidden md:flex sticky top-0 z-30 h-16 items-center gap-3 px-6 lg:px-8 bg-background/85 backdrop-blur border-b border-border">
+          <div className="hidden md:flex sticky top-0 z-30 h-16 items-center gap-3 px-6 lg:px-8 bg-background/85 backdrop-blur border-b border-border" data-app-shell-header>
             {search && <div className="flex-1 max-w-md">{search}</div>}
             {alerts && (
               <div className="ml-auto flex items-center gap-1">
@@ -245,72 +246,13 @@ export function AppShell({
           </div>
         )}
 
-        {/* Mobile top bar */}
-        <div className="md:hidden sticky top-0 z-40 bg-card border-b border-border shadow-sm">
-          <div className="flex items-center justify-between px-4 py-3 gap-2">
-            <Link to={brand.to as any} className="flex items-center">
-              <NexoLogo className={mobileLogoClass} alt="NEXO" />
-            </Link>
-            <div className="flex items-center gap-1">
-              {alerts && (
-                <AlertsBell alerts={alerts.alerts} seeAllHref={alerts.seeAllHref} />
-              )}
-              <ThemeToggle size="icon" variant="ghost" />
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-foreground hover:bg-muted"
-                onClick={doSignOut}
-              >
-                <LogOut className="size-5" />
-              </Button>
-            </div>
-          </div>
-          {search && <div className="px-4 pb-2">{search}</div>}
-
-          <nav className="flex overflow-x-auto gap-1 p-2 border-t border-border scrollbar-hide overscroll-x-contain">
-            {flatItems.map((item) => {
-              const active = isActive(item);
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.to}
-                  to={item.to as any}
-                  data-tour={item.tour}
-                  className={cn(
-                    "flex items-center gap-2 px-3 py-1.5 text-xs whitespace-nowrap transition-colors",
-                    mobileNavStyle === "pill"
-                      ? "rounded-full border"
-                      : "rounded-md",
-                    active
-                      ? mobileNavStyle === "pill"
-                        ? "bg-primary text-primary-foreground border-primary"
-                        : "bg-primary text-primary-foreground"
-                      : mobileNavStyle === "pill"
-                      ? "bg-muted text-muted-foreground border-border hover:text-foreground"
-                      : "bg-muted text-muted-foreground",
-                  )}
-                >
-                  <Icon className="size-3.5" />
-                  {item.label}
-                  {isChat(item.to) && <UnreadBadge count={unread} />}
-                </Link>
-              );
-            })}
-            <button
-              onClick={doSignOut}
-              className={cn(
-                "flex items-center gap-2 px-3 py-1.5 text-xs whitespace-nowrap transition-colors",
-                mobileNavStyle === "pill"
-                  ? "rounded-full border bg-muted text-muted-foreground border-border hover:text-foreground"
-                  : "rounded-md bg-muted text-muted-foreground",
-              )}
-            >
-              <LogOut className="size-3.5" />
-              Sair
-            </button>
-          </nav>
-        </div>
+        {/* Mobile Drawer Navigation */}
+        <MobileDrawer
+          brand={brand}
+          navGroups={navGroups}
+          alerts={alerts ? { alerts: alerts.alerts, seeAllHref: alerts.seeAllHref } : undefined}
+          onSignOut={onSignOut}
+        />
 
         <main className="flex-1 overflow-y-auto">{children}</main>
       </div>

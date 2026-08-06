@@ -2,7 +2,7 @@ import { Sun, Moon } from "lucide-react";
 import { useTheme } from "./ThemeProvider";
 import { cn } from "@/lib/utils";
 
-export function ThemeToggle({ size = "icon", variant = "ghost" }: { size?: "icon" | "sm"; variant?: "ghost" | "outline" }) {
+export function ThemeToggle({ size = "icon", variant = "ghost", className }: { size?: "icon" | "sm"; variant?: "ghost" | "outline", className?: string }) {
   const { theme, toggleTheme } = useTheme();
   const isDark = theme === "dark";
 
@@ -15,7 +15,8 @@ export function ThemeToggle({ size = "icon", variant = "ghost" }: { size?: "icon
         size === "sm" ? "h-8 px-3 gap-2 text-xs font-medium" : "h-9 w-9",
         variant === "outline" 
           ? "border border-border bg-background hover:bg-accent" 
-          : "bg-muted/60 hover:bg-muted text-foreground"
+          : "bg-muted/60 hover:bg-muted text-foreground",
+        className
       )}
     >
       <span

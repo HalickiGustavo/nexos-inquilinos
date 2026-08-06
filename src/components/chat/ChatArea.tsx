@@ -140,7 +140,7 @@ function ConversationList({
           <button
             onClick={() => onSelect(c)}
             className={cn(
-              "w-full flex items-center gap-3 px-3 py-3 text-left transition-colors hover:bg-muted/50",
+              "w-full flex items-center gap-3 px-3 py-3.5 text-left transition-colors hover:bg-muted/50",
               activeId === c.id && "bg-muted",
             )}
           >
@@ -150,7 +150,7 @@ function ConversationList({
             </Avatar>
             <div className="min-w-0 flex-1">
               <div className="flex items-center justify-between gap-2">
-                <span className="font-medium truncate">{c.counterpartName}</span>
+                <span className="font-medium truncate text-sm sm:text-base">{c.counterpartName}</span>
                 <span className="text-[11px] text-muted-foreground shrink-0">
                   {formatStamp(c.last_message_at)}
                 </span>
@@ -208,7 +208,7 @@ function Thread({
 
   return (
     <div className="flex flex-col h-full min-h-0">
-      <header className="flex items-center gap-3 border-b border-border/60 px-3 py-2.5 shrink-0">
+      <header className="flex items-center gap-3 border-b border-border/60 px-3 py-3 shrink-0">
         <Button variant="ghost" size="icon" className="md:hidden" onClick={onBack} aria-label="Voltar">
           <ArrowLeft className="size-4" />
         </Button>
@@ -219,7 +219,7 @@ function Thread({
           <AvatarFallback>{initials(conversation.counterpartName)}</AvatarFallback>
         </Avatar>
         <div className="min-w-0 flex-1">
-          <div className="font-medium truncate">{conversation.counterpartName}</div>
+          <div className="font-medium truncate text-sm sm:text-base">{conversation.counterpartName}</div>
           <div className="text-[11px] text-muted-foreground truncate">
             {conversation.counterpartRole}
             {conversation.title ? ` · ${conversation.title}` : ""}
@@ -231,7 +231,7 @@ function Thread({
         />
       </header>
 
-      <div className="flex-1 min-h-0 overflow-y-auto px-3 py-4 space-y-3 bg-muted/20">
+      <div className="flex-1 min-h-0 overflow-y-auto px-3 py-4 space-y-3 bg-muted/20 overscroll-contain">
         {isLoading && (
           <div className="space-y-3">
             <Skeleton className="h-10 w-2/3 rounded-2xl" />
@@ -266,7 +266,7 @@ function Thread({
                     : "bg-card border border-border/60 rounded-bl-md",
                 )}
               >
-                {m.content && <p className="text-sm whitespace-pre-wrap break-words">{m.content}</p>}
+                {m.content && <p className="text-[13px] sm:text-sm whitespace-pre-wrap break-words">{m.content}</p>}
                 {m.attachments.length > 0 && (
                   <div className="space-y-2">
                     {m.attachments.map((a) => (
@@ -338,7 +338,7 @@ function Thread({
               }
             }}
             placeholder="Escreva uma mensagem"
-            className="min-h-10 max-h-32 resize-none"
+            className="min-h-10 max-h-32 resize-none text-[13px] sm:text-sm"
           />
           <Button
             size="icon"
@@ -373,7 +373,7 @@ export function ChatArea() {
     : all;
 
   return (
-    <Card className="overflow-hidden flex h-[calc(100dvh-15rem)] min-h-[420px] max-h-[860px] p-0 gap-0">
+    <Card className="overflow-hidden flex h-[calc(100dvh-15rem)] min-h-[500px] sm:min-h-[420px] max-h-[860px] p-0 gap-0">
       <div
         className={cn(
           "w-full md:w-80 md:border-r border-border/60 flex flex-col min-h-0 shrink-0",

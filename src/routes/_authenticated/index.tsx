@@ -1,7 +1,7 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_authenticated/")({
-  beforeLoad: () => {
+  beforeLoad: async ({ context }) => {
     const { data: { user } } = await context.supabase.auth.getUser();
     if (user) {
       const { data: roles } = await context.supabase.from("user_roles").select("role").eq("user_id", user.id);

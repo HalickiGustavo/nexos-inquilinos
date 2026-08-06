@@ -12,6 +12,8 @@
 // da Efí — falhas são logadas em `efi_events.error` para reprocessamento.
 import { createFileRoute } from "@tanstack/react-router";
 import { timingSafeEqual } from "crypto";
+import { rateLimit, clientIpFromRequest } from "@/lib/rate-limit.server";
+
 
 export const Route = createFileRoute("/api/public/efi-webhook")({
   server: {
@@ -19,7 +21,13 @@ export const Route = createFileRoute("/api/public/efi-webhook")({
       // A Efí faz um POST vazio na configuração inicial ("?hmac=<>") como
       // teste de disponibilidade. Aceitamos qualquer método POST com o
       // querystring válido.
-      POST: async ({ request }) => handle(request),
+      POST: async ({ request }) => {
+        const ip = clientIpFromRequest(request);
+        const rl = rateLimit(`efi_webhook:${ip}`, { limit: 60, windowMs: 60_000 });
+        if (!rl.ok) return new Response("Too many requests", { status: 429 });
+        return handle(request);
+      },
+
     },
   },
 });

@@ -2275,6 +2275,8 @@ export type Database = {
         }[]
       }
       run_security_invariants_check: { Args: never; Returns: undefined }
+      show_limit: { Args: never; Returns: number }
+      show_trgm: { Args: { "": string }; Returns: string[] }
       sync_cron_secret: { Args: { _secret: string }; Returns: undefined }
       verify_security_invariants: {
         Args: never

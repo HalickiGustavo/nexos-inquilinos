@@ -56,7 +56,7 @@ export function MobileDrawer({ brand, navGroups, alerts, onSignOut }) {
             <div className="p-6 bg-muted/30 border-b border-border">
               <div className="flex items-center gap-4">
                 <Avatar className="h-12 w-12 border-2 border-primary/10">
-                  <AvatarImage src={user?.user_metadata?.avatar_url}/>
+                  <AvatarImage src={user?.user_metadata?.avatar_url || ""}/>
                   <AvatarFallback className="bg-primary/5 text-primary">
                     {user?.email?.substring(0, 2).toUpperCase()}
                   </AvatarFallback>
@@ -137,13 +137,9 @@ export function MobileDrawer({ brand, navGroups, alerts, onSignOut }) {
       </div>
 
       <div className="flex items-center gap-1">
-        {alerts && (<div className="h-10 w-10 flex items-center justify-center">
-            {/* Using the component directly since it handles its own UI */}
-            {/* The alerts are passed from the caller */}
-          </div>)}
         <ThemeToggle size="icon" variant="ghost" className="h-10 w-10"/>
         <Avatar className="h-8 w-8 ml-2 border border-border">
-          <AvatarImage src={user?.user_metadata?.avatar_url}/>
+          <AvatarImage src={user?.user_metadata?.avatar_url || ""}/>
           <AvatarFallback className="bg-primary/5 text-primary text-[10px]">
             {user?.email?.substring(0, 2).toUpperCase()}
           </AvatarFallback>

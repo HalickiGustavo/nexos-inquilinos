@@ -236,7 +236,7 @@ export function AppShell({
       <div className={cn("flex-1 flex flex-col min-w-0 md:pl-0", mlClass)}>
         {/* Desktop top bar (only when search or alerts exist) */}
         {(search || alerts) && (
-          <div className="hidden md:flex sticky top-0 z-30 h-16 items-center gap-3 px-6 lg:px-8 bg-background/85 backdrop-blur border-b border-border">
+          <div className="hidden md:flex sticky top-0 z-30 h-16 items-center gap-3 px-6 lg:px-8 bg-background/85 backdrop-blur border-b border-border" data-app-shell-header>
             {search && <div className="flex-1 max-w-md">{search}</div>}
             {alerts && (
               <div className="ml-auto flex items-center gap-1">

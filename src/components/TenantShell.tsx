@@ -70,6 +70,7 @@ export function TenantShell() {
           </div>
         </div>
       </header>
+      <OnboardingTour tourKey="tenant" steps={tenantTourSteps} />
 
       <main className="flex-1 pt-14 pb-12 md:pb-6 md:pt-[7.25rem]">
         <div className="max-w-3xl mx-auto px-4 py-5">
@@ -158,7 +159,7 @@ export function TenantShell() {
           })}
         </div>
       </nav>
-      <OnboardingTour tourKey="tenant" steps={tenantTourSteps} />
+
       <InstallPwaButton bottomOffset={pathname.startsWith("/tenant/chat") ? 116 : 80} />
       <SupportWhatsAppButton bottomOffset={pathname.startsWith("/tenant/chat") ? 180 : 144} />
     </div>

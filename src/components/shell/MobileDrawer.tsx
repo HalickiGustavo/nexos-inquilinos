@@ -1,9 +1,7 @@
 import { useState, useEffect } from "react";
-import { useTotalUnread } from "@/lib/chat";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { Menu, LogOut, ChevronDown, ChevronRight, type LucideIcon } from "lucide-react";
 import { NexoLogo } from "@/components/NexoLogo";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useAuth } from "@/lib/auth";
@@ -14,6 +12,8 @@ import {
   SheetContent,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useTotalUnread } from "@/lib/chat";
 
 export interface MobileDrawerProps {
   brand: { to: string; subtitle?: string };
@@ -211,12 +211,6 @@ export function MobileDrawer({ brand, navGroups, alerts, onSignOut }: MobileDraw
       </div>
 
       <div className="flex items-center gap-1">
-        {alerts && (
-          <div className="h-10 w-10 flex items-center justify-center">
-            {/* Using the component directly since it handles its own UI */}
-            {/* The alerts are passed from the caller */}
-          </div>
-        )}
         <ThemeToggle size="icon" variant="ghost" className="h-10 w-10" />
         <Avatar className="h-8 w-8 ml-2 border border-border">
           <AvatarImage src={user?.user_metadata?.avatar_url || ""} />

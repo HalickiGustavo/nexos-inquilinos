@@ -12,6 +12,7 @@ import { tenantTourSteps } from "@/lib/tour-steps";
 import { AlertsBell } from "@/components/AlertsBell";
 import { useTenantAlerts } from "@/lib/alerts";
 import { useTotalUnread } from "@/lib/chat";
+import { MobileDrawer } from "./shell/MobileDrawer";
 
 const tenantNav: ReadonlyArray<{ to: string; label: string; icon: typeof Home; exact?: boolean; tour: string }> = [
   { to: "/tenant", label: "Início", icon: Home, exact: true, tour: "nav-tenant" },
@@ -36,8 +37,14 @@ export function TenantShell() {
 
   return (
     <div className="min-h-screen flex flex-col bg-muted/30">
-      {/* Top header */}
-      <header className="fixed top-0 inset-x-0 z-40 backdrop-blur-xl bg-card/85 border-b border-border/60">
+      <MobileDrawer
+        brand={{ to: "/tenant" }}
+        navGroups={[{ items: tenantNav.map(item => ({ ...item })) }]}
+        alerts={{ alerts, seeAllHref: "/tenant/alertas" }}
+      />
+
+      {/* Desktop Top header */}
+      <header className="hidden md:block fixed top-0 inset-x-0 z-40 backdrop-blur-xl bg-card/85 border-b border-border/60">
         <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2 min-w-0">
             <NexoLogo className="h-7 shrink-0" />
@@ -64,7 +71,7 @@ export function TenantShell() {
         </div>
       </header>
 
-      <main className="flex-1 pt-14 pb-24 md:pb-6 md:pt-[7.25rem]">
+      <main className="flex-1 pt-14 pb-12 md:pb-6 md:pt-[7.25rem]">
         <div className="max-w-3xl mx-auto px-4 py-5">
           <Outlet />
         </div>

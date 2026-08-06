@@ -16,7 +16,7 @@ interface PageHeaderProps {
  */
 export function PageHeader({ title, description, eyebrow, icon: Icon, actions, className }: PageHeaderProps) {
   return (
-    <header className={cn("flex items-start justify-between gap-4 flex-wrap", className)}>
+    <header className={cn("flex flex-col sm:flex-row items-start sm:justify-between gap-4", className)}>
       <div className="min-w-0">
         {eyebrow && (
           <div className="text-[10px] uppercase tracking-[0.18em] text-primary/80 font-semibold mb-1.5">

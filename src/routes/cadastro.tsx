@@ -88,7 +88,7 @@ function CadastroPage() {
 
   return (
     <div className="min-h-screen bg-zinc-50 text-zinc-900">
-      <div className="flex min-h-screen flex-col items-center justify-center p-4 sm:p-6">
+      <div className="flex min-h-[100dvh] flex-col items-center justify-center p-4 sm:p-6">
         <div className="w-full max-w-md">
           <div className="mb-5 flex items-center justify-between text-xs">
             <Link to="/" className="text-zinc-500 hover:text-zinc-900 transition-colors inline-flex items-center gap-1">

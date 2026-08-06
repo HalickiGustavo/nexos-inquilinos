@@ -118,7 +118,7 @@ function StatCard({
             </div>
 
       <div className="min-w-0">
-        <div className={`text-xl font-bold tabular-nums truncate ${toneClass(tone)}`}>
+        <div className={`text-lg sm:text-xl font-bold tabular-nums truncate ${toneClass(tone)}`}>
           {value}
         </div>
         <div className="mt-1 flex items-center gap-2 min-h-[16px]">
@@ -180,7 +180,7 @@ export function PortfolioSummary({ data }: { data: PortfolioSummaryData }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
         <StatCard label="Imóveis" value={String(data.totalProperties)} icon={Building2} />
         <StatCard
           label="Alugados"
@@ -208,7 +208,7 @@ export function PortfolioSummary({ data }: { data: PortfolioSummaryData }) {
 
       </div>
 
-      <div className="mt-4 grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="mt-4 grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <StatCard
           label="Receita recebida"
           value={formatBRL(data.receivedRevenue)}

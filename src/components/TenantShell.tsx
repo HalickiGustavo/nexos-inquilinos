@@ -152,8 +152,8 @@ export function TenantShell() {
         </div>
       </nav>
       <OnboardingTour tourKey="tenant" steps={tenantTourSteps} />
-      <InstallPwaButton bottomOffset={80} />
-      <SupportWhatsAppButton bottomOffset={144} />
+      <InstallPwaButton bottomOffset={pathname.startsWith("/tenant/chat") ? 116 : 80} />
+      <SupportWhatsAppButton bottomOffset={pathname.startsWith("/tenant/chat") ? 180 : 144} />
     </div>
   );
 }

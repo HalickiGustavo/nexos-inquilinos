@@ -54,7 +54,7 @@ function LoginPage() {
   }, [user, loading, navigate]);
 
   return (
-    <div className="relative min-h-screen grid lg:grid-cols-[1.05fr_1fr] overflow-x-hidden">
+    <div className="relative min-h-[100dvh] grid lg:grid-cols-[1.05fr_1fr] overflow-x-hidden">
       {/* Fundo violeta com grade — visível em mobile/tablet */}
       <div
         className="lg:hidden pointer-events-none absolute inset-0 -z-10 overflow-hidden"
@@ -124,7 +124,7 @@ function LoginPage() {
         <p className="relative text-xs text-white/40 text-center">© {new Date().getFullYear()} Nexo</p>
       </div>
 
-      <div className="flex items-center justify-center p-6 lg:p-12 lg:bg-background">
+      <div className="flex items-center justify-center p-4 sm:p-6 lg:p-12 lg:bg-background">
         <Card className="w-full max-w-md p-8 border-border/60 shadow-card surface-1">
           <div className="lg:hidden flex justify-center items-center mb-6">
             <img src={nexoLogo} alt="Nexo" className="h-14 w-auto max-w-full object-contain" />

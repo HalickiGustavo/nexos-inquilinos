@@ -117,7 +117,7 @@ function PropertyCardImpl({
       onClick={openDetail}
       className="p-5 flex flex-col gap-4 hover:shadow-md transition group h-full cursor-pointer"
     >
-      <div className="flex items-start justify-between gap-2 min-w-0">
+      <div className="flex flex-col xs:flex-row items-start justify-between gap-3 min-w-0">
         <button
           type="button"
           onClick={() => setDetailOpen(true)}
@@ -134,7 +134,7 @@ function PropertyCardImpl({
             <p className="text-[11px] text-muted-foreground/70 mt-0.5">Código: {p.code}</p>
           ) : null}
         </button>
-        <div className="flex items-center gap-1 shrink-0">
+        <div className="flex items-center gap-1 shrink-0 w-full xs:w-auto justify-between xs:justify-end">
           {statusBadge(data.status)}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -197,7 +197,7 @@ function PropertyCardImpl({
       </div>
 
       {/* Financeiro básico */}
-      <div className="grid grid-cols-3 gap-2 text-sm">
+      <div className="grid grid-cols-1 xs:grid-cols-3 gap-2 text-sm">
         <div className="rounded-md bg-muted/30 border border-border/60 px-2 py-1.5 min-w-0">
           <div className="text-[10px] uppercase text-muted-foreground truncate">Aluguel</div>
           <div className="font-semibold text-primary tabular-nums truncate">
@@ -243,7 +243,7 @@ function PropertyCardImpl({
       </div>
 
       {/* Receita agregada */}
-      <div className="grid grid-cols-2 gap-2 text-sm">
+      <div className="grid grid-cols-1 xs:grid-cols-2 gap-2 text-sm">
         <div className="rounded-md border border-border/60 px-2 py-1.5">
           <div className="text-[10px] uppercase text-muted-foreground">Receita YTD</div>
           <div className="font-semibold tabular-nums text-emerald-500">

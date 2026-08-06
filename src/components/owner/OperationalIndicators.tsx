@@ -61,7 +61,7 @@ export function OperationalIndicators({
           Rotina do dia a dia — sem competir com os números estratégicos
         </p>
       </div>
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-4">
         {items.map(({ label, value, hint, icon: Icon, to }) => {
           const body = (
             <div className="h-full rounded-xl border border-border/60 bg-muted/15 px-4 py-4 flex flex-col justify-between gap-3 min-w-0 transition-colors hover:bg-muted/30">

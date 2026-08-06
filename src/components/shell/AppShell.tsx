@@ -268,7 +268,7 @@ export function AppShell({
           </div>
           {search && <div className="px-4 pb-2">{search}</div>}
 
-          <nav className="flex overflow-x-auto gap-1 p-2 border-t border-border">
+          <nav className="flex overflow-x-auto gap-1 p-2 border-t border-border scrollbar-hide overscroll-x-contain">
             {flatItems.map((item) => {
               const active = isActive(item);
               const Icon = item.icon;

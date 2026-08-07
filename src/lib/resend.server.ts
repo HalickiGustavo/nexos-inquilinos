@@ -30,17 +30,20 @@ export async function sendResendEmail(payload: {
 
   const { from, to, subject, html, text, ...rest } = payload;
 
-  // Default sender if not provided
-  const sender = from || 'Nexo <noreply@usenexoapp.com>';
-
-  const { data, error } = await resend.emails.send({
-    from: sender,
+  // Resend requires at least one of html, text, or react.
+  // We ensure 'text' is at least an empty string if nothing else is provided.
+  const emailOptions: any = {
+    from: from || 'Nexo <noreply@usenexoapp.com>',
     to,
     subject,
-    html,
-    text,
     ...rest,
-  });
+  };
+
+  if (html) emailOptions.html = html;
+  if (text) emailOptions.text = text;
+  if (!html && !text) emailOptions.text = '';
+
+  const { data, error } = await resend.emails.send(emailOptions);
 
   if (error) {
     console.error('Resend email error:', error);
@@ -49,3 +52,4 @@ export async function sendResendEmail(payload: {
 
   return data;
 }
+

@@ -1313,21 +1313,44 @@ export const inviteTenantUser = createServerFn({ method: "POST" })
       redirectTo: safeRedirect,
       data: { full_name: tenant.data.full_name, tenant_invite: true },
     });
-    if (invited.error) {
-      const link = await supabaseAdmin.auth.admin.generateLink({
-        type: "magiclink",
-        email: tenant.data.email,
-        options: { redirectTo: safeRedirect },
-      });
-      if (link.error) throw new Error(link.error.message);
-      actionLink = (link.data as any)?.properties?.action_link ?? null;
-    } else {
-      const link = await supabaseAdmin.auth.admin.generateLink({
-        type: "magiclink",
-        email: tenant.data.email,
-        options: { redirectTo: safeRedirect },
-      });
-      actionLink = (link.data as any)?.properties?.action_link ?? null;
+    
+    const link = await supabaseAdmin.auth.admin.generateLink({
+      type: "magiclink",
+      email: tenant.data.email,
+      options: { redirectTo: safeRedirect },
+    });
+    
+    if (link.error) throw new Error(link.error.message);
+    actionLink = (link.data as any)?.properties?.action_link ?? null;
+
+    // Disparar e-mail via Resend se o link foi gerado
+    if (actionLink) {
+      try {
+        const { sendResendEmail } = await import("./resend.server");
+        const firstName = (tenant.data.full_name ?? "").split(" ")[0] || "olá";
+        const html = `
+          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 8px;">
+            <h2 style="color: #333;">Boas-vindas à NEXO!</h2>
+            <p>Olá, <strong>${firstName}</strong>!</p>
+            <p>Você foi convidado para acessar o <strong>Portal do Inquilino da Nexo</strong>.</p>
+            <p>Para concluir seu cadastro e acessar o painel, clique no botão abaixo:</p>
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${actionLink}" style="background-color: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold;">Confirmar E-mail</a>
+            </div>
+            <p style="color: #666; font-size: 14px;">Se você não solicitou este acesso, pode ignorar este e-mail.</p>
+            <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+            <p style="color: #999; font-size: 12px; text-align: center;">NEXO &copy; 2026</p>
+          </div>
+        `;
+        
+        await sendResendEmail({
+          to: tenant.data.email,
+          subject: "Boas-vindas à NEXO - Acesso ao Portal do Inquilino",
+          html,
+        });
+      } catch (emailErr) {
+        console.error("[invite.tenant] Falha ao enviar e-mail via Resend:", emailErr);
+      }
     }
 
     try {
@@ -1405,6 +1428,34 @@ export const generateTenantInviteLink = createServerFn({ method: "POST" })
     if (link.error) throw new Error(link.error.message);
     const actionLink = (link.data as any)?.properties?.action_link as string | null;
     if (!actionLink) throw new Error("Não foi possível gerar o link de convite");
+
+    // Disparar e-mail via Resend
+    try {
+      const { sendResendEmail } = await import("./resend.server");
+      const firstName = (tenant.data.full_name ?? "").split(" ")[0] || "olá";
+      const html = `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 8px;">
+          <h2 style="color: #333;">Boas-vindas à NEXO!</h2>
+          <p>Olá, <strong>${firstName}</strong>!</p>
+          <p>Seu link de convite para o <strong>Portal do Inquilino</strong> foi gerado com sucesso.</p>
+          <p>Acesse o link abaixo para configurar sua senha:</p>
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${actionLink}" style="background-color: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold;">Configurar Minha Senha</a>
+          </div>
+          <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+          <p style="color: #999; font-size: 12px; text-align: center;">NEXO &copy; 2026</p>
+        </div>
+      `;
+      
+      await sendResendEmail({
+        to: tenant.data.email,
+        subject: "Seu Link de Convite - NEXO",
+        html,
+      });
+    } catch (emailErr) {
+      console.error("[generateTenantInviteLink] Falha ao enviar e-mail via Resend:", emailErr);
+    }
+
     return { ok: true, actionLink, email: tenant.data.email };
   });
 

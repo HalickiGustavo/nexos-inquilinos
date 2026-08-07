@@ -33,7 +33,7 @@ export async function sendResendEmail(payload: {
   // Resend requires at least one of html, text, or react.
   // We ensure 'text' is at least an empty string if nothing else is provided.
   const emailOptions: any = {
-    from: from || 'Nexo <noreply@usenexoapp.com>',
+    from: from || 'Nexo <noreply@mail.usenexoapp.com>',
     to,
     subject,
     ...rest,

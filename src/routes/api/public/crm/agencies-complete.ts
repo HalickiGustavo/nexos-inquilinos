@@ -19,6 +19,7 @@ export const Route = createFileRoute('/api/public/crm/agencies-complete')({
         }
 
         try {
+          const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
           const { data: agencies, error: agencyError } = await supabaseAdmin
             .from('agency_settings')
             .select('*');

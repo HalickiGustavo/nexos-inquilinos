@@ -67,7 +67,6 @@ import { Route as ManagerManagerRelatoriosRouteImport } from './routes/_manager/
 import { Route as ManagerManagerVistoriasRouteImport } from './routes/_manager/manager.vistorias'
 import { Route as ApiPublicEfiWebhookRouteImport } from './routes/api/public/efi-webhook'
 import { Route as ApiPublicStarkWebhookRouteImport } from './routes/api/public/stark-webhook'
-import { Route as ApiPublicTestEmailRouteImport } from './routes/api/public/test-email'
 import { Route as AuthenticatedAdminConfiguracoesSubcontaRouteImport } from './routes/_authenticated/admin.configuracoes.subconta'
 import { Route as ManagerManagerConfiguracoesRoletaRouteImport } from './routes/_manager/manager.configuracoes.roleta'
 import { Route as ApiPublicEfiWebhookPixRouteImport } from './routes/api/public/efi-webhook.pix'
@@ -398,11 +397,6 @@ const ApiPublicStarkWebhookRoute = ApiPublicStarkWebhookRouteImport.update({
   path: '/api/public/stark-webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicTestEmailRoute = ApiPublicTestEmailRouteImport.update({
-  id: '/api/public/test-email',
-  path: '/api/public/test-email',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuthenticatedAdminConfiguracoesSubcontaRoute =
   AuthenticatedAdminConfiguracoesSubcontaRouteImport.update({
     id: '/admin/configuracoes/subconta',
@@ -579,7 +573,6 @@ export interface FileRoutesByFullPath {
   '/manager/vistorias': typeof ManagerManagerVistoriasRoute
   '/api/public/efi-webhook': typeof ApiPublicEfiWebhookRouteWithChildren
   '/api/public/stark-webhook': typeof ApiPublicStarkWebhookRoute
-  '/api/public/test-email': typeof ApiPublicTestEmailRoute
   '/tenant/': typeof AuthenticatedTenantIndexRoute
   '/landlord/': typeof LandlordLandlordIndexRoute
   '/manager/': typeof ManagerManagerIndexRoute
@@ -658,7 +651,6 @@ export interface FileRoutesByTo {
   '/manager/vistorias': typeof ManagerManagerVistoriasRoute
   '/api/public/efi-webhook': typeof ApiPublicEfiWebhookRouteWithChildren
   '/api/public/stark-webhook': typeof ApiPublicStarkWebhookRoute
-  '/api/public/test-email': typeof ApiPublicTestEmailRoute
   '/tenant': typeof AuthenticatedTenantIndexRoute
   '/landlord': typeof LandlordLandlordIndexRoute
   '/manager': typeof ManagerManagerIndexRoute
@@ -741,7 +733,6 @@ export interface FileRoutesById {
   '/_manager/manager/vistorias': typeof ManagerManagerVistoriasRoute
   '/api/public/efi-webhook': typeof ApiPublicEfiWebhookRouteWithChildren
   '/api/public/stark-webhook': typeof ApiPublicStarkWebhookRoute
-  '/api/public/test-email': typeof ApiPublicTestEmailRoute
   '/_authenticated/tenant/': typeof AuthenticatedTenantIndexRoute
   '/_landlord/landlord/': typeof LandlordLandlordIndexRoute
   '/_manager/manager/': typeof ManagerManagerIndexRoute
@@ -822,7 +813,6 @@ export interface FileRouteTypes {
     | '/manager/vistorias'
     | '/api/public/efi-webhook'
     | '/api/public/stark-webhook'
-    | '/api/public/test-email'
     | '/tenant/'
     | '/landlord/'
     | '/manager/'
@@ -901,7 +891,6 @@ export interface FileRouteTypes {
     | '/manager/vistorias'
     | '/api/public/efi-webhook'
     | '/api/public/stark-webhook'
-    | '/api/public/test-email'
     | '/tenant'
     | '/landlord'
     | '/manager'
@@ -983,7 +972,6 @@ export interface FileRouteTypes {
     | '/_manager/manager/vistorias'
     | '/api/public/efi-webhook'
     | '/api/public/stark-webhook'
-    | '/api/public/test-email'
     | '/_authenticated/tenant/'
     | '/_landlord/landlord/'
     | '/_manager/manager/'
@@ -1021,7 +1009,6 @@ export interface RootRouteChildren {
   TenantSetupRoute: typeof TenantSetupRoute
   ApiPublicEfiWebhookRoute: typeof ApiPublicEfiWebhookRouteWithChildren
   ApiPublicStarkWebhookRoute: typeof ApiPublicStarkWebhookRoute
-  ApiPublicTestEmailRoute: typeof ApiPublicTestEmailRoute
   ApiPublicHooksEfiSaldoRoute: typeof ApiPublicHooksEfiSaldoRoute
   ApiPublicHooksGenerateUpcomingBoletosRoute: typeof ApiPublicHooksGenerateUpcomingBoletosRoute
   ApiPublicHooksIssueSingleBoletoRoute: typeof ApiPublicHooksIssueSingleBoletoRoute
@@ -1450,13 +1437,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicStarkWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/test-email': {
-      id: '/api/public/test-email'
-      path: '/api/public/test-email'
-      fullPath: '/api/public/test-email'
-      preLoaderRoute: typeof ApiPublicTestEmailRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_authenticated/admin/configuracoes/subconta': {
       id: '/_authenticated/admin/configuracoes/subconta'
       path: '/admin/configuracoes/subconta'
@@ -1772,7 +1752,6 @@ const rootRouteChildren: RootRouteChildren = {
   TenantSetupRoute: TenantSetupRoute,
   ApiPublicEfiWebhookRoute: ApiPublicEfiWebhookRouteWithChildren,
   ApiPublicStarkWebhookRoute: ApiPublicStarkWebhookRoute,
-  ApiPublicTestEmailRoute: ApiPublicTestEmailRoute,
   ApiPublicHooksEfiSaldoRoute: ApiPublicHooksEfiSaldoRoute,
   ApiPublicHooksGenerateUpcomingBoletosRoute:
     ApiPublicHooksGenerateUpcomingBoletosRoute,

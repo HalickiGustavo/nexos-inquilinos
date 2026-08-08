@@ -66,12 +66,12 @@ export function PropertyFormDialog({
     queryFn: async () => {
       console.log("Fetching landlords for manager:", user?.id);
       
-      // 1. Get IDs of landlords who accepted invites from this manager
+      // 1. Get ALL landlords linked to this manager via invites
+      // This includes both those who accepted and those who haven't yet but are part of the manager's portfolio
       const { data: invites, error: invError } = await supabase
         .from("landlord_invites")
-        .select("accepted_user_id, email")
-        .eq("manager_user_id", user!.id)
-        .eq("status", "aceito");
+        .select("accepted_user_id, email, full_name, document")
+        .eq("manager_user_id", user!.id);
 
       if (invError) {
         console.error("Error fetching invites:", invError);
@@ -84,47 +84,67 @@ export function PropertyFormDialog({
         .map((i) => i.accepted_user_id)
         .filter(Boolean) as string[];
       
-      const acceptedEmails = (invites ?? [])
+      const invitedEmails = (invites ?? [])
         .map((i) => i.email)
         .filter(Boolean) as string[];
 
-      // 2. Fetch profiles based on either accepted_user_id OR matching email (for autonomy)
-      const query = supabase
-        .from("profiles")
-        .select("id, full_name, email, document")
-        .order("full_name", { ascending: true });
-
-      // We use a complex filter: (id in acceptedIds) OR (email in acceptedEmails)
-      // Since supabase-js doesn't have a clean OR for different columns with IN easily in one line, 
-      // we can use a raw filter or just fetch both and merge.
-      
+      // 2. Fetch profiles for those who already have accounts
+      let profiles: any[] = [];
       let filterStr = "";
       if (acceptedIds.length > 0) {
         filterStr += `id.in.(${acceptedIds.join(",")})`;
       }
-      if (acceptedEmails.length > 0) {
+      if (invitedEmails.length > 0) {
         if (filterStr) filterStr += ",";
-        filterStr += `email.in.(${acceptedEmails.map(e => `"${e}"`).join(",")})`;
+        filterStr += `email.in.(${invitedEmails.map(e => `"${e}"`).join(",")})`;
       }
 
-      if (!filterStr) return [];
+      if (filterStr) {
+        const { data, error: profError } = await supabase
+          .from("profiles")
+          .select("id, full_name, email, document")
+          .or(filterStr);
 
-      const { data: profiles, error: profError } = await query.or(filterStr);
-
-      if (profError) {
-        console.error("Error fetching profiles:", profError);
-        throw profError;
+        if (profError) {
+          console.error("Error fetching profiles:", profError);
+          throw profError;
+        }
+        profiles = data ?? [];
       }
 
-      console.log("Found profiles:", profiles);
+      // 3. Merge profiles with invites to ensure even those without accounts (pending) appear
+      // but prioritize profile data for those who have it
+      const landlordMap = new Map();
 
-      return (profiles ?? []).map(p => ({
-        id: p.id,
-        accepted_user_id: p.id,
-        full_name: p.full_name,
-        email: p.email,
-        document: p.document
-      }));
+      // Start with profile data
+      profiles.forEach(p => {
+        landlordMap.set(p.email.toLowerCase(), {
+          id: p.id,
+          full_name: p.full_name,
+          email: p.email,
+          document: p.document
+        });
+      });
+
+      // Fill in/override with invite data for context
+      invites?.forEach(i => {
+        const email = i.email.toLowerCase();
+        if (!landlordMap.has(email)) {
+          landlordMap.set(email, {
+            id: i.accepted_user_id || email, // fallback to email if no ID yet
+            full_name: i.full_name,
+            email: i.email,
+            document: i.document
+          });
+        }
+      });
+
+      const result = Array.from(landlordMap.values()).sort((a, b) => 
+        (a.full_name || a.email).localeCompare(b.full_name || b.email)
+      );
+
+      console.log("Final landlord list:", result);
+      return result;
     },
   });
 
@@ -330,9 +350,9 @@ export function PropertyFormDialog({
               </Select>
               {landlords.length === 0 && (
                 <p className="text-xs text-muted-foreground">
-                  Nenhum proprietário aceitou convite ainda.{" "}
+                  Você ainda não cadastrou ou convidou nenhum proprietário.{" "}
                   <Link to="/manager/proprietarios" className="underline">
-                    Convidar proprietário
+                    Gerenciar proprietários
                   </Link>
                 </p>
               )}

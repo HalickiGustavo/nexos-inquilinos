@@ -24,22 +24,21 @@ export const Route = createFileRoute('/api/public/crm/agencies')({
           const { data: agencies, error } = await supabaseAdmin
             .from('agency_settings')
             .select(`
-              id,
-              name,
+              manager_user_id,
               created_at,
-              status,
+              org_slug,
               properties:properties(count),
               tenants:profiles!agency_id(count),
               contracts:contracts(count)
-            `);
+            `) as any;
 
           if (error) throw error;
 
-          const formattedAgencies = agencies.map(a => ({
-            id: a.id,
-            name: a.name,
+          const formattedAgencies = (agencies || []).map((a: any) => ({
+            id: a.manager_user_id,
+            name: a.org_slug || 'Agency',
             created_at: a.created_at,
-            status: a.status,
+            status: 'active',
             total_properties: a.properties?.[0]?.count || 0,
             total_tenants: a.tenants?.[0]?.count || 0,
             total_contracts: a.contracts?.[0]?.count || 0

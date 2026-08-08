@@ -52,7 +52,12 @@ export const Route = createFileRoute('/api/public/crm/agencies')({
           });
         } catch (error: any) {
           console.error('CRM API Error (agencies):', error);
-          return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
+          return new Response(JSON.stringify({ 
+            error: 'Internal Server Error',
+            message: error.message,
+            hint: error.hint,
+            details: error.details 
+          }), {
             status: 500,
             headers: { 
               'Content-Type': 'application/json',

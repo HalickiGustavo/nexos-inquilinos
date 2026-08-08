@@ -61,7 +61,7 @@ export const syncInviteToProfile = createServerFn({ method: "POST" })
       await supabaseAdmin
         .from("landlord_invites")
         .update({ status: "aceito" })
-        .eq("email", data.email.toLowerCase().trim());
+        .eq("email", sessionEmail);
     }
 
     return { ok: true, synced: true };

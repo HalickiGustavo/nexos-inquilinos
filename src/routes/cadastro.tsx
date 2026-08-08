@@ -244,10 +244,10 @@ function OnboardingWizard({ role, initialEmail, onChangeRole }: { role: Role; in
       // Ensure role assignment and send welcome email
       try {
         if (role === "imobiliaria") {
-          await triggerManagerSetup({});
+          await triggerManagerSetup({ data: undefined });
         } else if (role === "proprietario") {
           // Sync invite data to profile if applicable
-          await triggerInviteSync({ email: form.email });
+          await triggerInviteSync({ data: { email: form.email } });
         }
 
         await triggerWelcomeEmail({

@@ -17,7 +17,7 @@ export const syncInviteToProfile = createServerFn({ method: "POST" })
       .parse(data)
   )
   .handler(async ({ data, context }) => {
-    const { userId } = context;
+    const { userId } = context as { userId: string };
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     // 1. Look for a matching invite for this email

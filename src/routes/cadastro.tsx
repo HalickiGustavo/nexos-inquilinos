@@ -106,7 +106,7 @@ function CadastroPage() {
           </div>
 
           {role === null ? (
-            <RoleSelector onPick={(r) => navigate({ to: "/cadastro", search: { role: r } })} />
+            <RoleSelector onPick={(r) => navigate({ to: "/cadastro", search: { role: r } })} navigate={navigate} />
           ) : (
             <OnboardingWizard role={role} initialEmail={initialEmail} onChangeRole={() => navigate({ to: "/cadastro", search: {} })} />
           )}
@@ -118,7 +118,7 @@ function CadastroPage() {
 
 /* -------------------- Seleção de papel -------------------- */
 
-function RoleSelector({ onPick }: { onPick: (r: Role) => void }) {
+function RoleSelector({ onPick, navigate }: { onPick: (r: Role) => void; navigate: any }) {
   return (
     <div className="rounded-2xl border border-zinc-200 bg-white shadow-sm p-6 sm:p-8">
       <div className="text-center mb-7">

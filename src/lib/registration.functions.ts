@@ -24,15 +24,15 @@ export const completeRegistration = createServerFn({ method: "POST" })
     const { email, password, fullName, document, phone, role, inviteToken, birthDate } = data;
 
     // 1. Check if user already exists
-    const { data: existingUser } = await supabaseAdmin.auth.admin.listUsers();
-    const user = existingUser.users.find((u) => u.email?.toLowerCase() === email.toLowerCase());
+    const { data: userData } = await supabaseAdmin.auth.admin.listUsers();
+    const existingUser = userData.users.find((u) => u.email?.toLowerCase() === email.toLowerCase());
 
     let userId: string;
 
-    if (user) {
+    if (existingUser) {
       // 2. Update existing user (invited flow)
       const { data: updatedUser, error: updateErr } = await supabaseAdmin.auth.admin.updateUserById(
-        user.id,
+        existingUser.id,
         {
           password: password,
           email_confirm: true, // Auto-confirm if they were invited
@@ -90,11 +90,10 @@ export const completeRegistration = createServerFn({ method: "POST" })
         .maybeSingle();
 
       if (invite) {
-        // Assign landlord role
+        // Assign landlord role (using upsert with id column which is primary key)
         await supabaseAdmin
           .from("user_roles")
-          .insert({ user_id: userId, role: "landlord" })
-          .onConflictDoNothing();
+          .upsert({ user_id: userId, role: "landlord" }, { onConflict: 'user_id,role' });
 
         // Mark invite as accepted
         await supabaseAdmin
@@ -123,8 +122,7 @@ export const completeRegistration = createServerFn({ method: "POST" })
     if (role === "manager") {
       await supabaseAdmin
         .from("user_roles")
-        .insert({ user_id: userId, role: "manager" })
-        .onConflictDoNothing();
+        .upsert({ user_id: userId, role: "manager" }, { onConflict: 'user_id,role' });
     }
 
     return { userId, email, fullName };

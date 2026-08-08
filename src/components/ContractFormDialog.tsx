@@ -158,8 +158,8 @@ export function ContractFormDialog({ onDone }: { onDone: () => void }) {
         <div className="space-y-2">
           <Label>Valor do aluguel (R$) *</Label>
           <Input
-            type="number"
-            step="0.01"
+            type="text"
+            placeholder="0,00"
             required
             value={form.rent_amount}
             onChange={(e) => setForm({ ...form, rent_amount: e.target.value })}
@@ -185,8 +185,8 @@ export function ContractFormDialog({ onDone }: { onDone: () => void }) {
         <div className="space-y-2">
           <Label>Caução (R$)</Label>
           <Input
-            type="number"
-            step="0.01"
+            type="text"
+            placeholder="0,00"
             value={form.security_deposit}
             onChange={(e) =>
               setForm({ ...form, security_deposit: e.target.value })
@@ -196,8 +196,8 @@ export function ContractFormDialog({ onDone }: { onDone: () => void }) {
         <div className="space-y-2">
           <Label>Multa por atraso (%)</Label>
           <Input
-            type="number"
-            step="0.01"
+            type="text"
+            placeholder="0,00"
             value={form.late_fee_percent}
             onChange={(e) =>
               setForm({ ...form, late_fee_percent: e.target.value })
@@ -207,8 +207,8 @@ export function ContractFormDialog({ onDone }: { onDone: () => void }) {
         <div className="space-y-2 sm:col-span-2">
           <Label>Juros ao dia (%)</Label>
           <Input
-            type="number"
-            step="0.001"
+            type="text"
+            placeholder="0,000"
             value={form.daily_interest_percent}
             onChange={(e) =>
               setForm({ ...form, daily_interest_percent: e.target.value })

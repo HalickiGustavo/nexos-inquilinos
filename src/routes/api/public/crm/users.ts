@@ -31,7 +31,7 @@ export const Route = createFileRoute('/api/public/crm/users')({
             const { data: roles } = await supabaseAdmin
               .from('user_roles')
               .select('role')
-              .eq('user_id' as any, p.id);
+              .eq('user_id', p.id as any);
             
             return {
               ...p,

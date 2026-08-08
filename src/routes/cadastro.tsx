@@ -197,6 +197,8 @@ function OnboardingWizard({ role, onChangeRole }: { role: Role; onChangeRole: ()
   const captchaRef = useRef<import("react-google-recaptcha").default | null>(null);
   const triggerWelcomeEmail = useServerFn(sendWelcomeEmail);
   const triggerManagerSetup = useServerFn(activateManagerRole);
+  const getInviteDetails = useServerFn(getLandlordInviteDetails);
+
 
   const [form, setForm] = useState<FormState>({
     email: "",

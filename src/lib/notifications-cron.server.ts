@@ -1,4 +1,4 @@
-import { supabaseAdmin } from "./supabase/client.server";
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { sendEvolutionText } from "./whatsapp.server";
 import { sendResendEmail } from "./resend.server";
 

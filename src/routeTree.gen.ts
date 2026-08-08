@@ -70,6 +70,7 @@ import { Route as ApiPublicEfiWebhookRouteImport } from './routes/api/public/efi
 import { Route as ApiPublicStarkWebhookRouteImport } from './routes/api/public/stark-webhook'
 import { Route as AuthenticatedAdminConfiguracoesSubcontaRouteImport } from './routes/_authenticated/admin.configuracoes.subconta'
 import { Route as ManagerManagerConfiguracoesRoletaRouteImport } from './routes/_manager/manager.configuracoes.roleta'
+import { Route as ApiPublicCronNotificationsRouteImport } from './routes/api/public/cron/notifications'
 import { Route as ApiPublicEfiWebhookPixRouteImport } from './routes/api/public/efi-webhook.pix'
 import { Route as ApiPublicHooksEfiSaldoRouteImport } from './routes/api/public/hooks/efi-saldo'
 import { Route as ApiPublicHooksGenerateUpcomingBoletosRouteImport } from './routes/api/public/hooks/generate-upcoming-boletos'
@@ -415,6 +416,12 @@ const ManagerManagerConfiguracoesRoletaRoute =
     path: '/manager/configuracoes/roleta',
     getParentRoute: () => ManagerRoute,
   } as any)
+const ApiPublicCronNotificationsRoute =
+  ApiPublicCronNotificationsRouteImport.update({
+    id: '/api/public/cron/notifications',
+    path: '/api/public/cron/notifications',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicEfiWebhookPixRoute = ApiPublicEfiWebhookPixRouteImport.update({
   id: '/pix',
   path: '/pix',
@@ -585,6 +592,7 @@ export interface FileRoutesByFullPath {
   '/manager/': typeof ManagerManagerIndexRoute
   '/admin/configuracoes/subconta': typeof AuthenticatedAdminConfiguracoesSubcontaRoute
   '/manager/configuracoes/roleta': typeof ManagerManagerConfiguracoesRoletaRoute
+  '/api/public/cron/notifications': typeof ApiPublicCronNotificationsRoute
   '/api/public/efi-webhook/pix': typeof ApiPublicEfiWebhookPixRoute
   '/api/public/hooks/efi-saldo': typeof ApiPublicHooksEfiSaldoRoute
   '/api/public/hooks/generate-upcoming-boletos': typeof ApiPublicHooksGenerateUpcomingBoletosRoute
@@ -664,6 +672,7 @@ export interface FileRoutesByTo {
   '/manager': typeof ManagerManagerIndexRoute
   '/admin/configuracoes/subconta': typeof AuthenticatedAdminConfiguracoesSubcontaRoute
   '/manager/configuracoes/roleta': typeof ManagerManagerConfiguracoesRoletaRoute
+  '/api/public/cron/notifications': typeof ApiPublicCronNotificationsRoute
   '/api/public/efi-webhook/pix': typeof ApiPublicEfiWebhookPixRoute
   '/api/public/hooks/efi-saldo': typeof ApiPublicHooksEfiSaldoRoute
   '/api/public/hooks/generate-upcoming-boletos': typeof ApiPublicHooksGenerateUpcomingBoletosRoute
@@ -747,6 +756,7 @@ export interface FileRoutesById {
   '/_manager/manager/': typeof ManagerManagerIndexRoute
   '/_authenticated/admin/configuracoes/subconta': typeof AuthenticatedAdminConfiguracoesSubcontaRoute
   '/_manager/manager/configuracoes/roleta': typeof ManagerManagerConfiguracoesRoletaRoute
+  '/api/public/cron/notifications': typeof ApiPublicCronNotificationsRoute
   '/api/public/efi-webhook/pix': typeof ApiPublicEfiWebhookPixRoute
   '/api/public/hooks/efi-saldo': typeof ApiPublicHooksEfiSaldoRoute
   '/api/public/hooks/generate-upcoming-boletos': typeof ApiPublicHooksGenerateUpcomingBoletosRoute
@@ -828,6 +838,7 @@ export interface FileRouteTypes {
     | '/manager/'
     | '/admin/configuracoes/subconta'
     | '/manager/configuracoes/roleta'
+    | '/api/public/cron/notifications'
     | '/api/public/efi-webhook/pix'
     | '/api/public/hooks/efi-saldo'
     | '/api/public/hooks/generate-upcoming-boletos'
@@ -907,6 +918,7 @@ export interface FileRouteTypes {
     | '/manager'
     | '/admin/configuracoes/subconta'
     | '/manager/configuracoes/roleta'
+    | '/api/public/cron/notifications'
     | '/api/public/efi-webhook/pix'
     | '/api/public/hooks/efi-saldo'
     | '/api/public/hooks/generate-upcoming-boletos'
@@ -989,6 +1001,7 @@ export interface FileRouteTypes {
     | '/_manager/manager/'
     | '/_authenticated/admin/configuracoes/subconta'
     | '/_manager/manager/configuracoes/roleta'
+    | '/api/public/cron/notifications'
     | '/api/public/efi-webhook/pix'
     | '/api/public/hooks/efi-saldo'
     | '/api/public/hooks/generate-upcoming-boletos'
@@ -1022,6 +1035,7 @@ export interface RootRouteChildren {
   TenantSetupRoute: typeof TenantSetupRoute
   ApiPublicEfiWebhookRoute: typeof ApiPublicEfiWebhookRouteWithChildren
   ApiPublicStarkWebhookRoute: typeof ApiPublicStarkWebhookRoute
+  ApiPublicCronNotificationsRoute: typeof ApiPublicCronNotificationsRoute
   ApiPublicHooksEfiSaldoRoute: typeof ApiPublicHooksEfiSaldoRoute
   ApiPublicHooksGenerateUpcomingBoletosRoute: typeof ApiPublicHooksGenerateUpcomingBoletosRoute
   ApiPublicHooksIssueSingleBoletoRoute: typeof ApiPublicHooksIssueSingleBoletoRoute
@@ -1471,6 +1485,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ManagerManagerConfiguracoesRoletaRouteImport
       parentRoute: typeof ManagerRoute
     }
+    '/api/public/cron/notifications': {
+      id: '/api/public/cron/notifications'
+      path: '/api/public/cron/notifications'
+      fullPath: '/api/public/cron/notifications'
+      preLoaderRoute: typeof ApiPublicCronNotificationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/efi-webhook/pix': {
       id: '/api/public/efi-webhook/pix'
       path: '/pix'
@@ -1773,6 +1794,7 @@ const rootRouteChildren: RootRouteChildren = {
   TenantSetupRoute: TenantSetupRoute,
   ApiPublicEfiWebhookRoute: ApiPublicEfiWebhookRouteWithChildren,
   ApiPublicStarkWebhookRoute: ApiPublicStarkWebhookRoute,
+  ApiPublicCronNotificationsRoute: ApiPublicCronNotificationsRoute,
   ApiPublicHooksEfiSaldoRoute: ApiPublicHooksEfiSaldoRoute,
   ApiPublicHooksGenerateUpcomingBoletosRoute:
     ApiPublicHooksGenerateUpcomingBoletosRoute,

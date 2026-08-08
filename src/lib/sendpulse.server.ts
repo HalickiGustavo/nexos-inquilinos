@@ -49,6 +49,11 @@ export async function sendSendPulseWhatsApp(params: {
   text: string;
   senderId?: string; // The ID of the WhatsApp channel in SendPulse
 }): Promise<SendPulseResult> {
+  // Case edge: invalid phone
+  if (!params.phone || params.phone.length < 8) {
+    return { ok: false, reason: "invalid_phone" };
+  }
+
   const token = await getAccessToken();
   if (!token) return { ok: false, reason: "auth_failed" };
 
@@ -78,6 +83,7 @@ export async function sendSendPulseWhatsApp(params: {
 
     if (!response.ok) {
       const errorText = await response.text();
+      // Handle error cases
       return { ok: false, reason: `api_error: ${errorText}`, status: response.status };
     }
 

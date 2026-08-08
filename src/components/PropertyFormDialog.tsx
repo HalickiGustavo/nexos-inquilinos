@@ -64,6 +64,7 @@ export function PropertyFormDialog({
     queryKey: ["manager-landlords", user?.id],
     enabled: !!user && mode === "manager",
     queryFn: async () => {
+      console.log("Fetching landlords for manager:", user?.id);
       // 1. Get IDs of landlords who accepted invites from this manager
       const { data: invites, error: invError } = await supabase
         .from("landlord_invites")
@@ -71,14 +72,22 @@ export function PropertyFormDialog({
         .eq("manager_user_id", user!.id)
         .eq("status", "aceito");
 
-      if (invError) throw invError;
+      if (invError) {
+        console.error("Error fetching invites:", invError);
+        throw invError;
+      }
 
-      // 2. Get the actual profile data for these users to ensure we have the latest names
+      console.log("Found invites:", invites);
+
+      // 2. Get the actual profile data for these users
       const acceptedIds = (invites ?? [])
         .map((i) => i.accepted_user_id)
         .filter(Boolean) as string[];
 
-      if (acceptedIds.length === 0) return [];
+      if (acceptedIds.length === 0) {
+        console.log("No accepted IDs found");
+        return [];
+      }
 
       const { data: profiles, error: profError } = await supabase
         .from("profiles")
@@ -86,7 +95,12 @@ export function PropertyFormDialog({
         .in("id", acceptedIds)
         .order("full_name", { ascending: true });
 
-      if (profError) throw profError;
+      if (profError) {
+        console.error("Error fetching profiles:", profError);
+        throw profError;
+      }
+
+      console.log("Found profiles:", profiles);
 
       return profiles.map(p => ({
         id: p.id,

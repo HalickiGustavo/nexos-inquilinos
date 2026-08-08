@@ -65,10 +65,11 @@ export function PropertyFormDialog({
     enabled: !!user && mode === "manager",
     queryFn: async () => {
       console.log("Fetching landlords for manager:", user?.id);
+      
       // 1. Get IDs of landlords who accepted invites from this manager
       const { data: invites, error: invError } = await supabase
         .from("landlord_invites")
-        .select("accepted_user_id, full_name, email, document")
+        .select("accepted_user_id, email")
         .eq("manager_user_id", user!.id)
         .eq("status", "aceito");
 
@@ -79,21 +80,36 @@ export function PropertyFormDialog({
 
       console.log("Found invites:", invites);
 
-      // 2. Get the actual profile data for these users
       const acceptedIds = (invites ?? [])
         .map((i) => i.accepted_user_id)
         .filter(Boolean) as string[];
+      
+      const acceptedEmails = (invites ?? [])
+        .map((i) => i.email)
+        .filter(Boolean) as string[];
 
-      if (acceptedIds.length === 0) {
-        console.log("No accepted IDs found");
-        return [];
-      }
-
-      const { data: profiles, error: profError } = await supabase
+      // 2. Fetch profiles based on either accepted_user_id OR matching email (for autonomy)
+      const query = supabase
         .from("profiles")
         .select("id, full_name, email, document")
-        .in("id", acceptedIds)
         .order("full_name", { ascending: true });
+
+      // We use a complex filter: (id in acceptedIds) OR (email in acceptedEmails)
+      // Since supabase-js doesn't have a clean OR for different columns with IN easily in one line, 
+      // we can use a raw filter or just fetch both and merge.
+      
+      let filterStr = "";
+      if (acceptedIds.length > 0) {
+        filterStr += `id.in.(${acceptedIds.join(",")})`;
+      }
+      if (acceptedEmails.length > 0) {
+        if (filterStr) filterStr += ",";
+        filterStr += `email.in.(${acceptedEmails.map(e => `"${e}"`).join(",")})`;
+      }
+
+      if (!filterStr) return [];
+
+      const { data: profiles, error: profError } = await query.or(filterStr);
 
       if (profError) {
         console.error("Error fetching profiles:", profError);
@@ -102,7 +118,7 @@ export function PropertyFormDialog({
 
       console.log("Found profiles:", profiles);
 
-      return profiles.map(p => ({
+      return (profiles ?? []).map(p => ({
         id: p.id,
         accepted_user_id: p.id,
         full_name: p.full_name,

@@ -8,7 +8,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
 });
 
 async function runTest() {
-  console.log("--- TEST PAYMENT FLOW (V7) ---");
+  console.log("--- TEST PAYMENT FLOW (V8) ---");
 
   const managerId = 'd101d276-6dee-479a-996c-fcf60695e4de'; 
   const landlordId = '25aa2476-35ec-46db-a7d3-263d48fbe90b'; 
@@ -59,7 +59,8 @@ async function runTest() {
     contract_id: c.data!.id,
     amount: 50.25,
     due_date: '2026-08-05',
-    status: 'pendente'
+    status: 'pendente',
+    user_id: managerId
   }).select().single();
   console.log("Installment created:", i.data?.id || i.error);
 

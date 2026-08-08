@@ -52,6 +52,8 @@ import { isPreviewClient } from "@/lib/recaptcha-client";
 import { sendWelcomeEmail } from "@/lib/welcome-email.functions";
 import { activateManagerRole } from "@/lib/manager-setup.functions";
 import { getLandlordInviteDetails } from "@/lib/landlord-invite.functions";
+import { completeRegistration } from "@/lib/registration.functions";
+
 
 
 type Role = "imobiliaria" | "proprietario";

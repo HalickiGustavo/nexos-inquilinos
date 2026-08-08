@@ -21,9 +21,9 @@ export const Route = createFileRoute('/api/public/crm/system-health-logs')({
         try {
           // Buscando os últimos 1000 registros para cada log importante
           const [efiEvents, starkEvents, emailLogs, auditLogs] = await Promise.all([
-            supabaseAdmin.from('efi_events' as any).select('*').order('created_at', { ascending: false }).limit(250),
-            supabaseAdmin.from('stark_events' as any).select('*').order('created_at', { ascending: false }).limit(250),
-            supabaseAdmin.from('email_send_log' as any).select('*').order('created_at', { ascending: false }).limit(250),
+            supabaseAdmin.from('efi_events').select('*').order('created_at', { ascending: false }).limit(250),
+            supabaseAdmin.from('stark_events').select('*').order('created_at', { ascending: false }).limit(250),
+            supabaseAdmin.from('email_send_log').select('*').order('created_at', { ascending: false }).limit(250),
             supabaseAdmin.from('audit_logs').select('*').order('created_at', { ascending: false }).limit(250)
           ]);
 

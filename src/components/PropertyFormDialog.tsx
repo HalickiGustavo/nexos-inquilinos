@@ -59,19 +59,56 @@ export function PropertyFormDialog({
   const imwConnected = !!integ?.imw;
   const zapConnected = !!integ?.zap;
 
-  // Proprietários cadastrados (landlords que aceitaram o convite desta imobiliária)
+  // Proprietários cadastrados (landlords que aceitaram o convite desta imobiliária ou já estavam vinculados)
   const { data: landlords = [] } = useQuery({
     queryKey: ["manager-landlords", user?.id],
     enabled: !!user && mode === "manager",
     queryFn: async () => {
-      const { data, error } = await supabase
+      console.log("Fetching landlords for manager:", user?.id);
+      // 1. Get IDs of landlords who accepted invites from this manager
+      const { data: invites, error: invError } = await supabase
         .from("landlord_invites")
-        .select("id, full_name, email, document, accepted_user_id")
+        .select("accepted_user_id, full_name, email, document")
         .eq("manager_user_id", user!.id)
-        .eq("status", "aceito")
+        .eq("status", "aceito");
+
+      if (invError) {
+        console.error("Error fetching invites:", invError);
+        throw invError;
+      }
+
+      console.log("Found invites:", invites);
+
+      // 2. Get the actual profile data for these users
+      const acceptedIds = (invites ?? [])
+        .map((i) => i.accepted_user_id)
+        .filter(Boolean) as string[];
+
+      if (acceptedIds.length === 0) {
+        console.log("No accepted IDs found");
+        return [];
+      }
+
+      const { data: profiles, error: profError } = await supabase
+        .from("profiles")
+        .select("id, full_name, email, document")
+        .in("id", acceptedIds)
         .order("full_name", { ascending: true });
-      if (error) throw error;
-      return (data ?? []).filter((l) => l.accepted_user_id);
+
+      if (profError) {
+        console.error("Error fetching profiles:", profError);
+        throw profError;
+      }
+
+      console.log("Found profiles:", profiles);
+
+      return profiles.map(p => ({
+        id: p.id,
+        accepted_user_id: p.id,
+        full_name: p.full_name,
+        email: p.email,
+        document: p.document
+      }));
     },
   });
 
@@ -165,7 +202,7 @@ export function PropertyFormDialog({
           };
           if (mode === "manager") {
             payload.manager_id = user.id;
-            const selectedLandlord = landlords.find((l) => l.accepted_user_id === form.landlord_id);
+            const selectedLandlord = landlords.find((l) => l.id === form.landlord_id);
             payload.landlord_id = form.landlord_id || null;
             payload.owner_name = selectedLandlord?.full_name || selectedLandlord?.email || null;
             payload.responsible_member_id = form.responsible_member_id || null;
@@ -269,7 +306,7 @@ export function PropertyFormDialog({
                 <SelectContent>
                   <SelectItem value="__none__">Sem proprietário vinculado</SelectItem>
                   {landlords.map((l) => (
-                    <SelectItem key={l.id} value={l.accepted_user_id as string}>
+                    <SelectItem key={l.id} value={l.id}>
                       {l.full_name || l.email}{l.document ? ` — ${l.document}` : ""}
                     </SelectItem>
                   ))}

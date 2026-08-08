@@ -65,10 +65,9 @@ export const Route = createFileRoute('/api/public/crm/financial-analytics')({
           // Taxas da plataforma (Estimativa baseada em splits processados)
           const { data: splits } = await supabaseAdmin
             .from('pix_splits')
-            .select('amount')
-            .eq('recipient_role', 'nexo');
+            .select('nexo_amount');
           
-          const platformFees = (splits || []).reduce((sum, s) => sum + Number(s.amount || 0), 0);
+          const platformFees = (splits || []).reduce((sum: number, s: any) => sum + Number(s.nexo_amount || 0), 0);
 
           return new Response(JSON.stringify({
             financial_summary: summary,

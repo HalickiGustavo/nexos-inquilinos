@@ -248,44 +248,35 @@ function OnboardingWizard({ role, onChangeRole }: { role: Role; onChangeRole: ()
     setSubmitting(true);
     try {
       const fullName = role === "imobiliaria" ? form.companyName : form.fullName;
-      const signUpPayload: Parameters<typeof supabase.auth.signUp>[0] = {
-        email: form.email.trim().toLowerCase(),
-        password: form.password,
-        options: {
-          captchaToken: form.captchaToken ?? undefined,
-          data: {
-            role: role === "imobiliaria" ? "manager" : "owner",
-            full_name: fullName,
-            document: onlyDigits(form.document),
-            phone: onlyDigits(form.phone),
-            company_name: role === "imobiliaria" ? form.companyName : undefined,
-            responsible_name: role === "imobiliaria" ? form.fullName : undefined,
-            birth_date: role !== "imobiliaria" ? form.birthDate : undefined,
-          },
-        },
-      };
-      const { error } = await supabase.auth.signUp(signUpPayload);
-      if (error) throw error;
-
-      // Ensure role assignment and send welcome email
-      try {
-        if (role === "imobiliaria") {
-          await triggerManagerSetup({});
+      
+      const { userId } = await triggerCompleteRegistration({
+        data: {
+          email: form.email.trim().toLowerCase(),
+          password: form.password,
+          fullName: fullName,
+          document: onlyDigits(form.document),
+          phone: onlyDigits(form.phone),
+          role: role === "imobiliaria" ? "manager" : "owner",
+          inviteToken: inviteToken || undefined,
+          birthDate: role !== "imobiliaria" ? form.birthDate : undefined,
         }
+      });
+
+      // Ensure welcome email is sent
+      try {
         await triggerWelcomeEmail({
           data: {
             email: form.email,
-            fullName: role === "imobiliaria" ? form.companyName : form.fullName,
+            fullName: fullName,
             role: role,
             document: form.document,
           },
         });
-      } catch (roleOrEmailErr) {
-        console.warn("Falha no setup de papel ou e-mail de boas-vindas, mas a conta foi criada:", roleOrEmailErr);
+      } catch (emailErr) {
+        console.warn("Falha no e-mail de boas-vindas, mas a conta foi criada:", emailErr);
       }
 
-      toast.success("Cadastro realizado! Verifique seu e-mail para confirmar.");
-      await supabase.auth.signOut().catch(() => {});
+      toast.success("Cadastro realizado!");
       setSuccess(true);
     } catch (err: any) {
       captchaRef.current?.reset();
@@ -295,6 +286,7 @@ function OnboardingWizard({ role, onChangeRole }: { role: Role; onChangeRole: ()
       setSubmitting(false);
     }
   }
+
 
   if (success) {
     return <SuccessPanel role={role} email={form.email} />;

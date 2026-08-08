@@ -51,6 +51,7 @@ import { getRecaptchaSiteKey } from "@/lib/recaptcha.functions";
 import { isPreviewClient } from "@/lib/recaptcha-client";
 import { sendWelcomeEmail } from "@/lib/welcome-email.functions";
 import { activateManagerRole } from "@/lib/manager-setup.functions";
+import { syncInviteToProfile } from "@/lib/invite-sync.functions";
 
 type Role = "imobiliaria" | "proprietario";
 const ALLOWED_ROLES: Role[] = ["imobiliaria", "proprietario"];
@@ -198,6 +199,7 @@ function OnboardingWizard({ role, initialEmail, onChangeRole }: { role: Role; in
   const captchaRef = useRef<import("react-google-recaptcha").default | null>(null);
   const triggerWelcomeEmail = useServerFn(sendWelcomeEmail);
   const triggerManagerSetup = useServerFn(activateManagerRole);
+  const triggerInviteSync = useServerFn(syncInviteToProfile);
 
   const [form, setForm] = useState<FormState>({
     email: initialEmail,
@@ -243,7 +245,11 @@ function OnboardingWizard({ role, initialEmail, onChangeRole }: { role: Role; in
       try {
         if (role === "imobiliaria") {
           await triggerManagerSetup({});
+        } else if (role === "proprietario") {
+          // Sync invite data to profile if applicable
+          await triggerInviteSync({ email: form.email });
         }
+
         await triggerWelcomeEmail({
           data: {
             email: form.email,
@@ -253,7 +259,7 @@ function OnboardingWizard({ role, initialEmail, onChangeRole }: { role: Role; in
           },
         });
       } catch (roleOrEmailErr) {
-        console.warn("Falha no setup de papel ou e-mail de boas-vindas, mas a conta foi criada:", roleOrEmailErr);
+        console.warn("Falha no setup de papel, sincronização ou e-mail de boas-vindas, mas a conta foi criada:", roleOrEmailErr);
       }
 
       toast.success("Cadastro realizado! Verifique seu e-mail para confirmar.");

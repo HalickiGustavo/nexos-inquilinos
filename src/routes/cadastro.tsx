@@ -51,6 +51,10 @@ import { getRecaptchaSiteKey } from "@/lib/recaptcha.functions";
 import { isPreviewClient } from "@/lib/recaptcha-client";
 import { sendWelcomeEmail } from "@/lib/welcome-email.functions";
 import { activateManagerRole } from "@/lib/manager-setup.functions";
+import { getLandlordInviteDetails } from "@/lib/landlord-invite.functions";
+import { completeRegistration } from "@/lib/registration.functions";
+
+
 
 type Role = "imobiliaria" | "proprietario";
 const ALLOWED_ROLES: Role[] = ["imobiliaria", "proprietario"];
@@ -67,6 +71,7 @@ export const Route = createFileRoute("/cadastro")({
       invite,
     };
   },
+
   head: () => ({ meta: [{ title: "Criar conta — Nexo" }] }),
   component: CadastroPage,
 });
@@ -87,6 +92,7 @@ function CadastroPage() {
       window.localStorage.setItem("landlord_invite_token", invite);
     }
   }, [invite]);
+
 
   return (
     <div className="min-h-screen bg-zinc-50 text-zinc-900">
@@ -195,6 +201,10 @@ function OnboardingWizard({ role, onChangeRole }: { role: Role; onChangeRole: ()
   const captchaRef = useRef<import("react-google-recaptcha").default | null>(null);
   const triggerWelcomeEmail = useServerFn(sendWelcomeEmail);
   const triggerManagerSetup = useServerFn(activateManagerRole);
+  const getInviteDetails = useServerFn(getLandlordInviteDetails);
+  const triggerCompleteRegistration = useServerFn(completeRegistration);
+
+
 
   const [form, setForm] = useState<FormState>({
     email: "",
@@ -212,49 +222,62 @@ function OnboardingWizard({ role, onChangeRole }: { role: Role; onChangeRole: ()
 
   const update = <K extends keyof FormState>(k: K, v: FormState[K]) => setForm((s) => ({ ...s, [k]: v }));
 
+  const inviteToken = typeof window !== "undefined" ? window.localStorage.getItem("landlord_invite_token") : null;
+
+  useEffect(() => {
+    if (inviteToken && role === "proprietario") {
+      getInviteDetails({ data: { token: inviteToken } })
+        .then((details: any) => {
+
+          setForm((s) => ({
+            ...s,
+            email: details.email || s.email,
+            fullName: details.fullName || s.fullName,
+            document: details.document ? (isValidCNPJ(details.document) ? maskCNPJ(details.document) : maskCPF(details.document)) : s.document,
+          }));
+        })
+        .catch((err) => {
+          console.error("Invite pre-fill failed:", err);
+          window.localStorage.removeItem("landlord_invite_token");
+        });
+    }
+  }, [inviteToken, role, getInviteDetails]);
+
+
   async function handleSubmit() {
     if (submitting) return;
     setSubmitting(true);
     try {
       const fullName = role === "imobiliaria" ? form.companyName : form.fullName;
-      const signUpPayload: Parameters<typeof supabase.auth.signUp>[0] = {
-        email: form.email.trim().toLowerCase(),
-        password: form.password,
-        options: {
-          captchaToken: form.captchaToken ?? undefined,
-          data: {
-            role: role === "imobiliaria" ? "manager" : "owner",
-            full_name: fullName,
-            document: onlyDigits(form.document),
-            phone: onlyDigits(form.phone),
-            company_name: role === "imobiliaria" ? form.companyName : undefined,
-            responsible_name: role === "imobiliaria" ? form.fullName : undefined,
-            birth_date: role !== "imobiliaria" ? form.birthDate : undefined,
-          },
-        },
-      };
-      const { error } = await supabase.auth.signUp(signUpPayload);
-      if (error) throw error;
-
-      // Ensure role assignment and send welcome email
-      try {
-        if (role === "imobiliaria") {
-          await triggerManagerSetup({});
+      
+      const { userId } = await triggerCompleteRegistration({
+        data: {
+          email: form.email.trim().toLowerCase(),
+          password: form.password,
+          fullName: fullName,
+          document: onlyDigits(form.document),
+          phone: onlyDigits(form.phone),
+          role: role === "imobiliaria" ? "manager" : "owner",
+          inviteToken: inviteToken || undefined,
+          birthDate: role !== "imobiliaria" ? form.birthDate : undefined,
         }
+      });
+
+      // Ensure welcome email is sent
+      try {
         await triggerWelcomeEmail({
           data: {
             email: form.email,
-            fullName: role === "imobiliaria" ? form.companyName : form.fullName,
+            fullName: fullName,
             role: role,
             document: form.document,
           },
         });
-      } catch (roleOrEmailErr) {
-        console.warn("Falha no setup de papel ou e-mail de boas-vindas, mas a conta foi criada:", roleOrEmailErr);
+      } catch (emailErr) {
+        console.warn("Falha no e-mail de boas-vindas, mas a conta foi criada:", emailErr);
       }
 
-      toast.success("Cadastro realizado! Verifique seu e-mail para confirmar.");
-      await supabase.auth.signOut().catch(() => {});
+      toast.success("Cadastro realizado!");
       setSuccess(true);
     } catch (err: any) {
       captchaRef.current?.reset();
@@ -264,6 +287,7 @@ function OnboardingWizard({ role, onChangeRole }: { role: Role; onChangeRole: ()
       setSubmitting(false);
     }
   }
+
 
   if (success) {
     return <SuccessPanel role={role} email={form.email} />;

@@ -65,7 +65,7 @@ export const sendWelcomeEmail = createServerFn({ method: "POST" })
           <table style="width: 100%; border-collapse: collapse;">
             <tr>
               <td style="padding: 8px 0; color: #71717a; width: 120px;">Nome:</td>
-              <td style="padding: 8px 0; font-weight: 500;">${data.fullName}</td>
+              <td style="padding: 8px 0; font-weight: 500;">${safeName}</td>
             </tr>
             <tr>
               <td style="padding: 8px 0; color: #71717a;">Documento:</td>
@@ -73,7 +73,7 @@ export const sendWelcomeEmail = createServerFn({ method: "POST" })
             </tr>
             <tr>
               <td style="padding: 8px 0; color: #71717a;">E-mail:</td>
-              <td style="padding: 8px 0; font-weight: 500;">${data.email}</td>
+              <td style="padding: 8px 0; font-weight: 500;">${safeEmail}</td>
             </tr>
           </table>
         </div>
@@ -101,7 +101,7 @@ export const sendWelcomeEmail = createServerFn({ method: "POST" })
 
     try {
       await sendResendEmail({
-        to: data.email,
+        to: sessionEmail,
         subject: `Boas-vindas à NEXO — Sua conta de ${title} está pronta!`,
         html,
       });
@@ -109,7 +109,7 @@ export const sendWelcomeEmail = createServerFn({ method: "POST" })
       // Log the event for audit
       await supabaseAdmin.from("email_send_log").insert({
         template_name: "welcome_owner_manager",
-        recipient_email: data.email,
+        recipient_email: sessionEmail,
         status: "sent",
         metadata: { userId, role: data.role },
       });

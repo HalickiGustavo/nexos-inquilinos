@@ -70,6 +70,9 @@ import { Route as ApiPublicEfiWebhookRouteImport } from './routes/api/public/efi
 import { Route as ApiPublicStarkWebhookRouteImport } from './routes/api/public/stark-webhook'
 import { Route as AuthenticatedAdminConfiguracoesSubcontaRouteImport } from './routes/_authenticated/admin.configuracoes.subconta'
 import { Route as ManagerManagerConfiguracoesRoletaRouteImport } from './routes/_manager/manager.configuracoes.roleta'
+import { Route as ApiPublicCrmAgenciesRouteImport } from './routes/api/public/crm/agencies'
+import { Route as ApiPublicCrmHealthRouteImport } from './routes/api/public/crm/health'
+import { Route as ApiPublicCrmUsersRouteImport } from './routes/api/public/crm/users'
 import { Route as ApiPublicCronNotificationsRouteImport } from './routes/api/public/cron/notifications'
 import { Route as ApiPublicEfiWebhookPixRouteImport } from './routes/api/public/efi-webhook.pix'
 import { Route as ApiPublicHooksEfiSaldoRouteImport } from './routes/api/public/hooks/efi-saldo'
@@ -416,6 +419,21 @@ const ManagerManagerConfiguracoesRoletaRoute =
     path: '/manager/configuracoes/roleta',
     getParentRoute: () => ManagerRoute,
   } as any)
+const ApiPublicCrmAgenciesRoute = ApiPublicCrmAgenciesRouteImport.update({
+  id: '/api/public/crm/agencies',
+  path: '/api/public/crm/agencies',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicCrmHealthRoute = ApiPublicCrmHealthRouteImport.update({
+  id: '/api/public/crm/health',
+  path: '/api/public/crm/health',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicCrmUsersRoute = ApiPublicCrmUsersRouteImport.update({
+  id: '/api/public/crm/users',
+  path: '/api/public/crm/users',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicCronNotificationsRoute =
   ApiPublicCronNotificationsRouteImport.update({
     id: '/api/public/cron/notifications',
@@ -592,6 +610,9 @@ export interface FileRoutesByFullPath {
   '/manager/': typeof ManagerManagerIndexRoute
   '/admin/configuracoes/subconta': typeof AuthenticatedAdminConfiguracoesSubcontaRoute
   '/manager/configuracoes/roleta': typeof ManagerManagerConfiguracoesRoletaRoute
+  '/api/public/crm/agencies': typeof ApiPublicCrmAgenciesRoute
+  '/api/public/crm/health': typeof ApiPublicCrmHealthRoute
+  '/api/public/crm/users': typeof ApiPublicCrmUsersRoute
   '/api/public/cron/notifications': typeof ApiPublicCronNotificationsRoute
   '/api/public/efi-webhook/pix': typeof ApiPublicEfiWebhookPixRoute
   '/api/public/hooks/efi-saldo': typeof ApiPublicHooksEfiSaldoRoute
@@ -672,6 +693,9 @@ export interface FileRoutesByTo {
   '/manager': typeof ManagerManagerIndexRoute
   '/admin/configuracoes/subconta': typeof AuthenticatedAdminConfiguracoesSubcontaRoute
   '/manager/configuracoes/roleta': typeof ManagerManagerConfiguracoesRoletaRoute
+  '/api/public/crm/agencies': typeof ApiPublicCrmAgenciesRoute
+  '/api/public/crm/health': typeof ApiPublicCrmHealthRoute
+  '/api/public/crm/users': typeof ApiPublicCrmUsersRoute
   '/api/public/cron/notifications': typeof ApiPublicCronNotificationsRoute
   '/api/public/efi-webhook/pix': typeof ApiPublicEfiWebhookPixRoute
   '/api/public/hooks/efi-saldo': typeof ApiPublicHooksEfiSaldoRoute
@@ -756,6 +780,9 @@ export interface FileRoutesById {
   '/_manager/manager/': typeof ManagerManagerIndexRoute
   '/_authenticated/admin/configuracoes/subconta': typeof AuthenticatedAdminConfiguracoesSubcontaRoute
   '/_manager/manager/configuracoes/roleta': typeof ManagerManagerConfiguracoesRoletaRoute
+  '/api/public/crm/agencies': typeof ApiPublicCrmAgenciesRoute
+  '/api/public/crm/health': typeof ApiPublicCrmHealthRoute
+  '/api/public/crm/users': typeof ApiPublicCrmUsersRoute
   '/api/public/cron/notifications': typeof ApiPublicCronNotificationsRoute
   '/api/public/efi-webhook/pix': typeof ApiPublicEfiWebhookPixRoute
   '/api/public/hooks/efi-saldo': typeof ApiPublicHooksEfiSaldoRoute
@@ -838,6 +865,9 @@ export interface FileRouteTypes {
     | '/manager/'
     | '/admin/configuracoes/subconta'
     | '/manager/configuracoes/roleta'
+    | '/api/public/crm/agencies'
+    | '/api/public/crm/health'
+    | '/api/public/crm/users'
     | '/api/public/cron/notifications'
     | '/api/public/efi-webhook/pix'
     | '/api/public/hooks/efi-saldo'
@@ -918,6 +948,9 @@ export interface FileRouteTypes {
     | '/manager'
     | '/admin/configuracoes/subconta'
     | '/manager/configuracoes/roleta'
+    | '/api/public/crm/agencies'
+    | '/api/public/crm/health'
+    | '/api/public/crm/users'
     | '/api/public/cron/notifications'
     | '/api/public/efi-webhook/pix'
     | '/api/public/hooks/efi-saldo'
@@ -1001,6 +1034,9 @@ export interface FileRouteTypes {
     | '/_manager/manager/'
     | '/_authenticated/admin/configuracoes/subconta'
     | '/_manager/manager/configuracoes/roleta'
+    | '/api/public/crm/agencies'
+    | '/api/public/crm/health'
+    | '/api/public/crm/users'
     | '/api/public/cron/notifications'
     | '/api/public/efi-webhook/pix'
     | '/api/public/hooks/efi-saldo'
@@ -1035,6 +1071,9 @@ export interface RootRouteChildren {
   TenantSetupRoute: typeof TenantSetupRoute
   ApiPublicEfiWebhookRoute: typeof ApiPublicEfiWebhookRouteWithChildren
   ApiPublicStarkWebhookRoute: typeof ApiPublicStarkWebhookRoute
+  ApiPublicCrmAgenciesRoute: typeof ApiPublicCrmAgenciesRoute
+  ApiPublicCrmHealthRoute: typeof ApiPublicCrmHealthRoute
+  ApiPublicCrmUsersRoute: typeof ApiPublicCrmUsersRoute
   ApiPublicCronNotificationsRoute: typeof ApiPublicCronNotificationsRoute
   ApiPublicHooksEfiSaldoRoute: typeof ApiPublicHooksEfiSaldoRoute
   ApiPublicHooksGenerateUpcomingBoletosRoute: typeof ApiPublicHooksGenerateUpcomingBoletosRoute
@@ -1485,6 +1524,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ManagerManagerConfiguracoesRoletaRouteImport
       parentRoute: typeof ManagerRoute
     }
+    '/api/public/crm/agencies': {
+      id: '/api/public/crm/agencies'
+      path: '/api/public/crm/agencies'
+      fullPath: '/api/public/crm/agencies'
+      preLoaderRoute: typeof ApiPublicCrmAgenciesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/crm/health': {
+      id: '/api/public/crm/health'
+      path: '/api/public/crm/health'
+      fullPath: '/api/public/crm/health'
+      preLoaderRoute: typeof ApiPublicCrmHealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/crm/users': {
+      id: '/api/public/crm/users'
+      path: '/api/public/crm/users'
+      fullPath: '/api/public/crm/users'
+      preLoaderRoute: typeof ApiPublicCrmUsersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/cron/notifications': {
       id: '/api/public/cron/notifications'
       path: '/api/public/cron/notifications'
@@ -1794,6 +1854,9 @@ const rootRouteChildren: RootRouteChildren = {
   TenantSetupRoute: TenantSetupRoute,
   ApiPublicEfiWebhookRoute: ApiPublicEfiWebhookRouteWithChildren,
   ApiPublicStarkWebhookRoute: ApiPublicStarkWebhookRoute,
+  ApiPublicCrmAgenciesRoute: ApiPublicCrmAgenciesRoute,
+  ApiPublicCrmHealthRoute: ApiPublicCrmHealthRoute,
+  ApiPublicCrmUsersRoute: ApiPublicCrmUsersRoute,
   ApiPublicCronNotificationsRoute: ApiPublicCronNotificationsRoute,
   ApiPublicHooksEfiSaldoRoute: ApiPublicHooksEfiSaldoRoute,
   ApiPublicHooksGenerateUpcomingBoletosRoute:
@@ -1825,3 +1888,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

@@ -20,9 +20,18 @@ export const sendWelcomeEmail = createServerFn({ method: "POST" })
       .parse(data)
   )
   .handler(async ({ data, context }) => {
-    const { userId } = context;
+    const { userId, claims } = context as { userId: string; claims: { email?: string } };
+    const sessionEmail = (claims?.email ?? "").toLowerCase().trim();
+    if (!sessionEmail || sessionEmail !== data.email.toLowerCase().trim()) {
+      return { ok: false, error: "email_mismatch" };
+    }
     const { sendResendEmail } = await import("./resend.server");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const escapeHtml = (value: string) =>
+      value.replace(/[&<>"']/g, (c) =>
+        ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c] as string
+      );
 
     // We use supabaseAdmin to verify the user role safely
     const { data: roleData } = await supabaseAdmin
@@ -40,7 +49,9 @@ export const sendWelcomeEmail = createServerFn({ method: "POST" })
     }
 
     const title = data.role === "imobiliaria" ? "Imobiliária" : "Proprietário";
-    const maskedDoc = data.document ? maskCpfCnpj(data.document) : "Não informado";
+    const maskedDoc = escapeHtml(data.document ? maskCpfCnpj(data.document) : "Não informado");
+    const safeName = escapeHtml(data.fullName);
+    const safeEmail = escapeHtml(sessionEmail);
 
     const html = `
       <div style="font-family: sans-serif; color: #18181b; max-width: 600px; margin: 0 auto; padding: 20px; line-height: 1.6;">

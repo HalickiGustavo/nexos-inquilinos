@@ -50,14 +50,25 @@ function ManagerProprietariosPage() {
     mutationFn: async () => {
       if (!user?.id) throw new Error("Sessão expirada.");
       if (!email.trim()) throw new Error("Informe o e-mail.");
+
+      const cleanEmail = email.trim().toLowerCase();
+      const cleanDoc = document ? onlyDigits(document) : null;
+      const cleanName = fullName.trim() || null;
+
+      // Usamos upsert para evitar erro de "user já cadastrado" (email único no landlord_invites)
+      // e atualizar as informações caso o manager mude de ideia ou corrija dados.
       const { data, error } = await supabase.from("landlord_invites")
-        .insert({
+        .upsert({
           manager_user_id: user.id,
-          email: email.trim().toLowerCase(),
-          full_name: fullName.trim() || null,
-          document: document ? onlyDigits(document) : null,
+          email: cleanEmail,
+          full_name: cleanName,
+          document: cleanDoc,
+          status: "pendente", // Reseta para pendente se for reenviado
+        }, { 
+          onConflict: "email" 
         })
         .select("*").single();
+
       if (error) throw error;
       return data;
     },
@@ -83,7 +94,7 @@ function ManagerProprietariosPage() {
   });
 
   function copyLink(token: string) {
-    const url = `${window.location.origin}/cadastro?role=proprietario&invite=${token}`;
+    const url = `${window.location.origin}/cadastro?role=proprietario&invite=${token}&email=${encodeURIComponent(email || "")}`;
     navigator.clipboard.writeText(url);
     toast.success("Link copiado!");
   }

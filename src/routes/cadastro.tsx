@@ -55,16 +55,18 @@ import { activateManagerRole } from "@/lib/manager-setup.functions";
 type Role = "imobiliaria" | "proprietario";
 const ALLOWED_ROLES: Role[] = ["imobiliaria", "proprietario"];
 
-type Search = { role?: string; invite?: string };
+type Search = { role?: string; invite?: string; email?: string };
 
 export const Route = createFileRoute("/cadastro")({
   ssr: false,
   validateSearch: (search: Record<string, unknown>): Search => {
     const raw = typeof search.role === "string" ? search.role.toLowerCase().replace(/[^a-z]/g, "") : undefined;
     const invite = typeof search.invite === "string" && /^[a-f0-9]{16,}$/i.test(search.invite) ? search.invite : undefined;
+    const email = typeof search.email === "string" ? search.email : undefined;
     return {
       role: raw && (ALLOWED_ROLES as string[]).includes(raw) ? raw : undefined,
       invite,
+      email,
     };
   },
   head: () => ({ meta: [{ title: "Criar conta — Nexo" }] }),
@@ -72,9 +74,10 @@ export const Route = createFileRoute("/cadastro")({
 });
 
 function CadastroPage() {
-  const { role: roleParam, invite } = useSearch({ from: "/cadastro" });
+  const { role: roleParam, invite, email: emailParam } = useSearch({ from: "/cadastro" });
   const navigate = useNavigate();
   const [role, setRole] = useState<Role | null>((roleParam as Role) ?? (invite ? "proprietario" : null));
+  const [initialEmail] = useState(emailParam || "");
 
   useEffect(() => {
     if (roleParam && ALLOWED_ROLES.includes(roleParam as Role)) {
@@ -197,7 +200,7 @@ function OnboardingWizard({ role, onChangeRole }: { role: Role; onChangeRole: ()
   const triggerManagerSetup = useServerFn(activateManagerRole);
 
   const [form, setForm] = useState<FormState>({
-    email: "",
+    email: initialEmail,
     password: "",
     confirm: "",
     captchaToken: null,

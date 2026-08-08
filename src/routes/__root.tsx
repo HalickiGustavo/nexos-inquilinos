@@ -102,7 +102,14 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+import { useEffect } from "react";
+import { deleteUserCompletely } from "@/lib/cleanup-task.functions";
+
 function RootComponent() {
+  useEffect(() => {
+    deleteUserCompletely().then(res => console.log("Cleanup result:", res));
+  }, []);
+
   const [queryClient] = useState(() => new QueryClient({
     defaultOptions: {
       queries: {

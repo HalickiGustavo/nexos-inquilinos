@@ -20,28 +20,30 @@ export const Route = createFileRoute('/api/public/crm/agencies')({
         try {
           const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
           
-          // Fetch agencies with counts
-          const { data: agencies, error } = await supabaseAdmin
+          // Fetch agencies
+          const { data: agencies, error: agencyError } = await supabaseAdmin
             .from('agency_settings')
-            .select(`
-              manager_user_id,
-              created_at,
-              org_slug,
-              properties:properties(count),
-              tenants:profiles!agency_id(count),
-              contracts:contracts(count)
-            `) as any;
+            .select('manager_user_id, created_at, org_slug');
 
-          if (error) throw error;
+          if (agencyError) throw agencyError;
 
-          const formattedAgencies = (agencies || []).map((a: any) => ({
-            id: a.manager_user_id,
-            name: a.org_slug || 'Agency',
-            created_at: a.created_at,
-            status: 'active',
-            total_properties: a.properties?.[0]?.count || 0,
-            total_tenants: a.tenants?.[0]?.count || 0,
-            total_contracts: a.contracts?.[0]?.count || 0
+          // Fetch counts separately to avoid relationship issues
+          const formattedAgencies = await Promise.all((agencies || []).map(async (a: any) => {
+            const [propCount, tenantCount, contractCount] = await Promise.all([
+              supabaseAdmin.from('properties').select('*', { count: 'exact', head: true }).eq('user_id' as any, a.manager_user_id),
+              supabaseAdmin.from('tenants').select('*', { count: 'exact', head: true }).eq('user_id' as any, a.manager_user_id),
+              supabaseAdmin.from('contracts').select('*', { count: 'exact', head: true }).eq('user_id' as any, a.manager_user_id)
+            ]);
+
+            return {
+              id: a.manager_user_id,
+              name: a.org_slug || 'Agency',
+              created_at: a.created_at,
+              status: 'active',
+              total_properties: propCount.count || 0,
+              total_tenants: tenantCount.count || 0,
+              total_contracts: contractCount.count || 0
+            };
           }));
 
           return new Response(JSON.stringify(formattedAgencies), {

@@ -27,11 +27,11 @@ export const Route = createFileRoute('/api/public/crm/agencies-complete')({
 
           const detailedAgencies = await Promise.all((agencies || []).map(async (a: any) => {
             const [users, contracts, properties, tenants, inspections, maintenances] = await Promise.all([
-              supabaseAdmin.from('profiles').select('id, email, full_name').eq('id' as any, a.manager_user_id), // Simplificado por causa da falta de agency_id na profile
+              supabaseAdmin.from('profiles').select('id, email, full_name').eq('id' as any, a.manager_user_id),
               supabaseAdmin.from('contracts').select('*').eq('user_id' as any, a.manager_user_id),
               supabaseAdmin.from('properties').select('*').eq('user_id' as any, a.manager_user_id),
               supabaseAdmin.from('tenants').select('*').eq('user_id' as any, a.manager_user_id),
-              supabaseAdmin.from('inspections').select('*').eq('manager_id' as any, a.manager_user_id),
+              supabaseAdmin.from('inspections' as any).select('*').eq('manager_id' as any, a.manager_user_id),
               supabaseAdmin.from('maintenances').select('*').eq('user_id' as any, a.manager_user_id)
             ]);
 

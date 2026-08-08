@@ -137,7 +137,7 @@ function RoleSelector({ onPick }: { onPick: (r: Role) => void }) {
           icon={<HomeIcon className="size-5" />}
           title="Proprietário"
           description="Controle direto dos seus imóveis."
-          onClick={() => onPick("proprietario")}
+          onClick={() => navigate({ to: "/cadastro-landlord" })}
         />
       </div>
     </div>

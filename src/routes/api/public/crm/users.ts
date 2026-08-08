@@ -20,20 +20,26 @@ export const Route = createFileRoute('/api/public/crm/users')({
         try {
           const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
           
-          const { data: profiles, error } = await supabaseAdmin
+          const { data: profiles, error: profileError } = await supabaseAdmin
             .from('profiles')
-            .select(`
-              id,
-              email,
-              full_name,
-              created_at,
-              agency_id,
-              user_roles(role)
-            `);
+            .select('id, email, full_name, created_at, agency_id');
 
-          if (error) throw error;
+          if (profileError) throw profileError;
 
-          return new Response(JSON.stringify(profiles), {
+          // Fetch roles separately
+          const profilesWithRoles = await Promise.all((profiles || []).map(async (p: any) => {
+            const { data: roles } = await supabaseAdmin
+              .from('user_roles')
+              .select('role')
+              .eq('user_id', p.id);
+            
+            return {
+              ...p,
+              user_roles: roles || []
+            };
+          }));
+
+          return new Response(JSON.stringify(profilesWithRoles), {
             headers: { 
               'Content-Type': 'application/json',
               'Access-Control-Allow-Origin': '*'
@@ -41,12 +47,7 @@ export const Route = createFileRoute('/api/public/crm/users')({
           });
         } catch (error: any) {
           console.error('CRM API Error (users):', error);
-          return new Response(JSON.stringify({ 
-            error: 'Internal Server Error',
-            message: error.message,
-            hint: error.hint,
-            details: error.details 
-          }), {
+          return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
             status: 500,
             headers: { 
               'Content-Type': 'application/json',

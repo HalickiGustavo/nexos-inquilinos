@@ -51,6 +51,8 @@ import { getRecaptchaSiteKey } from "@/lib/recaptcha.functions";
 import { isPreviewClient } from "@/lib/recaptcha-client";
 import { sendWelcomeEmail } from "@/lib/welcome-email.functions";
 import { activateManagerRole } from "@/lib/manager-setup.functions";
+import { getLandlordInviteDetails } from "@/lib/landlord-invite.functions";
+
 
 type Role = "imobiliaria" | "proprietario";
 const ALLOWED_ROLES: Role[] = ["imobiliaria", "proprietario"];

@@ -46,7 +46,7 @@ export const Route = createFileRoute('/api/public/crm/agencies-complete')({
                 total_inspections: inspections.data?.length || 0,
                 total_maintenances: maintenances.data?.length || 0
               },
-              revenue_estimate: (contracts.data || []).reduce((sum: number, c: any) => sum + (c.rent_amount * (c.agency_admin_fee_percentage / 100)), 0)
+              revenue_estimate: (contracts.data || []).reduce((sum: number, c: any) => sum + (Number(c.rent_amount || 0) * (Number(c.agency_admin_fee_percentage || 0) / 100)), 0)
             };
           }));
 

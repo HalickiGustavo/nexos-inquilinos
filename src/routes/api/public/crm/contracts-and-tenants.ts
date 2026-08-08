@@ -19,6 +19,7 @@ export const Route = createFileRoute('/api/public/crm/contracts-and-tenants')({
         }
 
         try {
+          const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
           const [contracts, properties] = await Promise.all([
             supabaseAdmin.from('contracts').select('id, rent_amount, status, end_date, start_date, property_id, tenant_id'),
             supabaseAdmin.from('properties').select('id, status')

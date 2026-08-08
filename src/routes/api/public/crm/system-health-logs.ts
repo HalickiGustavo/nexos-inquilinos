@@ -19,6 +19,7 @@ export const Route = createFileRoute('/api/public/crm/system-health-logs')({
         }
 
         try {
+          const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
           // Buscando os últimos 1000 registros para cada log importante
           const [efiEvents, starkEvents, emailLogs, auditLogs] = await Promise.all([
             supabaseAdmin.from('efi_events').select('*').order('created_at', { ascending: false }).limit(250),

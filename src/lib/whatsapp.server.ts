@@ -26,11 +26,21 @@ export async function sendEvolutionText(params: {
   const instance = process.env.EVOLUTION_API_INSTANCE;
   const apiKey = process.env.EVOLUTION_API_KEY;
 
+  // Se o SendPulse estiver configurado, ele tem precedência ou serve como fallback
+  // conforme a carcaça solicitada pelo usuário.
+  if (process.env.SENDPULSE_CLIENT_ID && process.env.SENDPULSE_CLIENT_SECRET) {
+    return sendSendPulseWhatsApp({
+      phone: params.phone,
+      text: params.text
+    });
+  }
+
   if (!baseUrl || !instance || !apiKey) {
     return { ok: false, reason: "config_missing" };
   }
 
   const number = sanitizeBrPhone(params.phone);
+
   if (!number) return { ok: false, reason: "invalid_phone" };
 
   const endpoint = `${baseUrl.replace(/\/+$/, "")}/message/sendText/${encodeURIComponent(instance)}`;

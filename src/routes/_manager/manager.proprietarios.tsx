@@ -94,7 +94,7 @@ function ManagerProprietariosPage() {
   });
 
   function copyLink(token: string) {
-    const url = `${window.location.origin}/cadastro?role=proprietario&invite=${token}&email=${encodeURIComponent(email || "")}`;
+    const url = `${window.location.origin}/cadastro-landlord?invite=${token}&email=${encodeURIComponent(email || "")}`;
     navigator.clipboard.writeText(url);
     toast.success("Link copiado!");
   }

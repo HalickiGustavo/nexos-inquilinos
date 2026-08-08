@@ -13,6 +13,7 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as LandlordRouteImport } from './routes/_landlord'
 import { Route as ManagerRouteImport } from './routes/_manager'
 import { Route as CadastroRouteImport } from './routes/cadastro'
+import { Route as CadastroLandlordRouteImport } from './routes/cadastro-landlord'
 import { Route as LandlordSetupRouteImport } from './routes/landlord-setup'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ManagerSetupRouteImport } from './routes/manager-setup'
@@ -104,6 +105,11 @@ const ManagerRoute = ManagerRouteImport.update({
 const CadastroRoute = CadastroRouteImport.update({
   id: '/cadastro',
   path: '/cadastro',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CadastroLandlordRoute = CadastroLandlordRouteImport.update({
+  id: '/cadastro-landlord',
+  path: '/cadastro-landlord',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LandlordSetupRoute = LandlordSetupRouteImport.update({
@@ -523,6 +529,7 @@ const ApiV1IntegrationsOrgSlugListingsDotxmlRoute =
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/cadastro': typeof CadastroRoute
+  '/cadastro-landlord': typeof CadastroLandlordRoute
   '/landlord-setup': typeof LandlordSetupRoute
   '/login': typeof LoginRoute
   '/manager-setup': typeof ManagerSetupRoute
@@ -601,6 +608,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof AuthenticatedIndexRoute
   '/cadastro': typeof CadastroRoute
+  '/cadastro-landlord': typeof CadastroLandlordRoute
   '/landlord-setup': typeof LandlordSetupRoute
   '/login': typeof LoginRoute
   '/manager-setup': typeof ManagerSetupRoute
@@ -682,6 +690,7 @@ export interface FileRoutesById {
   '/_landlord': typeof LandlordRouteWithChildren
   '/_manager': typeof ManagerRouteWithChildren
   '/cadastro': typeof CadastroRoute
+  '/cadastro-landlord': typeof CadastroLandlordRoute
   '/landlord-setup': typeof LandlordSetupRoute
   '/login': typeof LoginRoute
   '/manager-setup': typeof ManagerSetupRoute
@@ -763,6 +772,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/cadastro'
+    | '/cadastro-landlord'
     | '/landlord-setup'
     | '/login'
     | '/manager-setup'
@@ -841,6 +851,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/cadastro'
+    | '/cadastro-landlord'
     | '/landlord-setup'
     | '/login'
     | '/manager-setup'
@@ -921,6 +932,7 @@ export interface FileRouteTypes {
     | '/_landlord'
     | '/_manager'
     | '/cadastro'
+    | '/cadastro-landlord'
     | '/landlord-setup'
     | '/login'
     | '/manager-setup'
@@ -1003,6 +1015,7 @@ export interface RootRouteChildren {
   LandlordRoute: typeof LandlordRouteWithChildren
   ManagerRoute: typeof ManagerRouteWithChildren
   CadastroRoute: typeof CadastroRoute
+  CadastroLandlordRoute: typeof CadastroLandlordRoute
   LandlordSetupRoute: typeof LandlordSetupRoute
   LoginRoute: typeof LoginRoute
   ManagerSetupRoute: typeof ManagerSetupRoute
@@ -1057,6 +1070,13 @@ declare module '@tanstack/react-router' {
       path: '/cadastro'
       fullPath: '/cadastro'
       preLoaderRoute: typeof CadastroRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cadastro-landlord': {
+      id: '/cadastro-landlord'
+      path: '/cadastro-landlord'
+      fullPath: '/cadastro-landlord'
+      preLoaderRoute: typeof CadastroLandlordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/landlord-setup': {
@@ -1746,6 +1766,7 @@ const rootRouteChildren: RootRouteChildren = {
   LandlordRoute: LandlordRouteWithChildren,
   ManagerRoute: ManagerRouteWithChildren,
   CadastroRoute: CadastroRoute,
+  CadastroLandlordRoute: CadastroLandlordRoute,
   LandlordSetupRoute: LandlordSetupRoute,
   LoginRoute: LoginRoute,
   ManagerSetupRoute: ManagerSetupRoute,
@@ -1782,13 +1803,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

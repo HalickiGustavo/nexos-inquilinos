@@ -71,7 +71,11 @@ import { Route as ApiPublicStarkWebhookRouteImport } from './routes/api/public/s
 import { Route as AuthenticatedAdminConfiguracoesSubcontaRouteImport } from './routes/_authenticated/admin.configuracoes.subconta'
 import { Route as ManagerManagerConfiguracoesRoletaRouteImport } from './routes/_manager/manager.configuracoes.roleta'
 import { Route as ApiPublicCrmAgenciesRouteImport } from './routes/api/public/crm/agencies'
+import { Route as ApiPublicCrmAgenciesCompleteRouteImport } from './routes/api/public/crm/agencies-complete'
+import { Route as ApiPublicCrmContractsAndTenantsRouteImport } from './routes/api/public/crm/contracts-and-tenants'
+import { Route as ApiPublicCrmFinancialAnalyticsRouteImport } from './routes/api/public/crm/financial-analytics'
 import { Route as ApiPublicCrmHealthRouteImport } from './routes/api/public/crm/health'
+import { Route as ApiPublicCrmSystemHealthLogsRouteImport } from './routes/api/public/crm/system-health-logs'
 import { Route as ApiPublicCrmUsersRouteImport } from './routes/api/public/crm/users'
 import { Route as ApiPublicCronNotificationsRouteImport } from './routes/api/public/cron/notifications'
 import { Route as ApiPublicEfiWebhookPixRouteImport } from './routes/api/public/efi-webhook.pix'
@@ -424,11 +428,35 @@ const ApiPublicCrmAgenciesRoute = ApiPublicCrmAgenciesRouteImport.update({
   path: '/api/public/crm/agencies',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicCrmAgenciesCompleteRoute =
+  ApiPublicCrmAgenciesCompleteRouteImport.update({
+    id: '/api/public/crm/agencies-complete',
+    path: '/api/public/crm/agencies-complete',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicCrmContractsAndTenantsRoute =
+  ApiPublicCrmContractsAndTenantsRouteImport.update({
+    id: '/api/public/crm/contracts-and-tenants',
+    path: '/api/public/crm/contracts-and-tenants',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicCrmFinancialAnalyticsRoute =
+  ApiPublicCrmFinancialAnalyticsRouteImport.update({
+    id: '/api/public/crm/financial-analytics',
+    path: '/api/public/crm/financial-analytics',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicCrmHealthRoute = ApiPublicCrmHealthRouteImport.update({
   id: '/api/public/crm/health',
   path: '/api/public/crm/health',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicCrmSystemHealthLogsRoute =
+  ApiPublicCrmSystemHealthLogsRouteImport.update({
+    id: '/api/public/crm/system-health-logs',
+    path: '/api/public/crm/system-health-logs',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicCrmUsersRoute = ApiPublicCrmUsersRouteImport.update({
   id: '/api/public/crm/users',
   path: '/api/public/crm/users',
@@ -611,7 +639,11 @@ export interface FileRoutesByFullPath {
   '/admin/configuracoes/subconta': typeof AuthenticatedAdminConfiguracoesSubcontaRoute
   '/manager/configuracoes/roleta': typeof ManagerManagerConfiguracoesRoletaRoute
   '/api/public/crm/agencies': typeof ApiPublicCrmAgenciesRoute
+  '/api/public/crm/agencies-complete': typeof ApiPublicCrmAgenciesCompleteRoute
+  '/api/public/crm/contracts-and-tenants': typeof ApiPublicCrmContractsAndTenantsRoute
+  '/api/public/crm/financial-analytics': typeof ApiPublicCrmFinancialAnalyticsRoute
   '/api/public/crm/health': typeof ApiPublicCrmHealthRoute
+  '/api/public/crm/system-health-logs': typeof ApiPublicCrmSystemHealthLogsRoute
   '/api/public/crm/users': typeof ApiPublicCrmUsersRoute
   '/api/public/cron/notifications': typeof ApiPublicCronNotificationsRoute
   '/api/public/efi-webhook/pix': typeof ApiPublicEfiWebhookPixRoute
@@ -694,7 +726,11 @@ export interface FileRoutesByTo {
   '/admin/configuracoes/subconta': typeof AuthenticatedAdminConfiguracoesSubcontaRoute
   '/manager/configuracoes/roleta': typeof ManagerManagerConfiguracoesRoletaRoute
   '/api/public/crm/agencies': typeof ApiPublicCrmAgenciesRoute
+  '/api/public/crm/agencies-complete': typeof ApiPublicCrmAgenciesCompleteRoute
+  '/api/public/crm/contracts-and-tenants': typeof ApiPublicCrmContractsAndTenantsRoute
+  '/api/public/crm/financial-analytics': typeof ApiPublicCrmFinancialAnalyticsRoute
   '/api/public/crm/health': typeof ApiPublicCrmHealthRoute
+  '/api/public/crm/system-health-logs': typeof ApiPublicCrmSystemHealthLogsRoute
   '/api/public/crm/users': typeof ApiPublicCrmUsersRoute
   '/api/public/cron/notifications': typeof ApiPublicCronNotificationsRoute
   '/api/public/efi-webhook/pix': typeof ApiPublicEfiWebhookPixRoute
@@ -781,7 +817,11 @@ export interface FileRoutesById {
   '/_authenticated/admin/configuracoes/subconta': typeof AuthenticatedAdminConfiguracoesSubcontaRoute
   '/_manager/manager/configuracoes/roleta': typeof ManagerManagerConfiguracoesRoletaRoute
   '/api/public/crm/agencies': typeof ApiPublicCrmAgenciesRoute
+  '/api/public/crm/agencies-complete': typeof ApiPublicCrmAgenciesCompleteRoute
+  '/api/public/crm/contracts-and-tenants': typeof ApiPublicCrmContractsAndTenantsRoute
+  '/api/public/crm/financial-analytics': typeof ApiPublicCrmFinancialAnalyticsRoute
   '/api/public/crm/health': typeof ApiPublicCrmHealthRoute
+  '/api/public/crm/system-health-logs': typeof ApiPublicCrmSystemHealthLogsRoute
   '/api/public/crm/users': typeof ApiPublicCrmUsersRoute
   '/api/public/cron/notifications': typeof ApiPublicCronNotificationsRoute
   '/api/public/efi-webhook/pix': typeof ApiPublicEfiWebhookPixRoute
@@ -866,7 +906,11 @@ export interface FileRouteTypes {
     | '/admin/configuracoes/subconta'
     | '/manager/configuracoes/roleta'
     | '/api/public/crm/agencies'
+    | '/api/public/crm/agencies-complete'
+    | '/api/public/crm/contracts-and-tenants'
+    | '/api/public/crm/financial-analytics'
     | '/api/public/crm/health'
+    | '/api/public/crm/system-health-logs'
     | '/api/public/crm/users'
     | '/api/public/cron/notifications'
     | '/api/public/efi-webhook/pix'
@@ -949,7 +993,11 @@ export interface FileRouteTypes {
     | '/admin/configuracoes/subconta'
     | '/manager/configuracoes/roleta'
     | '/api/public/crm/agencies'
+    | '/api/public/crm/agencies-complete'
+    | '/api/public/crm/contracts-and-tenants'
+    | '/api/public/crm/financial-analytics'
     | '/api/public/crm/health'
+    | '/api/public/crm/system-health-logs'
     | '/api/public/crm/users'
     | '/api/public/cron/notifications'
     | '/api/public/efi-webhook/pix'
@@ -1035,7 +1083,11 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/configuracoes/subconta'
     | '/_manager/manager/configuracoes/roleta'
     | '/api/public/crm/agencies'
+    | '/api/public/crm/agencies-complete'
+    | '/api/public/crm/contracts-and-tenants'
+    | '/api/public/crm/financial-analytics'
     | '/api/public/crm/health'
+    | '/api/public/crm/system-health-logs'
     | '/api/public/crm/users'
     | '/api/public/cron/notifications'
     | '/api/public/efi-webhook/pix'
@@ -1072,7 +1124,11 @@ export interface RootRouteChildren {
   ApiPublicEfiWebhookRoute: typeof ApiPublicEfiWebhookRouteWithChildren
   ApiPublicStarkWebhookRoute: typeof ApiPublicStarkWebhookRoute
   ApiPublicCrmAgenciesRoute: typeof ApiPublicCrmAgenciesRoute
+  ApiPublicCrmAgenciesCompleteRoute: typeof ApiPublicCrmAgenciesCompleteRoute
+  ApiPublicCrmContractsAndTenantsRoute: typeof ApiPublicCrmContractsAndTenantsRoute
+  ApiPublicCrmFinancialAnalyticsRoute: typeof ApiPublicCrmFinancialAnalyticsRoute
   ApiPublicCrmHealthRoute: typeof ApiPublicCrmHealthRoute
+  ApiPublicCrmSystemHealthLogsRoute: typeof ApiPublicCrmSystemHealthLogsRoute
   ApiPublicCrmUsersRoute: typeof ApiPublicCrmUsersRoute
   ApiPublicCronNotificationsRoute: typeof ApiPublicCronNotificationsRoute
   ApiPublicHooksEfiSaldoRoute: typeof ApiPublicHooksEfiSaldoRoute
@@ -1531,11 +1587,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCrmAgenciesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/crm/agencies-complete': {
+      id: '/api/public/crm/agencies-complete'
+      path: '/api/public/crm/agencies-complete'
+      fullPath: '/api/public/crm/agencies-complete'
+      preLoaderRoute: typeof ApiPublicCrmAgenciesCompleteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/crm/contracts-and-tenants': {
+      id: '/api/public/crm/contracts-and-tenants'
+      path: '/api/public/crm/contracts-and-tenants'
+      fullPath: '/api/public/crm/contracts-and-tenants'
+      preLoaderRoute: typeof ApiPublicCrmContractsAndTenantsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/crm/financial-analytics': {
+      id: '/api/public/crm/financial-analytics'
+      path: '/api/public/crm/financial-analytics'
+      fullPath: '/api/public/crm/financial-analytics'
+      preLoaderRoute: typeof ApiPublicCrmFinancialAnalyticsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/crm/health': {
       id: '/api/public/crm/health'
       path: '/api/public/crm/health'
       fullPath: '/api/public/crm/health'
       preLoaderRoute: typeof ApiPublicCrmHealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/crm/system-health-logs': {
+      id: '/api/public/crm/system-health-logs'
+      path: '/api/public/crm/system-health-logs'
+      fullPath: '/api/public/crm/system-health-logs'
+      preLoaderRoute: typeof ApiPublicCrmSystemHealthLogsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/crm/users': {
@@ -1855,7 +1939,11 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicEfiWebhookRoute: ApiPublicEfiWebhookRouteWithChildren,
   ApiPublicStarkWebhookRoute: ApiPublicStarkWebhookRoute,
   ApiPublicCrmAgenciesRoute: ApiPublicCrmAgenciesRoute,
+  ApiPublicCrmAgenciesCompleteRoute: ApiPublicCrmAgenciesCompleteRoute,
+  ApiPublicCrmContractsAndTenantsRoute: ApiPublicCrmContractsAndTenantsRoute,
+  ApiPublicCrmFinancialAnalyticsRoute: ApiPublicCrmFinancialAnalyticsRoute,
   ApiPublicCrmHealthRoute: ApiPublicCrmHealthRoute,
+  ApiPublicCrmSystemHealthLogsRoute: ApiPublicCrmSystemHealthLogsRoute,
   ApiPublicCrmUsersRoute: ApiPublicCrmUsersRoute,
   ApiPublicCronNotificationsRoute: ApiPublicCronNotificationsRoute,
   ApiPublicHooksEfiSaldoRoute: ApiPublicHooksEfiSaldoRoute,

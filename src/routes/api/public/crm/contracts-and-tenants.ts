@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
+import { supabaseAdmin } from '@/integrations/supabase/client.server';
 
-export const Route = createFileRoute('/api/public/crm/users')({
+export const Route = createFileRoute('/api/public/crm/contracts-and-tenants')({
   server: {
     handlers: {
       GET: async ({ request }) => {
@@ -19,34 +20,30 @@ export const Route = createFileRoute('/api/public/crm/users')({
 
         try {
           const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
-          
-          const { data: profiles, error: profileError } = await supabaseAdmin
-            .from('profiles')
-            .select('id, email, full_name, created_at');
+          const [contracts, properties] = await Promise.all([
+            supabaseAdmin.from('contracts').select('id, rent_amount, status, end_date, start_date, property_id, tenant_id'),
+            supabaseAdmin.from('properties').select('id, status')
+          ]);
 
-          if (profileError) throw profileError;
+          const totalProperties = properties.data?.length || 0;
+          const rentedProperties = properties.data?.filter(p => p.status === 'alugado')?.length || 0;
 
-          // Fetch roles separately
-          const profilesWithRoles = await Promise.all((profiles || []).map(async (p: any) => {
-            const { data: roles } = await supabaseAdmin
-              .from('user_roles')
-              .select('role')
-              .eq('user_id', p.id as any);
-            
-            return {
-              ...p,
-              user_roles: roles || []
-            };
-          }));
-
-          return new Response(JSON.stringify(profilesWithRoles), {
+          return new Response(JSON.stringify({
+            contracts: contracts.data || [],
+            occupancy: {
+              total_properties: totalProperties,
+              rented_properties: rentedProperties,
+              vacant_properties: totalProperties - rentedProperties,
+              occupancy_rate: totalProperties > 0 ? (rentedProperties / totalProperties) * 100 : 0
+            }
+          }), {
             headers: { 
               'Content-Type': 'application/json',
               'Access-Control-Allow-Origin': '*'
             }
           });
         } catch (error: any) {
-          console.error('CRM API Error (users):', error);
+          console.error('CRM API Error (contracts-and-tenants):', error);
           return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
             status: 500,
             headers: { 

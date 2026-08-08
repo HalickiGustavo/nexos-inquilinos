@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
+import { supabaseAdmin } from '@/integrations/supabase/client.server';
 
-export const Route = createFileRoute('/api/public/crm/users')({
+export const Route = createFileRoute('/api/public/crm/system-health-logs')({
   server: {
     handlers: {
       GET: async ({ request }) => {
@@ -19,34 +20,27 @@ export const Route = createFileRoute('/api/public/crm/users')({
 
         try {
           const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
-          
-          const { data: profiles, error: profileError } = await supabaseAdmin
-            .from('profiles')
-            .select('id, email, full_name, created_at');
+          // Buscando os últimos 1000 registros para cada log importante
+          const [efiEvents, starkEvents, emailLogs, auditLogs] = await Promise.all([
+            supabaseAdmin.from('efi_events').select('*').order('created_at', { ascending: false }).limit(250),
+            supabaseAdmin.from('stark_events').select('*').order('created_at', { ascending: false }).limit(250),
+            supabaseAdmin.from('email_send_log').select('*').order('created_at', { ascending: false }).limit(250),
+            supabaseAdmin.from('audit_logs').select('*').order('created_at', { ascending: false }).limit(250)
+          ]);
 
-          if (profileError) throw profileError;
-
-          // Fetch roles separately
-          const profilesWithRoles = await Promise.all((profiles || []).map(async (p: any) => {
-            const { data: roles } = await supabaseAdmin
-              .from('user_roles')
-              .select('role')
-              .eq('user_id', p.id as any);
-            
-            return {
-              ...p,
-              user_roles: roles || []
-            };
-          }));
-
-          return new Response(JSON.stringify(profilesWithRoles), {
+          return new Response(JSON.stringify({
+            efi_gateway_events: efiEvents.data || [],
+            stark_gateway_events: starkEvents.data || [],
+            email_delivery_logs: emailLogs.data || [],
+            system_audit_logs: auditLogs.data || []
+          }), {
             headers: { 
               'Content-Type': 'application/json',
               'Access-Control-Allow-Origin': '*'
             }
           });
         } catch (error: any) {
-          console.error('CRM API Error (users):', error);
+          console.error('CRM API Error (system-health-logs):', error);
           return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
             status: 500,
             headers: { 

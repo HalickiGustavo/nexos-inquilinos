@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,7 +19,30 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useInvalidate, useProperties, useTenants } from "@/lib/queries";
-import { parseNumber } from "@/lib/format";
+import { parseNumber, formatBRL } from "@/lib/format";
+
+const formatInputBRL = (value: string) => {
+  if (!value) return "";
+  const cleanValue = value.replace(/\D/g, "");
+  const numberValue = parseInt(cleanValue, 10) / 100;
+  if (isNaN(numberValue)) return "";
+  return numberValue.toLocaleString("pt-BR", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+};
+
+const formatInputPercent = (value: string, decimals = 2) => {
+  if (!value) return "";
+  const cleanValue = value.replace(/\D/g, "");
+  const divisor = Math.pow(10, decimals);
+  const numberValue = parseInt(cleanValue, 10) / divisor;
+  if (isNaN(numberValue)) return "";
+  return numberValue.toLocaleString("pt-BR", {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  });
+};
 
 export function ContractFormDialog({ onDone }: { onDone: () => void }) {
   const { user } = useAuth();
@@ -39,10 +62,23 @@ export function ContractFormDialog({ onDone }: { onDone: () => void }) {
     due_day: "5",
     rent_amount: "",
     readjustment_index: "IGP-M",
-    security_deposit: "0",
-    late_fee_percent: "2",
-    daily_interest_percent: "0.033",
+    security_deposit: "0,00",
+    late_fee_percent: "2,00",
+    daily_interest_percent: "0,033",
   });
+
+  useEffect(() => {
+    if (form.property_id) {
+      const prop = properties.find((p) => p.id === form.property_id);
+      if (prop && prop.rent_price) {
+        const formatted = prop.rent_price.toLocaleString("pt-BR", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        });
+        setForm(prev => ({ ...prev, rent_amount: formatted }));
+      }
+    }
+  }, [form.property_id, properties]);
 
   return (
     <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -88,11 +124,9 @@ export function ContractFormDialog({ onDone }: { onDone: () => void }) {
           <Select
             value={form.property_id}
             onValueChange={(v) => {
-              const prop = properties.find((p) => p.id === v);
               setForm({
                 ...form,
                 property_id: v,
-                rent_amount: prop ? String(prop.rent_price || "") : form.rent_amount,
               });
             }}
           >
@@ -162,7 +196,7 @@ export function ContractFormDialog({ onDone }: { onDone: () => void }) {
             placeholder="0,00"
             required
             value={form.rent_amount}
-            onChange={(e) => setForm({ ...form, rent_amount: e.target.value })}
+            onChange={(e) => setForm({ ...form, rent_amount: formatInputBRL(e.target.value) })}
           />
         </div>
         <div className="space-y-2">
@@ -189,7 +223,7 @@ export function ContractFormDialog({ onDone }: { onDone: () => void }) {
             placeholder="0,00"
             value={form.security_deposit}
             onChange={(e) =>
-              setForm({ ...form, security_deposit: e.target.value })
+              setForm({ ...form, security_deposit: formatInputBRL(e.target.value) })
             }
           />
         </div>
@@ -200,7 +234,7 @@ export function ContractFormDialog({ onDone }: { onDone: () => void }) {
             placeholder="0,00"
             value={form.late_fee_percent}
             onChange={(e) =>
-              setForm({ ...form, late_fee_percent: e.target.value })
+              setForm({ ...form, late_fee_percent: formatInputPercent(e.target.value) })
             }
           />
         </div>
@@ -211,7 +245,7 @@ export function ContractFormDialog({ onDone }: { onDone: () => void }) {
             placeholder="0,000"
             value={form.daily_interest_percent}
             onChange={(e) =>
-              setForm({ ...form, daily_interest_percent: e.target.value })
+              setForm({ ...form, daily_interest_percent: formatInputPercent(e.target.value, 3) })
             }
           />
           <p className="text-xs text-muted-foreground">

@@ -49,6 +49,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { getRecaptchaSiteKey } from "@/lib/recaptcha.functions";
 import { isPreviewClient } from "@/lib/recaptcha-client";
+import { sendWelcomeEmail } from "@/lib/welcome-email.functions";
+import { activateManagerRole } from "@/lib/manager-setup.functions";
 
 type Role = "imobiliaria" | "proprietario";
 const ALLOWED_ROLES: Role[] = ["imobiliaria", "proprietario"];
@@ -191,6 +193,8 @@ function OnboardingWizard({ role, onChangeRole }: { role: Role; onChangeRole: ()
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const captchaRef = useRef<import("react-google-recaptcha").default | null>(null);
+  const triggerWelcomeEmail = useServerFn(sendWelcomeEmail);
+  const triggerManagerSetup = useServerFn(activateManagerRole);
 
   const [form, setForm] = useState<FormState>({
     email: "",
@@ -231,6 +235,24 @@ function OnboardingWizard({ role, onChangeRole }: { role: Role; onChangeRole: ()
       };
       const { error } = await supabase.auth.signUp(signUpPayload);
       if (error) throw error;
+
+      // Ensure role assignment and send welcome email
+      try {
+        if (role === "imobiliaria") {
+          await triggerManagerSetup({});
+        }
+        await triggerWelcomeEmail({
+          data: {
+            email: form.email,
+            fullName: role === "imobiliaria" ? form.companyName : form.fullName,
+            role: role,
+            document: form.document,
+          },
+        });
+      } catch (roleOrEmailErr) {
+        console.warn("Falha no setup de papel ou e-mail de boas-vindas, mas a conta foi criada:", roleOrEmailErr);
+      }
+
       toast.success("Cadastro realizado! Verifique seu e-mail para confirmar.");
       await supabase.auth.signOut().catch(() => {});
       setSuccess(true);

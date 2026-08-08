@@ -1,0 +1,89 @@
+// src/lib/sendpulse.server.ts
+// Server-only helper for SendPulse WhatsApp API
+// Documentation: https://login.sendpulse.com/apiref/whatsapp
+
+export type SendPulseResult =
+  | { ok: true; messageId?: string }
+  | { ok: false; reason: string; status?: number };
+
+/**
+ * Gets the access token from SendPulse using client ID and client secret.
+ * This should ideally be cached to avoid repeated auth calls.
+ */
+async function getAccessToken(): Promise<string | null> {
+  const clientId = process.env['SENDPULSE_CLIENT_ID'];
+  const clientSecret = process.env['SENDPULSE_CLIENT_SECRET'];
+
+  if (!clientId || !clientSecret) {
+    console.error("SendPulse config missing: SENDPULSE_CLIENT_ID or SENDPULSE_CLIENT_SECRET");
+    return null;
+  }
+
+  try {
+    const response = await fetch("https://api.sendpulse.com/oauth/access_token", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        grant_type: "client_credentials",
+        client_id: clientId,
+        client_secret: clientSecret,
+      }),
+    });
+
+    if (!response.ok) return null;
+    const data = await response.json();
+    return data.access_token;
+  } catch (error) {
+    console.error("Error authenticating with SendPulse:", error);
+    return null;
+  }
+}
+
+/**
+ * Sends a WhatsApp message via SendPulse
+ * Note: SendPulse often requires using templates for first-contact or commercial messages.
+ * This skeleton provides a generic text message send.
+ */
+export async function sendSendPulseWhatsApp(params: {
+  phone: string;
+  text: string;
+  senderId?: string; // The ID of the WhatsApp channel in SendPulse
+}): Promise<SendPulseResult> {
+  const token = await getAccessToken();
+  if (!token) return { ok: false, reason: "auth_failed" };
+
+  const senderId = params.senderId || process.env['SENDPULSE_WHATSAPP_SENDER_ID'];
+  if (!senderId) return { ok: false, reason: "sender_id_missing" };
+
+  // Format phone: SendPulse usually expects digits without '+'
+  const phone = params.phone.replace(/\D/g, "");
+
+  try {
+    const response = await fetch(`https://api.sendpulse.com/whatsapp/contacts/send`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        contact_id: phone,
+        message: {
+          type: "text",
+          text: { body: params.text },
+        },
+        phone: phone,
+        bot_id: senderId
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      return { ok: false, reason: `api_error: ${errorText}`, status: response.status };
+    }
+
+    const result = await response.json();
+    return { ok: true, messageId: result.data?.message_id };
+  } catch (error: any) {
+    return { ok: false, reason: `request_failed: ${error.message}` };
+  }
+}

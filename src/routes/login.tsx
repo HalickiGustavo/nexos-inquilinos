@@ -41,6 +41,9 @@ function LoginPage() {
 
 
   useEffect(() => {
+    // @ts-ignore
+    window.forceCleanup = () => import("@/lib/force-cleanup.functions").then(m => m.deleteUserCompletely().then(console.log));
+
     if (loading || !user) return;
     if (loading || !user) return;
     (async () => {

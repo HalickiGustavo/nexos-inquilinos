@@ -25,7 +25,7 @@ export const completeRegistration = createServerFn({ method: "POST" })
 
     // 1. Check if user already exists
     const { data: userData } = await supabaseAdmin.auth.admin.listUsers();
-    const existingUser = userData.users.find((u) => u.email?.toLowerCase() === email.toLowerCase());
+    const existingUser = userData.users.find((u: any) => u.email?.toLowerCase() === email.toLowerCase());
 
     let userId: string;
 

@@ -221,7 +221,8 @@ function OnboardingWizard({ role, onChangeRole }: { role: Role; onChangeRole: ()
 
   useEffect(() => {
     if (inviteToken && role === "proprietario") {
-      getInviteDetails({ token: inviteToken })
+      getInviteDetails({ data: { token: inviteToken } })
+
         .then((details) => {
           setForm((s) => ({
             ...s,

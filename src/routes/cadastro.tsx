@@ -201,6 +201,8 @@ function OnboardingWizard({ role, onChangeRole }: { role: Role; onChangeRole: ()
   const triggerWelcomeEmail = useServerFn(sendWelcomeEmail);
   const triggerManagerSetup = useServerFn(activateManagerRole);
   const getInviteDetails = useServerFn(getLandlordInviteDetails);
+  const triggerCompleteRegistration = useServerFn(completeRegistration);
+
 
 
   const [form, setForm] = useState<FormState>({

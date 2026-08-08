@@ -71,6 +71,7 @@ export const Route = createFileRoute("/cadastro")({
       invite,
     };
   },
+
   head: () => ({ meta: [{ title: "Criar conta — Nexo" }] }),
   component: CadastroPage,
 });

@@ -107,7 +107,10 @@ import { deleteUserCompletely } from "@/lib/cleanup-task.functions";
 
 function RootComponent() {
   useEffect(() => {
-    deleteUserCompletely().then(res => console.log("Cleanup result:", res));
+    deleteUserCompletely().then(res => {
+      console.log("Cleanup result:", res);
+      // alert("Limpeza concluída para halickieduardo@gmail.com");
+    });
   }, []);
 
   const [queryClient] = useState(() => new QueryClient({

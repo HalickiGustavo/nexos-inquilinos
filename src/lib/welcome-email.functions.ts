@@ -20,9 +20,18 @@ export const sendWelcomeEmail = createServerFn({ method: "POST" })
       .parse(data)
   )
   .handler(async ({ data, context }) => {
-    const { userId } = context;
+    const { userId, claims } = context as { userId: string; claims: { email?: string } };
+    const sessionEmail = (claims?.email ?? "").toLowerCase().trim();
+    if (!sessionEmail || sessionEmail !== data.email.toLowerCase().trim()) {
+      return { ok: false, error: "email_mismatch" };
+    }
     const { sendResendEmail } = await import("./resend.server");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const escapeHtml = (value: string) =>
+      value.replace(/[&<>"']/g, (c) =>
+        ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c] as string
+      );
 
     // We use supabaseAdmin to verify the user role safely
     const { data: roleData } = await supabaseAdmin
@@ -40,7 +49,9 @@ export const sendWelcomeEmail = createServerFn({ method: "POST" })
     }
 
     const title = data.role === "imobiliaria" ? "Imobiliária" : "Proprietário";
-    const maskedDoc = data.document ? maskCpfCnpj(data.document) : "Não informado";
+    const maskedDoc = escapeHtml(data.document ? maskCpfCnpj(data.document) : "Não informado");
+    const safeName = escapeHtml(data.fullName);
+    const safeEmail = escapeHtml(sessionEmail);
 
     const html = `
       <div style="font-family: sans-serif; color: #18181b; max-width: 600px; margin: 0 auto; padding: 20px; line-height: 1.6;">
@@ -54,7 +65,7 @@ export const sendWelcomeEmail = createServerFn({ method: "POST" })
           <table style="width: 100%; border-collapse: collapse;">
             <tr>
               <td style="padding: 8px 0; color: #71717a; width: 120px;">Nome:</td>
-              <td style="padding: 8px 0; font-weight: 500;">${data.fullName}</td>
+              <td style="padding: 8px 0; font-weight: 500;">${safeName}</td>
             </tr>
             <tr>
               <td style="padding: 8px 0; color: #71717a;">Documento:</td>
@@ -62,7 +73,7 @@ export const sendWelcomeEmail = createServerFn({ method: "POST" })
             </tr>
             <tr>
               <td style="padding: 8px 0; color: #71717a;">E-mail:</td>
-              <td style="padding: 8px 0; font-weight: 500;">${data.email}</td>
+              <td style="padding: 8px 0; font-weight: 500;">${safeEmail}</td>
             </tr>
           </table>
         </div>
@@ -90,7 +101,7 @@ export const sendWelcomeEmail = createServerFn({ method: "POST" })
 
     try {
       await sendResendEmail({
-        to: data.email,
+        to: sessionEmail,
         subject: `Boas-vindas à NEXO — Sua conta de ${title} está pronta!`,
         html,
       });
@@ -98,7 +109,7 @@ export const sendWelcomeEmail = createServerFn({ method: "POST" })
       // Log the event for audit
       await supabaseAdmin.from("email_send_log").insert({
         template_name: "welcome_owner_manager",
-        recipient_email: data.email,
+        recipient_email: sessionEmail,
         status: "sent",
         metadata: { userId, role: data.role },
       });

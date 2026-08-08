@@ -17,14 +17,19 @@ export const syncInviteToProfile = createServerFn({ method: "POST" })
       .parse(data)
   )
   .handler(async ({ data, context }) => {
-    const { userId } = context as { userId: string };
+    const { userId, claims } = context as { userId: string; claims: { email?: string } };
+    const sessionEmail = (claims?.email ?? "").toLowerCase().trim();
+    const requested = data.email.toLowerCase().trim();
+    if (!sessionEmail || sessionEmail !== requested) {
+      return { ok: false, synced: false, reason: "email_mismatch" };
+    }
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     // 1. Look for a matching invite for this email
     const { data: invite, error: inviteErr } = await supabaseAdmin
       .from("landlord_invites")
       .select("full_name, document, status")
-      .eq("email", data.email.toLowerCase().trim())
+      .eq("email", sessionEmail)
       .maybeSingle();
 
     if (inviteErr) {
@@ -56,7 +61,7 @@ export const syncInviteToProfile = createServerFn({ method: "POST" })
       await supabaseAdmin
         .from("landlord_invites")
         .update({ status: "aceito" })
-        .eq("email", data.email.toLowerCase().trim());
+        .eq("email", sessionEmail);
     }
 
     return { ok: true, synced: true };

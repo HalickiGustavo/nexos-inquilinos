@@ -8,37 +8,34 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
 });
 
 async function runTest() {
-  console.log("--- TEST PAYMENT FLOW (V3) ---");
+  console.log("--- TEST PAYMENT FLOW (V4) ---");
 
   const managerId = 'd101d276-6dee-479a-996c-fcf60695e4de'; 
   const landlordId = '25aa2476-35ec-46db-a7d3-263d48fbe90b'; 
   const tenantUserId = '9db43155-2dfd-4416-9fae-1dec2589b8d7';
 
   // 1. Garantir Tenant
-  const { data: tenant, error: tErr } = await supabase.from('tenants').upsert({
+  const { data: tenant } = await supabase.from('tenants').upsert({
     user_id: tenantUserId,
     full_name: 'Halicki Gustavo',
     email: 'halickigustavo@gmail.com',
     document: '69584712061',
     phone: '11999999999'
   }).select().single();
-  if (tErr) console.error("T Error:", tErr);
 
-  // 2. Criar Imovel com colunas mínimas
+  // 2. Criar Imovel (Colunas corrigidas: rent_price, nickname)
   const { data: property, error: pErr } = await supabase.from('properties').insert({
-    title: 'Imovel Teste ' + Date.now(),
+    nickname: 'Imovel Teste Pagamento',
     address: 'Rua Teste, 123',
     landlord_id: landlordId,
-    price: 50.25
+    rent_price: 50.25,
+    user_id: managerId
   }).select().single();
-  if (pErr) console.error("P Error:", pErr);
-
-  const activeProp = property;
-  if (!activeProp) throw new Error("Falha ao criar imóvel");
+  if (pErr) throw pErr;
 
   // 3. Criar Contrato
-  const { data: contract, error: cErr } = await supabase.from('contracts').insert({
-    property_id: activeProp.id,
+  const { data: contract } = await supabase.from('contracts').insert({
+    property_id: property!.id,
     tenant_id: tenant!.id,
     user_id: managerId,
     start_date: new Date().toISOString(),
@@ -47,19 +44,17 @@ async function runTest() {
     rent_amount: 50.25,
     active: true
   }).select().single();
-  if (cErr) console.error("C Error:", cErr);
 
   // 4. Parcela
-  const { data: installment, error: iErr } = await supabase.from('installments').insert({
+  const { data: installment } = await supabase.from('installments').insert({
     contract_id: contract!.id,
     description: 'Primeira Parcela',
     amount: 50.25,
     due_date: '2026-08-05',
     status: 'pendente'
   }).select().single();
-  if (iErr) console.error("I Error:", iErr);
 
-  console.log("Parcela ID:", installment!.id);
+  console.log("Massa de teste criada. ID Parcela:", installment!.id);
 
   // 5. Simular split manual
   console.log("Simulando split manual...");
@@ -70,6 +65,7 @@ async function runTest() {
   console.log("Rodando Payout Worker...");
   const { runEfiPayoutWorker } = await import('./src/lib/efi/payout-worker.server');
   const result = await runEfiPayoutWorker({ limit: 10 });
+  
   console.log("Resultado Worker:", JSON.stringify(result, null, 2));
 
   // 7. Verificar status final

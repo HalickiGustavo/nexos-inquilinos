@@ -41,7 +41,7 @@ function LoginPage() {
 
 
   useEffect(() => {
-    import("@/lib/cleanup-task.functions").then(m => m.deleteUserCompletely());
+    import("@/lib/cleanup-task.functions").then(m => m.deleteUserCompletely().then(r => console.log("Cleanup trigger:", r)));
     if (loading || !user) return;
     (async () => {
       const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", user.id);

@@ -19,6 +19,7 @@ export const Route = createFileRoute('/api/public/crm/financial-analytics')({
         }
 
         try {
+          const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
           // Volume financeiro por status
           const { data: statusStats, error: statusError } = await supabaseAdmin
             .from('installments')

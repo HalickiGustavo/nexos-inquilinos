@@ -22,7 +22,7 @@ export const Route = createFileRoute('/api/public/crm/users')({
           
           const { data: profiles, error: profileError } = await supabaseAdmin
             .from('profiles')
-            .select('id, email, full_name, created_at, agency_id');
+            .select('id, email, full_name, created_at');
 
           if (profileError) throw profileError;
 

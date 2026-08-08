@@ -30,8 +30,8 @@ export const Route = createFileRoute('/api/public/crm/agencies')({
           // Fetch counts separately to avoid relationship issues
           const formattedAgencies = await Promise.all((agencies || []).map(async (a: any) => {
             const [propCount, tenantCount, contractCount] = await Promise.all([
-              supabaseAdmin.from('properties').select('*', { count: 'exact', head: true }).eq('manager_id' as any, a.manager_user_id),
-              supabaseAdmin.from('profiles').select('*', { count: 'exact', head: true }).eq('id' as any, a.manager_user_id), // Placeholder fix
+              supabaseAdmin.from('properties').select('*', { count: 'exact', head: true }).eq('user_id' as any, a.manager_user_id),
+              supabaseAdmin.from('tenants').select('*', { count: 'exact', head: true }).eq('user_id' as any, a.manager_user_id),
               supabaseAdmin.from('contracts').select('*', { count: 'exact', head: true }).eq('user_id' as any, a.manager_user_id)
             ]);
 

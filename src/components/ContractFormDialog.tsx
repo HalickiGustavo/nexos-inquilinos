@@ -92,7 +92,7 @@ export function ContractFormDialog({ onDone }: { onDone: () => void }) {
               setForm({
                 ...form,
                 property_id: v,
-                rent_amount: prop ? String(prop.rent_price) : form.rent_amount,
+                rent_amount: prop ? String(prop.rent_price || "") : form.rent_amount,
               });
             }}
           >
@@ -102,7 +102,7 @@ export function ContractFormDialog({ onDone }: { onDone: () => void }) {
             <SelectContent>
               {properties.map((p) => (
                 <SelectItem key={p.id} value={p.id}>
-                  {p.nickname} — {p.address}
+                  {p.nickname} — {p.address} {p.rent_price ? `(R$ ${p.rent_price})` : ""}
                 </SelectItem>
               ))}
             </SelectContent>

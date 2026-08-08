@@ -41,8 +41,6 @@ function LoginPage() {
 
 
   useEffect(() => {
-    // @ts-ignore
-    window.runCleanup = () => import("@/lib/cleanup-runner.functions").then(m => m.executeCleanup().then(console.log));
 
 
     if (loading || !user) return;

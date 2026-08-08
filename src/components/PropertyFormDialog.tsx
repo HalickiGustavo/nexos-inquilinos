@@ -239,7 +239,9 @@ export function PropertyFormDialog({
           if (mode === "manager") {
             payload.manager_id = user.id;
             const selectedLandlord = landlords.find((l) => l.id === form.landlord_id);
-            payload.landlord_id = form.landlord_id || null;
+            // If landlord_id is an email (pending invite), set it to null and store owner_name
+            const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(form.landlord_id);
+            payload.landlord_id = isUuid ? form.landlord_id : null;
             payload.owner_name = selectedLandlord?.full_name || selectedLandlord?.email || null;
             payload.responsible_member_id = form.responsible_member_id || null;
             const feePct = Number(form.default_management_fee_percent);

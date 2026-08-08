@@ -350,9 +350,9 @@ export function PropertyFormDialog({
               </Select>
               {landlords.length === 0 && (
                 <p className="text-xs text-muted-foreground">
-                  Nenhum proprietário aceitou convite ainda.{" "}
+                  Você ainda não cadastrou ou convidou nenhum proprietário.{" "}
                   <Link to="/manager/proprietarios" className="underline">
-                    Convidar proprietário
+                    Gerenciar proprietários
                   </Link>
                 </p>
               )}

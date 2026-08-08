@@ -107,7 +107,7 @@ function CadastroPage() {
           {role === null ? (
             <RoleSelector onPick={(r) => navigate({ to: "/cadastro", search: { role: r } })} />
           ) : (
-            <OnboardingWizard role={role} onChangeRole={() => navigate({ to: "/cadastro", search: {} })} />
+            <OnboardingWizard role={role} initialEmail={initialEmail} onChangeRole={() => navigate({ to: "/cadastro", search: {} })} />
           )}
         </div>
       </div>
@@ -190,7 +190,7 @@ interface FormState {
   acceptLgpd: boolean;
 }
 
-function OnboardingWizard({ role, onChangeRole }: { role: Role; onChangeRole: () => void }) {
+function OnboardingWizard({ role, initialEmail, onChangeRole }: { role: Role; initialEmail: string; onChangeRole: () => void }) {
   const navigate = useNavigate();
   const [step, setStep] = useState<Step>(1);
   const [submitting, setSubmitting] = useState(false);

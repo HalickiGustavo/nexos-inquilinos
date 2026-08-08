@@ -90,6 +90,7 @@ function CadastroPage() {
     }
   }, [invite]);
 
+
   return (
     <div className="min-h-screen bg-zinc-50 text-zinc-900">
       <div className="flex min-h-[100dvh] flex-col items-center justify-center p-4 sm:p-6">

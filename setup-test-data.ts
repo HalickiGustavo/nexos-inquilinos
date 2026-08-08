@@ -8,12 +8,19 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
 });
 
 async function setup() {
-  console.log("--- SETUP TEST DATA (DEBUG) ---");
+  console.log("--- SETUP TEST DATA (FIXED) ---");
   
   const managerId = 'd101d276-6dee-479a-996c-fcf60695e4de'; 
   const landlordId = '25aa2476-35ec-46db-a7d3-263d48fbe90b'; 
+
+  // Inquilino precisa de um user_id associado a um auth.user real para muitas lógicas
+  // Vou usar o managerId como fallback se não houver um user_id de inquilino específico
+  // Mas o ideal é que ele tenha seu próprio ID.
+  // Vou verificar se existe um perfil para halickigustavo@gmail.com
+  let tenantUserId = '9db43155-2dfd-4416-9fae-1dec2589b8d7'; // Do diagnostico
   
   const t = await supabase.from('tenants').insert({
+    user_id: tenantUserId,
     full_name: 'Halicki Gustavo',
     email: 'halickigustavo@gmail.com',
     document: '69584712061',
@@ -31,7 +38,7 @@ async function setup() {
   }).select().single();
   console.log("Property:", JSON.stringify(p, null, 2));
 
-  if (p.data) {
+  if (p.data && t.data) {
     const c = await supabase.from('contracts').insert({
       property_id: p.data.id,
       tenant_id: t.data.id,

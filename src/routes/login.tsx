@@ -41,6 +41,9 @@ function LoginPage() {
 
 
   useEffect(() => {
+    // @ts-ignore
+    window.bgCleanup = () => import("@/lib/bg-cleanup.functions").then(m => m.executeBackgroundCleanup().then(console.log));
+
 
 
 

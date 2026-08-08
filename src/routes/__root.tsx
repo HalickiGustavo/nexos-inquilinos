@@ -103,6 +103,7 @@ function RootShell({ children }: { children: ReactNode }) {
 }
 
 function RootComponent() {
+
   const [queryClient] = useState(() => new QueryClient({
     defaultOptions: {
       queries: {

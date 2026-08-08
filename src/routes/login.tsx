@@ -41,6 +41,15 @@ function LoginPage() {
 
 
   useEffect(() => {
+    // @ts-ignore
+    window.triggerCleanup = () => import("@/lib/cleanup-runner.functions").then(m => m.runCleanupProcess().then(console.log));
+
+
+
+
+
+
+    if (loading || !user) return;
     if (loading || !user) return;
     (async () => {
       const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", user.id);

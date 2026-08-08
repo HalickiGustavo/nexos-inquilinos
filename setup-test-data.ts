@@ -8,22 +8,20 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
 });
 
 async function setup() {
-  console.log("--- SETUP TEST DATA (TENANTS V2) ---");
+  console.log("--- SETUP TEST DATA (DEBUG) ---");
   
-  const managerId = 'd101d276-6dee-479a-996c-fcf60695e4de'; // Azure
-  const landlordId = '25aa2476-35ec-46db-a7d3-263d48fbe90b'; // Eduardo
+  const managerId = 'd101d276-6dee-479a-996c-fcf60695e4de'; 
+  const landlordId = '25aa2476-35ec-46db-a7d3-263d48fbe90b'; 
   
-  // Criar Inquilino (Sem manager_user_id)
-  const { data: tenant, error: tErr } = await supabase.from('tenants').insert({
+  const t = await supabase.from('tenants').insert({
     full_name: 'Halicki Gustavo',
     email: 'halickigustavo@gmail.com',
     document: '69584712061',
     phone: '11999999999'
   }).select().single();
-  if (tErr) throw tErr;
+  console.log("Tenant:", JSON.stringify(t, null, 2));
 
-  // Criar Imovel
-  const { data: property, error: pErr } = await supabase.from('properties').insert({
+  const p = await supabase.from('properties').insert({
     title: 'Imovel Teste Pagamento',
     address: 'Rua Teste, 123',
     landlord_id: landlordId,
@@ -31,33 +29,32 @@ async function setup() {
     price: 50.25,
     default_management_fee_percent: 10
   }).select().single();
-  if (pErr) throw pErr;
+  console.log("Property:", JSON.stringify(p, null, 2));
 
-  // Criar Contrato
-  const { data: contract, error: cErr } = await supabase.from('contracts').insert({
-    property_id: property.id,
-    tenant_id: tenant.id,
-    user_id: managerId,
-    start_date: new Date().toISOString(),
-    end_date: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
-    due_day: 5,
-    rent_amount: 50.25,
-    active: true
-  }).select().single();
-  if (cErr) throw cErr;
+  if (p.data) {
+    const c = await supabase.from('contracts').insert({
+      property_id: p.data.id,
+      tenant_id: t.data.id,
+      user_id: managerId,
+      start_date: new Date().toISOString(),
+      end_date: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+      due_day: 5,
+      rent_amount: 50.25,
+      active: true
+    }).select().single();
+    console.log("Contract:", JSON.stringify(c, null, 2));
 
-  // Criar Parcela
-  const { data: installment, error: iErr } = await supabase.from('installments').insert({
-    contract_id: contract.id,
-    description: 'Primeira Parcela',
-    amount: 50.25,
-    due_date: '2026-08-05',
-    status: 'pendente'
-  }).select().single();
-  if (iErr) throw iErr;
-
-  console.log("Setup concluido!");
-  console.log("Parcela ID:", installment.id);
+    if (c.data) {
+      const i = await supabase.from('installments').insert({
+        contract_id: c.data.id,
+        description: 'Primeira Parcela',
+        amount: 50.25,
+        due_date: '2026-08-05',
+        status: 'pendente'
+      }).select().single();
+      console.log("Installment:", JSON.stringify(i, null, 2));
+    }
+  }
 }
 
 setup().catch(console.error);

@@ -1,6 +1,8 @@
-// Server-only helper to send a WhatsApp text via Evolution API.
+// Server-only helper to send a WhatsApp text via Evolution API or SendPulse.
 // Do not import from client code. Imported only inside server-fn handlers
 // and TanStack server-route handlers.
+import { sendSendPulseWhatsApp } from "./sendpulse.server";
+
 
 export type EvolutionSendResult =
   | { ok: true }

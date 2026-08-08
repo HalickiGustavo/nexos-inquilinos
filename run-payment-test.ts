@@ -8,7 +8,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
 });
 
 async function runTest() {
-  console.log("--- TEST PAYMENT FLOW (V6) ---");
+  console.log("--- TEST PAYMENT FLOW (V7) ---");
 
   const managerId = 'd101d276-6dee-479a-996c-fcf60695e4de'; 
   const landlordId = '25aa2476-35ec-46db-a7d3-263d48fbe90b'; 
@@ -21,7 +21,6 @@ async function runTest() {
     document: '69584712061',
     phone: '11999999999'
   }).select().single();
-  console.log("Tenant created:", t.data?.id || t.error);
 
   await supabase.from('profiles').upsert({
     id: landlordId,
@@ -44,7 +43,6 @@ async function runTest() {
     user_id: managerId,
     default_management_fee_percent: 10
   }).select().single();
-  console.log("Property created:", p.data?.id || p.error);
 
   const c = await supabase.from('contracts').insert({
     property_id: p.data!.id,
@@ -56,11 +54,9 @@ async function runTest() {
     rent_amount: 50.25,
     active: true
   }).select().single();
-  console.log("Contract created:", c.data?.id || c.error);
 
   const i = await supabase.from('installments').insert({
     contract_id: c.data!.id,
-    description: 'Parcela Teste Payout',
     amount: 50.25,
     due_date: '2026-08-05',
     status: 'pendente'

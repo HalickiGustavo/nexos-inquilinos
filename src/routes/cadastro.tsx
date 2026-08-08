@@ -217,6 +217,27 @@ function OnboardingWizard({ role, onChangeRole }: { role: Role; onChangeRole: ()
 
   const update = <K extends keyof FormState>(k: K, v: FormState[K]) => setForm((s) => ({ ...s, [k]: v }));
 
+  const inviteToken = typeof window !== "undefined" ? window.localStorage.getItem("landlord_invite_token") : null;
+
+  useEffect(() => {
+    if (inviteToken && role === "proprietario") {
+      getInviteDetails({ token: inviteToken })
+        .then((details) => {
+          setForm((s) => ({
+            ...s,
+            email: details.email || s.email,
+            fullName: details.fullName || s.fullName,
+            document: details.document ? (isValidCNPJ(details.document) ? maskCNPJ(details.document) : maskCPF(details.document)) : s.document,
+          }));
+        })
+        .catch((err) => {
+          console.error("Invite pre-fill failed:", err);
+          window.localStorage.removeItem("landlord_invite_token");
+        });
+    }
+  }, [inviteToken, role, getInviteDetails]);
+
+
   async function handleSubmit() {
     if (submitting) return;
     setSubmitting(true);

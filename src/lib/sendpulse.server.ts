@@ -169,10 +169,6 @@ export async function sendSendPulseWhatsApp(params: {
       return { ok: false, reason: `api_error: ${errorText}`, status: response.status };
     }
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      return { ok: false, reason: `api_error: ${errorText}`, status: response.status };
-    }
 
     const result = await response.json();
     return { ok: true, messageId: result.data?.message_id };

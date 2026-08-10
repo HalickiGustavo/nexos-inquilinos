@@ -10,13 +10,14 @@ const ACF_MANAGER_IDS = [
 async function restoreACFData() {
   console.log('--- Iniciando Restauração de Dados ACF ---');
   
-  // 1. Buscar logs de deleção de contratos dos gerentes ACF
+  // 1. Buscar logs de deleção de contratos dos gerentes ACF usando SQL bruto para garantir compatibilidade JSONB
   const { data: contractLogs, error: contractLogsError } = await supabaseAdmin
     .from('audit_logs')
     .select('*')
     .eq('entity', 'contracts')
     .eq('action', 'contracts.delete')
-    .in("metadata->old->>'user_id'", ACF_MANAGER_IDS);
+    .or(ACF_MANAGER_IDS.map(id => `metadata->old->>user_id.eq.${id}`).join(','));
+
 
   if (contractLogsError) {
     console.error('Erro ao buscar logs de contratos:', contractLogsError);

@@ -67,7 +67,6 @@ import { Route as ManagerManagerProprietariosRouteImport } from './routes/_manag
 import { Route as ManagerManagerRelatoriosRouteImport } from './routes/_manager/manager.relatorios'
 import { Route as ManagerManagerVistoriasRouteImport } from './routes/_manager/manager.vistorias'
 import { Route as ApiPublicEfiWebhookRouteImport } from './routes/api/public/efi-webhook'
-import { Route as AuthenticatedAdminConfiguracoesSubcontaRouteImport } from './routes/_authenticated/admin.configuracoes.subconta'
 import { Route as ManagerManagerConfiguracoesRoletaRouteImport } from './routes/_manager/manager.configuracoes.roleta'
 import { Route as ApiPublicCrmAgenciesRouteImport } from './routes/api/public/crm/agencies'
 import { Route as ApiPublicCrmAgenciesCompleteRouteImport } from './routes/api/public/crm/agencies-complete'
@@ -400,12 +399,6 @@ const ApiPublicEfiWebhookRoute = ApiPublicEfiWebhookRouteImport.update({
   path: '/api/public/efi-webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedAdminConfiguracoesSubcontaRoute =
-  AuthenticatedAdminConfiguracoesSubcontaRouteImport.update({
-    id: '/admin/configuracoes/subconta',
-    path: '/admin/configuracoes/subconta',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
 const ManagerManagerConfiguracoesRoletaRoute =
   ManagerManagerConfiguracoesRoletaRouteImport.update({
     id: '/manager/configuracoes/roleta',
@@ -594,7 +587,6 @@ export interface FileRoutesByFullPath {
   '/tenant/': typeof AuthenticatedTenantIndexRoute
   '/landlord/': typeof LandlordLandlordIndexRoute
   '/manager/': typeof ManagerManagerIndexRoute
-  '/admin/configuracoes/subconta': typeof AuthenticatedAdminConfiguracoesSubcontaRoute
   '/manager/configuracoes/roleta': typeof ManagerManagerConfiguracoesRoletaRoute
   '/api/public/crm/agencies': typeof ApiPublicCrmAgenciesRoute
   '/api/public/crm/agencies-complete': typeof ApiPublicCrmAgenciesCompleteRoute
@@ -675,7 +667,6 @@ export interface FileRoutesByTo {
   '/tenant': typeof AuthenticatedTenantIndexRoute
   '/landlord': typeof LandlordLandlordIndexRoute
   '/manager': typeof ManagerManagerIndexRoute
-  '/admin/configuracoes/subconta': typeof AuthenticatedAdminConfiguracoesSubcontaRoute
   '/manager/configuracoes/roleta': typeof ManagerManagerConfiguracoesRoletaRoute
   '/api/public/crm/agencies': typeof ApiPublicCrmAgenciesRoute
   '/api/public/crm/agencies-complete': typeof ApiPublicCrmAgenciesCompleteRoute
@@ -760,7 +751,6 @@ export interface FileRoutesById {
   '/_authenticated/tenant/': typeof AuthenticatedTenantIndexRoute
   '/_landlord/landlord/': typeof LandlordLandlordIndexRoute
   '/_manager/manager/': typeof ManagerManagerIndexRoute
-  '/_authenticated/admin/configuracoes/subconta': typeof AuthenticatedAdminConfiguracoesSubcontaRoute
   '/_manager/manager/configuracoes/roleta': typeof ManagerManagerConfiguracoesRoletaRoute
   '/api/public/crm/agencies': typeof ApiPublicCrmAgenciesRoute
   '/api/public/crm/agencies-complete': typeof ApiPublicCrmAgenciesCompleteRoute
@@ -843,7 +833,6 @@ export interface FileRouteTypes {
     | '/tenant/'
     | '/landlord/'
     | '/manager/'
-    | '/admin/configuracoes/subconta'
     | '/manager/configuracoes/roleta'
     | '/api/public/crm/agencies'
     | '/api/public/crm/agencies-complete'
@@ -924,7 +913,6 @@ export interface FileRouteTypes {
     | '/tenant'
     | '/landlord'
     | '/manager'
-    | '/admin/configuracoes/subconta'
     | '/manager/configuracoes/roleta'
     | '/api/public/crm/agencies'
     | '/api/public/crm/agencies-complete'
@@ -1008,7 +996,6 @@ export interface FileRouteTypes {
     | '/_authenticated/tenant/'
     | '/_landlord/landlord/'
     | '/_manager/manager/'
-    | '/_authenticated/admin/configuracoes/subconta'
     | '/_manager/manager/configuracoes/roleta'
     | '/api/public/crm/agencies'
     | '/api/public/crm/agencies-complete'
@@ -1476,13 +1463,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicEfiWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/admin/configuracoes/subconta': {
-      id: '/_authenticated/admin/configuracoes/subconta'
-      path: '/admin/configuracoes/subconta'
-      fullPath: '/admin/configuracoes/subconta'
-      preLoaderRoute: typeof AuthenticatedAdminConfiguracoesSubcontaRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_manager/manager/configuracoes/roleta': {
       id: '/_manager/manager/configuracoes/roleta'
       path: '/manager/configuracoes/roleta'
@@ -1684,7 +1664,6 @@ interface AuthenticatedRouteChildren {
   AuthenticatedTenantManutencoesRoute: typeof AuthenticatedTenantManutencoesRoute
   AuthenticatedTenantPerfilRoute: typeof AuthenticatedTenantPerfilRoute
   AuthenticatedTenantIndexRoute: typeof AuthenticatedTenantIndexRoute
-  AuthenticatedAdminConfiguracoesSubcontaRoute: typeof AuthenticatedAdminConfiguracoesSubcontaRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
@@ -1710,8 +1689,6 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedTenantManutencoesRoute: AuthenticatedTenantManutencoesRoute,
   AuthenticatedTenantPerfilRoute: AuthenticatedTenantPerfilRoute,
   AuthenticatedTenantIndexRoute: AuthenticatedTenantIndexRoute,
-  AuthenticatedAdminConfiguracoesSubcontaRoute:
-    AuthenticatedAdminConfiguracoesSubcontaRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(

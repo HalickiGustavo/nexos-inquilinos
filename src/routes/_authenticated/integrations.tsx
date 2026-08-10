@@ -14,7 +14,7 @@ import {
   getAsaasAccount,
   startAsaasCadastro,
 } from "@/lib/asaas.functions";
-// asaas component removed
+import { AsaasBankAndKycPanel } from "@/components/AsaasBankAndKycPanel";
 import { PixSplitConfigPanel } from "@/components/PixSplitConfigPanel";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/lib/auth";

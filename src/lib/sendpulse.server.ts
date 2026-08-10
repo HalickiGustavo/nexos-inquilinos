@@ -73,6 +73,7 @@ export async function sendSendPulseWhatsApp(params: {
       body: JSON.stringify({
         bot_id: senderId,
         phone: phone,
+        contact_id: phone, // SendPulse often maps phone to contact_id for new contacts
         message: {
           type: "text",
           text: { body: params.text },

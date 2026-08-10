@@ -96,7 +96,7 @@ export async function issueBoletoForInstallmentEfi(installmentId: string): Promi
   }
   const expireAt = safeExpireAt(dueDate);
 
-  const name = String(tenant.full_name ?? "Inquilino").slice(0, 100);
+  const name = String(tenant.full_name ?? "Inquilino").trim().slice(0, 100);
   const phone = normDoc(tenant.phone).slice(0, 20) || undefined;
 
   const customer: any = { name };

@@ -66,6 +66,9 @@ export async function runEfiPayoutWorker(opts?: { limit?: number }) {
         amount: Number(row.amount),
         payerPixKey: payerKey,
         receiverPixKey: row.pix_key,
+        receiverInfo: {
+          nome: String(row.recipient_name ?? row.pix_key).trim().slice(0, 100),
+        },
         description: row.description ?? "Repasse Nexo",
       }).catch(async (err: any) => {
         // Se a Efí retorna "envio duplicado" (idempotência), tenta consultar

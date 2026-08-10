@@ -80,8 +80,6 @@ import { Route as ApiPublicCronNotificationsRouteImport } from './routes/api/pub
 import { Route as ApiPublicEfiWebhookPixRouteImport } from './routes/api/public/efi-webhook.pix'
 import { Route as ApiPublicHooksEfiSaldoRouteImport } from './routes/api/public/hooks/efi-saldo'
 import { Route as ApiPublicHooksGenerateUpcomingBoletosRouteImport } from './routes/api/public/hooks/generate-upcoming-boletos'
-import { Route as ApiPublicHooksIssueSingleBoletoRouteImport } from './routes/api/public/hooks/issue-single-boleto'
-import { Route as ApiPublicHooksProcessPayoutQueueRouteImport } from './routes/api/public/hooks/process-payout-queue'
 import { Route as ApiPublicHooksReconcileEfiChargesRouteImport } from './routes/api/public/hooks/reconcile-efi-charges'
 import { Route as ApiPublicHooksReconcileEfiTransfersRouteImport } from './routes/api/public/hooks/reconcile-efi-transfers'
 import { Route as ApiPublicHooksRegisterEfiWebhookRouteImport } from './routes/api/public/hooks/register-efi-webhook'
@@ -475,18 +473,6 @@ const ApiPublicHooksGenerateUpcomingBoletosRoute =
     path: '/api/public/hooks/generate-upcoming-boletos',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ApiPublicHooksIssueSingleBoletoRoute =
-  ApiPublicHooksIssueSingleBoletoRouteImport.update({
-    id: '/api/public/hooks/issue-single-boleto',
-    path: '/api/public/hooks/issue-single-boleto',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiPublicHooksProcessPayoutQueueRoute =
-  ApiPublicHooksProcessPayoutQueueRouteImport.update({
-    id: '/api/public/hooks/process-payout-queue',
-    path: '/api/public/hooks/process-payout-queue',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const ApiPublicHooksReconcileEfiChargesRoute =
   ApiPublicHooksReconcileEfiChargesRouteImport.update({
     id: '/api/public/hooks/reconcile-efi-charges',
@@ -621,8 +607,6 @@ export interface FileRoutesByFullPath {
   '/api/public/efi-webhook/pix': typeof ApiPublicEfiWebhookPixRoute
   '/api/public/hooks/efi-saldo': typeof ApiPublicHooksEfiSaldoRoute
   '/api/public/hooks/generate-upcoming-boletos': typeof ApiPublicHooksGenerateUpcomingBoletosRoute
-  '/api/public/hooks/issue-single-boleto': typeof ApiPublicHooksIssueSingleBoletoRoute
-  '/api/public/hooks/process-payout-queue': typeof ApiPublicHooksProcessPayoutQueueRoute
   '/api/public/hooks/reconcile-efi-charges': typeof ApiPublicHooksReconcileEfiChargesRoute
   '/api/public/hooks/reconcile-efi-transfers': typeof ApiPublicHooksReconcileEfiTransfersRoute
   '/api/public/hooks/register-efi-webhook': typeof ApiPublicHooksRegisterEfiWebhookRoute
@@ -704,8 +688,6 @@ export interface FileRoutesByTo {
   '/api/public/efi-webhook/pix': typeof ApiPublicEfiWebhookPixRoute
   '/api/public/hooks/efi-saldo': typeof ApiPublicHooksEfiSaldoRoute
   '/api/public/hooks/generate-upcoming-boletos': typeof ApiPublicHooksGenerateUpcomingBoletosRoute
-  '/api/public/hooks/issue-single-boleto': typeof ApiPublicHooksIssueSingleBoletoRoute
-  '/api/public/hooks/process-payout-queue': typeof ApiPublicHooksProcessPayoutQueueRoute
   '/api/public/hooks/reconcile-efi-charges': typeof ApiPublicHooksReconcileEfiChargesRoute
   '/api/public/hooks/reconcile-efi-transfers': typeof ApiPublicHooksReconcileEfiTransfersRoute
   '/api/public/hooks/register-efi-webhook': typeof ApiPublicHooksRegisterEfiWebhookRoute
@@ -791,8 +773,6 @@ export interface FileRoutesById {
   '/api/public/efi-webhook/pix': typeof ApiPublicEfiWebhookPixRoute
   '/api/public/hooks/efi-saldo': typeof ApiPublicHooksEfiSaldoRoute
   '/api/public/hooks/generate-upcoming-boletos': typeof ApiPublicHooksGenerateUpcomingBoletosRoute
-  '/api/public/hooks/issue-single-boleto': typeof ApiPublicHooksIssueSingleBoletoRoute
-  '/api/public/hooks/process-payout-queue': typeof ApiPublicHooksProcessPayoutQueueRoute
   '/api/public/hooks/reconcile-efi-charges': typeof ApiPublicHooksReconcileEfiChargesRoute
   '/api/public/hooks/reconcile-efi-transfers': typeof ApiPublicHooksReconcileEfiTransfersRoute
   '/api/public/hooks/register-efi-webhook': typeof ApiPublicHooksRegisterEfiWebhookRoute
@@ -876,8 +856,6 @@ export interface FileRouteTypes {
     | '/api/public/efi-webhook/pix'
     | '/api/public/hooks/efi-saldo'
     | '/api/public/hooks/generate-upcoming-boletos'
-    | '/api/public/hooks/issue-single-boleto'
-    | '/api/public/hooks/process-payout-queue'
     | '/api/public/hooks/reconcile-efi-charges'
     | '/api/public/hooks/reconcile-efi-transfers'
     | '/api/public/hooks/register-efi-webhook'
@@ -959,8 +937,6 @@ export interface FileRouteTypes {
     | '/api/public/efi-webhook/pix'
     | '/api/public/hooks/efi-saldo'
     | '/api/public/hooks/generate-upcoming-boletos'
-    | '/api/public/hooks/issue-single-boleto'
-    | '/api/public/hooks/process-payout-queue'
     | '/api/public/hooks/reconcile-efi-charges'
     | '/api/public/hooks/reconcile-efi-transfers'
     | '/api/public/hooks/register-efi-webhook'
@@ -1045,8 +1021,6 @@ export interface FileRouteTypes {
     | '/api/public/efi-webhook/pix'
     | '/api/public/hooks/efi-saldo'
     | '/api/public/hooks/generate-upcoming-boletos'
-    | '/api/public/hooks/issue-single-boleto'
-    | '/api/public/hooks/process-payout-queue'
     | '/api/public/hooks/reconcile-efi-charges'
     | '/api/public/hooks/reconcile-efi-transfers'
     | '/api/public/hooks/register-efi-webhook'
@@ -1081,8 +1055,6 @@ export interface RootRouteChildren {
   ApiPublicCronNotificationsRoute: typeof ApiPublicCronNotificationsRoute
   ApiPublicHooksEfiSaldoRoute: typeof ApiPublicHooksEfiSaldoRoute
   ApiPublicHooksGenerateUpcomingBoletosRoute: typeof ApiPublicHooksGenerateUpcomingBoletosRoute
-  ApiPublicHooksIssueSingleBoletoRoute: typeof ApiPublicHooksIssueSingleBoletoRoute
-  ApiPublicHooksProcessPayoutQueueRoute: typeof ApiPublicHooksProcessPayoutQueueRoute
   ApiPublicHooksReconcileEfiChargesRoute: typeof ApiPublicHooksReconcileEfiChargesRoute
   ApiPublicHooksReconcileEfiTransfersRoute: typeof ApiPublicHooksReconcileEfiTransfersRoute
   ApiPublicHooksRegisterEfiWebhookRoute: typeof ApiPublicHooksRegisterEfiWebhookRoute
@@ -1595,20 +1567,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksGenerateUpcomingBoletosRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/hooks/issue-single-boleto': {
-      id: '/api/public/hooks/issue-single-boleto'
-      path: '/api/public/hooks/issue-single-boleto'
-      fullPath: '/api/public/hooks/issue-single-boleto'
-      preLoaderRoute: typeof ApiPublicHooksIssueSingleBoletoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/hooks/process-payout-queue': {
-      id: '/api/public/hooks/process-payout-queue'
-      path: '/api/public/hooks/process-payout-queue'
-      fullPath: '/api/public/hooks/process-payout-queue'
-      preLoaderRoute: typeof ApiPublicHooksProcessPayoutQueueRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/public/hooks/reconcile-efi-charges': {
       id: '/api/public/hooks/reconcile-efi-charges'
       path: '/api/public/hooks/reconcile-efi-charges'
@@ -1865,8 +1823,6 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksEfiSaldoRoute: ApiPublicHooksEfiSaldoRoute,
   ApiPublicHooksGenerateUpcomingBoletosRoute:
     ApiPublicHooksGenerateUpcomingBoletosRoute,
-  ApiPublicHooksIssueSingleBoletoRoute: ApiPublicHooksIssueSingleBoletoRoute,
-  ApiPublicHooksProcessPayoutQueueRoute: ApiPublicHooksProcessPayoutQueueRoute,
   ApiPublicHooksReconcileEfiChargesRoute:
     ApiPublicHooksReconcileEfiChargesRoute,
   ApiPublicHooksReconcileEfiTransfersRoute:

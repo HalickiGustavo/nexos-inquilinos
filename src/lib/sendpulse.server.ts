@@ -14,6 +14,8 @@ async function getAccessToken(): Promise<string | null> {
   const clientId = process.env['SENDPULSE_CLIENT_ID'];
   const clientSecret = process.env['SENDPULSE_CLIENT_SECRET'];
 
+  console.log("SendPulse Auth Debug - ID:", clientId ? "SET" : "MISSING", "Secret:", clientSecret ? "SET" : "MISSING");
+
   if (!clientId || !clientSecret) {
     console.error("SendPulse config missing: SENDPULSE_CLIENT_ID or SENDPULSE_CLIENT_SECRET");
     return null;
@@ -30,7 +32,10 @@ async function getAccessToken(): Promise<string | null> {
       }),
     });
 
-    if (!response.ok) return null;
+    if (!response.ok) {
+      console.error("SendPulse OAuth failed:", await response.text());
+      return null;
+    }
     const data = await response.json();
     return data.access_token;
   } catch (error) {

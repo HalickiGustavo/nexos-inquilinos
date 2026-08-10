@@ -64,7 +64,7 @@ export async function sendSendPulseWhatsApp(params: {
   const phone = params.phone.replace(/\D/g, "");
 
   try {
-    const response = await fetch(`https://api.sendpulse.com/whatsapp/messages/send`, {
+    const response = await fetch(`https://api.sendpulse.com/whatsapp/contacts/send`, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${token}`,

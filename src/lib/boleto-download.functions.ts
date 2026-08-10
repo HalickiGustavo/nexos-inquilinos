@@ -51,9 +51,8 @@ export const downloadBoletoPdf = createServerFn({ method: "POST" })
     if (m) boletoId = m[1];
     if (!boletoId) throw new Error("Boleto ainda não gerado para esta parcela");
 
+    throw new Error("Download de boletos Stark legados não é mais suportado.");
     // 2) Servidor assina requisição Stark e busca bytes do PDF.
-    const { starkFetchRaw } = await import("@/lib/stark/stark.server");
-    const { bytes } = await starkFetchRaw({ path: `/boleto/${boletoId}/pdf` });
 
     let bin = "";
     for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);

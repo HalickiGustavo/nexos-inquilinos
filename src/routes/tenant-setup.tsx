@@ -25,7 +25,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { isValidCPF, isValidPhone, maskCPF, maskPhone, onlyDigits, scorePassword } from "@/lib/br-validators";
-import { completeTenantSetup } from "@/lib/asaas.functions";
+// asaas removed
 
 export const Route = createFileRoute("/tenant-setup")({
   ssr: false,

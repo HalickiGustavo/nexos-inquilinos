@@ -64,14 +64,46 @@ export async function sendSendPulseWhatsApp(params: {
   const phone = params.phone.replace(/\D/g, "");
 
   try {
-    // According to SendPulse docs, we first need to ensure the contact exists or get their contact_id.
-    // However, if we don't have it, we can try the direct message endpoint if enabled,
-    // or use the 'contacts' endpoint to ensure they exist.
-    // Let's try to get contact info first to see if they exist.
-    // We'll use the generic message endpoint which allows sending by phone directly if the contact doesn't exist yet
-    // Documentation suggests 'contacts/send' or using templates. 
-    // Let's try the direct phone endpoint if possible, or force contact creation correctly.
-    
+    // SendPulse requires a contact_id, but if they don't exist, we must create them first.
+    // 1. Try to get contact_id by phone
+    const contactCheck = await fetch(`https://api.sendpulse.com/whatsapp/contacts/get_by_phone?phone=${phone}&bot_id=${senderId}`, {
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+
+    let contactId: string | null = null;
+    if (contactCheck.ok) {
+      const contactData = await contactCheck.json();
+      if (contactData.data?.id) {
+        contactId = contactData.data.id;
+      }
+    }
+
+    // 2. If not found, create the contact
+    if (!contactId) {
+      const createResponse = await fetch(`https://api.sendpulse.com/whatsapp/contacts`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          bot_id: senderId,
+          phone: phone,
+          name: "Cliente Nexo",
+        }),
+      });
+      
+      if (createResponse.ok) {
+        const createData = await createResponse.json();
+        contactId = createData.data?.id;
+      }
+    }
+
+    if (!contactId) {
+      return { ok: false, reason: "contact_creation_failed", status: contactCheck.status };
+    }
+
+    // 3. Send the message using the confirmed contact_id
     const response = await fetch(`https://api.sendpulse.com/whatsapp/contacts/send`, {
       method: "POST",
       headers: {
@@ -80,12 +112,10 @@ export async function sendSendPulseWhatsApp(params: {
       },
       body: JSON.stringify({
         bot_id: senderId,
-        phone: phone,
+        contact_id: contactId,
         message: {
           type: "text",
-          text: {
-            body: params.text
-          }
+          text: { body: params.text }
         }
       }),
     });

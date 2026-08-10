@@ -64,7 +64,6 @@ export async function sendSendPulseWhatsApp(params: {
   const phone = params.phone.replace(/\D/g, "");
 
   try {
-    // SendPulse requires a contact_id, but if they don't exist, we must create them first.
     // 1. Try to get contact_id by phone
     const contactCheck = await fetch(`https://api.sendpulse.com/whatsapp/contacts/get_by_phone?phone=${phone}&bot_id=${senderId}`, {
       headers: { "Authorization": `Bearer ${token}` }
@@ -76,6 +75,9 @@ export async function sendSendPulseWhatsApp(params: {
       if (contactData.data?.id) {
         contactId = contactData.data.id;
       }
+    } else {
+      // Consume response to avoid memory leaks
+      await contactCheck.text();
     }
 
     // 2. If not found, create the contact
@@ -93,19 +95,19 @@ export async function sendSendPulseWhatsApp(params: {
         }),
       });
       
+      const createData = await createResponse.json();
       if (createResponse.ok) {
-        const createData = await createResponse.json();
         contactId = createData.data?.id;
+      } else {
+        console.error("SendPulse contact creation failed:", createData);
       }
     }
 
     if (!contactId) {
-      return { ok: false, reason: "contact_creation_failed", status: contactCheck.status };
+      return { ok: false, reason: "contact_id_resolution_failed", status: contactCheck.status };
     }
 
-    // 3. Send the message using the confirmed contact_id
-    // Documentation says the endpoint is actually /whatsapp/messages/send
-    // but the payload must include contact_id if phone is not working.
+    // 3. Send the message
     const response = await fetch(`https://api.sendpulse.com/whatsapp/messages/send`, {
       method: "POST",
       headers: {

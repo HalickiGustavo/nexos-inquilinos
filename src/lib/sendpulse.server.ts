@@ -64,12 +64,59 @@ export async function sendSendPulseWhatsApp(params: {
   const phone = params.phone.replace(/\D/g, "");
 
   try {
-    // 1. Send the message using the direct 'contacts/send' endpoint
-    // This endpoint accepts either contact_id OR phone.
-    // If the contact doesn't exist, SendPulse might automatically create them or return a 422 if it's strict.
-    // Given the 422 "contact_id is required", we'll try to provide the phone AS the contact_id or use the correct fields.
+    // 1. First, always ensure we have a valid contact_id.
+    // SendPulse is strict about contact_id for the /contacts/send endpoint.
+    let contactId: string | null = null;
+
+    // Try to get contact_id by phone
+    const check = await fetch(`https://api.sendpulse.com/whatsapp/contacts/get_by_phone?phone=${phone}&bot_id=${senderId}`, {
+      headers: { "Authorization": `Bearer ${token}` }
+    });
     
-    // According to some versions of SendPulse API, you can send by phone using this:
+    if (check.ok) {
+      const checkData = await check.json();
+      contactId = checkData.data?.id;
+    } else {
+      // Consume body if it exists to avoid issues
+      await check.text().catch(() => {});
+    }
+
+    // 2. If not found, attempt to create the contact.
+    if (!contactId) {
+      const createResponse = await fetch(`https://api.sendpulse.com/whatsapp/contacts`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          bot_id: senderId,
+          phone: phone,
+          name: "Cliente Nexo",
+        }),
+      });
+      
+      const createData = await createResponse.json();
+      if (createResponse.ok && createData.data?.id) {
+        contactId = createData.data.id;
+      } else if (createData.errors?.phone?.includes("Contact already exists")) {
+        // Fallback: search for contact by phone if creation says it exists but get_by_phone failed
+        const search = await fetch(`https://api.sendpulse.com/whatsapp/contacts?bot_id=${senderId}&page=1&limit=20`, {
+          headers: { "Authorization": `Bearer ${token}` }
+        });
+        if (search.ok) {
+          const searchData = await search.json();
+          const found = searchData.data?.find((c: any) => c.phone === phone);
+          if (found) contactId = found.id;
+        }
+      }
+    }
+
+    if (!contactId) {
+      return { ok: false, reason: "contact_id_resolution_failed" };
+    }
+
+    // 3. Send the message using the validated contact_id
     const response = await fetch(`https://api.sendpulse.com/whatsapp/contacts/send`, {
       method: "POST",
       headers: {
@@ -78,7 +125,7 @@ export async function sendSendPulseWhatsApp(params: {
       },
       body: JSON.stringify({
         bot_id: senderId,
-        phone: phone,
+        contact_id: contactId,
         message: {
           type: "text",
           text: { body: params.text }
@@ -88,38 +135,6 @@ export async function sendSendPulseWhatsApp(params: {
 
     if (!response.ok) {
       const errorText = await response.text();
-      // If the direct phone send fails because of missing contact_id, try to resolve it.
-      if (errorText.includes("contact_id") || response.status === 422) {
-        // Resolve contact_id
-        const check = await fetch(`https://api.sendpulse.com/whatsapp/contacts/get_by_phone?phone=${phone}&bot_id=${senderId}`, {
-          headers: { "Authorization": `Bearer ${token}` }
-        });
-        const checkData = await check.json();
-        const contactId = checkData.data?.id;
-
-        if (contactId) {
-          const retryResponse = await fetch(`https://api.sendpulse.com/whatsapp/contacts/send`, {
-            method: "POST",
-            headers: {
-              "Authorization": `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              bot_id: senderId,
-              contact_id: contactId,
-              message: {
-                type: "text",
-                text: { body: params.text }
-              }
-            }),
-          });
-          if (retryResponse.ok) {
-            const result = await retryResponse.json();
-            return { ok: true, messageId: result.data?.message_id };
-          }
-          return { ok: false, reason: `api_error_retry: ${await retryResponse.text()}`, status: retryResponse.status };
-        }
-      }
       return { ok: false, reason: `api_error: ${errorText}`, status: response.status };
     }
 

@@ -64,20 +64,24 @@ export async function sendSendPulseWhatsApp(params: {
   const phone = params.phone.replace(/\D/g, "");
 
   try {
-    const response = await fetch(`https://api.sendpulse.com/whatsapp/contacts/send`, {
+    // First, try to send directly. If it fails with "Invalid ID", it might mean
+    // the contact isn't in SendPulse yet. But the /send endpoint usually handles this.
+    // However, SendPulse often requires phone in "phone" field and "contact_id" might be internal.
+    // Let's adjust the payload based on common SendPulse API patterns.
+
+    const response = await fetch(`https://api.sendpulse.com/whatsapp/messages/send`, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${token}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        contact_id: phone,
+        bot_id: senderId,
+        phone: phone,
         message: {
           type: "text",
           text: { body: params.text },
-        },
-        phone: phone,
-        bot_id: senderId
+        }
       }),
     });
 

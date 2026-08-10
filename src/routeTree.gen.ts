@@ -84,11 +84,9 @@ import { Route as ApiPublicHooksIssueSingleBoletoRouteImport } from './routes/ap
 import { Route as ApiPublicHooksProcessPayoutQueueRouteImport } from './routes/api/public/hooks/process-payout-queue'
 import { Route as ApiPublicHooksReconcileEfiChargesRouteImport } from './routes/api/public/hooks/reconcile-efi-charges'
 import { Route as ApiPublicHooksReconcileEfiTransfersRouteImport } from './routes/api/public/hooks/reconcile-efi-transfers'
-import { Route as ApiPublicHooksReconcileStarkChargesRouteImport } from './routes/api/public/hooks/reconcile-stark-charges'
 import { Route as ApiPublicHooksRegisterEfiWebhookRouteImport } from './routes/api/public/hooks/register-efi-webhook'
 import { Route as ApiPublicHooksSendMaintenanceResponseRemindersRouteImport } from './routes/api/public/hooks/send-maintenance-response-reminders'
 import { Route as ApiPublicHooksSendTenantRemindersRouteImport } from './routes/api/public/hooks/send-tenant-reminders'
-import { Route as ApiPublicHooksStarkE2eSandboxRouteImport } from './routes/api/public/hooks/stark-e2e-sandbox'
 import { Route as ApiPublicHooksSyncCronSecretRouteImport } from './routes/api/public/hooks/sync-cron-secret'
 import { Route as ApiPublicListingsXmlRouteImport } from './routes/api/public/listings.xml'
 import { Route as ApiPublicWebhooksLeadsRouteImport } from './routes/api/public/webhooks/leads'
@@ -501,12 +499,6 @@ const ApiPublicHooksReconcileEfiTransfersRoute =
     path: '/api/public/hooks/reconcile-efi-transfers',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ApiPublicHooksReconcileStarkChargesRoute =
-  ApiPublicHooksReconcileStarkChargesRouteImport.update({
-    id: '/api/public/hooks/reconcile-stark-charges',
-    path: '/api/public/hooks/reconcile-stark-charges',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const ApiPublicHooksRegisterEfiWebhookRoute =
   ApiPublicHooksRegisterEfiWebhookRouteImport.update({
     id: '/api/public/hooks/register-efi-webhook',
@@ -523,12 +515,6 @@ const ApiPublicHooksSendTenantRemindersRoute =
   ApiPublicHooksSendTenantRemindersRouteImport.update({
     id: '/api/public/hooks/send-tenant-reminders',
     path: '/api/public/hooks/send-tenant-reminders',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiPublicHooksStarkE2eSandboxRoute =
-  ApiPublicHooksStarkE2eSandboxRouteImport.update({
-    id: '/api/public/hooks/stark-e2e-sandbox',
-    path: '/api/public/hooks/stark-e2e-sandbox',
     getParentRoute: () => rootRouteImport,
   } as any)
 const ApiPublicHooksSyncCronSecretRoute =
@@ -639,11 +625,9 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/process-payout-queue': typeof ApiPublicHooksProcessPayoutQueueRoute
   '/api/public/hooks/reconcile-efi-charges': typeof ApiPublicHooksReconcileEfiChargesRoute
   '/api/public/hooks/reconcile-efi-transfers': typeof ApiPublicHooksReconcileEfiTransfersRoute
-  '/api/public/hooks/reconcile-stark-charges': typeof ApiPublicHooksReconcileStarkChargesRoute
   '/api/public/hooks/register-efi-webhook': typeof ApiPublicHooksRegisterEfiWebhookRoute
   '/api/public/hooks/send-maintenance-response-reminders': typeof ApiPublicHooksSendMaintenanceResponseRemindersRoute
   '/api/public/hooks/send-tenant-reminders': typeof ApiPublicHooksSendTenantRemindersRoute
-  '/api/public/hooks/stark-e2e-sandbox': typeof ApiPublicHooksStarkE2eSandboxRoute
   '/api/public/hooks/sync-cron-secret': typeof ApiPublicHooksSyncCronSecretRoute
   '/api/public/listings/xml': typeof ApiPublicListingsXmlRoute
   '/api/public/webhooks/leads': typeof ApiPublicWebhooksLeadsRoute
@@ -724,11 +708,9 @@ export interface FileRoutesByTo {
   '/api/public/hooks/process-payout-queue': typeof ApiPublicHooksProcessPayoutQueueRoute
   '/api/public/hooks/reconcile-efi-charges': typeof ApiPublicHooksReconcileEfiChargesRoute
   '/api/public/hooks/reconcile-efi-transfers': typeof ApiPublicHooksReconcileEfiTransfersRoute
-  '/api/public/hooks/reconcile-stark-charges': typeof ApiPublicHooksReconcileStarkChargesRoute
   '/api/public/hooks/register-efi-webhook': typeof ApiPublicHooksRegisterEfiWebhookRoute
   '/api/public/hooks/send-maintenance-response-reminders': typeof ApiPublicHooksSendMaintenanceResponseRemindersRoute
   '/api/public/hooks/send-tenant-reminders': typeof ApiPublicHooksSendTenantRemindersRoute
-  '/api/public/hooks/stark-e2e-sandbox': typeof ApiPublicHooksStarkE2eSandboxRoute
   '/api/public/hooks/sync-cron-secret': typeof ApiPublicHooksSyncCronSecretRoute
   '/api/public/listings/xml': typeof ApiPublicListingsXmlRoute
   '/api/public/webhooks/leads': typeof ApiPublicWebhooksLeadsRoute
@@ -813,11 +795,9 @@ export interface FileRoutesById {
   '/api/public/hooks/process-payout-queue': typeof ApiPublicHooksProcessPayoutQueueRoute
   '/api/public/hooks/reconcile-efi-charges': typeof ApiPublicHooksReconcileEfiChargesRoute
   '/api/public/hooks/reconcile-efi-transfers': typeof ApiPublicHooksReconcileEfiTransfersRoute
-  '/api/public/hooks/reconcile-stark-charges': typeof ApiPublicHooksReconcileStarkChargesRoute
   '/api/public/hooks/register-efi-webhook': typeof ApiPublicHooksRegisterEfiWebhookRoute
   '/api/public/hooks/send-maintenance-response-reminders': typeof ApiPublicHooksSendMaintenanceResponseRemindersRoute
   '/api/public/hooks/send-tenant-reminders': typeof ApiPublicHooksSendTenantRemindersRoute
-  '/api/public/hooks/stark-e2e-sandbox': typeof ApiPublicHooksStarkE2eSandboxRoute
   '/api/public/hooks/sync-cron-secret': typeof ApiPublicHooksSyncCronSecretRoute
   '/api/public/listings/xml': typeof ApiPublicListingsXmlRoute
   '/api/public/webhooks/leads': typeof ApiPublicWebhooksLeadsRoute
@@ -900,11 +880,9 @@ export interface FileRouteTypes {
     | '/api/public/hooks/process-payout-queue'
     | '/api/public/hooks/reconcile-efi-charges'
     | '/api/public/hooks/reconcile-efi-transfers'
-    | '/api/public/hooks/reconcile-stark-charges'
     | '/api/public/hooks/register-efi-webhook'
     | '/api/public/hooks/send-maintenance-response-reminders'
     | '/api/public/hooks/send-tenant-reminders'
-    | '/api/public/hooks/stark-e2e-sandbox'
     | '/api/public/hooks/sync-cron-secret'
     | '/api/public/listings/xml'
     | '/api/public/webhooks/leads'
@@ -985,11 +963,9 @@ export interface FileRouteTypes {
     | '/api/public/hooks/process-payout-queue'
     | '/api/public/hooks/reconcile-efi-charges'
     | '/api/public/hooks/reconcile-efi-transfers'
-    | '/api/public/hooks/reconcile-stark-charges'
     | '/api/public/hooks/register-efi-webhook'
     | '/api/public/hooks/send-maintenance-response-reminders'
     | '/api/public/hooks/send-tenant-reminders'
-    | '/api/public/hooks/stark-e2e-sandbox'
     | '/api/public/hooks/sync-cron-secret'
     | '/api/public/listings/xml'
     | '/api/public/webhooks/leads'
@@ -1073,11 +1049,9 @@ export interface FileRouteTypes {
     | '/api/public/hooks/process-payout-queue'
     | '/api/public/hooks/reconcile-efi-charges'
     | '/api/public/hooks/reconcile-efi-transfers'
-    | '/api/public/hooks/reconcile-stark-charges'
     | '/api/public/hooks/register-efi-webhook'
     | '/api/public/hooks/send-maintenance-response-reminders'
     | '/api/public/hooks/send-tenant-reminders'
-    | '/api/public/hooks/stark-e2e-sandbox'
     | '/api/public/hooks/sync-cron-secret'
     | '/api/public/listings/xml'
     | '/api/public/webhooks/leads'
@@ -1111,11 +1085,9 @@ export interface RootRouteChildren {
   ApiPublicHooksProcessPayoutQueueRoute: typeof ApiPublicHooksProcessPayoutQueueRoute
   ApiPublicHooksReconcileEfiChargesRoute: typeof ApiPublicHooksReconcileEfiChargesRoute
   ApiPublicHooksReconcileEfiTransfersRoute: typeof ApiPublicHooksReconcileEfiTransfersRoute
-  ApiPublicHooksReconcileStarkChargesRoute: typeof ApiPublicHooksReconcileStarkChargesRoute
   ApiPublicHooksRegisterEfiWebhookRoute: typeof ApiPublicHooksRegisterEfiWebhookRoute
   ApiPublicHooksSendMaintenanceResponseRemindersRoute: typeof ApiPublicHooksSendMaintenanceResponseRemindersRoute
   ApiPublicHooksSendTenantRemindersRoute: typeof ApiPublicHooksSendTenantRemindersRoute
-  ApiPublicHooksStarkE2eSandboxRoute: typeof ApiPublicHooksStarkE2eSandboxRoute
   ApiPublicHooksSyncCronSecretRoute: typeof ApiPublicHooksSyncCronSecretRoute
   ApiPublicListingsXmlRoute: typeof ApiPublicListingsXmlRoute
   ApiPublicWebhooksLeadsRoute: typeof ApiPublicWebhooksLeadsRoute
@@ -1651,13 +1623,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksReconcileEfiTransfersRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/hooks/reconcile-stark-charges': {
-      id: '/api/public/hooks/reconcile-stark-charges'
-      path: '/api/public/hooks/reconcile-stark-charges'
-      fullPath: '/api/public/hooks/reconcile-stark-charges'
-      preLoaderRoute: typeof ApiPublicHooksReconcileStarkChargesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/public/hooks/register-efi-webhook': {
       id: '/api/public/hooks/register-efi-webhook'
       path: '/api/public/hooks/register-efi-webhook'
@@ -1677,13 +1642,6 @@ declare module '@tanstack/react-router' {
       path: '/api/public/hooks/send-tenant-reminders'
       fullPath: '/api/public/hooks/send-tenant-reminders'
       preLoaderRoute: typeof ApiPublicHooksSendTenantRemindersRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/hooks/stark-e2e-sandbox': {
-      id: '/api/public/hooks/stark-e2e-sandbox'
-      path: '/api/public/hooks/stark-e2e-sandbox'
-      fullPath: '/api/public/hooks/stark-e2e-sandbox'
-      preLoaderRoute: typeof ApiPublicHooksStarkE2eSandboxRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/hooks/sync-cron-secret': {
@@ -1913,14 +1871,11 @@ const rootRouteChildren: RootRouteChildren = {
     ApiPublicHooksReconcileEfiChargesRoute,
   ApiPublicHooksReconcileEfiTransfersRoute:
     ApiPublicHooksReconcileEfiTransfersRoute,
-  ApiPublicHooksReconcileStarkChargesRoute:
-    ApiPublicHooksReconcileStarkChargesRoute,
   ApiPublicHooksRegisterEfiWebhookRoute: ApiPublicHooksRegisterEfiWebhookRoute,
   ApiPublicHooksSendMaintenanceResponseRemindersRoute:
     ApiPublicHooksSendMaintenanceResponseRemindersRoute,
   ApiPublicHooksSendTenantRemindersRoute:
     ApiPublicHooksSendTenantRemindersRoute,
-  ApiPublicHooksStarkE2eSandboxRoute: ApiPublicHooksStarkE2eSandboxRoute,
   ApiPublicHooksSyncCronSecretRoute: ApiPublicHooksSyncCronSecretRoute,
   ApiPublicListingsXmlRoute: ApiPublicListingsXmlRoute,
   ApiPublicWebhooksLeadsRoute: ApiPublicWebhooksLeadsRoute,

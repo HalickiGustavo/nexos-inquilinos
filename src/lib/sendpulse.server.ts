@@ -162,6 +162,15 @@ export async function sendSendPulseWhatsApp(params: {
 
     if (!response.ok) {
       const errorText = await response.text();
+      // If 422 with session error, we can log it specifically
+      if (response.status === 422 && errorText.includes("Contact is not active in 24hours")) {
+        console.warn(`[SendPulse] Session error for ${phone}: Generic text requires 24h active session. Use templates for automation.`);
+      }
+      return { ok: false, reason: `api_error: ${errorText}`, status: response.status };
+    }
+
+    if (!response.ok) {
+      const errorText = await response.text();
       return { ok: false, reason: `api_error: ${errorText}`, status: response.status };
     }
 

@@ -68,42 +68,11 @@ export async function sendSendPulseWhatsApp(params: {
     // However, if we don't have it, we can try the direct message endpoint if enabled,
     // or use the 'contacts' endpoint to ensure they exist.
     // Let's try to get contact info first to see if they exist.
-    const contactCheck = await fetch(`https://api.sendpulse.com/whatsapp/contacts/get_by_phone?phone=${phone}&bot_id=${senderId}`, {
-      headers: { "Authorization": `Bearer ${token}` }
-    });
-
-    let contactId: string | null = null;
-    const contactData = await contactCheck.json();
+    // We'll use the generic message endpoint which allows sending by phone directly if the contact doesn't exist yet
+    // Documentation suggests 'contacts/send' or using templates. 
+    // Let's try the direct phone endpoint if possible, or force contact creation correctly.
     
-    if (contactCheck.ok && contactData.data?.id) {
-      contactId = contactData.data.id;
-    } else {
-      // Contact doesn't exist, try to create them
-      const createResponse = await fetch(`https://api.sendpulse.com/whatsapp/contacts`, {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          bot_id: senderId,
-          phone: phone,
-          name: "Cliente Nexo", // Placeholder name
-        }),
-      });
-      
-      if (createResponse.ok) {
-        const createData = await createResponse.json();
-        contactId = createData.data?.id;
-      }
-    }
-
-    if (!contactId) {
-      return { ok: false, reason: "contact_id_resolution_failed", status: contactCheck.status };
-    }
-
-    // Now send the message using the resolved contactId
-    const response = await fetch(`https://api.sendpulse.com/whatsapp/messages/sendText`, {
+    const response = await fetch(`https://api.sendpulse.com/whatsapp/messages/send`, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${token}`,
@@ -111,8 +80,13 @@ export async function sendSendPulseWhatsApp(params: {
       },
       body: JSON.stringify({
         bot_id: senderId,
-        contact_id: contactId,
-        text: params.text,
+        phone: phone,
+        message: {
+          type: "text",
+          text: {
+            body: params.text
+          }
+        }
       }),
     });
 

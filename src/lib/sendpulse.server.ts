@@ -72,15 +72,38 @@ export async function sendSendPulseWhatsApp(params: {
       headers: { "Authorization": `Bearer ${token}` }
     });
 
-    let contactId = phone;
-    if (contactCheck.ok) {
-      const contactData = await contactCheck.json();
-      if (contactData.data?.id) {
-        contactId = contactData.data.id;
+    let contactId: string | null = null;
+    const contactData = await contactCheck.json();
+    
+    if (contactCheck.ok && contactData.data?.id) {
+      contactId = contactData.data.id;
+    } else {
+      // Contact doesn't exist, try to create them
+      const createResponse = await fetch(`https://api.sendpulse.com/whatsapp/contacts`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          bot_id: senderId,
+          phone: phone,
+          name: "Cliente Nexo", // Placeholder name
+        }),
+      });
+      
+      if (createResponse.ok) {
+        const createData = await createResponse.json();
+        contactId = createData.data?.id;
       }
     }
 
-    const response = await fetch(`https://api.sendpulse.com/whatsapp/contacts/send`, {
+    if (!contactId) {
+      return { ok: false, reason: "contact_id_resolution_failed", status: contactCheck.status };
+    }
+
+    // Now send the message using the resolved contactId
+    const response = await fetch(`https://api.sendpulse.com/whatsapp/messages/sendText`, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${token}`,
@@ -88,12 +111,8 @@ export async function sendSendPulseWhatsApp(params: {
       },
       body: JSON.stringify({
         bot_id: senderId,
-        phone: phone,
         contact_id: contactId,
-        message: {
-          type: "text",
-          text: { body: params.text },
-        }
+        text: params.text,
       }),
     });
 

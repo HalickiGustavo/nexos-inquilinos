@@ -72,7 +72,7 @@ export async function sendSendPulseWhatsApp(params: {
     // Documentation suggests 'contacts/send' or using templates. 
     // Let's try the direct phone endpoint if possible, or force contact creation correctly.
     
-    const response = await fetch(`https://api.sendpulse.com/whatsapp/messages/send`, {
+    const response = await fetch(`https://api.sendpulse.com/whatsapp/contacts/send`, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${token}`,

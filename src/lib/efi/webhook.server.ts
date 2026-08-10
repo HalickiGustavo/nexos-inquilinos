@@ -5,8 +5,8 @@
 //
 // SERVER-ONLY.
 
-import { computeSplit } from "@/lib/stark/split-engine";
-import { enqueueTransfersForSplit } from "@/lib/stark/transfers.repo.server";
+import { computeSplit } from "@/lib/financial-engine.server";
+import { enqueueTransfersForSplit } from "@/lib/financial-engine.server";
 import { efiCobGet } from "./efi.server";
 
 type EfiWebhookPixItem = {

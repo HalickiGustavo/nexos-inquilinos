@@ -7,7 +7,7 @@ import {
   markProcessing,
   markCompleted,
   markFailed,
-} from "@/lib/stark/transfers.repo.server";
+} from "@/lib/financial-engine.server";
 import { efiPixSend, efiPixSendGet, efiSaldoGet, idEnvioFromTransferId } from "./payouts.server";
 
 const NEXO_PIX_KEY = () =>

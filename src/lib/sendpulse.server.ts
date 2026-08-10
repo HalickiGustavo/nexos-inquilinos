@@ -48,6 +48,8 @@ export async function sendSendPulseWhatsApp(params: {
   phone: string;
   text: string;
   senderId?: string; // The ID of the WhatsApp channel in SendPulse
+  templateId?: string;
+  variables?: Record<string, string>;
 }): Promise<SendPulseResult> {
   // Case edge: invalid phone
   if (!params.phone || params.phone.length < 8) {

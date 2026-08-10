@@ -67,7 +67,6 @@ import { Route as ManagerManagerProprietariosRouteImport } from './routes/_manag
 import { Route as ManagerManagerRelatoriosRouteImport } from './routes/_manager/manager.relatorios'
 import { Route as ManagerManagerVistoriasRouteImport } from './routes/_manager/manager.vistorias'
 import { Route as ApiPublicEfiWebhookRouteImport } from './routes/api/public/efi-webhook'
-import { Route as ApiPublicStarkWebhookRouteImport } from './routes/api/public/stark-webhook'
 import { Route as AuthenticatedAdminConfiguracoesSubcontaRouteImport } from './routes/_authenticated/admin.configuracoes.subconta'
 import { Route as ManagerManagerConfiguracoesRoletaRouteImport } from './routes/_manager/manager.configuracoes.roleta'
 import { Route as ApiPublicCrmAgenciesRouteImport } from './routes/api/public/crm/agencies'
@@ -87,7 +86,6 @@ import { Route as ApiPublicHooksReconcileEfiChargesRouteImport } from './routes/
 import { Route as ApiPublicHooksReconcileEfiTransfersRouteImport } from './routes/api/public/hooks/reconcile-efi-transfers'
 import { Route as ApiPublicHooksReconcileStarkChargesRouteImport } from './routes/api/public/hooks/reconcile-stark-charges'
 import { Route as ApiPublicHooksRegisterEfiWebhookRouteImport } from './routes/api/public/hooks/register-efi-webhook'
-import { Route as ApiPublicHooksRegisterStarkWebhookRouteImport } from './routes/api/public/hooks/register-stark-webhook'
 import { Route as ApiPublicHooksSendMaintenanceResponseRemindersRouteImport } from './routes/api/public/hooks/send-maintenance-response-reminders'
 import { Route as ApiPublicHooksSendTenantRemindersRouteImport } from './routes/api/public/hooks/send-tenant-reminders'
 import { Route as ApiPublicHooksStarkE2eSandboxRouteImport } from './routes/api/public/hooks/stark-e2e-sandbox'
@@ -406,11 +404,6 @@ const ApiPublicEfiWebhookRoute = ApiPublicEfiWebhookRouteImport.update({
   path: '/api/public/efi-webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicStarkWebhookRoute = ApiPublicStarkWebhookRouteImport.update({
-  id: '/api/public/stark-webhook',
-  path: '/api/public/stark-webhook',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuthenticatedAdminConfiguracoesSubcontaRoute =
   AuthenticatedAdminConfiguracoesSubcontaRouteImport.update({
     id: '/admin/configuracoes/subconta',
@@ -520,12 +513,6 @@ const ApiPublicHooksRegisterEfiWebhookRoute =
     path: '/api/public/hooks/register-efi-webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ApiPublicHooksRegisterStarkWebhookRoute =
-  ApiPublicHooksRegisterStarkWebhookRouteImport.update({
-    id: '/api/public/hooks/register-stark-webhook',
-    path: '/api/public/hooks/register-stark-webhook',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const ApiPublicHooksSendMaintenanceResponseRemindersRoute =
   ApiPublicHooksSendMaintenanceResponseRemindersRouteImport.update({
     id: '/api/public/hooks/send-maintenance-response-reminders',
@@ -632,7 +619,6 @@ export interface FileRoutesByFullPath {
   '/manager/relatorios': typeof ManagerManagerRelatoriosRoute
   '/manager/vistorias': typeof ManagerManagerVistoriasRoute
   '/api/public/efi-webhook': typeof ApiPublicEfiWebhookRouteWithChildren
-  '/api/public/stark-webhook': typeof ApiPublicStarkWebhookRoute
   '/tenant/': typeof AuthenticatedTenantIndexRoute
   '/landlord/': typeof LandlordLandlordIndexRoute
   '/manager/': typeof ManagerManagerIndexRoute
@@ -655,7 +641,6 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/reconcile-efi-transfers': typeof ApiPublicHooksReconcileEfiTransfersRoute
   '/api/public/hooks/reconcile-stark-charges': typeof ApiPublicHooksReconcileStarkChargesRoute
   '/api/public/hooks/register-efi-webhook': typeof ApiPublicHooksRegisterEfiWebhookRoute
-  '/api/public/hooks/register-stark-webhook': typeof ApiPublicHooksRegisterStarkWebhookRoute
   '/api/public/hooks/send-maintenance-response-reminders': typeof ApiPublicHooksSendMaintenanceResponseRemindersRoute
   '/api/public/hooks/send-tenant-reminders': typeof ApiPublicHooksSendTenantRemindersRoute
   '/api/public/hooks/stark-e2e-sandbox': typeof ApiPublicHooksStarkE2eSandboxRoute
@@ -719,7 +704,6 @@ export interface FileRoutesByTo {
   '/manager/relatorios': typeof ManagerManagerRelatoriosRoute
   '/manager/vistorias': typeof ManagerManagerVistoriasRoute
   '/api/public/efi-webhook': typeof ApiPublicEfiWebhookRouteWithChildren
-  '/api/public/stark-webhook': typeof ApiPublicStarkWebhookRoute
   '/tenant': typeof AuthenticatedTenantIndexRoute
   '/landlord': typeof LandlordLandlordIndexRoute
   '/manager': typeof ManagerManagerIndexRoute
@@ -742,7 +726,6 @@ export interface FileRoutesByTo {
   '/api/public/hooks/reconcile-efi-transfers': typeof ApiPublicHooksReconcileEfiTransfersRoute
   '/api/public/hooks/reconcile-stark-charges': typeof ApiPublicHooksReconcileStarkChargesRoute
   '/api/public/hooks/register-efi-webhook': typeof ApiPublicHooksRegisterEfiWebhookRoute
-  '/api/public/hooks/register-stark-webhook': typeof ApiPublicHooksRegisterStarkWebhookRoute
   '/api/public/hooks/send-maintenance-response-reminders': typeof ApiPublicHooksSendMaintenanceResponseRemindersRoute
   '/api/public/hooks/send-tenant-reminders': typeof ApiPublicHooksSendTenantRemindersRoute
   '/api/public/hooks/stark-e2e-sandbox': typeof ApiPublicHooksStarkE2eSandboxRoute
@@ -810,7 +793,6 @@ export interface FileRoutesById {
   '/_manager/manager/relatorios': typeof ManagerManagerRelatoriosRoute
   '/_manager/manager/vistorias': typeof ManagerManagerVistoriasRoute
   '/api/public/efi-webhook': typeof ApiPublicEfiWebhookRouteWithChildren
-  '/api/public/stark-webhook': typeof ApiPublicStarkWebhookRoute
   '/_authenticated/tenant/': typeof AuthenticatedTenantIndexRoute
   '/_landlord/landlord/': typeof LandlordLandlordIndexRoute
   '/_manager/manager/': typeof ManagerManagerIndexRoute
@@ -833,7 +815,6 @@ export interface FileRoutesById {
   '/api/public/hooks/reconcile-efi-transfers': typeof ApiPublicHooksReconcileEfiTransfersRoute
   '/api/public/hooks/reconcile-stark-charges': typeof ApiPublicHooksReconcileStarkChargesRoute
   '/api/public/hooks/register-efi-webhook': typeof ApiPublicHooksRegisterEfiWebhookRoute
-  '/api/public/hooks/register-stark-webhook': typeof ApiPublicHooksRegisterStarkWebhookRoute
   '/api/public/hooks/send-maintenance-response-reminders': typeof ApiPublicHooksSendMaintenanceResponseRemindersRoute
   '/api/public/hooks/send-tenant-reminders': typeof ApiPublicHooksSendTenantRemindersRoute
   '/api/public/hooks/stark-e2e-sandbox': typeof ApiPublicHooksStarkE2eSandboxRoute
@@ -899,7 +880,6 @@ export interface FileRouteTypes {
     | '/manager/relatorios'
     | '/manager/vistorias'
     | '/api/public/efi-webhook'
-    | '/api/public/stark-webhook'
     | '/tenant/'
     | '/landlord/'
     | '/manager/'
@@ -922,7 +902,6 @@ export interface FileRouteTypes {
     | '/api/public/hooks/reconcile-efi-transfers'
     | '/api/public/hooks/reconcile-stark-charges'
     | '/api/public/hooks/register-efi-webhook'
-    | '/api/public/hooks/register-stark-webhook'
     | '/api/public/hooks/send-maintenance-response-reminders'
     | '/api/public/hooks/send-tenant-reminders'
     | '/api/public/hooks/stark-e2e-sandbox'
@@ -986,7 +965,6 @@ export interface FileRouteTypes {
     | '/manager/relatorios'
     | '/manager/vistorias'
     | '/api/public/efi-webhook'
-    | '/api/public/stark-webhook'
     | '/tenant'
     | '/landlord'
     | '/manager'
@@ -1009,7 +987,6 @@ export interface FileRouteTypes {
     | '/api/public/hooks/reconcile-efi-transfers'
     | '/api/public/hooks/reconcile-stark-charges'
     | '/api/public/hooks/register-efi-webhook'
-    | '/api/public/hooks/register-stark-webhook'
     | '/api/public/hooks/send-maintenance-response-reminders'
     | '/api/public/hooks/send-tenant-reminders'
     | '/api/public/hooks/stark-e2e-sandbox'
@@ -1076,7 +1053,6 @@ export interface FileRouteTypes {
     | '/_manager/manager/relatorios'
     | '/_manager/manager/vistorias'
     | '/api/public/efi-webhook'
-    | '/api/public/stark-webhook'
     | '/_authenticated/tenant/'
     | '/_landlord/landlord/'
     | '/_manager/manager/'
@@ -1099,7 +1075,6 @@ export interface FileRouteTypes {
     | '/api/public/hooks/reconcile-efi-transfers'
     | '/api/public/hooks/reconcile-stark-charges'
     | '/api/public/hooks/register-efi-webhook'
-    | '/api/public/hooks/register-stark-webhook'
     | '/api/public/hooks/send-maintenance-response-reminders'
     | '/api/public/hooks/send-tenant-reminders'
     | '/api/public/hooks/stark-e2e-sandbox'
@@ -1122,7 +1097,6 @@ export interface RootRouteChildren {
   ManagerSetupRoute: typeof ManagerSetupRoute
   TenantSetupRoute: typeof TenantSetupRoute
   ApiPublicEfiWebhookRoute: typeof ApiPublicEfiWebhookRouteWithChildren
-  ApiPublicStarkWebhookRoute: typeof ApiPublicStarkWebhookRoute
   ApiPublicCrmAgenciesRoute: typeof ApiPublicCrmAgenciesRoute
   ApiPublicCrmAgenciesCompleteRoute: typeof ApiPublicCrmAgenciesCompleteRoute
   ApiPublicCrmContractsAndTenantsRoute: typeof ApiPublicCrmContractsAndTenantsRoute
@@ -1139,7 +1113,6 @@ export interface RootRouteChildren {
   ApiPublicHooksReconcileEfiTransfersRoute: typeof ApiPublicHooksReconcileEfiTransfersRoute
   ApiPublicHooksReconcileStarkChargesRoute: typeof ApiPublicHooksReconcileStarkChargesRoute
   ApiPublicHooksRegisterEfiWebhookRoute: typeof ApiPublicHooksRegisterEfiWebhookRoute
-  ApiPublicHooksRegisterStarkWebhookRoute: typeof ApiPublicHooksRegisterStarkWebhookRoute
   ApiPublicHooksSendMaintenanceResponseRemindersRoute: typeof ApiPublicHooksSendMaintenanceResponseRemindersRoute
   ApiPublicHooksSendTenantRemindersRoute: typeof ApiPublicHooksSendTenantRemindersRoute
   ApiPublicHooksStarkE2eSandboxRoute: typeof ApiPublicHooksStarkE2eSandboxRoute
@@ -1559,13 +1532,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicEfiWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/stark-webhook': {
-      id: '/api/public/stark-webhook'
-      path: '/api/public/stark-webhook'
-      fullPath: '/api/public/stark-webhook'
-      preLoaderRoute: typeof ApiPublicStarkWebhookRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_authenticated/admin/configuracoes/subconta': {
       id: '/_authenticated/admin/configuracoes/subconta'
       path: '/admin/configuracoes/subconta'
@@ -1697,13 +1663,6 @@ declare module '@tanstack/react-router' {
       path: '/api/public/hooks/register-efi-webhook'
       fullPath: '/api/public/hooks/register-efi-webhook'
       preLoaderRoute: typeof ApiPublicHooksRegisterEfiWebhookRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/hooks/register-stark-webhook': {
-      id: '/api/public/hooks/register-stark-webhook'
-      path: '/api/public/hooks/register-stark-webhook'
-      fullPath: '/api/public/hooks/register-stark-webhook'
-      preLoaderRoute: typeof ApiPublicHooksRegisterStarkWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/hooks/send-maintenance-response-reminders': {
@@ -1937,7 +1896,6 @@ const rootRouteChildren: RootRouteChildren = {
   ManagerSetupRoute: ManagerSetupRoute,
   TenantSetupRoute: TenantSetupRoute,
   ApiPublicEfiWebhookRoute: ApiPublicEfiWebhookRouteWithChildren,
-  ApiPublicStarkWebhookRoute: ApiPublicStarkWebhookRoute,
   ApiPublicCrmAgenciesRoute: ApiPublicCrmAgenciesRoute,
   ApiPublicCrmAgenciesCompleteRoute: ApiPublicCrmAgenciesCompleteRoute,
   ApiPublicCrmContractsAndTenantsRoute: ApiPublicCrmContractsAndTenantsRoute,
@@ -1958,8 +1916,6 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksReconcileStarkChargesRoute:
     ApiPublicHooksReconcileStarkChargesRoute,
   ApiPublicHooksRegisterEfiWebhookRoute: ApiPublicHooksRegisterEfiWebhookRoute,
-  ApiPublicHooksRegisterStarkWebhookRoute:
-    ApiPublicHooksRegisterStarkWebhookRoute,
   ApiPublicHooksSendMaintenanceResponseRemindersRoute:
     ApiPublicHooksSendMaintenanceResponseRemindersRoute,
   ApiPublicHooksSendTenantRemindersRoute:

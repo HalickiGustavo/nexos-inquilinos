@@ -18,7 +18,7 @@ import { toast } from "sonner";
 import { VariableExpensesDialog } from "@/components/VariableExpensesDialog";
 import { SplitBreakdownDialog, NEXO_FEE_PER_INSTALLMENT } from "@/components/SplitBreakdownDialog";
 import { parseExpenses, expensesTotals } from "@/lib/variable-expenses";
-// asaas removed
+import { generateAsaasCharge, updateAsaasChargeFee } from "@/lib/asaas.functions";
 import { PageHeader, PageShell } from "@/components/PageHeader";
 
 export const Route = createFileRoute("/_manager/manager/financeiro")({

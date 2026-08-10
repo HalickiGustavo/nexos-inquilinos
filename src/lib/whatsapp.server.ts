@@ -21,6 +21,8 @@ export function sanitizeBrPhone(raw: string): string | null {
 export async function sendEvolutionText(params: {
   phone: string;
   text: string;
+  templateId?: string;
+  variables?: Record<string, string>;
 }): Promise<EvolutionSendResult> {
   const baseUrl = process.env.EVOLUTION_API_URL;
   const instance = process.env.EVOLUTION_API_INSTANCE;
@@ -31,7 +33,9 @@ export async function sendEvolutionText(params: {
   if (process.env.SENDPULSE_CLIENT_ID && process.env.SENDPULSE_CLIENT_SECRET) {
     return sendSendPulseWhatsApp({
       phone: params.phone,
-      text: params.text
+      text: params.text,
+      templateId: params.templateId,
+      variables: params.variables
     });
   }
 

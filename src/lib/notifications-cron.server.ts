@@ -101,9 +101,28 @@ async function sendPaymentReminder(installment: any, title: string) {
 
   // WhatsApp via SendPulse (or Evolution fallback in whatsapp.server.ts)
   if (tenant.phone) {
+    // Determine template based on title/status
+    let templateId = process.env['SENDPULSE_TEMPLATE_DEFAULT'];
+    const variables = {
+      'full_name': tenant.full_name || 'Cliente',
+      'amount': amountFormatted,
+      'due_date': installment.due_date,
+      'title': title
+    };
+
+    if (title.includes("vence em 4 dias")) {
+      templateId = process.env['SENDPULSE_TEMPLATE_REMINDER_4D'];
+    } else if (title.includes("vence hoje")) {
+      templateId = process.env['SENDPULSE_TEMPLATE_DUE_TODAY'];
+    } else if (title.includes("vencida")) {
+      templateId = process.env['SENDPULSE_TEMPLATE_OVERDUE'];
+    }
+
     const result = await sendEvolutionText({
       phone: tenant.phone,
-      text: message
+      text: message,
+      templateId,
+      variables
     });
     if (!result.ok) {
       console.error(`Failed to send WhatsApp to ${tenant.phone}: ${result.reason}`);

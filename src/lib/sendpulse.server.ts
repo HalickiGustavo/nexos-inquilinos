@@ -107,7 +107,14 @@ export async function sendSendPulseWhatsApp(params: {
         });
         if (search.ok) {
           const searchData = await search.json();
-          const found = searchData.data?.find((c: any) => c.phone === phone || c.phone === `+${phone}`);
+          console.log(`Search returned ${searchData.data?.length} contacts. Looking for phone: ${phone}`);
+          // Log keys of the first contact to see what we're working with
+          const found = searchData.data?.find((c: any) => {
+            const p = c.channel_data?.phone || c.phone || c.phone_number;
+            if (!p) return false;
+            const cleanC = String(p).replace(/\D/g, "");
+            return cleanC === phone;
+          });
           if (found) contactId = found.id;
           console.log("Found contact via list search:", contactId);
         }
@@ -118,27 +125,50 @@ export async function sendSendPulseWhatsApp(params: {
       return { ok: false, reason: "contact_id_resolution_failed" };
     }
 
-    // 3. Send the message using the validated contact_id
-    const response = await fetch(`https://api.sendpulse.com/whatsapp/contacts/send`, {
+    // 3. Send the message
+    // If template is provided, use template endpoint; otherwise use generic text
+    // Note: SendPulse generic text requires a session within 24h.
+    // For automated notifications, we should ideally use templates.
+    const isTemplate = params.text.includes("{{") || (params as any).templateId;
+    
+    const endpoint = isTemplate 
+      ? `https://api.sendpulse.com/whatsapp/messages/send` 
+      : `https://api.sendpulse.com/whatsapp/contacts/send`;
+
+    const body = isTemplate
+      ? {
+          bot_id: senderId,
+          phone: phone,
+          template_id: (params as any).templateId,
+          variables: (params as any).variables || {}
+        }
+      : {
+          bot_id: senderId,
+          contact_id: contactId,
+          message: {
+            type: "text",
+            text: { body: params.text }
+          }
+        };
+
+    const response = await fetch(endpoint, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${token}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        bot_id: senderId,
-        contact_id: contactId,
-        message: {
-          type: "text",
-          text: { body: params.text }
-        }
-      }),
+      body: JSON.stringify(body),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
+      // If 422 with session error, we can log it specifically
+      if (response.status === 422 && errorText.includes("Contact is not active in 24hours")) {
+        console.warn(`[SendPulse] Session error for ${phone}: Generic text requires 24h active session. Use templates for automation.`);
+      }
       return { ok: false, reason: `api_error: ${errorText}`, status: response.status };
     }
+
 
     const result = await response.json();
     return { ok: true, messageId: result.data?.message_id };

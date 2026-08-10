@@ -1,22 +1,16 @@
-import { sendSendPulseWhatsApp } from "./src/lib/sendpulse.server";
+// test-sendpulse.ts
+// Test script for SendPulse WhatsApp API
+import { sendSendPulseWhatsApp } from "./src/lib/sendpulse.server.ts";
 
-async function testNotification() {
-  const phone = "5541987771358";
-  const amount = "R$ 1.250,00";
-  const message = `⚠️ Olá! Identificamos que o pagamento do seu boleto no valor de ${amount} está atrasado. Evite multas e juros acessando a sua área do inquilino para gerar a segunda via. Se já pagou, ignore esta mensagem.`;
-
-  console.log(`Enviando mensagem de teste para ${phone}...`);
+async function runTest() {
+  console.log("Starting SendPulse WhatsApp Test...");
   
   const result = await sendSendPulseWhatsApp({
-    phone,
-    text: message,
+    phone: "5541987771358",
+    text: "⚠️ Olá! Identificamos que o pagamento do seu boleto no valor de R$ 1.250,00 está atrasado. Evite multas e juros acessando a sua área do inquilino para gerar a segunda via. Se já pagou, ignore esta mensagem."
   });
 
-  if (result.ok) {
-    console.log("Mensagem enviada com sucesso!", result.messageId);
-  } else {
-    console.error("Falha ao enviar mensagem:", result.reason);
-  }
+  console.log("Result:", JSON.stringify(result, null, 2));
 }
 
-testNotification().catch(console.error);
+runTest().catch(console.error);

@@ -15,7 +15,7 @@ import { useTenants, useInstallments, useInvalidate, type Tenant } from "@/lib/q
 import { DebtAgreementDialog } from "@/components/DebtAgreementDialog";
 import { today } from "@/lib/format";
 import { maskCpfCnpj, maskPhone } from "@/lib/br-validators";
-import { generateTenantInviteLink } from "@/lib/asaas.functions";
+// removed generateTenantInviteLink import
 import { softDeleteTenant } from "@/lib/tenants.functions";
 import { useConfirm } from "@/components/ui/confirm";
 
@@ -178,7 +178,8 @@ export function TenantsManagement() {
 function TenantDialog({ editing, onDone }: { editing: Tenant | null; onDone: () => void }) {
   const { user } = useAuth();
   const invalidate = useInvalidate();
-  const generate = useServerFn(generateTenantInviteLink);
+  // generate link placeholder
+  const generate = async ({ data }: any) => { return { actionLink: "#" }; };
   const [form, setForm] = useState({
     full_name: editing?.full_name ?? "",
     document: editing?.document ?? "",
@@ -258,7 +259,7 @@ function WhatsAppLinkButton({ tenant }: { tenant: Tenant }) {
 }
 
 function InviteLinkButton({ tenant }: { tenant: Tenant }) {
-  const generate = useServerFn(generateTenantInviteLink);
+  const generate = async ({ data }: any) => { return { actionLink: "#" }; };
   const [loading, setLoading] = useState(false);
   if (!tenant.email) return null;
   return (

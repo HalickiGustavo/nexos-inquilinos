@@ -128,4 +128,5 @@ export async function sendSendPulseWhatsApp(params: {
   } catch (error: any) {
     return { ok: false, reason: `request_failed: ${error.message}` };
   }
+}
 

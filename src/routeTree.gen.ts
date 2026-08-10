@@ -67,8 +67,6 @@ import { Route as ManagerManagerProprietariosRouteImport } from './routes/_manag
 import { Route as ManagerManagerRelatoriosRouteImport } from './routes/_manager/manager.relatorios'
 import { Route as ManagerManagerVistoriasRouteImport } from './routes/_manager/manager.vistorias'
 import { Route as ApiPublicEfiWebhookRouteImport } from './routes/api/public/efi-webhook'
-import { Route as ApiPublicStarkWebhookRouteImport } from './routes/api/public/stark-webhook'
-import { Route as AuthenticatedAdminConfiguracoesSubcontaRouteImport } from './routes/_authenticated/admin.configuracoes.subconta'
 import { Route as ManagerManagerConfiguracoesRoletaRouteImport } from './routes/_manager/manager.configuracoes.roleta'
 import { Route as ApiPublicCrmAgenciesRouteImport } from './routes/api/public/crm/agencies'
 import { Route as ApiPublicCrmAgenciesCompleteRouteImport } from './routes/api/public/crm/agencies-complete'
@@ -81,16 +79,11 @@ import { Route as ApiPublicCronNotificationsRouteImport } from './routes/api/pub
 import { Route as ApiPublicEfiWebhookPixRouteImport } from './routes/api/public/efi-webhook.pix'
 import { Route as ApiPublicHooksEfiSaldoRouteImport } from './routes/api/public/hooks/efi-saldo'
 import { Route as ApiPublicHooksGenerateUpcomingBoletosRouteImport } from './routes/api/public/hooks/generate-upcoming-boletos'
-import { Route as ApiPublicHooksIssueSingleBoletoRouteImport } from './routes/api/public/hooks/issue-single-boleto'
-import { Route as ApiPublicHooksProcessPayoutQueueRouteImport } from './routes/api/public/hooks/process-payout-queue'
 import { Route as ApiPublicHooksReconcileEfiChargesRouteImport } from './routes/api/public/hooks/reconcile-efi-charges'
 import { Route as ApiPublicHooksReconcileEfiTransfersRouteImport } from './routes/api/public/hooks/reconcile-efi-transfers'
-import { Route as ApiPublicHooksReconcileStarkChargesRouteImport } from './routes/api/public/hooks/reconcile-stark-charges'
 import { Route as ApiPublicHooksRegisterEfiWebhookRouteImport } from './routes/api/public/hooks/register-efi-webhook'
-import { Route as ApiPublicHooksRegisterStarkWebhookRouteImport } from './routes/api/public/hooks/register-stark-webhook'
 import { Route as ApiPublicHooksSendMaintenanceResponseRemindersRouteImport } from './routes/api/public/hooks/send-maintenance-response-reminders'
 import { Route as ApiPublicHooksSendTenantRemindersRouteImport } from './routes/api/public/hooks/send-tenant-reminders'
-import { Route as ApiPublicHooksStarkE2eSandboxRouteImport } from './routes/api/public/hooks/stark-e2e-sandbox'
 import { Route as ApiPublicHooksSyncCronSecretRouteImport } from './routes/api/public/hooks/sync-cron-secret'
 import { Route as ApiPublicListingsXmlRouteImport } from './routes/api/public/listings.xml'
 import { Route as ApiPublicWebhooksLeadsRouteImport } from './routes/api/public/webhooks/leads'
@@ -406,17 +399,6 @@ const ApiPublicEfiWebhookRoute = ApiPublicEfiWebhookRouteImport.update({
   path: '/api/public/efi-webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicStarkWebhookRoute = ApiPublicStarkWebhookRouteImport.update({
-  id: '/api/public/stark-webhook',
-  path: '/api/public/stark-webhook',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthenticatedAdminConfiguracoesSubcontaRoute =
-  AuthenticatedAdminConfiguracoesSubcontaRouteImport.update({
-    id: '/admin/configuracoes/subconta',
-    path: '/admin/configuracoes/subconta',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
 const ManagerManagerConfiguracoesRoletaRoute =
   ManagerManagerConfiguracoesRoletaRouteImport.update({
     id: '/manager/configuracoes/roleta',
@@ -484,18 +466,6 @@ const ApiPublicHooksGenerateUpcomingBoletosRoute =
     path: '/api/public/hooks/generate-upcoming-boletos',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ApiPublicHooksIssueSingleBoletoRoute =
-  ApiPublicHooksIssueSingleBoletoRouteImport.update({
-    id: '/api/public/hooks/issue-single-boleto',
-    path: '/api/public/hooks/issue-single-boleto',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiPublicHooksProcessPayoutQueueRoute =
-  ApiPublicHooksProcessPayoutQueueRouteImport.update({
-    id: '/api/public/hooks/process-payout-queue',
-    path: '/api/public/hooks/process-payout-queue',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const ApiPublicHooksReconcileEfiChargesRoute =
   ApiPublicHooksReconcileEfiChargesRouteImport.update({
     id: '/api/public/hooks/reconcile-efi-charges',
@@ -508,22 +478,10 @@ const ApiPublicHooksReconcileEfiTransfersRoute =
     path: '/api/public/hooks/reconcile-efi-transfers',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ApiPublicHooksReconcileStarkChargesRoute =
-  ApiPublicHooksReconcileStarkChargesRouteImport.update({
-    id: '/api/public/hooks/reconcile-stark-charges',
-    path: '/api/public/hooks/reconcile-stark-charges',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const ApiPublicHooksRegisterEfiWebhookRoute =
   ApiPublicHooksRegisterEfiWebhookRouteImport.update({
     id: '/api/public/hooks/register-efi-webhook',
     path: '/api/public/hooks/register-efi-webhook',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiPublicHooksRegisterStarkWebhookRoute =
-  ApiPublicHooksRegisterStarkWebhookRouteImport.update({
-    id: '/api/public/hooks/register-stark-webhook',
-    path: '/api/public/hooks/register-stark-webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
 const ApiPublicHooksSendMaintenanceResponseRemindersRoute =
@@ -536,12 +494,6 @@ const ApiPublicHooksSendTenantRemindersRoute =
   ApiPublicHooksSendTenantRemindersRouteImport.update({
     id: '/api/public/hooks/send-tenant-reminders',
     path: '/api/public/hooks/send-tenant-reminders',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiPublicHooksStarkE2eSandboxRoute =
-  ApiPublicHooksStarkE2eSandboxRouteImport.update({
-    id: '/api/public/hooks/stark-e2e-sandbox',
-    path: '/api/public/hooks/stark-e2e-sandbox',
     getParentRoute: () => rootRouteImport,
   } as any)
 const ApiPublicHooksSyncCronSecretRoute =
@@ -632,11 +584,9 @@ export interface FileRoutesByFullPath {
   '/manager/relatorios': typeof ManagerManagerRelatoriosRoute
   '/manager/vistorias': typeof ManagerManagerVistoriasRoute
   '/api/public/efi-webhook': typeof ApiPublicEfiWebhookRouteWithChildren
-  '/api/public/stark-webhook': typeof ApiPublicStarkWebhookRoute
   '/tenant/': typeof AuthenticatedTenantIndexRoute
   '/landlord/': typeof LandlordLandlordIndexRoute
   '/manager/': typeof ManagerManagerIndexRoute
-  '/admin/configuracoes/subconta': typeof AuthenticatedAdminConfiguracoesSubcontaRoute
   '/manager/configuracoes/roleta': typeof ManagerManagerConfiguracoesRoletaRoute
   '/api/public/crm/agencies': typeof ApiPublicCrmAgenciesRoute
   '/api/public/crm/agencies-complete': typeof ApiPublicCrmAgenciesCompleteRoute
@@ -649,16 +599,11 @@ export interface FileRoutesByFullPath {
   '/api/public/efi-webhook/pix': typeof ApiPublicEfiWebhookPixRoute
   '/api/public/hooks/efi-saldo': typeof ApiPublicHooksEfiSaldoRoute
   '/api/public/hooks/generate-upcoming-boletos': typeof ApiPublicHooksGenerateUpcomingBoletosRoute
-  '/api/public/hooks/issue-single-boleto': typeof ApiPublicHooksIssueSingleBoletoRoute
-  '/api/public/hooks/process-payout-queue': typeof ApiPublicHooksProcessPayoutQueueRoute
   '/api/public/hooks/reconcile-efi-charges': typeof ApiPublicHooksReconcileEfiChargesRoute
   '/api/public/hooks/reconcile-efi-transfers': typeof ApiPublicHooksReconcileEfiTransfersRoute
-  '/api/public/hooks/reconcile-stark-charges': typeof ApiPublicHooksReconcileStarkChargesRoute
   '/api/public/hooks/register-efi-webhook': typeof ApiPublicHooksRegisterEfiWebhookRoute
-  '/api/public/hooks/register-stark-webhook': typeof ApiPublicHooksRegisterStarkWebhookRoute
   '/api/public/hooks/send-maintenance-response-reminders': typeof ApiPublicHooksSendMaintenanceResponseRemindersRoute
   '/api/public/hooks/send-tenant-reminders': typeof ApiPublicHooksSendTenantRemindersRoute
-  '/api/public/hooks/stark-e2e-sandbox': typeof ApiPublicHooksStarkE2eSandboxRoute
   '/api/public/hooks/sync-cron-secret': typeof ApiPublicHooksSyncCronSecretRoute
   '/api/public/listings/xml': typeof ApiPublicListingsXmlRoute
   '/api/public/webhooks/leads': typeof ApiPublicWebhooksLeadsRoute
@@ -719,11 +664,9 @@ export interface FileRoutesByTo {
   '/manager/relatorios': typeof ManagerManagerRelatoriosRoute
   '/manager/vistorias': typeof ManagerManagerVistoriasRoute
   '/api/public/efi-webhook': typeof ApiPublicEfiWebhookRouteWithChildren
-  '/api/public/stark-webhook': typeof ApiPublicStarkWebhookRoute
   '/tenant': typeof AuthenticatedTenantIndexRoute
   '/landlord': typeof LandlordLandlordIndexRoute
   '/manager': typeof ManagerManagerIndexRoute
-  '/admin/configuracoes/subconta': typeof AuthenticatedAdminConfiguracoesSubcontaRoute
   '/manager/configuracoes/roleta': typeof ManagerManagerConfiguracoesRoletaRoute
   '/api/public/crm/agencies': typeof ApiPublicCrmAgenciesRoute
   '/api/public/crm/agencies-complete': typeof ApiPublicCrmAgenciesCompleteRoute
@@ -736,16 +679,11 @@ export interface FileRoutesByTo {
   '/api/public/efi-webhook/pix': typeof ApiPublicEfiWebhookPixRoute
   '/api/public/hooks/efi-saldo': typeof ApiPublicHooksEfiSaldoRoute
   '/api/public/hooks/generate-upcoming-boletos': typeof ApiPublicHooksGenerateUpcomingBoletosRoute
-  '/api/public/hooks/issue-single-boleto': typeof ApiPublicHooksIssueSingleBoletoRoute
-  '/api/public/hooks/process-payout-queue': typeof ApiPublicHooksProcessPayoutQueueRoute
   '/api/public/hooks/reconcile-efi-charges': typeof ApiPublicHooksReconcileEfiChargesRoute
   '/api/public/hooks/reconcile-efi-transfers': typeof ApiPublicHooksReconcileEfiTransfersRoute
-  '/api/public/hooks/reconcile-stark-charges': typeof ApiPublicHooksReconcileStarkChargesRoute
   '/api/public/hooks/register-efi-webhook': typeof ApiPublicHooksRegisterEfiWebhookRoute
-  '/api/public/hooks/register-stark-webhook': typeof ApiPublicHooksRegisterStarkWebhookRoute
   '/api/public/hooks/send-maintenance-response-reminders': typeof ApiPublicHooksSendMaintenanceResponseRemindersRoute
   '/api/public/hooks/send-tenant-reminders': typeof ApiPublicHooksSendTenantRemindersRoute
-  '/api/public/hooks/stark-e2e-sandbox': typeof ApiPublicHooksStarkE2eSandboxRoute
   '/api/public/hooks/sync-cron-secret': typeof ApiPublicHooksSyncCronSecretRoute
   '/api/public/listings/xml': typeof ApiPublicListingsXmlRoute
   '/api/public/webhooks/leads': typeof ApiPublicWebhooksLeadsRoute
@@ -810,11 +748,9 @@ export interface FileRoutesById {
   '/_manager/manager/relatorios': typeof ManagerManagerRelatoriosRoute
   '/_manager/manager/vistorias': typeof ManagerManagerVistoriasRoute
   '/api/public/efi-webhook': typeof ApiPublicEfiWebhookRouteWithChildren
-  '/api/public/stark-webhook': typeof ApiPublicStarkWebhookRoute
   '/_authenticated/tenant/': typeof AuthenticatedTenantIndexRoute
   '/_landlord/landlord/': typeof LandlordLandlordIndexRoute
   '/_manager/manager/': typeof ManagerManagerIndexRoute
-  '/_authenticated/admin/configuracoes/subconta': typeof AuthenticatedAdminConfiguracoesSubcontaRoute
   '/_manager/manager/configuracoes/roleta': typeof ManagerManagerConfiguracoesRoletaRoute
   '/api/public/crm/agencies': typeof ApiPublicCrmAgenciesRoute
   '/api/public/crm/agencies-complete': typeof ApiPublicCrmAgenciesCompleteRoute
@@ -827,16 +763,11 @@ export interface FileRoutesById {
   '/api/public/efi-webhook/pix': typeof ApiPublicEfiWebhookPixRoute
   '/api/public/hooks/efi-saldo': typeof ApiPublicHooksEfiSaldoRoute
   '/api/public/hooks/generate-upcoming-boletos': typeof ApiPublicHooksGenerateUpcomingBoletosRoute
-  '/api/public/hooks/issue-single-boleto': typeof ApiPublicHooksIssueSingleBoletoRoute
-  '/api/public/hooks/process-payout-queue': typeof ApiPublicHooksProcessPayoutQueueRoute
   '/api/public/hooks/reconcile-efi-charges': typeof ApiPublicHooksReconcileEfiChargesRoute
   '/api/public/hooks/reconcile-efi-transfers': typeof ApiPublicHooksReconcileEfiTransfersRoute
-  '/api/public/hooks/reconcile-stark-charges': typeof ApiPublicHooksReconcileStarkChargesRoute
   '/api/public/hooks/register-efi-webhook': typeof ApiPublicHooksRegisterEfiWebhookRoute
-  '/api/public/hooks/register-stark-webhook': typeof ApiPublicHooksRegisterStarkWebhookRoute
   '/api/public/hooks/send-maintenance-response-reminders': typeof ApiPublicHooksSendMaintenanceResponseRemindersRoute
   '/api/public/hooks/send-tenant-reminders': typeof ApiPublicHooksSendTenantRemindersRoute
-  '/api/public/hooks/stark-e2e-sandbox': typeof ApiPublicHooksStarkE2eSandboxRoute
   '/api/public/hooks/sync-cron-secret': typeof ApiPublicHooksSyncCronSecretRoute
   '/api/public/listings/xml': typeof ApiPublicListingsXmlRoute
   '/api/public/webhooks/leads': typeof ApiPublicWebhooksLeadsRoute
@@ -899,11 +830,9 @@ export interface FileRouteTypes {
     | '/manager/relatorios'
     | '/manager/vistorias'
     | '/api/public/efi-webhook'
-    | '/api/public/stark-webhook'
     | '/tenant/'
     | '/landlord/'
     | '/manager/'
-    | '/admin/configuracoes/subconta'
     | '/manager/configuracoes/roleta'
     | '/api/public/crm/agencies'
     | '/api/public/crm/agencies-complete'
@@ -916,16 +845,11 @@ export interface FileRouteTypes {
     | '/api/public/efi-webhook/pix'
     | '/api/public/hooks/efi-saldo'
     | '/api/public/hooks/generate-upcoming-boletos'
-    | '/api/public/hooks/issue-single-boleto'
-    | '/api/public/hooks/process-payout-queue'
     | '/api/public/hooks/reconcile-efi-charges'
     | '/api/public/hooks/reconcile-efi-transfers'
-    | '/api/public/hooks/reconcile-stark-charges'
     | '/api/public/hooks/register-efi-webhook'
-    | '/api/public/hooks/register-stark-webhook'
     | '/api/public/hooks/send-maintenance-response-reminders'
     | '/api/public/hooks/send-tenant-reminders'
-    | '/api/public/hooks/stark-e2e-sandbox'
     | '/api/public/hooks/sync-cron-secret'
     | '/api/public/listings/xml'
     | '/api/public/webhooks/leads'
@@ -986,11 +910,9 @@ export interface FileRouteTypes {
     | '/manager/relatorios'
     | '/manager/vistorias'
     | '/api/public/efi-webhook'
-    | '/api/public/stark-webhook'
     | '/tenant'
     | '/landlord'
     | '/manager'
-    | '/admin/configuracoes/subconta'
     | '/manager/configuracoes/roleta'
     | '/api/public/crm/agencies'
     | '/api/public/crm/agencies-complete'
@@ -1003,16 +925,11 @@ export interface FileRouteTypes {
     | '/api/public/efi-webhook/pix'
     | '/api/public/hooks/efi-saldo'
     | '/api/public/hooks/generate-upcoming-boletos'
-    | '/api/public/hooks/issue-single-boleto'
-    | '/api/public/hooks/process-payout-queue'
     | '/api/public/hooks/reconcile-efi-charges'
     | '/api/public/hooks/reconcile-efi-transfers'
-    | '/api/public/hooks/reconcile-stark-charges'
     | '/api/public/hooks/register-efi-webhook'
-    | '/api/public/hooks/register-stark-webhook'
     | '/api/public/hooks/send-maintenance-response-reminders'
     | '/api/public/hooks/send-tenant-reminders'
-    | '/api/public/hooks/stark-e2e-sandbox'
     | '/api/public/hooks/sync-cron-secret'
     | '/api/public/listings/xml'
     | '/api/public/webhooks/leads'
@@ -1076,11 +993,9 @@ export interface FileRouteTypes {
     | '/_manager/manager/relatorios'
     | '/_manager/manager/vistorias'
     | '/api/public/efi-webhook'
-    | '/api/public/stark-webhook'
     | '/_authenticated/tenant/'
     | '/_landlord/landlord/'
     | '/_manager/manager/'
-    | '/_authenticated/admin/configuracoes/subconta'
     | '/_manager/manager/configuracoes/roleta'
     | '/api/public/crm/agencies'
     | '/api/public/crm/agencies-complete'
@@ -1093,16 +1008,11 @@ export interface FileRouteTypes {
     | '/api/public/efi-webhook/pix'
     | '/api/public/hooks/efi-saldo'
     | '/api/public/hooks/generate-upcoming-boletos'
-    | '/api/public/hooks/issue-single-boleto'
-    | '/api/public/hooks/process-payout-queue'
     | '/api/public/hooks/reconcile-efi-charges'
     | '/api/public/hooks/reconcile-efi-transfers'
-    | '/api/public/hooks/reconcile-stark-charges'
     | '/api/public/hooks/register-efi-webhook'
-    | '/api/public/hooks/register-stark-webhook'
     | '/api/public/hooks/send-maintenance-response-reminders'
     | '/api/public/hooks/send-tenant-reminders'
-    | '/api/public/hooks/stark-e2e-sandbox'
     | '/api/public/hooks/sync-cron-secret'
     | '/api/public/listings/xml'
     | '/api/public/webhooks/leads'
@@ -1122,7 +1032,6 @@ export interface RootRouteChildren {
   ManagerSetupRoute: typeof ManagerSetupRoute
   TenantSetupRoute: typeof TenantSetupRoute
   ApiPublicEfiWebhookRoute: typeof ApiPublicEfiWebhookRouteWithChildren
-  ApiPublicStarkWebhookRoute: typeof ApiPublicStarkWebhookRoute
   ApiPublicCrmAgenciesRoute: typeof ApiPublicCrmAgenciesRoute
   ApiPublicCrmAgenciesCompleteRoute: typeof ApiPublicCrmAgenciesCompleteRoute
   ApiPublicCrmContractsAndTenantsRoute: typeof ApiPublicCrmContractsAndTenantsRoute
@@ -1133,16 +1042,11 @@ export interface RootRouteChildren {
   ApiPublicCronNotificationsRoute: typeof ApiPublicCronNotificationsRoute
   ApiPublicHooksEfiSaldoRoute: typeof ApiPublicHooksEfiSaldoRoute
   ApiPublicHooksGenerateUpcomingBoletosRoute: typeof ApiPublicHooksGenerateUpcomingBoletosRoute
-  ApiPublicHooksIssueSingleBoletoRoute: typeof ApiPublicHooksIssueSingleBoletoRoute
-  ApiPublicHooksProcessPayoutQueueRoute: typeof ApiPublicHooksProcessPayoutQueueRoute
   ApiPublicHooksReconcileEfiChargesRoute: typeof ApiPublicHooksReconcileEfiChargesRoute
   ApiPublicHooksReconcileEfiTransfersRoute: typeof ApiPublicHooksReconcileEfiTransfersRoute
-  ApiPublicHooksReconcileStarkChargesRoute: typeof ApiPublicHooksReconcileStarkChargesRoute
   ApiPublicHooksRegisterEfiWebhookRoute: typeof ApiPublicHooksRegisterEfiWebhookRoute
-  ApiPublicHooksRegisterStarkWebhookRoute: typeof ApiPublicHooksRegisterStarkWebhookRoute
   ApiPublicHooksSendMaintenanceResponseRemindersRoute: typeof ApiPublicHooksSendMaintenanceResponseRemindersRoute
   ApiPublicHooksSendTenantRemindersRoute: typeof ApiPublicHooksSendTenantRemindersRoute
-  ApiPublicHooksStarkE2eSandboxRoute: typeof ApiPublicHooksStarkE2eSandboxRoute
   ApiPublicHooksSyncCronSecretRoute: typeof ApiPublicHooksSyncCronSecretRoute
   ApiPublicListingsXmlRoute: typeof ApiPublicListingsXmlRoute
   ApiPublicWebhooksLeadsRoute: typeof ApiPublicWebhooksLeadsRoute
@@ -1559,20 +1463,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicEfiWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/stark-webhook': {
-      id: '/api/public/stark-webhook'
-      path: '/api/public/stark-webhook'
-      fullPath: '/api/public/stark-webhook'
-      preLoaderRoute: typeof ApiPublicStarkWebhookRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated/admin/configuracoes/subconta': {
-      id: '/_authenticated/admin/configuracoes/subconta'
-      path: '/admin/configuracoes/subconta'
-      fullPath: '/admin/configuracoes/subconta'
-      preLoaderRoute: typeof AuthenticatedAdminConfiguracoesSubcontaRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_manager/manager/configuracoes/roleta': {
       id: '/_manager/manager/configuracoes/roleta'
       path: '/manager/configuracoes/roleta'
@@ -1657,20 +1547,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksGenerateUpcomingBoletosRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/hooks/issue-single-boleto': {
-      id: '/api/public/hooks/issue-single-boleto'
-      path: '/api/public/hooks/issue-single-boleto'
-      fullPath: '/api/public/hooks/issue-single-boleto'
-      preLoaderRoute: typeof ApiPublicHooksIssueSingleBoletoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/hooks/process-payout-queue': {
-      id: '/api/public/hooks/process-payout-queue'
-      path: '/api/public/hooks/process-payout-queue'
-      fullPath: '/api/public/hooks/process-payout-queue'
-      preLoaderRoute: typeof ApiPublicHooksProcessPayoutQueueRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/public/hooks/reconcile-efi-charges': {
       id: '/api/public/hooks/reconcile-efi-charges'
       path: '/api/public/hooks/reconcile-efi-charges'
@@ -1685,25 +1561,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksReconcileEfiTransfersRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/hooks/reconcile-stark-charges': {
-      id: '/api/public/hooks/reconcile-stark-charges'
-      path: '/api/public/hooks/reconcile-stark-charges'
-      fullPath: '/api/public/hooks/reconcile-stark-charges'
-      preLoaderRoute: typeof ApiPublicHooksReconcileStarkChargesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/public/hooks/register-efi-webhook': {
       id: '/api/public/hooks/register-efi-webhook'
       path: '/api/public/hooks/register-efi-webhook'
       fullPath: '/api/public/hooks/register-efi-webhook'
       preLoaderRoute: typeof ApiPublicHooksRegisterEfiWebhookRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/hooks/register-stark-webhook': {
-      id: '/api/public/hooks/register-stark-webhook'
-      path: '/api/public/hooks/register-stark-webhook'
-      fullPath: '/api/public/hooks/register-stark-webhook'
-      preLoaderRoute: typeof ApiPublicHooksRegisterStarkWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/hooks/send-maintenance-response-reminders': {
@@ -1718,13 +1580,6 @@ declare module '@tanstack/react-router' {
       path: '/api/public/hooks/send-tenant-reminders'
       fullPath: '/api/public/hooks/send-tenant-reminders'
       preLoaderRoute: typeof ApiPublicHooksSendTenantRemindersRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/hooks/stark-e2e-sandbox': {
-      id: '/api/public/hooks/stark-e2e-sandbox'
-      path: '/api/public/hooks/stark-e2e-sandbox'
-      fullPath: '/api/public/hooks/stark-e2e-sandbox'
-      preLoaderRoute: typeof ApiPublicHooksStarkE2eSandboxRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/hooks/sync-cron-secret': {
@@ -1809,7 +1664,6 @@ interface AuthenticatedRouteChildren {
   AuthenticatedTenantManutencoesRoute: typeof AuthenticatedTenantManutencoesRoute
   AuthenticatedTenantPerfilRoute: typeof AuthenticatedTenantPerfilRoute
   AuthenticatedTenantIndexRoute: typeof AuthenticatedTenantIndexRoute
-  AuthenticatedAdminConfiguracoesSubcontaRoute: typeof AuthenticatedAdminConfiguracoesSubcontaRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
@@ -1835,8 +1689,6 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedTenantManutencoesRoute: AuthenticatedTenantManutencoesRoute,
   AuthenticatedTenantPerfilRoute: AuthenticatedTenantPerfilRoute,
   AuthenticatedTenantIndexRoute: AuthenticatedTenantIndexRoute,
-  AuthenticatedAdminConfiguracoesSubcontaRoute:
-    AuthenticatedAdminConfiguracoesSubcontaRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
@@ -1937,7 +1789,6 @@ const rootRouteChildren: RootRouteChildren = {
   ManagerSetupRoute: ManagerSetupRoute,
   TenantSetupRoute: TenantSetupRoute,
   ApiPublicEfiWebhookRoute: ApiPublicEfiWebhookRouteWithChildren,
-  ApiPublicStarkWebhookRoute: ApiPublicStarkWebhookRoute,
   ApiPublicCrmAgenciesRoute: ApiPublicCrmAgenciesRoute,
   ApiPublicCrmAgenciesCompleteRoute: ApiPublicCrmAgenciesCompleteRoute,
   ApiPublicCrmContractsAndTenantsRoute: ApiPublicCrmContractsAndTenantsRoute,
@@ -1949,22 +1800,15 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksEfiSaldoRoute: ApiPublicHooksEfiSaldoRoute,
   ApiPublicHooksGenerateUpcomingBoletosRoute:
     ApiPublicHooksGenerateUpcomingBoletosRoute,
-  ApiPublicHooksIssueSingleBoletoRoute: ApiPublicHooksIssueSingleBoletoRoute,
-  ApiPublicHooksProcessPayoutQueueRoute: ApiPublicHooksProcessPayoutQueueRoute,
   ApiPublicHooksReconcileEfiChargesRoute:
     ApiPublicHooksReconcileEfiChargesRoute,
   ApiPublicHooksReconcileEfiTransfersRoute:
     ApiPublicHooksReconcileEfiTransfersRoute,
-  ApiPublicHooksReconcileStarkChargesRoute:
-    ApiPublicHooksReconcileStarkChargesRoute,
   ApiPublicHooksRegisterEfiWebhookRoute: ApiPublicHooksRegisterEfiWebhookRoute,
-  ApiPublicHooksRegisterStarkWebhookRoute:
-    ApiPublicHooksRegisterStarkWebhookRoute,
   ApiPublicHooksSendMaintenanceResponseRemindersRoute:
     ApiPublicHooksSendMaintenanceResponseRemindersRoute,
   ApiPublicHooksSendTenantRemindersRoute:
     ApiPublicHooksSendTenantRemindersRoute,
-  ApiPublicHooksStarkE2eSandboxRoute: ApiPublicHooksStarkE2eSandboxRoute,
   ApiPublicHooksSyncCronSecretRoute: ApiPublicHooksSyncCronSecretRoute,
   ApiPublicListingsXmlRoute: ApiPublicListingsXmlRoute,
   ApiPublicWebhooksLeadsRoute: ApiPublicWebhooksLeadsRoute,
@@ -1976,13 +1820,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

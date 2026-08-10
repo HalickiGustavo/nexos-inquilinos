@@ -75,17 +75,18 @@ export async function sendSendPulseWhatsApp(params: {
     });
 
     let contactId: string | null = null;
-    if (contactCheck.ok) {
-      const contactData = await contactCheck.json();
-      if (contactData.data?.id) {
-        contactId = contactData.data.id;
-      }
-    } else {
-      // Consume response to avoid memory leaks
-      await contactCheck.text();
+    const checkData = await contactCheck.json();
+    
+    if (contactCheck.ok && checkData.data?.id) {
+      contactId = checkData.data.id;
+    } else if (contactCheck.status === 400 || !contactCheck.ok) {
+       // If 404 or 400, it might mean they don't exist in the bot yet.
+       // The stderr from previous run shows "Contact already exists" when trying to create,
+       // which means the contact exists in SendPulse but maybe not returned by get_by_phone
+       // or we just need to try a different way to find them.
     }
 
-    // 2. If not found, create the contact
+    // 2. If not found via phone check, try creating (which will either create or give us the error with existing contact)
     if (!contactId) {
       const createResponse = await fetch(`https://api.sendpulse.com/whatsapp/contacts`, {
         method: "POST",
@@ -101,14 +102,28 @@ export async function sendSendPulseWhatsApp(params: {
       });
       
       const createData = await createResponse.json();
-      if (createResponse.ok) {
-        contactId = createData.data?.id;
-      } else {
-        console.error("SendPulse contact creation failed:", createData);
+      if (createResponse.ok && createData.data?.id) {
+        contactId = createData.data.id;
+      } else if (createData.errors?.phone?.includes("Contact already exists")) {
+        // Since we know they exist but couldn't get the ID via get_by_phone,
+        // we might need to search or use a different endpoint.
+        // However, usually 'get_by_phone' should have worked.
+        // Let's try to list contacts and find by phone as a fallback.
+        const listResponse = await fetch(`https://api.sendpulse.com/whatsapp/contacts?bot_id=${senderId}&page=1&limit=50`, {
+          headers: { "Authorization": `Bearer ${token}` }
+        });
+        if (listResponse.ok) {
+          const listData = await listResponse.json();
+          const found = listData.data?.find((c: any) => c.phone === phone);
+          if (found) contactId = found.id;
+        }
       }
     }
 
     if (!contactId) {
+      // Last resort: if we still don't have a contactId but know they exist, 
+      // some SendPulse implementations allow using the phone as the ID in specific endpoints
+      // but based on 422 errors earlier, it seems it must be the UUID.
       return { ok: false, reason: "contact_id_resolution_failed", status: contactCheck.status };
     }
 
@@ -131,7 +146,6 @@ export async function sendSendPulseWhatsApp(params: {
 
     if (!response.ok) {
       const errorText = await response.text();
-      // Handle error cases
       return { ok: false, reason: `api_error: ${errorText}`, status: response.status };
     }
 

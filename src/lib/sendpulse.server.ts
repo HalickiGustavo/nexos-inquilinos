@@ -101,13 +101,15 @@ export async function sendSendPulseWhatsApp(params: {
         contactId = createData.data.id;
       } else if (createData.errors?.phone?.includes("Contact already exists")) {
         // Fallback: search for contact by phone if creation says it exists but get_by_phone failed
-        const search = await fetch(`https://api.sendpulse.com/whatsapp/contacts?bot_id=${senderId}&page=1&limit=20`, {
+        // We list contacts and manually find the one with the correct phone
+        const search = await fetch(`https://api.sendpulse.com/whatsapp/contacts?bot_id=${senderId}&page=1&limit=100`, {
           headers: { "Authorization": `Bearer ${token}` }
         });
         if (search.ok) {
           const searchData = await search.json();
-          const found = searchData.data?.find((c: any) => c.phone === phone);
+          const found = searchData.data?.find((c: any) => c.phone === phone || c.phone === `+${phone}`);
           if (found) contactId = found.id;
+          console.log("Found contact via list search:", contactId);
         }
       }
     }

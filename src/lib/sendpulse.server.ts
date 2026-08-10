@@ -64,6 +64,22 @@ export async function sendSendPulseWhatsApp(params: {
   const phone = params.phone.replace(/\D/g, "");
 
   try {
+    // According to SendPulse docs, we first need to ensure the contact exists or get their contact_id.
+    // However, if we don't have it, we can try the direct message endpoint if enabled,
+    // or use the 'contacts' endpoint to ensure they exist.
+    // Let's try to get contact info first to see if they exist.
+    const contactCheck = await fetch(`https://api.sendpulse.com/whatsapp/contacts/get_by_phone?phone=${phone}&bot_id=${senderId}`, {
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+
+    let contactId = phone;
+    if (contactCheck.ok) {
+      const contactData = await contactCheck.json();
+      if (contactData.data?.id) {
+        contactId = contactData.data.id;
+      }
+    }
+
     const response = await fetch(`https://api.sendpulse.com/whatsapp/contacts/send`, {
       method: "POST",
       headers: {
@@ -73,7 +89,7 @@ export async function sendSendPulseWhatsApp(params: {
       body: JSON.stringify({
         bot_id: senderId,
         phone: phone,
-        contact_id: phone, // SendPulse often maps phone to contact_id for new contacts
+        contact_id: contactId,
         message: {
           type: "text",
           text: { body: params.text },

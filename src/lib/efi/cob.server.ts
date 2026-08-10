@@ -34,10 +34,12 @@ export async function createOrReuseEfiPix(input: CreateEfiPixInput): Promise<Cre
   const txid = txidFromInstallmentId(input.installmentId);
 
   const doc = input.payer.taxId.replace(/\D/g, "");
+  // O nome do devedor deve ser o nome completo (PF) ou nome fantasia completo (PJ)
+  const name = String(input.payer.name ?? "Devedor").trim().slice(0, 100);
   const devedor =
     doc.length === 14
-      ? { cnpj: doc, nome: input.payer.name }
-      : { cpf: doc, nome: input.payer.name };
+      ? { cnpj: doc, nome: name }
+      : { cpf: doc, nome: name };
 
   const body: EfiCobRequest = {
     calendario: { expiracao: input.expirationSeconds ?? 86400 },

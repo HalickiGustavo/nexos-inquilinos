@@ -108,9 +108,14 @@ export async function sendSendPulseWhatsApp(params: {
         if (search.ok) {
           const searchData = await search.json();
           console.log(`Search returned ${searchData.data?.length} contacts. Looking for phone: ${phone}`);
+          // Log keys of the first contact to see what we're working with
+          if (searchData.data?.[0]) {
+             console.log("Contact structure:", JSON.stringify(Object.keys(searchData.data[0])));
+          }
           const found = searchData.data?.find((c: any) => {
-            if (!c.phone) return false;
-            const cleanC = String(c.phone).replace(/\D/g, "");
+            const p = c.phone || c.phone_number || c.number;
+            if (!p) return false;
+            const cleanC = String(p).replace(/\D/g, "");
             return cleanC === phone;
           });
           if (found) contactId = found.id;

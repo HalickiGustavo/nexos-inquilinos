@@ -20,7 +20,7 @@ export const requireSupabaseAuth = createMiddleware().server(async ({ next, requ
       ...context,
       userId: user.id,
       claims: user.app_metadata,
-      supabase: supabaseAdmin, // Note: In a real scenario, you might want to create a client with the user's token
+      supabase: supabaseAdmin,
     },
   });
 });

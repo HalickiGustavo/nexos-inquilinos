@@ -35,13 +35,13 @@ export async function claimPendingBatch(limit = 20) {
     _limit: limit,
   });
   if (error) throw error;
-  return data || [];
+  return (data || []) as any[];
 }
 
 export async function markProcessing(transferId: string) {
   await supabaseAdmin
     .from("payment_transfers")
-    .update({ status: "PROCESSING", started_at: new Date().toISOString() })
+    .update({ status: "PROCESSING", started_at: new Date().toISOString() } as any)
     .eq("id", transferId);
 }
 
@@ -52,7 +52,7 @@ export async function markCompleted(transferId: string, providerId: string) {
       status: "COMPLETED",
       finished_at: new Date().toISOString(),
       provider_transfer_id: providerId,
-    })
+    } as any)
     .eq("id", transferId);
 }
 
@@ -67,7 +67,7 @@ export async function markFailed(transferId: string, error: string, attempts: nu
       error_message: error,
       attempts,
       next_retry_at: nextRetry.toISOString(),
-    })
+    } as any)
     .eq("id", transferId);
 }
 
@@ -82,10 +82,11 @@ export async function enqueueTransfersForSplit(
     description: string;
   }
 ) {
-  const transfers = [
+  const transfers: any[] = [
     {
       installment_id: meta.installmentId,
       contract_id: meta.contractId,
+      manager_user_id: meta.managerUserId,
       recipient_type: "nexo",
       recipient_id: "PLATFORM",
       amount: split.nexo.amount,
@@ -97,6 +98,7 @@ export async function enqueueTransfersForSplit(
     {
       installment_id: meta.installmentId,
       contract_id: meta.contractId,
+      manager_user_id: meta.managerUserId,
       recipient_type: "agency",
       recipient_id: meta.agencyUserId,
       amount: split.agency.amount,
@@ -111,6 +113,7 @@ export async function enqueueTransfersForSplit(
     transfers.push({
       installment_id: meta.installmentId,
       contract_id: meta.contractId,
+      manager_user_id: meta.managerUserId,
       recipient_type: "landlord",
       recipient_id: meta.ownerUserId,
       amount: split.owner.amount,

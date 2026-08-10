@@ -1,1 +1,1 @@
-export function AsaasBankAndKycPanel() { return null; }
+export function AsaasBankAndKycPanel({ account, onChanged }: { account: any, onChanged: () => void }) { return null; }

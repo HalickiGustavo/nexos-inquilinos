@@ -16,7 +16,7 @@ import { useTenants, useInstallments, useInvalidate, type Tenant } from "@/lib/q
 import { DebtAgreementDialog } from "@/components/DebtAgreementDialog";
 import { today } from "@/lib/format";
 import { maskCpfCnpj, maskPhone } from "@/lib/br-validators";
-// asaas removed
+import { generateTenantInviteLink } from "@/lib/asaas.functions";
 import { softDeleteTenant } from "@/lib/tenants.functions";
 import { useConfirm } from "@/components/ui/confirm";
 

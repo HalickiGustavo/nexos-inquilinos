@@ -104,7 +104,9 @@ export async function sendSendPulseWhatsApp(params: {
     }
 
     // 3. Send the message using the confirmed contact_id
-    const response = await fetch(`https://api.sendpulse.com/whatsapp/contacts/send`, {
+    // Documentation says the endpoint is actually /whatsapp/messages/send
+    // but the payload must include contact_id if phone is not working.
+    const response = await fetch(`https://api.sendpulse.com/whatsapp/messages/send`, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${token}`,

@@ -14,12 +14,11 @@ export const requireSupabaseAuth = createMiddleware().server(async ({ next, requ
     throw new Error("Unauthorized");
   }
 
-  // Inject user and authenticated supabase client into context
   return next({
     context: {
       ...context,
       userId: user.id,
-      claims: user.app_metadata,
+      claims: user.app_metadata || {},
       supabase: supabaseAdmin,
     },
   });

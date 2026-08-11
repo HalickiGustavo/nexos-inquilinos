@@ -1,7 +1,7 @@
 import { createMiddleware } from "@tanstack/react-start";
 import { supabase } from "./client";
 
-export const attachSupabaseAuth = createMiddleware().client(async ({ next }) => {
+export const attachSupabaseAuth = (createMiddleware() as any).middleware(async ({ next }: any) => {
   const { data: { session } } = await supabase.auth.getSession();
   
   if (session?.access_token) {
@@ -13,4 +13,4 @@ export const attachSupabaseAuth = createMiddleware().client(async ({ next }) => 
   }
 
   return next();
-});
+}) as any;

@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate, Outlet } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { LayoutDashboard, Wallet, Wrench, Loader2, MessageSquare, UserCog } from "lucide-react";
+import { LayoutDashboard, Wallet, Wrench, Loader2, MessageSquare, UserCog, Building2 } from "lucide-react";
 import { AppShell, type ShellNavGroup } from "@/components/shell/AppShell";
 import { useAuth } from "@/lib/auth";
 import { useUserRole, roleHomePath } from "@/lib/useUserRole";
@@ -17,6 +17,7 @@ const navGroups: ShellNavGroup[] = [
       { to: "/landlord", label: "Dashboard", icon: LayoutDashboard, exact: true },
       { to: "/landlord/chat", label: "Chat", icon: MessageSquare },
       { to: "/landlord/financeiro", label: "Finanças", icon: Wallet },
+      { to: "/landlord/imoveis", label: "Imóveis", icon: Building2 },
       { to: "/landlord/manutencoes", label: "Manutenções", icon: Wrench },
       { to: "/landlord/perfil", label: "Meu Perfil", icon: UserCog },
     ],

@@ -1,19 +1,15 @@
-import { ReactNode } from "react";
+import { ReactNode, ComponentType } from "react";
 import { cn } from "@/lib/utils";
 
 interface PageHeaderProps {
   title: ReactNode;
   description?: ReactNode;
   eyebrow?: ReactNode;
-  icon?: React.ComponentType<{ className?: string }>;
+  icon?: ComponentType<{ className?: string }>;
   actions?: ReactNode;
   className?: string;
 }
 
-/**
- * Standard page header for manager modules.
- * Provides consistent title sizing, description tone, and action alignment.
- */
 export function PageHeader({ title, description, eyebrow, icon: Icon, actions, className }: PageHeaderProps) {
   return (
     <header className={cn("flex flex-col sm:flex-row items-start sm:justify-between gap-4", className)}>
@@ -42,9 +38,6 @@ interface PageShellProps {
   narrow?: boolean;
 }
 
-/**
- * Standard page container with consistent padding + max width across manager modules.
- */
 export function PageShell({ children, className, narrow }: PageShellProps) {
   return (
     <div

@@ -18,7 +18,7 @@ import {
   useLandlordMaintenances,
 } from "@/lib/landlord-queries";
 import { PropertyCard, type PropertyCardData } from "@/components/owner/PropertyCard";
-import { PageHeader } from "@/components/shell/PageHeader";
+import { PageHeader, PageShell } from "@/components/PageHeader";
 
 export const Route = createFileRoute("/_landlord/landlord/imoveis")({
   head: () => ({ meta: [{ title: "Meus Imóveis — Nexo" }] }),

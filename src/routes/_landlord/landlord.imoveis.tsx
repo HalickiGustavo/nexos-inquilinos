@@ -20,7 +20,7 @@ import {
 import { PropertyCard, type PropertyCardData } from "@/components/owner/PropertyCard";
 import { PageHeader, PageShell } from "@/components/PageHeader";
 
-export const Route = createFileRoute("/_landlord/landlord/imoveis")({
+export const Route = createFileRoute("/_landlord/landlord.imoveis")({
   head: () => ({ meta: [{ title: "Meus Imóveis — Nexo" }] }),
   component: LandlordPropertiesPage,
 });
@@ -66,13 +66,13 @@ function LandlordPropertiesPage() {
     const hasDueSoon = new Map<string, boolean>();
 
     for (const i of installments as any[]) {
-      const propId = i.contract?.property?.id || propByContract.get(i.contract_id);
+      const propId = (i as any).contract?.property?.id || propByContract.get((i as any).contract_id);
       if (!propId) continue;
 
       const paid = Number(i.paid_amount || 0);
       if (i.status === "pago" && paid > 0) {
         totalByProp.set(propId, (totalByProp.get(propId) || 0) + paid);
-        const paymentDate = i.paid_at || i.payment_date;
+        const paymentDate = (i as any).paid_at || (i as any).payment_date;
         if (paymentDate && paymentDate >= yearStart) {
           ytdByProp.set(propId, (ytdByProp.get(propId) || 0) + paid);
         }
@@ -224,7 +224,6 @@ function LandlordPropertiesPage() {
           ))}
         </div>
       )}
-      </PageShell>
-    </div>
+    </PageShell>
   );
 }

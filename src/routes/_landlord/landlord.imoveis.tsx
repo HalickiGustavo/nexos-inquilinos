@@ -168,10 +168,10 @@ function LandlordPropertiesPage() {
   }, [cards, filter, search, sortBy]);
 
   return (
-    <div className="p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
+    <PageShell>
       <PageHeader
         title="Meus Imóveis"
-        subtitle={`${properties.length} imóveis vinculados à sua conta.`}
+        description={`${properties.length} imóveis vinculados à sua conta.`}
       />
 
       <Card className="p-4 flex flex-col lg:flex-row gap-3 lg:items-center">

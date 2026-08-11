@@ -1,7 +1,7 @@
 import { createMiddleware } from "@tanstack/react-start";
 import { supabaseAdmin } from "./client.server";
 
-const requireSupabaseAuthMiddleware = createMiddleware().middleware(async ({ next, request, context }: any) => {
+export const requireSupabaseAuth = createMiddleware().middleware(async ({ next, request, context }: any) => {
   const authHeader = request.headers.get("Authorization");
   if (!authHeader?.startsWith("Bearer ")) {
     throw new Error("Unauthorized");
@@ -22,6 +22,4 @@ const requireSupabaseAuthMiddleware = createMiddleware().middleware(async ({ nex
       supabase: supabaseAdmin,
     },
   });
-});
-
-export const requireSupabaseAuth = requireSupabaseAuthMiddleware as any;
+}) as any;

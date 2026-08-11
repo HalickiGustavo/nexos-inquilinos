@@ -18,7 +18,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { useLandlordProperties, useLandlordContracts, useLandlordInstallments, useLandlordMaintenances } from "@/lib/landlord-queries";
 import { PropertyCard } from "@/components/owner/PropertyCard";
+import { PropertyFormDialog } from "@/components/PropertyFormDialog";
+import { Dialog } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
+import type { Property } from "@/lib/queries";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_landlord/landlord/imoveis")({
@@ -29,6 +32,8 @@ function LandlordImoveis() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [editing, setEditing] = useState<Property | null>(null);
+  const [open, setOpen] = useState(false);
 
   const propertiesQuery = useLandlordProperties();
   const contractsQuery = useLandlordContracts();
@@ -162,14 +167,16 @@ function LandlordImoveis() {
         <div className={cn(
           "grid gap-6",
           viewMode === "grid" ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3" : "grid-cols-1",
-          "[&_.group]:hover:scale-[1.01] transition-transform duration-200",
-          "[&_button:has(svg.pencil)]:hidden [&_button:has(svg.trash-2)]:hidden [&_[role='menuitem']:has(svg.pencil)]:hidden [&_[role='menuitem']:has(svg.trash-2)]:hidden [&_a:has(svg.external-link)]:hidden"
+          "[&_.group]:hover:scale-[1.01] transition-transform duration-200"
         )}>
           {filteredProperties.map((data) => (
             <PropertyCard 
               key={data.property.id} 
               data={data as any} 
-              onEdit={() => {}} 
+              onEdit={(p) => {
+                setEditing(p);
+                setOpen(true);
+              }} 
             />
           ))}
         </div>
@@ -193,6 +200,21 @@ function LandlordImoveis() {
           )}
         </div>
       )}
+
+      <Dialog open={open} onOpenChange={(o) => {
+        setOpen(o);
+        if (!o) setEditing(null);
+      }}>
+        <PropertyFormDialog 
+          editing={editing} 
+          onDone={() => {
+            setOpen(false);
+            setEditing(null);
+          }}
+          mode="owner"
+          invalidateKeys={["landlord", "properties"]}
+        />
+      </Dialog>
     </PageShell>
   );
 }

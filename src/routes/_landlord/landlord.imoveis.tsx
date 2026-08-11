@@ -21,7 +21,7 @@ import { PropertyCard } from "@/components/owner/PropertyCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/_landlord/landlord.imoveis")({
+export const Route = createFileRoute("/_landlord/landlord/imoveis")({
   component: LandlordImoveis,
 });
 

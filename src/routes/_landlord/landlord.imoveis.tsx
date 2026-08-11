@@ -3,7 +3,6 @@ import { useState, useMemo } from "react";
 import { 
   Building2, 
   Search, 
-  SlidersHorizontal,
   LayoutGrid,
   LayoutList
 } from "lucide-react";
@@ -22,7 +21,7 @@ import { PropertyCard } from "@/components/owner/PropertyCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/_landlord/landlord/imoveis")({
+export const Route = createFileRoute("/_landlord/landlord.imoveis")({
   component: LandlordImoveis,
 });
 
@@ -41,17 +40,15 @@ function LandlordImoveis() {
   const filteredProperties = useMemo(() => {
     if (!propertiesQuery.data) return [];
 
-    return propertiesQuery.data
+    return (propertiesQuery.data as any[])
       .filter((p) => {
         const matchesSearch = 
           p.nickname?.toLowerCase().includes(search.toLowerCase()) ||
           p.address?.toLowerCase().includes(search.toLowerCase()) ||
           p.code?.toLowerCase().includes(search.toLowerCase());
         
-        // Em um sistema real, o status viria de uma view ou logica complexa.
-        // Aqui simulamos com base nos contratos ativos e manutenções.
-        const activeContract = contractsQuery.data?.find(c => c.property_id === p.id && c.active);
-        const hasMaintenance = maintenancesQuery.data?.some(m => m.property_id === p.id && m.status !== 'concluido');
+        const activeContract = (contractsQuery.data as any[])?.find(c => c.property_id === p.id && c.active);
+        const hasMaintenance = (maintenancesQuery.data as any[])?.some(m => m.property_id === p.id && m.status !== 'concluido');
         
         const status = activeContract ? 'alugado' : (hasMaintenance ? 'manutencao' : 'disponivel');
         const matchesStatus = statusFilter === 'all' || status === statusFilter;
@@ -59,25 +56,24 @@ function LandlordImoveis() {
         return matchesSearch && matchesStatus;
       })
       .map(p => {
-        const activeContract = contractsQuery.data?.find(c => c.property_id === p.id && c.active);
-        const propertyInstallments = installmentsQuery.data?.filter(i => i.contract?.property?.id === p.id) || [];
-        const propertyMaintenances = maintenancesQuery.data?.filter(m => m.property_id === p.id) || [];
+        const activeContract = (contractsQuery.data as any[])?.find(c => c.property_id === p.id && c.active);
+        const propertyInstallments = (installmentsQuery.data as any[])?.filter(i => i.contract?.property?.id === p.id) || [];
+        const propertyMaintenances = (maintenancesQuery.data as any[])?.filter(m => m.property_id === p.id) || [];
         
-        // Calcular indicadores para o PropertyCard
         const ytdRevenue = propertyInstallments
-          .filter(i => i.status === 'pago' && new Date(i.due_date).getFullYear() === new Date().getFullYear())
-          .reduce((sum, i) => sum + Number(i.paid_amount || i.amount), 0);
+          .filter(i => i.status === 'pago' && i.due_date && new Date(i.due_date).getFullYear() === new Date().getFullYear())
+          .reduce((sum, i) => sum + Number(i.paid_amount || i.amount || 0), 0);
           
         const totalRevenue = propertyInstallments
           .filter(i => i.status === 'pago')
-          .reduce((sum, i) => sum + Number(i.paid_amount || i.amount), 0);
+          .reduce((sum, i) => sum + Number(i.paid_amount || i.amount || 0), 0);
 
         const lastPayment = propertyInstallments
-          .filter(i => i.status === 'pago')
-          .sort((a, b) => new Date(b.paid_at!).getTime() - new Date(a.paid_at!).getTime())[0];
+          .filter(i => i.status === 'pago' && i.paid_at)
+          .sort((a, b) => new Date(b.paid_at).getTime() - new Date(a.paid_at).getTime())[0];
 
         const nextDue = propertyInstallments
-          .filter(i => i.status === 'pendente')
+          .filter(i => i.status === 'pendente' && i.due_date)
           .sort((a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime())[0];
 
         const overdueCount = propertyInstallments.filter(i => i.status === 'atrasado').length;
@@ -167,14 +163,13 @@ function LandlordImoveis() {
           "grid gap-6",
           viewMode === "grid" ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3" : "grid-cols-1",
           "[&_.group]:hover:scale-[1.01] transition-transform duration-200",
-          // Desativar botões de edição/exclusão na visão do Landlord via CSS injetado
           "[&_button:has(svg.pencil)]:hidden [&_button:has(svg.trash-2)]:hidden [&_[role='menuitem']:has(svg.pencil)]:hidden [&_[role='menuitem']:has(svg.trash-2)]:hidden"
         )}>
           {filteredProperties.map((data) => (
             <PropertyCard 
               key={data.property.id} 
               data={data as any} 
-              onEdit={() => {}} // Read-only view
+              onEdit={() => {}} 
             />
           ))}
         </div>

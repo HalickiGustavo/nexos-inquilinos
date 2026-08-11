@@ -127,7 +127,7 @@ function PropertyCardImpl({
             <h3 className="font-semibold truncate group-hover/link:text-primary transition">
               {p.nickname}
             </h3>
-            <ArrowUpRight className="size-3.5 shrink-0 text-muted-foreground group-hover/link:text-primary transition" />
+            
           </div>
           <p className="text-sm text-muted-foreground truncate">{p.address}</p>
           {p.code ? (

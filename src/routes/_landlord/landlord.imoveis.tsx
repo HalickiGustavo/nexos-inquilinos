@@ -22,8 +22,6 @@ import { PropertyFormDialog } from "@/components/PropertyFormDialog";
 import { Dialog } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Property } from "@/lib/queries";
-import { Dialog } from "@/components/ui/dialog";
-import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_landlord/landlord/imoveis")({

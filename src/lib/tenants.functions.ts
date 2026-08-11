@@ -13,7 +13,7 @@ export const softDeleteTenant = createServerFn({ method: "POST" })
     }
     return data;
   })
-  .handler(async ({ data, context }) => {
+  .handler(async ({ data, context }: { data: { tenantId: string }, context: any }) => {
     const { supabase, userId } = context;
 
     // Step 1 — confirm tenant ownership and not already deleted

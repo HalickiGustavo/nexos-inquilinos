@@ -16,7 +16,7 @@ export const requireSupabaseAuth = createMiddleware().server(async ({ next, requ
 
   return next({
     context: {
-      ...((context || {}) as Record<string, any>),
+      ...context,
       userId: user.id,
       claims: user.app_metadata || {},
       supabase: supabaseAdmin,

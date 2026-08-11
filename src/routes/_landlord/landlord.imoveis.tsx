@@ -21,6 +21,9 @@ import { PropertyCard } from "@/components/owner/PropertyCard";
 import { PropertyFormDialog } from "@/components/PropertyFormDialog";
 import { Dialog } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
+import type { Property } from "@/lib/queries";
+import { Dialog } from "@/components/ui/dialog";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_landlord/landlord/imoveis")({
@@ -166,14 +169,16 @@ function LandlordImoveis() {
         <div className={cn(
           "grid gap-6",
           viewMode === "grid" ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3" : "grid-cols-1",
-          "[&_.group]:hover:scale-[1.01] transition-transform duration-200",
-          "[&_button:has(svg.pencil)]:hidden [&_button:has(svg.trash-2)]:hidden [&_[role='menuitem']:has(svg.pencil)]:hidden [&_[role='menuitem']:has(svg.trash-2)]:hidden [&_a:has(svg.external-link)]:hidden"
+          "[&_.group]:hover:scale-[1.01] transition-transform duration-200"
         )}>
           {filteredProperties.map((data) => (
             <PropertyCard 
               key={data.property.id} 
               data={data as any} 
-              onEdit={(p) => setEditing(p)} 
+              onEdit={(p) => {
+                setEditing(p);
+                setOpen(true);
+              }} 
             />
           ))}
         </div>

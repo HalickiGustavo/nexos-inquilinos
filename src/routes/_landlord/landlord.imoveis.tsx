@@ -20,7 +20,7 @@ import {
 import { PropertyCard, type PropertyCardData } from "@/components/owner/PropertyCard";
 import { PageHeader } from "@/components/shell/PageHeader";
 
-export const Route = createFileRoute("/_landlord/landlord.imoveis")({
+export const Route = createFileRoute("/_landlord/landlord/imoveis")({
   head: () => ({ meta: [{ title: "Meus Imóveis — Nexo" }] }),
   component: LandlordPropertiesPage,
 });

@@ -224,6 +224,7 @@ function LandlordPropertiesPage() {
           ))}
         </div>
       )}
+      </PageShell>
     </div>
   );
 }

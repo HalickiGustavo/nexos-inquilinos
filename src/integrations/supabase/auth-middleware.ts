@@ -22,4 +22,4 @@ export const requireSupabaseAuth = createMiddleware().middleware(async ({ next, 
       supabase: supabaseAdmin,
     },
   });
-});
+}) as any;

@@ -13,4 +13,4 @@ export const attachSupabaseAuth = createMiddleware().middleware(async ({ next }:
   }
 
   return next();
-});
+}) as any;

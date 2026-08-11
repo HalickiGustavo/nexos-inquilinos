@@ -18,6 +18,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { useLandlordProperties, useLandlordContracts, useLandlordInstallments, useLandlordMaintenances } from "@/lib/landlord-queries";
 import { PropertyCard } from "@/components/owner/PropertyCard";
+import { PropertyFormDialog } from "@/components/PropertyFormDialog";
+import { Dialog } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
@@ -29,6 +31,8 @@ function LandlordImoveis() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [editing, setEditing] = useState<Property | null>(null);
+  const [open, setOpen] = useState(false);
 
   const propertiesQuery = useLandlordProperties();
   const contractsQuery = useLandlordContracts();
@@ -169,7 +173,7 @@ function LandlordImoveis() {
             <PropertyCard 
               key={data.property.id} 
               data={data as any} 
-              onEdit={() => {}} 
+              onEdit={(p) => setEditing(p)} 
             />
           ))}
         </div>
@@ -193,6 +197,21 @@ function LandlordImoveis() {
           )}
         </div>
       )}
+
+      <Dialog open={open} onOpenChange={(o) => {
+        setOpen(o);
+        if (!o) setEditing(null);
+      }}>
+        <PropertyFormDialog 
+          editing={editing} 
+          onDone={() => {
+            setOpen(false);
+            setEditing(null);
+          }}
+          mode="owner"
+          invalidateKeys={["landlord", "properties"]}
+        />
+      </Dialog>
     </PageShell>
   );
 }

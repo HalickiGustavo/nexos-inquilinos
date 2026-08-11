@@ -269,15 +269,6 @@ export function PropertyDetailsDialog({
             </div>
 
             <div className="flex gap-2 flex-wrap pt-1">
-              <Button asChild size="sm" variant="outline">
-                <Link
-                  to="/properties/$id"
-                  params={{ id: property.id }}
-                  onClick={() => onOpenChange(false)}
-                >
-                  <ExternalLink className="size-3.5 mr-1.5" /> Página completa
-                </Link>
-              </Button>
               {onEdit ? (
                 <Button
                   size="sm"

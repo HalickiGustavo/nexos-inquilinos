@@ -198,7 +198,7 @@ function PropertiesPage() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Imóveis</h1>
           <p className="text-muted-foreground mt-1">
-            {properties.length} imóveis cadastrados — clique em um card para abrir os detalhes.
+            {properties.length} imóveis cadastrados.
           </p>
         </div>
         <Dialog

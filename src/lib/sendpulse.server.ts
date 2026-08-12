@@ -145,13 +145,13 @@ export async function sendSendPulseWhatsApp(params: {
     const body = isTemplate
       ? {
           bot_id: senderId,
-          phone: phone,
+          phone: phone, // Template endpoint typically uses 'phone'
           template_id: params.templateId,
           variables: params.variables || {}
         }
       : {
           bot_id: senderId,
-          contact_id: contactId,
+          contact_id: contactId, // Generic text endpoint uses 'contact_id'
           message: {
             type: "text",
             text: { body: params.text }
@@ -160,6 +160,7 @@ export async function sendSendPulseWhatsApp(params: {
 
     console.log(`[SendPulse] Attempting to send via ${isTemplate ? 'TEMPLATE' : 'GENERIC TEXT'} to ${phone}`);
     console.log(`[SendPulse] Endpoint: ${endpoint}`);
+    console.log(`[SendPulse] Body: ${JSON.stringify(body)}`);
 
     // Documentation check: template send often requires contact_id too?
     // Actually, SendPulse Docs for /whatsapp/messages/send says:

@@ -161,6 +161,11 @@ export async function sendSendPulseWhatsApp(params: {
     console.log(`[SendPulse] Attempting to send via ${isTemplate ? 'TEMPLATE' : 'GENERIC TEXT'} to ${phone}`);
     console.log(`[SendPulse] Endpoint: ${endpoint}`);
 
+    // Documentation check: template send often requires contact_id too?
+    // Actually, SendPulse Docs for /whatsapp/messages/send says:
+    // { "bot_id": "...", "phone": "...", "template_id": "...", "variables": { ... } }
+    // OR it might need "contact_id".
+    
     const response = await fetch(endpoint, {
       method: "POST",
       headers: {

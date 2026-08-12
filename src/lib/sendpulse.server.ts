@@ -153,7 +153,7 @@ export async function sendSendPulseWhatsApp(params: {
     const body: any = isTemplate
       ? {
           bot_id: senderId,
-          phone: phone, // Back to 'phone' for the message/send endpoint
+          phone: phone, 
           template_id: params.templateId,
           variables: params.variables || {}
         }

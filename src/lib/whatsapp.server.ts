@@ -53,8 +53,14 @@ export async function sendEvolutionText(params: {
       headers: { "Content-Type": "application/json", apikey: apiKey },
       body: JSON.stringify({
         number,
-        text: params.text,
-        textMessage: { text: params.text },
+        options: {
+          delay: 1200,
+          presence: "composing",
+          linkPreview: false
+        },
+        textMessage: {
+          text: params.text
+        }
       }),
     });
     if (!res.ok) {

@@ -28,8 +28,7 @@ export async function sendEvolutionText(params: {
   const instance = process.env.EVOLUTION_API_INSTANCE;
   const apiKey = process.env.EVOLUTION_API_KEY;
 
-  // Se o SendPulse estiver configurado, ele tem precedência ou serve como fallback
-  // conforme a carcaça solicitada pelo usuário.
+  // Se o SendPulse estiver configurado, ele tem precedência
   if (process.env.SENDPULSE_CLIENT_ID && process.env.SENDPULSE_CLIENT_SECRET) {
     return sendSendPulseWhatsApp({
       phone: params.phone,

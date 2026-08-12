@@ -131,16 +131,13 @@ export async function sendSendPulseWhatsApp(params: {
     // If template is provided, use template endpoint; otherwise use generic text
     // Note: SendPulse generic text requires a session within 24h.
     // For automated notifications, we should ideally use templates.
-    const isTemplate = params.templateId || params.text.includes("{{");
+    // SendPulse rules:
+    // 1. Generic text (POST /whatsapp/contacts/send) requires a 24h active session.
+    // 2. Templates (POST /whatsapp/messages/send) can be sent outside the 24h window.
     
-    // SendPulse API for generic text messages is:
-    // POST /whatsapp/contacts/send
-    // { "bot_id": "...", "contact_id": "...", "message": { "type": "text", "text": { "body": "..." } } }
+    // Explicitly check for template use. If we have a templateId, we MUST use the template endpoint.
+    const isTemplate = !!params.templateId;
     
-    // SendPulse API for template messages is:
-    // POST /whatsapp/messages/send
-    // { "bot_id": "...", "phone": "...", "template_id": "...", "variables": { ... } }
-
     const endpoint = isTemplate 
       ? `https://api.sendpulse.com/whatsapp/messages/send` 
       : `https://api.sendpulse.com/whatsapp/contacts/send`;
@@ -161,7 +158,8 @@ export async function sendSendPulseWhatsApp(params: {
           }
         };
 
-    console.log(`[SendPulse] Sending to ${endpoint}`, JSON.stringify(body));
+    console.log(`[SendPulse] Attempting to send via ${isTemplate ? 'TEMPLATE' : 'GENERIC TEXT'} to ${phone}`);
+    console.log(`[SendPulse] Endpoint: ${endpoint}`);
 
     const response = await fetch(endpoint, {
       method: "POST",
@@ -174,9 +172,10 @@ export async function sendSendPulseWhatsApp(params: {
 
     if (!response.ok) {
       const errorText = await response.text();
-      // If 422 with session error, we can log it specifically
+      console.error(`[SendPulse] Error response from ${endpoint}:`, errorText);
+      
       if (response.status === 422 && errorText.includes("Contact is not active in 24hours")) {
-        console.warn(`[SendPulse] Session error for ${phone}: Generic text requires 24h active session. Use templates for automation.`);
+        console.warn(`[SendPulse] Session error: Generic text requires 24h active session. Try using a template.`);
       }
       return { ok: false, reason: `api_error: ${errorText}`, status: response.status };
     }

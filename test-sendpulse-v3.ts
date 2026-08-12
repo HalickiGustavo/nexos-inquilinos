@@ -16,14 +16,23 @@ async function test() {
   
   console.log(`Using templateId: ${templateId}`);
   
-  const result = await sendSendPulseWhatsApp({ 
+  // Try generic text first - if it fails with 422, we know the session is expired
+  console.log("Testing generic text...");
+  const resultGeneric = await sendSendPulseWhatsApp({ 
+    phone, 
+    text: "Teste Nexo: Mensagem de texto simples." 
+  });
+  console.log("Generic Result:", JSON.stringify(resultGeneric, null, 2));
+
+  // Try template send
+  console.log("\nTesting template send...");
+  const resultTemplate = await sendSendPulseWhatsApp({ 
     phone, 
     text: "Lembrete: Sua fatura vence em 4 dias.", 
     templateId,
     variables 
   });
-  
-  console.log("Final Result:", JSON.stringify(result, null, 2));
+  console.log("Template Result:", JSON.stringify(resultTemplate, null, 2));
 }
 
 test().catch(console.error);

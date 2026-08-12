@@ -59,7 +59,7 @@ export async function sendSendPulseWhatsApp(params: {
   const token = await getAccessToken();
   if (!token) return { ok: false, reason: "auth_failed" };
 
-  const senderId = params.senderId || process.env['SENDPULSE_WHATSAPP_SENDER_ID'];
+  const senderId = (params.senderId || process.env['SENDPULSE_WHATSAPP_SENDER_ID'])?.trim();
   if (!senderId) return { ok: false, reason: "sender_id_missing" };
 
   // Format phone: SendPulse usually expects digits without '+'

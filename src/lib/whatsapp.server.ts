@@ -48,15 +48,16 @@ export async function sendEvolutionText(params: {
 
   const endpoint = `${baseUrl.replace(/\/+$/, "")}/message/sendText/${instance}`;
   try {
+    const payload = {
+      number,
+      text: params.text,
+      linkPreview: false
+    };
+    
     const res = await fetch(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json", apikey: apiKey },
-      body: JSON.stringify({
-        number,
-        textMessage: {
-          text: params.text
-        }
-      }),
+      body: JSON.stringify(payload),
     });
     if (!res.ok) {
       const body = await res.text().catch(() => "");

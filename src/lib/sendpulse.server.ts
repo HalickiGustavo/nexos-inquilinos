@@ -59,7 +59,7 @@ export async function sendSendPulseWhatsApp(params: {
   const token = await getAccessToken();
   if (!token) return { ok: false, reason: "auth_failed" };
 
-  const senderId = params.senderId || process.env['SENDPULSE_WHATSAPP_SENDER_ID'];
+  const senderId = (params.senderId || process.env['SENDPULSE_WHATSAPP_SENDER_ID'])?.trim();
   if (!senderId) return { ok: false, reason: "sender_id_missing" };
 
   // Format phone: SendPulse usually expects digits without '+'
@@ -78,6 +78,7 @@ export async function sendSendPulseWhatsApp(params: {
     if (check.ok) {
       const checkData = await check.json();
       contactId = checkData.data?.id;
+      console.log(`[SendPulse] Found contact_id via phone: ${contactId}`);
     } else {
       // Consume body if it exists to avoid issues
       await check.text().catch(() => {});
@@ -85,6 +86,7 @@ export async function sendSendPulseWhatsApp(params: {
 
     // 2. If not found, attempt to create the contact.
     if (!contactId) {
+      console.log(`[SendPulse] Contact not found for ${phone}, attempting to create...`);
       const createResponse = await fetch(`https://api.sendpulse.com/whatsapp/contacts`, {
         method: "POST",
         headers: {
@@ -101,29 +103,33 @@ export async function sendSendPulseWhatsApp(params: {
       const createData = await createResponse.json();
       if (createResponse.ok && createData.data?.id) {
         contactId = createData.data.id;
-      } else if (createData.errors?.phone?.includes("Contact already exists")) {
+        console.log(`[SendPulse] Created contact_id: ${contactId}`);
+      } else if (createData.errors?.phone?.includes("Contact already exists") || createData.error_code === 422) {
         // Fallback: search for contact by phone if creation says it exists but get_by_phone failed
-        // We list contacts and manually find the one with the correct phone
-        const search = await fetch(`https://api.sendpulse.com/whatsapp/contacts?bot_id=${senderId}&page=1&limit=100`, {
+        console.log(`[SendPulse] Contact creation failed (likely exists), searching in list...`);
+        const search = await fetch(`https://api.sendpulse.com/whatsapp/contacts?bot_id=${senderId}&page=1&limit=50`, {
           headers: { "Authorization": `Bearer ${token}` }
         });
         if (search.ok) {
           const searchData = await search.json();
-          console.log(`Search returned ${searchData.data?.length} contacts. Looking for phone: ${phone}`);
-          // Log keys of the first contact to see what we're working with
           const found = searchData.data?.find((c: any) => {
             const p = c.channel_data?.phone || c.phone || c.phone_number;
             if (!p) return false;
-            const cleanC = String(p).replace(/\D/g, "");
-            return cleanC === phone;
+            return String(p).replace(/\D/g, "") === phone;
           });
-          if (found) contactId = found.id;
-          console.log("Found contact via list search:", contactId);
+          if (found) {
+            contactId = found.id;
+            console.log(`[SendPulse] Found contact_id via list search: ${contactId}`);
+          }
         }
       }
     }
 
-    if (!contactId) {
+    // SendPulse generic text (POST /whatsapp/contacts/send) requires a 24h active session.
+    // Templates (POST /whatsapp/messages/send) can be sent outside the 24h window.
+    const isTemplate = !!params.templateId;
+
+    if (!contactId && !isTemplate) {
       return { ok: false, reason: "contact_id_resolution_failed" };
     }
 
@@ -131,18 +137,26 @@ export async function sendSendPulseWhatsApp(params: {
     // If template is provided, use template endpoint; otherwise use generic text
     // Note: SendPulse generic text requires a session within 24h.
     // For automated notifications, we should ideally use templates.
-    const isTemplate = params.text.includes("{{") || (params as any).templateId;
+    // SendPulse rules:
+    // 1. Generic text (POST /whatsapp/contacts/send) requires a 24h active session.
+    // 2. Templates (POST /whatsapp/messages/send) can be sent outside the 24h window.
+    
+    // Explicitly check for template use. If we have a templateId, we MUST use the template endpoint.
+    
+    // According to some versions of SendPulse docs, the template endpoint is:
+    // POST /whatsapp/messages/send
+    // Body: { "bot_id": "...", "phone": "...", "template_id": "...", "variables": { ... } }
     
     const endpoint = isTemplate 
       ? `https://api.sendpulse.com/whatsapp/messages/send` 
       : `https://api.sendpulse.com/whatsapp/contacts/send`;
 
-    const body = isTemplate
+    const body: any = isTemplate
       ? {
           bot_id: senderId,
           phone: phone,
-          template_id: (params as any).templateId,
-          variables: (params as any).variables || {}
+          template_id: params.templateId,
+          variables: params.variables || {}
         }
       : {
           bot_id: senderId,
@@ -153,6 +167,14 @@ export async function sendSendPulseWhatsApp(params: {
           }
         };
 
+    console.log(`[SendPulse] Attempting to send via ${isTemplate ? 'TEMPLATE' : 'GENERIC TEXT'} to ${phone}`);
+    console.log(`[SendPulse] Endpoint: ${endpoint}`);
+
+    // Documentation check: template send often requires contact_id too?
+    // Actually, SendPulse Docs for /whatsapp/messages/send says:
+    // { "bot_id": "...", "phone": "...", "template_id": "...", "variables": { ... } }
+    // OR it might need "contact_id".
+    
     const response = await fetch(endpoint, {
       method: "POST",
       headers: {
@@ -164,9 +186,10 @@ export async function sendSendPulseWhatsApp(params: {
 
     if (!response.ok) {
       const errorText = await response.text();
-      // If 422 with session error, we can log it specifically
+      console.error(`[SendPulse] Error response from ${endpoint}:`, errorText);
+      
       if (response.status === 422 && errorText.includes("Contact is not active in 24hours")) {
-        console.warn(`[SendPulse] Session error for ${phone}: Generic text requires 24h active session. Use templates for automation.`);
+        console.warn(`[SendPulse] Session error: Generic text requires 24h active session. Try using a template.`);
       }
       return { ok: false, reason: `api_error: ${errorText}`, status: response.status };
     }

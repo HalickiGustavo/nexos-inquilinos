@@ -131,8 +131,16 @@ export async function sendSendPulseWhatsApp(params: {
     // If template is provided, use template endpoint; otherwise use generic text
     // Note: SendPulse generic text requires a session within 24h.
     // For automated notifications, we should ideally use templates.
-    const isTemplate = params.text.includes("{{") || (params as any).templateId;
+    const isTemplate = params.templateId || params.text.includes("{{");
     
+    // SendPulse API for generic text messages is:
+    // POST /whatsapp/contacts/send
+    // { "bot_id": "...", "contact_id": "...", "message": { "type": "text", "text": { "body": "..." } } }
+    
+    // SendPulse API for template messages is:
+    // POST /whatsapp/messages/send
+    // { "bot_id": "...", "phone": "...", "template_id": "...", "variables": { ... } }
+
     const endpoint = isTemplate 
       ? `https://api.sendpulse.com/whatsapp/messages/send` 
       : `https://api.sendpulse.com/whatsapp/contacts/send`;
@@ -141,8 +149,8 @@ export async function sendSendPulseWhatsApp(params: {
       ? {
           bot_id: senderId,
           phone: phone,
-          template_id: (params as any).templateId,
-          variables: (params as any).variables || {}
+          template_id: params.templateId,
+          variables: params.variables || {}
         }
       : {
           bot_id: senderId,
@@ -152,6 +160,8 @@ export async function sendSendPulseWhatsApp(params: {
             text: { body: params.text }
           }
         };
+
+    console.log(`[SendPulse] Sending to ${endpoint}`, JSON.stringify(body));
 
     const response = await fetch(endpoint, {
       method: "POST",

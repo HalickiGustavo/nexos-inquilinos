@@ -78,6 +78,7 @@ export async function sendSendPulseWhatsApp(params: {
     if (check.ok) {
       const checkData = await check.json();
       contactId = checkData.data?.id;
+      console.log(`[SendPulse] Found contact_id via phone: ${contactId}`);
     } else {
       // Consume body if it exists to avoid issues
       await check.text().catch(() => {});
@@ -85,6 +86,7 @@ export async function sendSendPulseWhatsApp(params: {
 
     // 2. If not found, attempt to create the contact.
     if (!contactId) {
+      console.log(`[SendPulse] Contact not found for ${phone}, attempting to create...`);
       const createResponse = await fetch(`https://api.sendpulse.com/whatsapp/contacts`, {
         method: "POST",
         headers: {
@@ -101,29 +103,29 @@ export async function sendSendPulseWhatsApp(params: {
       const createData = await createResponse.json();
       if (createResponse.ok && createData.data?.id) {
         contactId = createData.data.id;
-      } else if (createData.errors?.phone?.includes("Contact already exists")) {
+        console.log(`[SendPulse] Created contact_id: ${contactId}`);
+      } else if (createData.errors?.phone?.includes("Contact already exists") || createData.error_code === 422) {
         // Fallback: search for contact by phone if creation says it exists but get_by_phone failed
-        // We list contacts and manually find the one with the correct phone
-        const search = await fetch(`https://api.sendpulse.com/whatsapp/contacts?bot_id=${senderId}&page=1&limit=100`, {
+        console.log(`[SendPulse] Contact creation failed (likely exists), searching in list...`);
+        const search = await fetch(`https://api.sendpulse.com/whatsapp/contacts?bot_id=${senderId}&page=1&limit=50`, {
           headers: { "Authorization": `Bearer ${token}` }
         });
         if (search.ok) {
           const searchData = await search.json();
-          console.log(`Search returned ${searchData.data?.length} contacts. Looking for phone: ${phone}`);
-          // Log keys of the first contact to see what we're working with
           const found = searchData.data?.find((c: any) => {
             const p = c.channel_data?.phone || c.phone || c.phone_number;
             if (!p) return false;
-            const cleanC = String(p).replace(/\D/g, "");
-            return cleanC === phone;
+            return String(p).replace(/\D/g, "") === phone;
           });
-          if (found) contactId = found.id;
-          console.log("Found contact via list search:", contactId);
+          if (found) {
+            contactId = found.id;
+            console.log(`[SendPulse] Found contact_id via list search: ${contactId}`);
+          }
         }
       }
     }
 
-    if (!contactId) {
+    if (!contactId && !isTemplate) {
       return { ok: false, reason: "contact_id_resolution_failed" };
     }
 

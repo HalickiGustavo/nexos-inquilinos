@@ -125,6 +125,10 @@ export async function sendSendPulseWhatsApp(params: {
       }
     }
 
+    // SendPulse generic text (POST /whatsapp/contacts/send) requires a 24h active session.
+    // Templates (POST /whatsapp/messages/send) can be sent outside the 24h window.
+    const isTemplate = !!params.templateId;
+
     if (!contactId && !isTemplate) {
       return { ok: false, reason: "contact_id_resolution_failed" };
     }
@@ -138,11 +142,6 @@ export async function sendSendPulseWhatsApp(params: {
     // 2. Templates (POST /whatsapp/messages/send) can be sent outside the 24h window.
     
     // Explicitly check for template use. If we have a templateId, we MUST use the template endpoint.
-    const isTemplate = !!params.templateId;
-    
-    // SendPulse rules:
-    // 1. Generic text (POST /whatsapp/contacts/send) requires a 24h active session.
-    // 2. Templates (POST /whatsapp/messages/send) can be sent outside the 24h window.
     
     // According to some versions of SendPulse docs, the template endpoint is:
     // POST /whatsapp/messages/send

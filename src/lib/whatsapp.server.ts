@@ -50,8 +50,9 @@ export async function sendEvolutionText(params: {
   try {
     const payload = {
       number,
-      text: params.text,
-      linkPreview: false
+      textMessage: {
+        text: params.text
+      }
     };
     
     console.log(`[Evolution] Sending to ${number} via ${endpoint}`);

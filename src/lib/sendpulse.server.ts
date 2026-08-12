@@ -138,9 +138,13 @@ export async function sendSendPulseWhatsApp(params: {
     // Explicitly check for template use. If we have a templateId, we MUST use the template endpoint.
     const isTemplate = !!params.templateId;
     
-    // The template sending endpoint in SendPulse WhatsApp API is often 
+    // SendPulse rules:
+    // 1. Generic text (POST /whatsapp/contacts/send) requires a 24h active session.
+    // 2. Templates (POST /whatsapp/messages/send) can be sent outside the 24h window.
+    
+    // According to some versions of SendPulse docs, the template endpoint is:
     // POST /whatsapp/messages/send
-    // But some versions use different paths or require contact_id even for templates.
+    // Body: { "bot_id": "...", "phone": "...", "template_id": "...", "variables": { ... } }
     
     const endpoint = isTemplate 
       ? `https://api.sendpulse.com/whatsapp/messages/send` 
@@ -149,7 +153,7 @@ export async function sendSendPulseWhatsApp(params: {
     const body: any = isTemplate
       ? {
           bot_id: senderId,
-          contact_id: contactId,
+          phone: phone, // Back to 'phone' for the message/send endpoint
           template_id: params.templateId,
           variables: params.variables || {}
         }

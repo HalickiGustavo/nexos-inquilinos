@@ -50,14 +50,19 @@ export async function sendEvolutionText(params: {
   try {
     const payload = {
       number,
-      textMessage: {
-        text: params.text
-      }
+      text: params.text,
+      linkPreview: false
     };
+    
+    console.log(`[Evolution] Sending to ${number} via ${endpoint}`);
+    console.log(`[Evolution] Payload:`, JSON.stringify(payload));
     
     const res = await fetch(endpoint, {
       method: "POST",
-      headers: { "Content-Type": "application/json", apikey: apiKey },
+      headers: { 
+        "Content-Type": "application/json", 
+        "apikey": apiKey 
+      },
       body: JSON.stringify(payload),
     });
     if (!res.ok) {

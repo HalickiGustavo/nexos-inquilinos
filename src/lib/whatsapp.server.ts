@@ -28,8 +28,7 @@ export async function sendEvolutionText(params: {
   const instance = process.env.EVOLUTION_API_INSTANCE;
   const apiKey = process.env.EVOLUTION_API_KEY;
 
-  // Se o SendPulse estiver configurado, ele tem precedência ou serve como fallback
-  // conforme a carcaça solicitada pelo usuário.
+  // Se o SendPulse estiver configurado, ele tem precedência
   if (process.env.SENDPULSE_CLIENT_ID && process.env.SENDPULSE_CLIENT_SECRET) {
     return sendSendPulseWhatsApp({
       phone: params.phone,
@@ -47,16 +46,25 @@ export async function sendEvolutionText(params: {
 
   if (!number) return { ok: false, reason: "invalid_phone" };
 
-  const endpoint = `${baseUrl.replace(/\/+$/, "")}/message/sendText/${encodeURIComponent(instance)}`;
+  const endpoint = `${baseUrl.replace(/\/+$/, "")}/message/sendText/${instance}`;
   try {
+    const payload = {
+      number,
+      textMessage: {
+        text: params.text
+      }
+    };
+    
+    console.log(`[Evolution] Sending to ${number} via ${endpoint}`);
+    console.log(`[Evolution] Payload:`, JSON.stringify(payload));
+    
     const res = await fetch(endpoint, {
       method: "POST",
-      headers: { "Content-Type": "application/json", apikey: apiKey },
-      body: JSON.stringify({
-        number,
-        text: params.text,
-        textMessage: { text: params.text },
-      }),
+      headers: { 
+        "Content-Type": "application/json", 
+        "apikey": apiKey 
+      },
+      body: JSON.stringify(payload),
     });
     if (!res.ok) {
       const body = await res.text().catch(() => "");

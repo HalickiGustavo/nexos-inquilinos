@@ -46,7 +46,7 @@ export async function sendEvolutionText(params: {
 
   if (!number) return { ok: false, reason: "invalid_phone" };
 
-  const endpoint = `${baseUrl.replace(/\/+$/, "")}/message/sendText/${encodeURIComponent(instance)}`;
+  const endpoint = `${baseUrl.replace(/\/+$/, "")}/message/sendText/${instance}`;
   try {
     const res = await fetch(endpoint, {
       method: "POST",

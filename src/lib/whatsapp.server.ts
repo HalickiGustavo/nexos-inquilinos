@@ -48,11 +48,11 @@ export async function sendEvolutionText(params: {
 
   const endpoint = `${baseUrl.replace(/\/+$/, "")}/message/sendText/${instance}`;
   try {
+    // A estrutura do payload pode variar entre v1 e v2 da Evolution API.
+    // Tentamos a estrutura v2 que é mais comum em versões recentes.
     const payload = {
       number,
-      textMessage: {
-        text: params.text
-      }
+      text: params.text
     };
     
     console.log(`[Evolution] Sending to ${number} via ${endpoint}`);

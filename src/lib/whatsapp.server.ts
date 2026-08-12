@@ -50,8 +50,9 @@ export async function sendEvolutionText(params: {
   try {
     const payload = {
       number,
-      text: params.text,
-      linkPreview: false
+      textMessage: {
+        text: params.text
+      }
     };
     
     const res = await fetch(endpoint, {

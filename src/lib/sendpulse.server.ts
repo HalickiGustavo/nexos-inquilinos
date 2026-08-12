@@ -138,20 +138,24 @@ export async function sendSendPulseWhatsApp(params: {
     // Explicitly check for template use. If we have a templateId, we MUST use the template endpoint.
     const isTemplate = !!params.templateId;
     
+    // The template sending endpoint in SendPulse WhatsApp API is often 
+    // POST /whatsapp/messages/send
+    // But some versions use different paths or require contact_id even for templates.
+    
     const endpoint = isTemplate 
       ? `https://api.sendpulse.com/whatsapp/messages/send` 
       : `https://api.sendpulse.com/whatsapp/contacts/send`;
 
-    const body = isTemplate
+    const body: any = isTemplate
       ? {
           bot_id: senderId,
-          phone: phone, // Template endpoint typically uses 'phone'
+          contact_id: contactId,
           template_id: params.templateId,
           variables: params.variables || {}
         }
       : {
           bot_id: senderId,
-          contact_id: contactId, // Generic text endpoint uses 'contact_id'
+          contact_id: contactId,
           message: {
             type: "text",
             text: { body: params.text }

@@ -21,9 +21,10 @@ export async function sendEvolutionText(params: {
   text: string;
   templateId?: string;
   variables?: Record<string, string>;
+  instance?: string;
 }): Promise<EvolutionSendResult> {
   const baseUrl = process.env.EVOLUTION_API_URL;
-  const instance = process.env.EVOLUTION_API_INSTANCE || "Nexo suporte";
+  const instance = params.instance || process.env.EVOLUTION_API_INSTANCE || "Nexo suporte";
   const apiKey = process.env.EVOLUTION_API_KEY;
 
   if (!baseUrl || !instance || !apiKey) {
@@ -34,7 +35,8 @@ export async function sendEvolutionText(params: {
   const number = sanitizeBrPhone(params.phone);
   if (!number) return { ok: false, reason: "invalid_phone" };
 
-  const endpoint = `${baseUrl.replace(/\/+$/, "")}/message/sendText/${instance}`;
+  const encodedInstance = encodeURIComponent(instance);
+  const endpoint = `${baseUrl.replace(/\/+$/, "")}/message/sendText/${encodedInstance}`;
   try {
     const payload = {
       number,

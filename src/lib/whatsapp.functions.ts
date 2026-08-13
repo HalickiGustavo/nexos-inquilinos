@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { sendWhatsAppText } from "./whatsapp.server";
+import { sendEvolutionText } from "./whatsapp.server";
 import { buildWelcomeMessage } from "./whatsapp-templates";
 
 export const sendWelcomeWhatsApp = createServerFn({ method: "POST" })
@@ -52,7 +52,7 @@ export const sendWelcomeWhatsApp = createServerFn({ method: "POST" })
     }
 
     const text = buildWelcomeMessage(data.nome, data.email);
-    const res = await sendWhatsAppText({ phone: data.telefone, text });
+    const res = await sendEvolutionText({ phone: data.telefone, text });
     if (!res.ok) {
       console.warn("[whatsapp.welcome] falha", res.reason);
     }

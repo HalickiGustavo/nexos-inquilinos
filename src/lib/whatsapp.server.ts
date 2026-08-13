@@ -35,7 +35,8 @@ export async function sendEvolutionText(params: {
   const number = sanitizeBrPhone(params.phone);
   if (!number) return { ok: false, reason: "invalid_phone" };
 
-  const endpoint = `${baseUrl.replace(/\/+$/, "")}/message/sendText/${instance}`;
+  const encodedInstance = encodeURIComponent(instance);
+  const endpoint = `${baseUrl.replace(/\/+$/, "")}/message/sendText/${encodedInstance}`;
   try {
     const payload = {
       number,

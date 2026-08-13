@@ -5,29 +5,24 @@ export const Route = createFileRoute('/api/public/test-whatsapp')({
   server: {
     handlers: {
       GET: async () => {
-        const number = "5541987771358";
-        const amount = "R$ 1.500,00";
-        const dueDate = "15/08/2026";
-        const text = `Olá! Identificamos que a sua fatura do aluguel Nexo está disponível para pagamento.\n\nValor: ${amount}\nVencimento: ${dueDate}\n\nPara realizar o pagamento e evitar juros, acesse seu painel Nexo ou responda para receber o código PIX.`;
+        const baseUrl = process.env.EVOLUTION_API_URL;
+        const apiKey = process.env.EVOLUTION_API_KEY;
 
-        // Attempting with the slugified version if the space is the issue
-        const instancesToTry = ["Nexo suporte", "Nexo-suporte", "nexo-suporte"];
-        let lastResult = null;
-
-        for (const inst of instancesToTry) {
-          console.log(`[Test] Attempting with instance: "${inst}"`);
-          const result = await sendEvolutionText({
-            phone: number,
-            text: text,
-            instance: inst
-          });
-          lastResult = { ...result, instance_tried: inst };
-          if (result.ok) break;
+        if (!baseUrl || !apiKey) {
+          return new Response("Config missing", { status: 500 });
         }
 
-        return new Response(JSON.stringify(lastResult), {
-          headers: { 'Content-Type': 'application/json' }
-        });
+        try {
+          const res = await fetch(`${baseUrl.replace(/\/+$/, "")}/instance/fetchInstances`, {
+            headers: { "apikey": apiKey }
+          });
+          const instances = await res.json();
+          return new Response(JSON.stringify(instances), {
+            headers: { 'Content-Type': 'application/json' }
+          });
+        } catch (e) {
+          return new Response(String(e), { status: 500 });
+        }
       }
     }
   }

@@ -31,7 +31,6 @@ import { Route as AuthenticatedPropertiesRouteImport } from './routes/_authentic
 import { Route as AuthenticatedRelatoriosRouteImport } from './routes/_authenticated/relatorios'
 import { Route as AuthenticatedTenantsRouteImport } from './routes/_authenticated/tenants'
 import { Route as AuthenticatedVistoriasRouteImport } from './routes/_authenticated/vistorias'
-import { Route as ApiTestRouteImport } from './routes/api.test'
 import { Route as AuthenticatedAdminIntegracoesRouteImport } from './routes/_authenticated/admin.integracoes'
 import { Route as AuthenticatedPropertiesIdRouteImport } from './routes/_authenticated/properties.$id'
 import { Route as AuthenticatedTenantIndexRouteImport } from './routes/_authenticated/tenant.index'
@@ -69,7 +68,6 @@ import { Route as ManagerManagerProprietariosRouteImport } from './routes/_manag
 import { Route as ManagerManagerRelatoriosRouteImport } from './routes/_manager/manager.relatorios'
 import { Route as ManagerManagerVistoriasRouteImport } from './routes/_manager/manager.vistorias'
 import { Route as ApiPublicEfiWebhookRouteImport } from './routes/api/public/efi-webhook'
-import { Route as ApiPublicTestWhatsappRouteImport } from './routes/api/public/test-whatsapp'
 import { Route as ManagerManagerConfiguracoesRoletaRouteImport } from './routes/_manager/manager.configuracoes.roleta'
 import { Route as ApiPublicCrmAgenciesRouteImport } from './routes/api/public/crm/agencies'
 import { Route as ApiPublicCrmAgenciesCompleteRouteImport } from './routes/api/public/crm/agencies-complete'
@@ -203,11 +201,6 @@ const AuthenticatedVistoriasRoute = AuthenticatedVistoriasRouteImport.update({
   id: '/vistorias',
   path: '/vistorias',
   getParentRoute: () => AuthenticatedRoute,
-} as any)
-const ApiTestRoute = ApiTestRouteImport.update({
-  id: '/api/test',
-  path: '/api/test',
-  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAdminIntegracoesRoute =
   AuthenticatedAdminIntegracoesRouteImport.update({
@@ -412,11 +405,6 @@ const ApiPublicEfiWebhookRoute = ApiPublicEfiWebhookRouteImport.update({
   path: '/api/public/efi-webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicTestWhatsappRoute = ApiPublicTestWhatsappRouteImport.update({
-  id: '/api/public/test-whatsapp',
-  path: '/api/public/test-whatsapp',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ManagerManagerConfiguracoesRoletaRoute =
   ManagerManagerConfiguracoesRoletaRouteImport.update({
     id: '/manager/configuracoes/roleta',
@@ -569,7 +557,6 @@ export interface FileRoutesByFullPath {
   '/relatorios': typeof AuthenticatedRelatoriosRoute
   '/tenants': typeof AuthenticatedTenantsRoute
   '/vistorias': typeof AuthenticatedVistoriasRoute
-  '/api/test': typeof ApiTestRoute
   '/admin/integracoes': typeof AuthenticatedAdminIntegracoesRoute
   '/properties/$id': typeof AuthenticatedPropertiesIdRoute
   '/tenant/alertas': typeof AuthenticatedTenantAlertasRoute
@@ -604,7 +591,6 @@ export interface FileRoutesByFullPath {
   '/manager/relatorios': typeof ManagerManagerRelatoriosRoute
   '/manager/vistorias': typeof ManagerManagerVistoriasRoute
   '/api/public/efi-webhook': typeof ApiPublicEfiWebhookRouteWithChildren
-  '/api/public/test-whatsapp': typeof ApiPublicTestWhatsappRoute
   '/tenant/': typeof AuthenticatedTenantIndexRoute
   '/landlord/': typeof LandlordLandlordIndexRoute
   '/manager/': typeof ManagerManagerIndexRoute
@@ -652,7 +638,6 @@ export interface FileRoutesByTo {
   '/relatorios': typeof AuthenticatedRelatoriosRoute
   '/tenants': typeof AuthenticatedTenantsRoute
   '/vistorias': typeof AuthenticatedVistoriasRoute
-  '/api/test': typeof ApiTestRoute
   '/admin/integracoes': typeof AuthenticatedAdminIntegracoesRoute
   '/properties/$id': typeof AuthenticatedPropertiesIdRoute
   '/tenant/alertas': typeof AuthenticatedTenantAlertasRoute
@@ -687,7 +672,6 @@ export interface FileRoutesByTo {
   '/manager/relatorios': typeof ManagerManagerRelatoriosRoute
   '/manager/vistorias': typeof ManagerManagerVistoriasRoute
   '/api/public/efi-webhook': typeof ApiPublicEfiWebhookRouteWithChildren
-  '/api/public/test-whatsapp': typeof ApiPublicTestWhatsappRoute
   '/tenant': typeof AuthenticatedTenantIndexRoute
   '/landlord': typeof LandlordLandlordIndexRoute
   '/manager': typeof ManagerManagerIndexRoute
@@ -738,7 +722,6 @@ export interface FileRoutesById {
   '/_authenticated/relatorios': typeof AuthenticatedRelatoriosRoute
   '/_authenticated/tenants': typeof AuthenticatedTenantsRoute
   '/_authenticated/vistorias': typeof AuthenticatedVistoriasRoute
-  '/api/test': typeof ApiTestRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/admin/integracoes': typeof AuthenticatedAdminIntegracoesRoute
   '/_authenticated/properties/$id': typeof AuthenticatedPropertiesIdRoute
@@ -774,7 +757,6 @@ export interface FileRoutesById {
   '/_manager/manager/relatorios': typeof ManagerManagerRelatoriosRoute
   '/_manager/manager/vistorias': typeof ManagerManagerVistoriasRoute
   '/api/public/efi-webhook': typeof ApiPublicEfiWebhookRouteWithChildren
-  '/api/public/test-whatsapp': typeof ApiPublicTestWhatsappRoute
   '/_authenticated/tenant/': typeof AuthenticatedTenantIndexRoute
   '/_landlord/landlord/': typeof LandlordLandlordIndexRoute
   '/_manager/manager/': typeof ManagerManagerIndexRoute
@@ -824,7 +806,6 @@ export interface FileRouteTypes {
     | '/relatorios'
     | '/tenants'
     | '/vistorias'
-    | '/api/test'
     | '/admin/integracoes'
     | '/properties/$id'
     | '/tenant/alertas'
@@ -859,7 +840,6 @@ export interface FileRouteTypes {
     | '/manager/relatorios'
     | '/manager/vistorias'
     | '/api/public/efi-webhook'
-    | '/api/public/test-whatsapp'
     | '/tenant/'
     | '/landlord/'
     | '/manager/'
@@ -907,7 +887,6 @@ export interface FileRouteTypes {
     | '/relatorios'
     | '/tenants'
     | '/vistorias'
-    | '/api/test'
     | '/admin/integracoes'
     | '/properties/$id'
     | '/tenant/alertas'
@@ -942,7 +921,6 @@ export interface FileRouteTypes {
     | '/manager/relatorios'
     | '/manager/vistorias'
     | '/api/public/efi-webhook'
-    | '/api/public/test-whatsapp'
     | '/tenant'
     | '/landlord'
     | '/manager'
@@ -992,7 +970,6 @@ export interface FileRouteTypes {
     | '/_authenticated/relatorios'
     | '/_authenticated/tenants'
     | '/_authenticated/vistorias'
-    | '/api/test'
     | '/_authenticated/'
     | '/_authenticated/admin/integracoes'
     | '/_authenticated/properties/$id'
@@ -1028,7 +1005,6 @@ export interface FileRouteTypes {
     | '/_manager/manager/relatorios'
     | '/_manager/manager/vistorias'
     | '/api/public/efi-webhook'
-    | '/api/public/test-whatsapp'
     | '/_authenticated/tenant/'
     | '/_landlord/landlord/'
     | '/_manager/manager/'
@@ -1067,9 +1043,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   ManagerSetupRoute: typeof ManagerSetupRoute
   TenantSetupRoute: typeof TenantSetupRoute
-  ApiTestRoute: typeof ApiTestRoute
   ApiPublicEfiWebhookRoute: typeof ApiPublicEfiWebhookRouteWithChildren
-  ApiPublicTestWhatsappRoute: typeof ApiPublicTestWhatsappRoute
   ApiPublicCrmAgenciesRoute: typeof ApiPublicCrmAgenciesRoute
   ApiPublicCrmAgenciesCompleteRoute: typeof ApiPublicCrmAgenciesCompleteRoute
   ApiPublicCrmContractsAndTenantsRoute: typeof ApiPublicCrmContractsAndTenantsRoute
@@ -1248,13 +1222,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/vistorias'
       preLoaderRoute: typeof AuthenticatedVistoriasRouteImport
       parentRoute: typeof AuthenticatedRoute
-    }
-    '/api/test': {
-      id: '/api/test'
-      path: '/api/test'
-      fullPath: '/api/test'
-      preLoaderRoute: typeof ApiTestRouteImport
-      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/admin/integracoes': {
       id: '/_authenticated/admin/integracoes'
@@ -1513,13 +1480,6 @@ declare module '@tanstack/react-router' {
       path: '/api/public/efi-webhook'
       fullPath: '/api/public/efi-webhook'
       preLoaderRoute: typeof ApiPublicEfiWebhookRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/test-whatsapp': {
-      id: '/api/public/test-whatsapp'
-      path: '/api/public/test-whatsapp'
-      fullPath: '/api/public/test-whatsapp'
-      preLoaderRoute: typeof ApiPublicTestWhatsappRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_manager/manager/configuracoes/roleta': {
@@ -1849,9 +1809,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   ManagerSetupRoute: ManagerSetupRoute,
   TenantSetupRoute: TenantSetupRoute,
-  ApiTestRoute: ApiTestRoute,
   ApiPublicEfiWebhookRoute: ApiPublicEfiWebhookRouteWithChildren,
-  ApiPublicTestWhatsappRoute: ApiPublicTestWhatsappRoute,
   ApiPublicCrmAgenciesRoute: ApiPublicCrmAgenciesRoute,
   ApiPublicCrmAgenciesCompleteRoute: ApiPublicCrmAgenciesCompleteRoute,
   ApiPublicCrmContractsAndTenantsRoute: ApiPublicCrmContractsAndTenantsRoute,

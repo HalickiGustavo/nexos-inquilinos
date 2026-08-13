@@ -10,14 +10,22 @@ export const Route = createFileRoute('/api/public/test-whatsapp')({
         const dueDate = "15/08/2026";
         const text = `Olá! Identificamos que a sua fatura do aluguel Nexo está disponível para pagamento.\n\nValor: ${amount}\nVencimento: ${dueDate}\n\nPara realizar o pagamento e evitar juros, acesse seu painel Nexo ou responda para receber o código PIX.`;
 
-        console.log(`[Test] Sending billing message to ${number} explicitly using instance "Nexo suporte"...`);
-        const result = await sendEvolutionText({
-          phone: number,
-          text: text,
-          instance: "Nexo suporte"
-        });
+        // Attempting with the slugified version if the space is the issue
+        const instancesToTry = ["Nexo suporte", "Nexo-suporte", "nexo-suporte"];
+        let lastResult = null;
 
-        return new Response(JSON.stringify(result), {
+        for (const inst of instancesToTry) {
+          console.log(`[Test] Attempting with instance: "${inst}"`);
+          const result = await sendEvolutionText({
+            phone: number,
+            text: text,
+            instance: inst
+          });
+          lastResult = { ...result, instance_tried: inst };
+          if (result.ok) break;
+        }
+
+        return new Response(JSON.stringify(lastResult), {
           headers: { 'Content-Type': 'application/json' }
         });
       }

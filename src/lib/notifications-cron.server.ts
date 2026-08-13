@@ -1,5 +1,5 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import { sendEvolutionText } from "./whatsapp.server";
+import { sendWhatsAppText } from "./whatsapp.server";
 import { sendResendEmail } from "./resend.server";
 
 export async function processNotificationQueue() {
@@ -101,7 +101,7 @@ async function sendPaymentReminder(installment: any, title: string) {
 
   // WhatsApp via Evolution API
   if (tenant.phone) {
-    const result = await sendEvolutionText({
+    const result = await sendWhatsAppText({
       phone: tenant.phone,
       text: message
     });

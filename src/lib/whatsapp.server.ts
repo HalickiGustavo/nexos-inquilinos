@@ -25,6 +25,7 @@ export async function sendEvolutionText(params: {
 }): Promise<EvolutionSendResult> {
   const baseUrl = process.env.EVOLUTION_API_URL;
   const instance = params.instance || "Nexo suporte";
+  console.log(`[WhatsApp] Using instance: "${instance}"`);
   const apiKey = process.env.EVOLUTION_API_KEY;
 
   if (!baseUrl || !instance || !apiKey) {

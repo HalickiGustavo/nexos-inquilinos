@@ -21,9 +21,10 @@ export async function sendEvolutionText(params: {
   text: string;
   templateId?: string;
   variables?: Record<string, string>;
+  instance?: string;
 }): Promise<EvolutionSendResult> {
   const baseUrl = process.env.EVOLUTION_API_URL;
-  const instance = process.env.EVOLUTION_API_INSTANCE || "Nexo suporte";
+  const instance = params.instance || "Nexo suporte";
   const apiKey = process.env.EVOLUTION_API_KEY;
 
   if (!baseUrl || !instance || !apiKey) {

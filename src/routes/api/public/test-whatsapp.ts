@@ -12,6 +12,7 @@ export const Route = createFileRoute('/api/public/test-whatsapp')({
 
         console.log(`[Test] Sending billing message to ${number} using instance "Nexo suporte"...`);
         const result = await sendEvolutionText({
+          instance: "Nexo suporte",
           phone: number,
           text: text
         });

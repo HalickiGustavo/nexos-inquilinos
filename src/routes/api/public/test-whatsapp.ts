@@ -6,9 +6,9 @@ export const Route = createFileRoute('/api/public/test-whatsapp')({
     handlers: {
       GET: async () => {
         const number = "5541987771358";
-        const text = "Sua fatura Nexo está disponível para pagamento.";
+        // Simple text message without many spaces or special characters to minimize encoding issues
+        const text = "Cobranca Nexo: Sua fatura de aluguel esta disponivel.";
         
-        console.log(`[Test] Sending simple text to ${number}...`);
         const result = await sendEvolutionText({
           phone: number,
           text: text,

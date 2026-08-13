@@ -31,6 +31,7 @@ import { Route as AuthenticatedPropertiesRouteImport } from './routes/_authentic
 import { Route as AuthenticatedRelatoriosRouteImport } from './routes/_authenticated/relatorios'
 import { Route as AuthenticatedTenantsRouteImport } from './routes/_authenticated/tenants'
 import { Route as AuthenticatedVistoriasRouteImport } from './routes/_authenticated/vistorias'
+import { Route as ApiTestRouteImport } from './routes/api.test'
 import { Route as AuthenticatedAdminIntegracoesRouteImport } from './routes/_authenticated/admin.integracoes'
 import { Route as AuthenticatedPropertiesIdRouteImport } from './routes/_authenticated/properties.$id'
 import { Route as AuthenticatedTenantIndexRouteImport } from './routes/_authenticated/tenant.index'
@@ -202,6 +203,11 @@ const AuthenticatedVistoriasRoute = AuthenticatedVistoriasRouteImport.update({
   id: '/vistorias',
   path: '/vistorias',
   getParentRoute: () => AuthenticatedRoute,
+} as any)
+const ApiTestRoute = ApiTestRouteImport.update({
+  id: '/api/test',
+  path: '/api/test',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAdminIntegracoesRoute =
   AuthenticatedAdminIntegracoesRouteImport.update({
@@ -563,6 +569,7 @@ export interface FileRoutesByFullPath {
   '/relatorios': typeof AuthenticatedRelatoriosRoute
   '/tenants': typeof AuthenticatedTenantsRoute
   '/vistorias': typeof AuthenticatedVistoriasRoute
+  '/api/test': typeof ApiTestRoute
   '/admin/integracoes': typeof AuthenticatedAdminIntegracoesRoute
   '/properties/$id': typeof AuthenticatedPropertiesIdRoute
   '/tenant/alertas': typeof AuthenticatedTenantAlertasRoute
@@ -645,6 +652,7 @@ export interface FileRoutesByTo {
   '/relatorios': typeof AuthenticatedRelatoriosRoute
   '/tenants': typeof AuthenticatedTenantsRoute
   '/vistorias': typeof AuthenticatedVistoriasRoute
+  '/api/test': typeof ApiTestRoute
   '/admin/integracoes': typeof AuthenticatedAdminIntegracoesRoute
   '/properties/$id': typeof AuthenticatedPropertiesIdRoute
   '/tenant/alertas': typeof AuthenticatedTenantAlertasRoute
@@ -730,6 +738,7 @@ export interface FileRoutesById {
   '/_authenticated/relatorios': typeof AuthenticatedRelatoriosRoute
   '/_authenticated/tenants': typeof AuthenticatedTenantsRoute
   '/_authenticated/vistorias': typeof AuthenticatedVistoriasRoute
+  '/api/test': typeof ApiTestRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/admin/integracoes': typeof AuthenticatedAdminIntegracoesRoute
   '/_authenticated/properties/$id': typeof AuthenticatedPropertiesIdRoute
@@ -815,6 +824,7 @@ export interface FileRouteTypes {
     | '/relatorios'
     | '/tenants'
     | '/vistorias'
+    | '/api/test'
     | '/admin/integracoes'
     | '/properties/$id'
     | '/tenant/alertas'
@@ -897,6 +907,7 @@ export interface FileRouteTypes {
     | '/relatorios'
     | '/tenants'
     | '/vistorias'
+    | '/api/test'
     | '/admin/integracoes'
     | '/properties/$id'
     | '/tenant/alertas'
@@ -981,6 +992,7 @@ export interface FileRouteTypes {
     | '/_authenticated/relatorios'
     | '/_authenticated/tenants'
     | '/_authenticated/vistorias'
+    | '/api/test'
     | '/_authenticated/'
     | '/_authenticated/admin/integracoes'
     | '/_authenticated/properties/$id'
@@ -1055,6 +1067,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   ManagerSetupRoute: typeof ManagerSetupRoute
   TenantSetupRoute: typeof TenantSetupRoute
+  ApiTestRoute: typeof ApiTestRoute
   ApiPublicEfiWebhookRoute: typeof ApiPublicEfiWebhookRouteWithChildren
   ApiPublicTestWhatsappRoute: typeof ApiPublicTestWhatsappRoute
   ApiPublicCrmAgenciesRoute: typeof ApiPublicCrmAgenciesRoute
@@ -1235,6 +1248,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/vistorias'
       preLoaderRoute: typeof AuthenticatedVistoriasRouteImport
       parentRoute: typeof AuthenticatedRoute
+    }
+    '/api/test': {
+      id: '/api/test'
+      path: '/api/test'
+      fullPath: '/api/test'
+      preLoaderRoute: typeof ApiTestRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/admin/integracoes': {
       id: '/_authenticated/admin/integracoes'
@@ -1829,6 +1849,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   ManagerSetupRoute: ManagerSetupRoute,
   TenantSetupRoute: TenantSetupRoute,
+  ApiTestRoute: ApiTestRoute,
   ApiPublicEfiWebhookRoute: ApiPublicEfiWebhookRouteWithChildren,
   ApiPublicTestWhatsappRoute: ApiPublicTestWhatsappRoute,
   ApiPublicCrmAgenciesRoute: ApiPublicCrmAgenciesRoute,

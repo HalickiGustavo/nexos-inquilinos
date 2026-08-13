@@ -1,8 +1,6 @@
-// Server-only helper to send a WhatsApp text via Evolution API or SendPulse.
+// Server-only helper to send a WhatsApp text via Evolution API.
 // Do not import from client code. Imported only inside server-fn handlers
 // and TanStack server-route handlers.
-import { sendSendPulseWhatsApp } from "./sendpulse.server";
-
 
 export type EvolutionSendResult =
   | { ok: true }
@@ -25,38 +23,25 @@ export async function sendEvolutionText(params: {
   variables?: Record<string, string>;
 }): Promise<EvolutionSendResult> {
   const baseUrl = process.env.EVOLUTION_API_URL;
-  const instance = process.env.EVOLUTION_API_INSTANCE;
+  const instance = process.env.EVOLUTION_API_INSTANCE || "Nexo suporte";
   const apiKey = process.env.EVOLUTION_API_KEY;
 
-  // Se o SendPulse estiver configurado, ele tem precedência
-  if (process.env.SENDPULSE_CLIENT_ID && process.env.SENDPULSE_CLIENT_SECRET) {
-    return sendSendPulseWhatsApp({
-      phone: params.phone,
-      text: params.text,
-      templateId: params.templateId,
-      variables: params.variables
-    });
-  }
-
   if (!baseUrl || !instance || !apiKey) {
+    console.error("Evolution API config missing", { baseUrl, instance, apiKey: apiKey ? '***' : 'missing' });
     return { ok: false, reason: "config_missing" };
   }
 
   const number = sanitizeBrPhone(params.phone);
-
   if (!number) return { ok: false, reason: "invalid_phone" };
 
   const endpoint = `${baseUrl.replace(/\/+$/, "")}/message/sendText/${instance}`;
   try {
-    // A estrutura do payload pode variar entre v1 e v2 da Evolution API.
-    // Tentamos a estrutura v2 que é mais comum em versões recentes.
     const payload = {
       number,
       text: params.text
     };
     
     console.log(`[Evolution] Sending to ${number} via ${endpoint}`);
-    console.log(`[Evolution] Payload:`, JSON.stringify(payload));
     
     const res = await fetch(endpoint, {
       method: "POST",
@@ -66,16 +51,20 @@ export async function sendEvolutionText(params: {
       },
       body: JSON.stringify(payload),
     });
+    
     if (!res.ok) {
       const body = await res.text().catch(() => "");
+      console.error(`[Evolution] Gateway error: ${res.status}`, body);
       return {
         ok: false,
         reason: `gateway_error: ${body.slice(0, 200)}`,
         status: res.status,
       };
     }
+    
     return { ok: true };
   } catch (err: any) {
+    console.error(`[Evolution] Network error:`, err);
     return { ok: false, reason: `network_error: ${err?.message ?? "unknown"}` };
   }
 }

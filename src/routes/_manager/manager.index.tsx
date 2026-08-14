@@ -434,9 +434,10 @@ function ManagerDashboard() {
             </div>
             
             <div className="flex flex-col sm:flex-row gap-6 items-center">
-              <div className="w-full sm:w-1/3 p-6 rounded-2xl bg-[#F5F3FF] flex flex-col items-center justify-center text-center gap-2 border border-[#7C3AED]/10">
-                <div className="text-[10px] font-bold text-[#7C3AED] uppercase tracking-widest">Aluguel Recebido</div>
-                <div className="text-2xl font-black text-[#1A1A1A]">{formatBRL(2500)}</div>
+                <div className="w-full sm:w-1/3 p-6 rounded-2xl bg-[#F5F3FF] flex flex-col items-center justify-center text-center gap-2 border border-[#7C3AED]/10 shadow-inner">
+                  <div className="text-[10px] font-bold text-[#7C3AED] uppercase tracking-widest">Recebido Médio</div>
+                  <div className="text-2xl font-black text-[#1A1A1A]">{formatBRLCompact(kpis.revenue / (counts.contracts || 1))}</div>
+
                 <div className="size-8 rounded-lg bg-white shadow-sm flex items-center justify-center mt-2">
                   <div className="size-4 grid grid-cols-2 gap-0.5">
                     <div className="bg-[#7C3AED] rounded-[1px]" />

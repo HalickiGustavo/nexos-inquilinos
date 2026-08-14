@@ -454,7 +454,7 @@ function ManagerDashboard() {
                     <div className="size-8 rounded-full bg-[#ECFDF5] text-[#10B981] flex items-center justify-center"><HomeIcon className="size-4" /></div>
                     <div>
                       <div className="text-sm font-bold text-[#1A1A1A]">Proprietário</div>
-                      <div className="text-[10px] text-[#9CA3AF]">João Meireles — chave CPF</div>
+                      <div className="text-[10px] text-[#9CA3AF]">{qCounts.data?.landlords > 0 ? "Landlord Ativo — chave PIX" : "Proprietário — chave CPF"}</div>
                     </div>
                   </div>
                   <div className="text-right">
@@ -575,20 +575,20 @@ function ManagerDashboard() {
                         <div className="flex items-center gap-3">
                           <div className="size-9 rounded-xl bg-[#F5F3FF] text-[#7C3AED] flex items-center justify-center shrink-0"><HomeIcon className="size-4" /></div>
                           <div>
-                            <div className="text-sm font-bold text-[#1A1A1A]">{i.contract?.property?.nickname || "Ed. Solar - apt 704"}</div>
-                            <div className="text-[10px] text-[#9CA3AF]">Contrato C-{2291 - idx}</div>
+                            <div className="text-sm font-bold text-[#1A1A1A]">{i.contract?.property?.nickname}</div>
+                            <div className="text-[10px] text-[#9CA3AF]">Contrato {i.contract?.id?.slice(0, 8).toUpperCase()}</div>
                           </div>
                         </div>
                       </td>
                       <td className="py-4">
                         <div className="flex items-center gap-2">
-                          <div className="size-6 rounded-lg bg-[#7C3AED] text-white text-[10px] font-bold grid place-items-center">{(i.contract?.tenant?.full_name || "Camila Rocha").charAt(0)}</div>
-                          <span className="text-sm text-[#374151] font-medium">{i.contract?.tenant?.full_name || "Camila Rocha"}</span>
+                          <div className="size-6 rounded-lg bg-[#7C3AED] text-white text-[10px] font-bold grid place-items-center">{(i.contract?.tenant?.full_name || "T").charAt(0)}</div>
+                          <span className="text-sm text-[#374151] font-medium">{i.contract?.tenant?.full_name}</span>
                         </div>
                       </td>
                       <td className="py-4 text-right pr-12">
                         <div className="text-sm font-bold text-[#1A1A1A]">{formatBRL(Number(i.amount ?? 0) + Number(i.extra_fees ?? 0))}</div>
-                        <div className="text-[10px] text-[#9CA3AF]">{idx === 0 ? "10 ago" : idx === 1 ? "12 ago" : idx === 2 ? "Ontem" : "Há 2 dias"}</div>
+                        <div className="text-[10px] text-[#9CA3AF]">{formatDate(i.due_date)}</div>
                       </td>
                       <td className="py-4 text-right">
                         <Badge className={cn(

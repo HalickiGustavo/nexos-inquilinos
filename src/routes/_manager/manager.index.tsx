@@ -375,13 +375,8 @@ function ManagerDashboard() {
           <div className="min-w-0">
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#1A1A1A] flex items-center gap-2">
               {greeting()}, {firstName || "Marina"} 👋
-
-
-
-
-
-
             </h1>
+
             <p className="text-[#6B7280] mt-1 text-sm max-w-2xl">
               Sua carteira liquidou 87% dos repasses de hoje. Três pagamentos aguardam confirmação PIX.
             </p>

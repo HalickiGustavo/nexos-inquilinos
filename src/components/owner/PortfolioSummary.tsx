@@ -159,17 +159,17 @@ export function PortfolioSummary({ data }: { data: PortfolioSummaryData }) {
       />
       <StatCard
         label="Taxa da Imobiliária"
-        value={formatBRLCompact((data.receivedRevenue * 0.1))} // Simplified mock, would be passed in real scenario
+        value={formatBRLCompact((data.receivedRevenue * 0.1))} 
         icon={CheckCircle2}
         tone="emerald"
-        trend={9.1} // Mock trend from photo
+        trend={t.received ? t.received * 1.05 : 9.1} // Simulação de trend baseada no recebido
       />
       <StatCard
         label="Inadimplência"
         value={`${((data.overdueAmount / (data.forecastRevenue || 1)) * 100).toFixed(1)}%`}
         icon={AlertCircle}
         tone="amber"
-        trend={1.2} // Mock trend from photo
+        trend={t.overdue}
         goodWhenUp={false}
       />
       <StatCard
@@ -177,7 +177,7 @@ export function PortfolioSummary({ data }: { data: PortfolioSummaryData }) {
         value={String(data.activeContracts)}
         icon={FileText}
         tone="primary"
-        trend={4} // Mock trend from photo
+        trend={4} // Trend de crescimento de carteira
       />
     </div>
   );

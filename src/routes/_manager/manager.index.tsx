@@ -454,7 +454,7 @@ function ManagerDashboard() {
                     <div className="size-8 rounded-full bg-[#ECFDF5] text-[#10B981] flex items-center justify-center"><HomeIcon className="size-4" /></div>
                     <div>
                       <div className="text-sm font-bold text-[#1A1A1A]">Proprietário</div>
-                      <div className="text-[10px] text-[#9CA3AF]">{qCounts.data?.landlords > 0 ? "Landlord Ativo — chave PIX" : "Proprietário — chave CPF"}</div>
+                      <div className="text-[10px] text-[#9CA3AF]">{counts.landlords > 0 ? "Landlord Ativo — chave PIX" : "Proprietário — chave CPF"}</div>
                     </div>
                   </div>
                   <div className="text-right">
@@ -469,7 +469,7 @@ function ManagerDashboard() {
                     <div className="size-8 rounded-full bg-[#F5F3FF] text-[#7C3AED] flex items-center justify-center"><Building2 className="size-4" /></div>
                     <div>
                       <div className="text-sm font-bold text-[#1A1A1A]">Imobiliária</div>
-                      <div className="text-[10px] text-[#9CA3AF]">Aurora — taxa 10% administração</div>
+                      <div className="text-[10px] text-[#9CA3AF]">{firstName || "Imobiliária"} — taxa 10% administração</div>
                     </div>
                   </div>
                   <div className="text-right">

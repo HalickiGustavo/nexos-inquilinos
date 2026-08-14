@@ -57,9 +57,17 @@ function ManagerDashboard() {
 
   const monthStart = iso(startOfMonth());
   const monthEnd = iso(endOfMonth());
-  const prevMonth = new Date(); prevMonth.setMonth(prevMonth.getMonth() - 1);
-  const prevStart = iso(startOfMonth(prevMonth));
-  const prevEnd = iso(endOfMonth(prevMonth));
+  
+  const prevDateStart = startOfMonth();
+  prevDateStart.setMonth(prevDateStart.getMonth() - 1);
+  const prevStart = iso(prevDateStart);
+  
+  const prevDateEnd = endOfMonth();
+  prevDateEnd.setMonth(prevDateEnd.getMonth() - 1);
+  // Se o mês anterior for fevereiro, endOfMonth(prevMonth) corretamente retorna dia 28/29.
+  // A lógica simplificada `d.getMonth() + 1` no endOfMonth já cuida disso.
+  const prevEnd = iso(prevDateEnd);
+
   const today = iso(new Date());
   const in7 = iso(addDays(new Date(), 7));
 
@@ -92,9 +100,8 @@ function ManagerDashboard() {
         queryFn: async () => {
           const { data, error } = await supabase
             .from("installments")
-            .select("paid_amount, status, management_fee_percent")
-            .gte("due_date", prevStart).lte("due_date", prevEnd)
-            .eq("status", "pago");
+            .select("amount, extra_fees, paid_amount, status, management_fee_percent")
+            .gte("due_date", prevStart).lte("due_date", prevEnd);
           if (error) throw error;
           return data ?? [];
         },
@@ -242,18 +249,19 @@ function ManagerDashboard() {
       .reduce((s, r) => s + Number(r.landlord_payout_amount ?? 0), 0);
 
     const prev = (qPrev.data as any[]) ?? [];
-    const prevPaid = prev.reduce((s, r) => s + Number(r.paid_amount ?? 0), 0);
-    const prevFee = prev.reduce((s, r) => s + Number(r.paid_amount ?? 0) * Number(r.management_fee_percent ?? 0) / 100, 0);
+    const prevPaid = prev.filter(r => r.status === 'pago').reduce((s, r) => s + Number(r.paid_amount ?? r.amount), 0);
+    const prevToReceive = prev.filter(r => r.status !== 'pago').reduce((s, r) => s + Number(r.amount) + Number(r.extra_fees ?? 0), 0);
+    const prevRevenue = prevPaid + prevToReceive;
+    const prevOverdueTotal = prev.filter(r => r.status !== 'pago').reduce((s, r) => s + Number(r.amount) + Number(r.extra_fees ?? 0), 0);
+    
+    const prevFee = prev.filter(r => r.status === 'pago').reduce((s, r) => s + Number(r.paid_amount ?? r.amount) * Number(r.management_fee_percent ?? 0) / 100, 0);
 
-    // Adicionando comparativos estendidos
     const compPaid = calculateComparison(paid, prevPaid);
     const compFee = calculateComparison(managementFee, prevFee);
-    
-    // Para receita prevista, receita pendente e inadimplência (overdue), 
-    // idealmente teríamos os dados históricos do período anterior completo.
-    // Como qPrev só traz installments pagos no momento, as variações de pendência e inadimplência
-    // dependem de uma query mais ampla do período anterior que inclua não pagos.
-    // Para esta etapa, vamos focar no que temos dados: Recebido e Taxa Nexo.
+    const compForecast = calculateComparison(revenue, prevRevenue);
+    const compPending = calculateComparison(toReceive, prevToReceive);
+    // Inadimplência comparamos o valor total vencido hoje vs valor total vencido ao fim do mês anterior
+    const compOverdue = calculateComparison(overdue, prevOverdueTotal, { goodWhenUp: false });
 
     return {
       paidToday: (qPaidToday.data as number) ?? 0,
@@ -265,14 +273,16 @@ function ManagerDashboard() {
       paid,
       deltaPaid: compPaid.percentageChange,
       deltaFee: compFee.percentageChange,
-      // Placeholders para os outros enquanto não expandimos as queries
-      deltaForecast: null,
-      deltaPending: null,
-      deltaOverdue: null,
+      deltaForecast: compForecast.percentageChange,
+      deltaPending: compPending.percentageChange,
+      deltaOverdue: compOverdue.percentageChange,
       collected: revenue === 0 ? 0 : Math.round((paid / revenue) * 100),
       comparisons: {
         paid: compPaid,
         fee: compFee,
+        forecast: compForecast,
+        pending: compPending,
+        overdue: compOverdue
       }
     };
   }, [qMonth.data, qOverdue.data, qPaidToday.data, qPrev.data]);
@@ -335,7 +345,6 @@ function ManagerDashboard() {
   }, []);
 
   const nameFull = qProfile.data?.full_name || user?.email?.split("@")[0] || "";
-  const firstName = nameFull.split(" ")[0];
 
   const counts = (qCounts.data as any) ?? {};
   const pendencies = (qPend.data as any) ?? {};
@@ -374,7 +383,7 @@ function ManagerDashboard() {
         <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="min-w-0">
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#1A1A1A] flex items-center gap-2">
-              {greeting()}, {firstName || "Marina"} 👋
+              {greeting()}, {qProfile.data?.full_name?.split(' ')[0] || "Marina"} 👋
             </h1>
 
             <p className="text-[#6B7280] mt-1 text-sm max-w-2xl">
@@ -391,11 +400,11 @@ function ManagerDashboard() {
             </Button>
             <div className="flex items-center gap-2 ml-2">
               <div className="text-right hidden sm:block">
-                <div className="text-sm font-bold text-[#1A1A1A] leading-tight">{firstName || "Marina"} Alves</div>
-                <div className="text-[10px] text-[#9CA3AF] uppercase font-bold tracking-wider leading-tight">Imobiliária Aurora</div>
+                <div className="text-sm font-bold text-[#1A1A1A] leading-tight">{qProfile.data?.full_name || "Marina Alves"}</div>
+                <div className="text-[10px] text-[#9CA3AF] uppercase font-bold tracking-wider leading-tight">Imobiliária Nexo</div>
               </div>
               <div className="bg-[#7C3AED] hover:bg-[#6D28D9] size-10 rounded-xl text-white font-bold grid place-items-center shadow-sm cursor-pointer transition-colors">
-                {firstName?.charAt(0) || "M"}
+                {qProfile.data?.full_name?.charAt(0) || "M"}
               </div>
             </div>
           </div>
@@ -469,7 +478,7 @@ function ManagerDashboard() {
                     <div className="size-8 rounded-full bg-[#F5F3FF] text-[#7C3AED] flex items-center justify-center"><Building2 className="size-4" /></div>
                     <div>
                       <div className="text-sm font-bold text-[#1A1A1A]">Imobiliária</div>
-                      <div className="text-[10px] text-[#9CA3AF]">{firstName || "Imobiliária"} — taxa 10% administração</div>
+                      <div className="text-[10px] text-[#9CA3AF]">{(qProfile.data?.full_name?.split(' ')[0]) || "Nexo"} — taxa 10% administração</div>
                     </div>
                   </div>
                   <div className="text-right">
@@ -487,7 +496,7 @@ function ManagerDashboard() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-sm font-bold text-[#1A1A1A]">{formatBRL(counts.contracts * 24.99)}</div>
+                    <div className="text-sm font-bold text-[#1A1A1A]">{formatBRL(counts.contracts * 24.90)}</div>
                     <div className="text-[10px] text-[#9CA3AF]">Fixa plataforma</div>
                   </div>
 

@@ -36,10 +36,25 @@ export async function runEfiPayoutWorker(opts?: { limit?: number }) {
   }
 
 
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
   for (const row of batch as any[]) {
     const attempts = Number(row.attempts ?? 0) + 1;
     try {
       await markProcessing(row.id);
+
+      // --- Security Payout Integrity Check ---
+      if (row.installment_id) {
+        const { data: integrityOk, error: integrityErr } = await supabaseAdmin
+          .rpc("verify_payout_integrity", { p_installment_id: row.installment_id });
+        
+        if (integrityErr) {
+          console.warn("[efi-payout] erro ao verificar integridade", { id: row.id, error: integrityErr });
+        } else if (integrityOk === false) {
+          throw new Error("Falha na verificação de integridade financeira: valores inconsistentes detectados.");
+        }
+      }
+      // ----------------------------------------
 
       if (!row.pix_key) throw new Error("beneficiário sem chave PIX");
       if (Number(row.amount) <= 0) {
@@ -89,7 +104,7 @@ export async function runEfiPayoutWorker(opts?: { limit?: number }) {
       // Persistimos TODOS os identificadores retornados pela Efí para que o
       // worker de acompanhamento (`reconcileEfiTransfers`) reuse o mesmo
       // idEnvio/e2eId como fonte de verdade nas próximas consultas.
-      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      // Reusing already imported supabaseAdmin
       const nowIso = new Date().toISOString();
       const baseFields: any = {
         efi_id_envio: idEnvio,

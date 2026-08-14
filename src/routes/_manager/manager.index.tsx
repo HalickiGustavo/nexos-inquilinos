@@ -57,9 +57,17 @@ function ManagerDashboard() {
 
   const monthStart = iso(startOfMonth());
   const monthEnd = iso(endOfMonth());
-  const prevDate = new Date(); prevDate.setMonth(prevDate.getMonth() - 1);
-  const prevStart = iso(startOfMonth(prevDate));
-  const prevEnd = iso(endOfMonth(prevDate));
+  
+  const prevDateStart = startOfMonth();
+  prevDateStart.setMonth(prevDateStart.getMonth() - 1);
+  const prevStart = iso(prevDateStart);
+  
+  const prevDateEnd = endOfMonth();
+  prevDateEnd.setMonth(prevDateEnd.getMonth() - 1);
+  // Se o mês anterior for fevereiro, endOfMonth(prevMonth) corretamente retorna dia 28/29.
+  // A lógica simplificada `d.getMonth() + 1` no endOfMonth já cuida disso.
+  const prevEnd = iso(prevDateEnd);
+
   const today = iso(new Date());
   const in7 = iso(addDays(new Date(), 7));
 

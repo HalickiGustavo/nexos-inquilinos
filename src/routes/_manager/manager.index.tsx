@@ -379,6 +379,7 @@ function ManagerDashboard() {
 
 
 
+
             </h1>
             <p className="text-[#6B7280] mt-1 text-sm max-w-2xl">
               Sua carteira liquidou 87% dos repasses de hoje. Três pagamentos aguardam confirmação PIX.

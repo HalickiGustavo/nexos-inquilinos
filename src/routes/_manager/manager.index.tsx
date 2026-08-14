@@ -5,17 +5,13 @@ import {
   ArrowDownRight, ArrowUpRight, ArrowRight, AlertTriangle, Bell, Building2, Calendar,
   ClipboardCheck, FilePlus, FileSearch, Inbox, Home as HomeIcon, KeyRound, Users,
   Wallet, Coins, TrendingUp, CheckCircle2, CircleDollarSign, PlusCircle,
-  UserPlus, Database, Info, HelpCircle, MessageSquare, AlertCircle, PlusCircle as PlusCircleIcon
+  UserPlus, Database, Info, HelpCircle
 } from "lucide-react";
-import { NexoLogo } from "@/components/NexoLogo";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { formatBRL, formatBRLCompact, formatDate } from "@/lib/format";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { PortfolioSummary } from "@/components/owner/PortfolioSummary";
@@ -344,60 +340,35 @@ function ManagerDashboard() {
   const expiring = (qExpiring.data as any[]) ?? [];
   const activity = (qActivity.data as any) ?? { contracts: [], paid: [], maint: [], leads: [] };
 
-  if (qCounts.isLoading || qMonth.isLoading) {
-    return (
-      <div className="p-4 sm:p-6 lg:p-8 space-y-8 bg-[#F9FAFE] min-h-screen">
-        <div className="flex justify-between items-center">
-          <Skeleton className="h-10 w-64 rounded-xl" />
-          <div className="flex gap-3">
-            <Skeleton className="h-10 w-32 rounded-xl" />
-            <Skeleton className="h-10 w-32 rounded-xl" />
-          </div>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-32 rounded-2xl" />)}
-        </div>
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          <Skeleton className="lg:col-span-2 h-[350px] rounded-2xl" />
-          <Skeleton className="h-[350px] rounded-2xl" />
-          <Skeleton className="h-[350px] rounded-2xl" />
-        </div>
-      </div>
-    );
-  }
 
   return (
     <TooltipProvider delayDuration={200}>
-      <div className="p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto space-y-8 bg-[#F9FAFE] min-h-screen">
-
+      <div className="p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto space-y-6">
         {/* ============ Cabeçalho executivo ============ */}
-        <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <header className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-4">
           <div className="min-w-0">
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#1A1A1A] flex items-center gap-2">
-              {greeting()}, {firstName || "Marina"} 👋
+            <div className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-primary/80 font-medium mb-2">
+              <span className="size-1.5 rounded-full bg-primary shadow-[0_0_8px_var(--primary)]" />
+              Painel executivo
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight truncate">
+              {greeting()}, {firstName || "gestor"}
             </h1>
-
-            <p className="text-[#6B7280] mt-1 text-sm max-w-2xl">
-              Sua carteira liquidou {kpis.collected}% dos repasses previstos para este período. {pendencies.approvals > 0 ? `${pendencies.approvals} manutenções aguardam aprovação.` : "Não há pendências críticas hoje."}
+            <p className="text-muted-foreground mt-1 text-sm">
+              {new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long" })} — saúde da carteira em tempo real.
             </p>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="bg-white border border-[#E5E7EB] rounded-xl px-4 py-2 flex items-center gap-2 text-sm text-[#374151] shadow-sm">
-              <Calendar className="size-4 text-[#9CA3AF]" />
-              {new Date().toLocaleDateString("pt-BR", { weekday: 'short', day: '2-digit', month: 'long' })}
-            </div>
-            <Button className="bg-[#7C3AED] hover:bg-[#6D28D9] text-white rounded-xl px-4 py-2 h-auto text-sm font-semibold shadow-sm flex items-center gap-2">
-              <PlusCircleIcon className="size-4" /> Nova cobrança
-            </Button>
-            <div className="flex items-center gap-2 ml-2">
-              <div className="text-right hidden sm:block">
-                <div className="text-sm font-bold text-[#1A1A1A] leading-tight">{firstName || "Marina"} Alves</div>
-                <div className="text-[10px] text-[#9CA3AF] uppercase font-bold tracking-wider leading-tight">Imobiliária Aurora</div>
-              </div>
-              <div className="bg-[#7C3AED] hover:bg-[#6D28D9] size-10 rounded-xl text-white font-bold grid place-items-center shadow-sm cursor-pointer transition-colors">
-                {firstName?.charAt(0) || "M"}
-              </div>
-            </div>
+          <div className="flex flex-wrap justify-end gap-2">
+            {pendencies.approvals > 0 && (
+              <Link to="/maintenances" className="inline-flex items-center gap-2 rounded-full bg-primary/15 border border-primary/40 px-3 py-1.5 text-xs font-medium text-primary hover:bg-primary/25 transition">
+                <Bell className="size-3.5" /> {pendencies.approvals} aprovação{pendencies.approvals > 1 ? "ões" : ""} pendente{pendencies.approvals > 1 ? "s" : ""}
+              </Link>
+            )}
+            {kpis.overdue > 0 && (
+              <Link to="/manager/financeiro" className="inline-flex items-center gap-2 rounded-full bg-destructive/15 border border-destructive/40 px-3 py-1.5 text-xs font-medium text-destructive hover:bg-destructive/25 transition">
+                <AlertTriangle className="size-3.5" /> {formatBRLCompact(kpis.overdue)} em atraso
+              </Link>
+            )}
           </div>
         </header>
 
@@ -421,201 +392,278 @@ function ManagerDashboard() {
           }}
         />
 
-        {/* ============ Grid principal ============ */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Split Automático do Aluguel (Bento Card Style) */}
-          <Card className="lg:col-span-2 p-6 flex flex-col gap-6 rounded-2xl border-none shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-base font-bold text-[#1A1A1A]">Split automático do aluguel</h3>
-                <p className="text-xs text-[#6B7280]">Cada aluguel recebido é dividido e repassado sozinho, em três vias.</p>
+
+        {/* ============ Atalhos de navegação da carteira ============ */}
+        <section className="flex flex-wrap gap-x-5 gap-y-1.5 text-sm">
+          <Link to="/manager/vistorias" className="group inline-flex items-baseline gap-1.5 text-muted-foreground hover:text-foreground transition">
+            <span className="text-base font-bold text-foreground tabular-nums">{qCounts.isLoading ? "—" : (counts.maintenancesOpen ?? 0)}</span>
+            <span>manutenções abertas</span>
+            <ArrowRight className="size-3 opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0 transition" />
+          </Link>
+          <Link to="/manager/financeiro" className="group inline-flex items-baseline gap-1.5 text-muted-foreground hover:text-foreground transition">
+            <span className="text-base font-bold text-foreground tabular-nums">{qCounts.isLoading ? "—" : ((qMonth.data as any[] ?? []).filter((r: any) => r.status !== "pago").length)}</span>
+            <span>cobranças pendentes</span>
+            <ArrowRight className="size-3 opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0 transition" />
+          </Link>
+          <Link to="/manager/carteira" className="group inline-flex items-baseline gap-1.5 text-muted-foreground hover:text-foreground transition">
+            <span className="text-base font-bold text-foreground tabular-nums">{qCounts.isLoading ? "—" : (expiring.length)}</span>
+            <span>contratos vencendo (30d)</span>
+            <ArrowRight className="size-3 opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0 transition" />
+          </Link>
+        </section>
+
+
+        {/* ============ KPIs financeiros ============ */}
+        <section className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          <Kpi title="Recebido hoje" value={formatBRL(kpis.paidToday)} icon={<CheckCircle2 className="size-4" />} loading={qPaidToday.isLoading} accent tooltip="Total efetivamente recebido na data de hoje." />
+          <Kpi title="A receber (mês)" value={formatBRL(kpis.toReceive)} icon={<Wallet className="size-4" />} loading={qMonth.isLoading} tooltip="Valores previstos para este mês que ainda não foram quitados." />
+          <Kpi title="Receita do mês" value={formatBRL(kpis.revenue)} icon={<TrendingUp className="size-4" />} loading={qMonth.isLoading} delta={kpis.deltaPaid} tooltip="Total de receitas (pagas + pendentes) previstas para o mês atual." />
+          <Kpi title="Em atraso" value={formatBRL(kpis.overdue)} icon={<AlertTriangle className="size-4" />} loading={qOverdue.isLoading} negative={kpis.overdue > 0} goodWhenUp={false} tooltip="Soma de todos os valores vencidos e não pagos." />
+          <Kpi title="Taxa NEXO" value={formatBRL(kpis.managementFee)} icon={<Coins className="size-4" />} loading={qMonth.isLoading} delta={kpis.deltaFee} tooltip="Valor das taxas de administração calculadas sobre os recebimentos do período." />
+          <Kpi title="Repasses pendentes" value={formatBRL(kpis.payoutsPending)} icon={<CircleDollarSign className="size-4" />} loading={qMonth.isLoading} goodWhenUp={false} tooltip="Total de valores já recebidos que aguardam repasse aos proprietários." />
+
+        </section>
+
+
+        {/* ============ Resumo Executivo e Comparativo ============ */}
+        <section className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+          <Card className="lg:col-span-3 p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="p-1.5 rounded-lg bg-primary/10 text-primary">
+                <TrendingUp className="size-4" />
               </div>
-              <Badge className="bg-[#F5F3FF] text-[#7C3AED] hover:bg-[#F5F3FF] border-none font-bold text-[10px] uppercase tracking-wider">PIX - Tempo Real</Badge>
+              <h3 className="text-sm font-semibold">Resumo do período</h3>
             </div>
+            <div className="space-y-2 text-sm text-muted-foreground leading-relaxed">
+              <p>
+                {kpis.comparisons.paid.hasComparison ? (
+                  <>
+                    A receita recebida {kpis.comparisons.paid.absoluteChange && kpis.comparisons.paid.absoluteChange >= 0 ? 'aumentou' : 'diminuiu'} {kpis.comparisons.paid.percentageChange && Math.abs(kpis.comparisons.paid.percentageChange).toLocaleString("pt-BR", { maximumFractionDigits: 1 })}% em relação ao mês anterior.
+                  </>
+                ) : (
+                  "Ainda não existem dados históricos suficientes para comparar a receita deste período."
+                )}
+                {" "}
+                {counts.rented > 0 && `A taxa de ocupação está em ${Math.round((counts.rented / counts.properties) * 100)}%.`}
+                {" "}
+                {overdueList.length > 0 ? (
+                  <span className="text-destructive font-medium">Existem {overdueList.length} cobranças vencidas que precisam de atenção.</span>
+                ) : (
+                  "Todas as cobranças estão em dia."
+                )}
+                {" "}
+                {expiring.length > 0 && `Temos ${expiring.length} contrato${expiring.length > 1 ? 's' : ''} vencendo nos próximos 30 dias.`}
+              </p>
+            </div>
+          </Card>
+
+          <Card className="p-5 flex flex-col justify-center">
+            <h3 className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold mb-4 text-center">Comparativo do mês</h3>
+            <div className="grid grid-cols-2 gap-y-4 gap-x-2">
+              <div className="text-center">
+                <div className="text-[10px] text-muted-foreground uppercase mb-1">Receita</div>
+                <div className="font-bold text-sm">
+                  {kpis.deltaPaid ? (kpis.deltaPaid > 0 ? '+' : '') + kpis.deltaPaid + '%' : '—'}
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="text-[10px] text-muted-foreground uppercase mb-1">Taxa Nexo</div>
+                <div className="font-bold text-sm">
+                  {kpis.deltaFee ? (kpis.deltaFee > 0 ? '+' : '') + kpis.deltaFee + '%' : '—'}
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="text-[10px] text-muted-foreground uppercase mb-1">Inquilinos</div>
+                <div className="font-bold text-sm">
+                  {counts.tenants || 0}
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="text-[10px] text-muted-foreground uppercase mb-1">Leads</div>
+                <div className="font-bold text-sm">
+                  {counts.leads || 0}
+                </div>
+              </div>
+            </div>
+          </Card>
+        </section>
+
+
+        <section>
+          <SectionHeader title="Atalhos rápidos" />
+          <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-10 gap-3">
+            <Shortcut to="/manager/carteira" search={{ novo: "contrato" }} icon={FilePlus} label="Novo contrato" />
+            <Shortcut to="/manager/carteira" search={{ novo: "imovel" }} icon={Building2} label="Novo imóvel" />
+            <Shortcut to="/manager/financeiro" search={{ novo: "cobranca" }} icon={PlusCircle} label="Nova cobrança" />
+            <Shortcut to="/manager/vistorias" search={{ novo: "1" }} icon={FileSearch} label="Nova vistoria" />
             
-            <div className="flex flex-col sm:flex-row gap-6 items-center">
-                <div className="w-full sm:w-1/3 p-6 rounded-2xl bg-[#F5F3FF] flex flex-col items-center justify-center text-center gap-2 border border-[#7C3AED]/10 shadow-inner">
-                  <div className="text-[10px] font-bold text-[#7C3AED] uppercase tracking-widest">Recebido Médio</div>
-                  <div className="text-2xl font-black text-[#1A1A1A]">{formatBRLCompact(kpis.revenue / (counts.contracts || 1))}</div>
+            <Shortcut to="/manager/proprietarios" search={{ novo: "1" }} icon={HomeIcon} label="Proprietário" />
+            <Shortcut to="/manager/inquilinos" search={{ novo: "1" }} icon={KeyRound} label="Inquilino" />
+            <Shortcut to="/manager/leads" search={{ novo: "1" }} icon={Inbox} label="Novo lead" />
+            <Shortcut to="/manager/equipe" search={{ novo: "1" }} icon={UserPlus} label="Membro" />
+            <Shortcut to="/manager/migrar-dados" icon={Database} label="Importar" />
+          </div>
+        </section>
 
-                <div className="size-8 rounded-lg bg-white shadow-sm flex items-center justify-center mt-2">
-                  <div className="size-4 grid grid-cols-2 gap-0.5">
-                    <div className="bg-[#7C3AED] rounded-[1px]" />
-                    <div className="bg-[#7C3AED] rounded-[1px]" />
-                    <div className="bg-[#7C3AED] rounded-[1px]" />
-                    <div className="bg-[#7C3AED] rounded-[1px]" />
-                  </div>
+        {/* ============ Grid principal ============ */}
+        <section className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {/* --- coluna esquerda --- */}
+          <div className="lg:col-span-2 space-y-4">
+                    <Card className="lg:col-span-2 space-y-4">
+
+              <div className="p-5 pb-3 flex items-center justify-between gap-4">
+                <div>
+                  <h3 className="text-sm font-semibold">Fluxo financeiro</h3>
+                  <p className="text-xs text-muted-foreground">Recebimentos, pendências e repasses</p>
                 </div>
-              </div>
-
-              <div className="flex-1 w-full space-y-3">
-                <div className="flex items-center justify-between p-3 rounded-xl bg-white border border-[#F3F4F6] hover:border-primary/20 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <div className="size-8 rounded-full bg-[#ECFDF5] text-[#10B981] flex items-center justify-center"><HomeIcon className="size-4" /></div>
-                    <div>
-                      <div className="text-sm font-bold text-[#1A1A1A]">Proprietário</div>
-                      <div className="text-[10px] text-[#9CA3AF]">{counts.landlords > 0 ? "Landlord Ativo — chave PIX" : "Proprietário — chave CPF"}</div>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-sm font-bold text-[#1A1A1A]">{formatBRL(kpis.paid * 0.9)}</div>
-                    <div className="text-[10px] text-[#9CA3AF]">Estimado (90%)</div>
-
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between p-3 rounded-xl bg-white border border-[#F3F4F6] hover:border-primary/20 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <div className="size-8 rounded-full bg-[#F5F3FF] text-[#7C3AED] flex items-center justify-center"><Building2 className="size-4" /></div>
-                    <div>
-                      <div className="text-sm font-bold text-[#1A1A1A]">Imobiliária</div>
-                      <div className="text-[10px] text-[#9CA3AF]">{firstName || "Imobiliária"} — taxa 10% administração</div>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-sm font-bold text-[#1A1A1A]">{formatBRL(kpis.managementFee)}</div>
-                    <div className="text-[10px] text-[#9CA3AF]">Taxa de adm</div>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between p-3 rounded-xl bg-white border border-[#F3F4F6] hover:border-primary/20 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <div className="size-8 rounded-full bg-[#F9FAFE] text-[#9CA3AF] flex items-center justify-center"><NexoLogo className="h-3" /></div>
-                    <div>
-                      <div className="text-sm font-bold text-[#1A1A1A]">Nexo</div>
-                      <div className="text-[10px] text-[#9CA3AF]">Taxa de plataforma</div>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-sm font-bold text-[#1A1A1A]">{formatBRL(counts.contracts * 24.99)}</div>
-                    <div className="text-[10px] text-[#9CA3AF]">Fixa plataforma</div>
-                  </div>
-
-                </div>
-              </div>
-            </div>
-          </Card>
-
-          {/* Faturamento (Bar Chart Style) */}
-          <Card className="p-6 flex flex-col gap-4 rounded-2xl border-none shadow-sm h-full">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-base font-bold text-[#1A1A1A]">Faturamento</h3>
-                <p className="text-xs text-[#6B7280]">Repasses processados.</p>
-              </div>
-              <Badge variant="secondary" className="bg-[#F3F4F6] text-[#6B7280] border-none text-[10px] font-bold">7 MESES</Badge>
-            </div>
-            <div className="h-40 mt-4">
-              <Suspense fallback={<Skeleton className="w-full h-full rounded-lg" />}>
-                <DashboardCollectionChart 
-                  data={chartData} 
-                />
-              </Suspense>
-            </div>
-          </Card>
-
-          {/* Atividade (Recent Activity) */}
-          <Card className="p-6 flex flex-col gap-4 rounded-2xl border-none shadow-sm h-full">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-base font-bold text-[#1A1A1A]">Atividade</h3>
-                <p className="text-xs text-[#6B7280]">Fluxo de ações.</p>
-              </div>
-              <Badge variant="secondary" className="bg-[#F3F4F6] text-[#6B7280] border-none text-[10px] font-bold uppercase tracking-wider">Hoje</Badge>
-            </div>
-            <div className="space-y-4 mt-2">
-              {activity.paid.length === 0 && activity.contracts.length === 0 && (
-                <p className="text-[10px] text-muted-foreground italic">Nenhuma atividade recente encontrada.</p>
-              )}
-              {activity.paid.slice(0, 2).map((p: any, idx: number) => (
-                <div key={`paid-${idx}`} className="flex gap-3">
-                  <div className="size-8 rounded-full bg-[#ECFDF5] text-[#10B981] flex items-center justify-center shrink-0"><CheckCircle2 className="size-4" /></div>
-                  <div>
-                    <div className="text-xs font-bold text-[#1A1A1A]">{p.contract?.tenant?.full_name} pagou o aluguel</div>
-                    <div className="text-[10px] text-[#9CA3AF]">Split repassado — {formatDate(p.payment_date)}</div>
-                  </div>
-                </div>
-              ))}
-              {activity.contracts.slice(0, 2).map((c: any, idx: number) => (
-                <div key={`contract-${idx}`} className="flex gap-3">
-                  <div className="size-8 rounded-full bg-[#F5F3FF] text-[#7C3AED] flex items-center justify-center shrink-0"><PlusCircleIcon className="size-4" /></div>
-                  <div>
-                    <div className="text-xs font-bold text-[#1A1A1A]">Novo contrato assinado</div>
-                    <div className="text-[10px] text-[#9CA3AF]">{c.property?.nickname} — {formatDate(c.created_at)}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </Card>
-
-          {/* Carteira - próximos vencimentos (Large Table Card) */}
-          <Card className="lg:col-span-3 p-6 rounded-2xl border-none shadow-sm space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-bold text-[#1A1A1A]">Carteira · próximos vencimentos</h3>
-                <p className="text-sm text-[#6B7280]">Listagem de recebimentos futuros.</p>
-              </div>
-              <Badge className="bg-[#F5F3FF] text-[#7C3AED] hover:bg-[#F5F3FF] border-none font-bold text-xs px-3 py-1">{counts.contracts || 0} CONTRATOS</Badge>
-            </div>
-
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="text-[10px] uppercase tracking-widest text-[#9CA3AF] border-b border-[#F3F4F6]">
-                    <th className="pb-3 font-bold">Imóvel</th>
-                    <th className="pb-3 font-bold">Inquilino</th>
-                    <th className="pb-3 font-bold text-right pr-12">Vencimento</th>
-                    <th className="pb-3 font-bold text-right">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#F3F4F6]">
-                  {((overdueList.length > 0 ? overdueList : upcoming).slice(0, 4) as any[]).map((i: any, idx) => (
-                    <tr key={idx} className="group hover:bg-[#F9FAFE] transition-colors">
-                      <td className="py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="size-9 rounded-xl bg-[#F5F3FF] text-[#7C3AED] flex items-center justify-center shrink-0"><HomeIcon className="size-4" /></div>
-                          <div>
-                            <div className="text-sm font-bold text-[#1A1A1A]">{i.contract?.property?.nickname}</div>
-                            <div className="text-[10px] text-[#9CA3AF]">Contrato {i.contract?.id?.slice(0, 8).toUpperCase()}</div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="py-4">
-                        <div className="flex items-center gap-2">
-                          <div className="size-6 rounded-lg bg-[#7C3AED] text-white text-[10px] font-bold grid place-items-center">{(i.contract?.tenant?.full_name || "T").charAt(0)}</div>
-                          <span className="text-sm text-[#374151] font-medium">{i.contract?.tenant?.full_name}</span>
-                        </div>
-                      </td>
-                      <td className="py-4 text-right pr-12">
-                        <div className="text-sm font-bold text-[#1A1A1A]">{formatBRL(Number(i.amount ?? 0) + Number(i.extra_fees ?? 0))}</div>
-                        <div className="text-[10px] text-[#9CA3AF]">{formatDate(i.due_date)}</div>
-                      </td>
-                      <td className="py-4 text-right">
-                        <Badge className={cn(
-                          "rounded-full border-none text-[10px] font-bold px-3 py-1",
-                          i.status === "pago" ? "bg-[#ECFDF5] text-[#10B981]" : 
-                          new Date(i.due_date) < new Date() ? "bg-[#FEF2F2] text-[#EF4444]" : 
-                          "bg-[#FFF7ED] text-[#F97316]"
-                        )}>
-                          • {i.status === "pago" ? "Pago — split ok" : new Date(i.due_date) < new Date() ? "Atrasado" : "Aguardando Pix"}
-                        </Badge>
-
-                      </td>
-                    </tr>
+                <div className="inline-flex rounded-lg border border-border bg-muted/40 p-0.5">
+                  {(Object.keys(RANGE_LABEL) as RangeKey[]).map((k) => (
+                    <button
+                      key={k}
+                      onClick={() => setRange(k)}
+                      className={cn(
+                        "px-2.5 py-1 text-[11px] rounded-md transition",
+                        range === k ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground",
+                      )}
+                    >
+                      {RANGE_LABEL[k]}
+                    </button>
                   ))}
-                </tbody>
-              </table>
-            </div>
-            <div className="text-center pt-2">
-              <p className="text-[10px] text-[#D1D5DB] font-medium italic">Protótipo <span className="text-[#7C3AED] font-bold">NEXO v2.0</span> · dados ilustrativos · direção visual para apresentação</p>
-            </div>
-          </Card>
-        </div>
+                </div>
+              </div>
+              <div className="px-3 pb-4 h-64">
+                {qChart.isLoading ? (
+                  <Skeleton className="h-full w-full" />
+                ) : (
+                  <Suspense fallback={<Skeleton className="h-full w-full" />}>
+                    <DashboardCollectionChart data={chartData} />
+                  </Suspense>
+                )}
+              </div>
+            </Card>
+
+            <Card>
+              <div className="p-5 pb-3 flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-semibold flex items-center gap-2">
+                    <Calendar className="size-4 text-muted-foreground" /> Próximos vencimentos
+                  </h3>
+                  <p className="text-xs text-muted-foreground">Próximos 7 dias + atrasos</p>
+                </div>
+                <Link to="/manager/financeiro" className="text-xs text-primary hover:underline inline-flex items-center gap-1">
+                  Ver tudo <ArrowRight className="size-3" />
+                </Link>
+              </div>
+              <div className="divide-y divide-border/60">
+                {qUpcoming.isLoading ? (
+                  <ListSkeleton />
+                ) : overdueList.length === 0 && upcoming.length === 0 ? (
+                  <Empty text="Nenhum vencimento próximo. Tudo em dia por aqui." />
+                ) : (
+                  <>
+                    {overdueList.slice(0, 4).map((i: any) => (
+                      <DueRow key={i.id ?? `${i.due_date}-${i.contract?.id}`} item={i} overdue />
+                    ))}
+                    {upcoming.slice(0, 6).map((i: any) => (
+                      <DueRow key={i.id} item={i} />
+                    ))}
+                  </>
+                )}
+              </div>
+            </Card>
+
+            <Card>
+              <div className="p-5 pb-3">
+                <h3 className="text-sm font-semibold">Atividade recente</h3>
+                <p className="text-xs text-muted-foreground">Últimos eventos do sistema</p>
+              </div>
+              <ol className="p-4 pt-1 space-y-3">
+                {qActivity.isLoading ? (
+                  <ListSkeleton rows={5} />
+                ) : (
+                  buildActivity(activity).slice(0, 8).map((ev, idx) => (
+                    <li key={idx} className="flex items-start gap-3 text-sm">
+                      <span className={cn("mt-1 size-1.5 rounded-full shrink-0", ev.color)} aria-hidden />
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate">{ev.text}</div>
+                        <div className="text-[11px] text-muted-foreground">{formatDate(ev.at)}</div>
+                      </div>
+                    </li>
+                  ))
+                )}
+                {!qActivity.isLoading && buildActivity(activity).length === 0 && <Empty text="Sem atividades recentes." />}
+              </ol>
+            </Card>
+          </div>
+
+          {/* --- coluna direita --- */}
+          <div className="space-y-4">
+            <Card>
+              <div className="p-5 pb-3">
+                <h3 className="text-sm font-semibold flex items-center gap-2">
+                  <AlertTriangle className="size-4 text-primary" /> Pendências
+                </h3>
+                <p className="text-xs text-muted-foreground">Tarefas que exigem sua atenção</p>
+              </div>
+              <div className="p-2 space-y-1">
+                <PendRow to="/manager/financeiro" label="Boletos vencidos" value={overdueList.length} tone="destructive" />
+                <PendRow to="/maintenances" label="Aprovações de orçamento" value={pendencies.approvals} tone="primary" />
+                <PendRow to="/manager/carteira" label="Contratos sem PDF assinado" value={pendencies.missingSignature} />
+                <PendRow to="/manager/vistorias" label="Vistorias pendentes" value={pendencies.inspectionsPending} />
+                <PendRow to="/manager/leads" label="Leads sem atendimento" value={pendencies.leadsNew} tone="primary" />
+                <PendRow to="/manager/carteira" label="Contratos vencendo (30d)" value={expiring.length} />
+              </div>
+            </Card>
+
+            <Card>
+              <div className="p-5 pb-3">
+                <h3 className="text-sm font-semibold">Panorama operacional</h3>
+                <p className="text-xs text-muted-foreground">Números da carteira</p>
+              </div>
+              <div className="grid grid-cols-2 gap-px bg-border/60 rounded-b-xl overflow-hidden">
+                <MiniStat icon={<Building2 className="size-3.5" />} label="Imóveis" value={counts.properties} to="/manager/carteira" />
+                <MiniStat icon={<CheckCircle2 className="size-3.5" />} label="Alugados" value={counts.rented} to="/manager/carteira" />
+                <MiniStat icon={<HomeIcon className="size-3.5" />} label="Proprietários" value={counts.landlords} to="/manager/proprietarios" />
+                <MiniStat icon={<KeyRound className="size-3.5" />} label="Inquilinos" value={counts.tenants} to="/manager/inquilinos" />
+                <MiniStat icon={<Inbox className="size-3.5" />} label="Leads" value={counts.leads} to="/manager/leads" />
+                <MiniStat icon={<ClipboardCheck className="size-3.5" />} label="Vistorias" value={counts.inspections} to="/manager/vistorias" />
+              </div>
+            </Card>
+
+            <Card>
+              <div className="p-5 pb-3 flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-semibold">Progresso do mês</h3>
+                  <p className="text-xs text-muted-foreground">Recebido vs previsto</p>
+                </div>
+                <span className="text-lg font-bold text-primary tabular-nums">{kpis.collected}%</span>
+              </div>
+              <div className="px-5 pb-5">
+                <div className="h-2 rounded-full bg-muted overflow-hidden">
+                  <div className="h-full bg-primary transition-all" style={{ width: `${kpis.collected}%` }} />
+                </div>
+                <div className="mt-3 space-y-1.5 text-xs">
+                  <div className="flex justify-between"><span className="text-muted-foreground">Recebido</span><span className="font-medium tabular-nums">{formatBRL(kpis.paid)}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">A receber</span><span className="font-medium tabular-nums">{formatBRL(kpis.toReceive)}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Previsto total</span><span className="font-medium tabular-nums">{formatBRL(kpis.revenue)}</span></div>
+                </div>
+              </div>
+              <div className="mt-2 text-[11px] text-muted-foreground">
+                <TrendBadge 
+                  comparison={calculateComparison(kpis.paid, (qPrev.data as any[] ?? []).reduce((s: number, r: any) => s + Number(r.paid_amount ?? 0), 0))}
+                  periodLabel="mês anterior"
+                />
+              </div>
+            </Card>
+
+          </div>
+        </section>
       </div>
     </TooltipProvider>
   );
 }
 
+/* ---------- subcomponents ---------- */
 function SectionHeader({ title, action }: { title: string; action?: React.ReactNode }) {
   return (
     <div className="flex items-center justify-between mb-3">
@@ -625,47 +673,74 @@ function SectionHeader({ title, action }: { title: string; action?: React.ReactN
   );
 }
 
-function Kpi({
-  title, value, icon, loading, accent, delta, negative, goodWhenUp = true, tooltip
-}: {
-  title: string; value: string | number; icon: React.ReactNode; loading?: boolean;
-  accent?: boolean; delta?: number; negative?: boolean; goodWhenUp?: boolean; tooltip?: string;
-}) {
+function Card({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <Card className={cn("p-4 flex flex-col gap-2 relative overflow-hidden group transition-all hover:shadow-md", accent && "border-primary/50 bg-primary/5")}>
-          <div className="flex items-center justify-between text-muted-foreground">
-            <span className="text-[10px] uppercase font-bold tracking-wider truncate pr-2">{title}</span>
-            <div className={cn("p-1.5 rounded-lg transition-colors", accent ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary")}>
-              {icon}
-            </div>
-          </div>
-          <div className="flex items-baseline gap-2">
-            {loading ? (
-              <Skeleton className="h-7 w-20" />
-            ) : (
-              <span className="text-xl font-bold tracking-tight">{value}</span>
-            )}
-            {!loading && delta !== undefined && (
-              <div className={cn(
-                "flex items-center text-[10px] font-bold",
-                (delta > 0 === goodWhenUp) ? "text-emerald-500" : "text-destructive"
-              )}>
-                {delta > 0 ? <ArrowUpRight className="size-3" /> : <ArrowDownRight className="size-3" />}
-                {Math.abs(delta)}%
-              </div>
-            )}
-          </div>
-        </Card>
-      </TooltipTrigger>
-      {tooltip && <TooltipContent side="bottom" className="max-w-xs">{tooltip}</TooltipContent>}
-    </Tooltip>
+    <div className={cn("rounded-xl border border-border bg-card shadow-sm", className)}>{children}</div>
   );
 }
 
-function Shortcut({
+function Kpi({
+  title, value, icon, loading, delta, accent, negative, tooltip, goodWhenUp = true,
+}: {
+  title: string; value: string; icon?: React.ReactNode; loading?: boolean;
+  delta?: number | null; accent?: boolean; negative?: boolean; tooltip?: string;
+  goodWhenUp?: boolean;
+}) {
+  const comparison = useMemo(() => calculateComparison(kpiValueNumber(value), delta === null ? null : (kpiValueNumber(value) / (1 + (delta || 0) / 100))), [value, delta]);
 
+  return (
+    <div className={cn(
+      "rounded-xl border bg-card p-3.5 relative overflow-hidden transition hover:border-primary/40 group",
+      accent ? "border-primary/30" : "border-border",
+    )}>
+      <div className="flex items-center justify-between text-muted-foreground">
+        <div className="flex items-center gap-1">
+          <span className="text-[11px] uppercase tracking-wide font-medium">{title}</span>
+          {tooltip && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Info className="size-3 opacity-0 group-hover:opacity-40 transition-opacity" />
+              </TooltipTrigger>
+              <TooltipContent>{tooltip}</TooltipContent>
+            </Tooltip>
+          )}
+        </div>
+        <span className={cn(negative && kpiValueNumber(value) > 0 ? "text-destructive" : accent ? "text-primary" : "")}>{icon}</span>
+      </div>
+      {loading ? (
+        <Skeleton className="mt-2 h-6 w-24" />
+      ) : (
+        <div className={cn("mt-1.5 text-xl font-bold tabular-nums tracking-tight", negative && kpiValueNumber(value) > 0 ? "text-destructive" : "")}>
+          {value}
+        </div>
+      )}
+      {typeof delta === "number" && (
+        <div className="mt-1">
+          <TrendBadge 
+            comparison={{
+              ...calculateComparison(100 + delta, 100), // Hack para usar o delta percentual direto
+              percentageChange: delta,
+              absoluteChange: delta,
+              direction: delta > 0 ? "up" : delta < 0 ? "down" : "neutral",
+              hasComparison: true,
+              currentValue: delta,
+              previousValue: 0
+            }}
+            goodWhenUp={goodWhenUp}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+
+function kpiValueNumber(v: string) {
+  const n = Number(v.replace(/[^0-9,-]/g, "").replace(",", "."));
+  return Number.isFinite(n) ? n : 0;
+}
+
+function Shortcut({
   to, icon: Icon, label, search,
 }: { to: string; icon: any; label: string; search?: Record<string, string> }) {
   return (

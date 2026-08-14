@@ -387,7 +387,7 @@ function ManagerDashboard() {
             </h1>
 
             <p className="text-[#6B7280] mt-1 text-sm max-w-2xl">
-              Sua carteira liquidou {kpis.collected}% dos repasses previstos para este período. {pendencies.approvals > 0 ? `${pendencies.approvals} manutenções aguardam aprovação.` : "Não há pendências críticas hoje."}
+              Performance operacional NEXO 2.0: sua carteira liquidou {kpis.collected}% dos repasses previstos. {pendencies.approvals > 0 ? `${pendencies.approvals} manutenções aguardam aprovação.` : "Tudo sob controle no ecossistema hoje."}
             </p>
           </div>
           <div className="flex items-center gap-3">

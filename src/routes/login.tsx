@@ -116,7 +116,7 @@ function LoginPage() {
               </span>
             </h1>
             <p className="mt-5 text-white/70 text-[15px] leading-relaxed">
-              Inquilinos, contratos, parcelas e manutenções em uma única plataforma moderna e segura.
+              Interface mais bonita e fácil: a tela atual cumpre a função, mas tem aparência datada. Uma versão 2.0 mais moderna e intuitiva torna o uso diário agradável e ajuda a conquistar e reter clientes.
             </p>
           </div>
         </div>

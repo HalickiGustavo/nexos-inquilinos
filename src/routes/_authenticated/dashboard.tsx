@@ -277,7 +277,7 @@ function Dashboard() {
             Bem-vindo de volta
           </h1>
           <p className="text-muted-foreground mt-1 text-sm">
-            Acompanhe rapidamente a saúde da sua carteira — em tempo real.
+            Gestão estratégica em tempo real: acompanhe a saúde da sua carteira com indicadores precisos e automação financeira completa.
           </p>
         </div>
         <Tabs value={period} onValueChange={(v) => setPeriod(v as Period)}>

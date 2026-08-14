@@ -252,7 +252,7 @@ function ManagerDashboard() {
     const prevPaid = prev.filter(r => r.status === 'pago').reduce((s, r) => s + Number(r.paid_amount ?? r.amount), 0);
     const prevToReceive = prev.filter(r => r.status !== 'pago').reduce((s, r) => s + Number(r.amount) + Number(r.extra_fees ?? 0), 0);
     const prevRevenue = prevPaid + prevToReceive;
-    const prevOverdueTotal = prev.filter(r => r.status !== 'pago' && new Date(r.due_date) < new Date(prevEnd)).reduce((s, r) => s + Number(r.amount) + Number(r.extra_fees ?? 0), 0);
+    const prevOverdueTotal = prev.filter(r => r.status !== 'pago').reduce((s, r) => s + Number(r.amount) + Number(r.extra_fees ?? 0), 0);
     
     const prevFee = prev.filter(r => r.status === 'pago').reduce((s, r) => s + Number(r.paid_amount ?? r.amount) * Number(r.management_fee_percent ?? 0) / 100, 0);
 

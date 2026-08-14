@@ -394,7 +394,7 @@ function ManagerDashboard() {
                 <div className="text-sm font-bold text-[#1A1A1A] leading-tight">{firstName || "Marina"} Alves</div>
                 <div className="text-[10px] text-[#9CA3AF] uppercase font-bold tracking-wider leading-tight">Imobiliária Aurora</div>
               </div>
-              <div className="size-10 rounded-xl bg-[#7C3AED] text-white font-bold grid place-items-center shadow-sm">
+              <div className="bg-[#7C3AED] hover:bg-[#6D28D9] size-10 rounded-xl text-white font-bold grid place-items-center shadow-sm cursor-pointer transition-colors">
                 {firstName?.charAt(0) || "M"}
               </div>
             </div>

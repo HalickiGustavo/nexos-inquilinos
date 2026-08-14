@@ -365,7 +365,7 @@ function ManagerDashboard() {
               {new Date().toLocaleDateString("pt-BR", { weekday: 'short', day: '2-digit', month: 'long' })}
             </div>
             <Button className="bg-[#7C3AED] hover:bg-[#6D28D9] text-white rounded-xl px-4 py-2 h-auto text-sm font-semibold shadow-sm flex items-center gap-2">
-              <PlusCircle className="size-4" /> Nova cobrança
+              <PlusCircleIcon className="size-4" /> Nova cobrança
             </Button>
             <div className="flex items-center gap-2 ml-2">
               <div className="text-right hidden sm:block">

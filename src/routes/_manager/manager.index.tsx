@@ -376,7 +376,7 @@ function ManagerDashboard() {
         <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="min-w-0">
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#1A1A1A] flex items-center gap-2">
-              {greeting()}, {firstName || "Marina"} 👋
+              {greeting()}, {qProfile.data?.full_name?.split(' ')[0] || "Marina"} 👋
             </h1>
 
             <p className="text-[#6B7280] mt-1 text-sm max-w-2xl">

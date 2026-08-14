@@ -422,7 +422,7 @@ function ManagerDashboard() {
         />
 
         {/* ============ Grid principal ============ */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 lg:grid-rows-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Split Automático do Aluguel (Bento Card Style) */}
           <Card className="lg:col-span-2 p-6 flex flex-col gap-6 rounded-2xl border-none shadow-sm">
             <div className="flex items-center justify-between">
@@ -497,7 +497,7 @@ function ManagerDashboard() {
           </Card>
 
           {/* Faturamento (Bar Chart Style) */}
-          <Card className="p-6 flex flex-col gap-4 rounded-2xl border-none shadow-sm">
+          <Card className="p-6 flex flex-col gap-4 rounded-2xl border-none shadow-sm h-full">
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-base font-bold text-[#1A1A1A]">Faturamento</h3>
@@ -515,7 +515,7 @@ function ManagerDashboard() {
           </Card>
 
           {/* Atividade (Recent Activity) */}
-          <Card className="p-6 flex flex-col gap-4 rounded-2xl border-none shadow-sm">
+          <Card className="p-6 flex flex-col gap-4 rounded-2xl border-none shadow-sm h-full">
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-base font-bold text-[#1A1A1A]">Atividade</h3>
@@ -549,7 +549,7 @@ function ManagerDashboard() {
           </Card>
 
           {/* Carteira - próximos vencimentos (Large Table Card) */}
-          <Card className="lg:col-span-4 p-6 rounded-2xl border-none shadow-sm space-y-6">
+          <Card className="lg:col-span-3 p-6 rounded-2xl border-none shadow-sm space-y-6">
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-lg font-bold text-[#1A1A1A]">Carteira · próximos vencimentos</h3>

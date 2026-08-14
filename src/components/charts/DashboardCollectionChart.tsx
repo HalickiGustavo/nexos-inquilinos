@@ -49,7 +49,7 @@ export default function DashboardCollectionChart({ data }: { data: DashboardChar
           stackId="a" 
           fill="#7C3AED" 
           radius={[4, 4, 0, 0]} 
-          barSize={data.length > 15 ? 12 : 30}
+          barSize={data.length > 15 ? undefined : 30}
         />
         <Bar 
           dataKey="pendente" 
@@ -57,7 +57,7 @@ export default function DashboardCollectionChart({ data }: { data: DashboardChar
           fill="#A78BFA" 
           fillOpacity={0.3}
           radius={[4, 4, 0, 0]}
-          barSize={data.length > 15 ? 12 : 30}
+          barSize={data.length > 15 ? undefined : 30}
         />
       </BarChart>
     </ResponsiveContainer>

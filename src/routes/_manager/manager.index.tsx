@@ -57,9 +57,9 @@ function ManagerDashboard() {
 
   const monthStart = iso(startOfMonth());
   const monthEnd = iso(endOfMonth());
-  const prevMonth = new Date(); prevMonth.setMonth(prevMonth.getMonth() - 1);
-  const prevStart = iso(startOfMonth(prevMonth));
-  const prevEnd = iso(endOfMonth(prevMonth));
+  const prevDate = new Date(); prevDate.setMonth(prevDate.getMonth() - 1);
+  const prevStart = iso(startOfMonth(prevDate));
+  const prevEnd = iso(endOfMonth(prevDate));
   const today = iso(new Date());
   const in7 = iso(addDays(new Date(), 7));
 

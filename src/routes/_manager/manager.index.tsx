@@ -608,12 +608,13 @@ function ManagerDashboard() {
                       <td className="py-4 text-right">
                         <Badge className={cn(
                           "rounded-full border-none text-[10px] font-bold px-3 py-1",
-                          idx === 0 ? "bg-[#ECFDF5] text-[#10B981]" : 
-                          idx === 2 ? "bg-[#FEF2F2] text-[#EF4444]" : 
+                          i.status === "pago" ? "bg-[#ECFDF5] text-[#10B981]" : 
+                          new Date(i.due_date) < new Date() ? "bg-[#FEF2F2] text-[#EF4444]" : 
                           "bg-[#FFF7ED] text-[#F97316]"
                         )}>
-                          {idx === 0 ? "• Pago — split ok" : idx === 2 ? "• Atrasado - 3 dias" : "• Aguardando Pix"}
+                          • {i.status === "pago" ? "Pago — split ok" : new Date(i.due_date) < new Date() ? "Atrasado" : "Aguardando Pix"}
                         </Badge>
+
                       </td>
                     </tr>
                   ))}

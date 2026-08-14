@@ -344,8 +344,30 @@ function ManagerDashboard() {
   const expiring = (qExpiring.data as any[]) ?? [];
   const activity = (qActivity.data as any) ?? { contracts: [], paid: [], maint: [], leads: [] };
 
+  if (qCounts.isLoading || qMonth.isLoading) {
+    return (
+      <div className="p-4 sm:p-6 lg:p-8 space-y-8 bg-[#F9FAFE] min-h-screen">
+        <div className="flex justify-between items-center">
+          <Skeleton className="h-10 w-64 rounded-xl" />
+          <div className="flex gap-3">
+            <Skeleton className="h-10 w-32 rounded-xl" />
+            <Skeleton className="h-10 w-32 rounded-xl" />
+          </div>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-32 rounded-2xl" />)}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          <Skeleton className="lg:col-span-2 h-[350px] rounded-2xl" />
+          <Skeleton className="h-[350px] rounded-2xl" />
+          <Skeleton className="h-[350px] rounded-2xl" />
+        </div>
+      </div>
+    );
+  }
 
   return (
+
 
     <TooltipProvider delayDuration={200}>
       <div className="p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto space-y-8 bg-[#F9FAFE] min-h-screen">

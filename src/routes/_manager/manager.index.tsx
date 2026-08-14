@@ -584,7 +584,7 @@ function ManagerDashboard() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#F3F4F6]">
-                  {overdueList.slice(0, 4).map((i: any, idx) => (
+                  {((overdueList.length > 0 ? overdueList : upcoming).slice(0, 4) as any[]).map((i: any, idx) => (
                     <tr key={idx} className="group hover:bg-[#F9FAFE] transition-colors">
                       <td className="py-4">
                         <div className="flex items-center gap-3">

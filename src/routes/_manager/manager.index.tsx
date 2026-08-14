@@ -378,7 +378,7 @@ function ManagerDashboard() {
             </h1>
 
             <p className="text-[#6B7280] mt-1 text-sm max-w-2xl">
-              Sua carteira liquidou 87% dos repasses de hoje. Três pagamentos aguardam confirmação PIX.
+              Sua carteira liquidou {kpis.collected}% dos repasses previstos para este período. {pendencies.approvals > 0 ? `${pendencies.approvals} manutenções aguardam aprovação.` : "Não há pendências críticas hoje."}
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -505,20 +505,12 @@ function ManagerDashboard() {
               </div>
               <Badge variant="secondary" className="bg-[#F3F4F6] text-[#6B7280] border-none text-[10px] font-bold">7 MESES</Badge>
             </div>
-            <div className="h-40 mt-4 flex items-end justify-between gap-2 px-2">
-              {/* Mock bar chart to match photo look */}
-              {[40, 60, 45, 80, 50, 90, 85].map((h, i) => (
-                <div key={i} className="flex flex-col items-center gap-2 flex-1">
-                  <div 
-                    className={cn(
-                      "w-full rounded-t-md transition-all", 
-                      i === 6 ? "bg-[#7C3AED]" : "bg-[#A78BFA]/40"
-                    )} 
-                    style={{ height: `${h}px` }} 
-                  />
-                  <span className="text-[9px] font-bold text-[#9CA3AF] uppercase">{['Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago'][i]}</span>
-                </div>
-              ))}
+            <div className="h-40 mt-4">
+              <Suspense fallback={<Skeleton className="w-full h-full rounded-lg" />}>
+                <DashboardCollectionChart 
+                  data={chartData} 
+                />
+              </Suspense>
             </div>
           </Card>
 
@@ -532,34 +524,27 @@ function ManagerDashboard() {
               <Badge variant="secondary" className="bg-[#F3F4F6] text-[#6B7280] border-none text-[10px] font-bold uppercase tracking-wider">Hoje</Badge>
             </div>
             <div className="space-y-4 mt-2">
-              <div className="flex gap-3">
-                <div className="size-8 rounded-full bg-[#ECFDF5] text-[#10B981] flex items-center justify-center shrink-0"><CheckCircle2 className="size-4" /></div>
-                <div>
-                  <div className="text-xs font-bold text-[#1A1A1A]">Camila Rocha pagou o aluguel</div>
-                  <div className="text-[10px] text-[#9CA3AF]">Split repassado — há 12 min</div>
+              {activity.paid.length === 0 && activity.contracts.length === 0 && (
+                <p className="text-[10px] text-muted-foreground italic">Nenhuma atividade recente encontrada.</p>
+              )}
+              {activity.paid.slice(0, 2).map((p: any, idx: number) => (
+                <div key={`paid-${idx}`} className="flex gap-3">
+                  <div className="size-8 rounded-full bg-[#ECFDF5] text-[#10B981] flex items-center justify-center shrink-0"><CheckCircle2 className="size-4" /></div>
+                  <div>
+                    <div className="text-xs font-bold text-[#1A1A1A]">{p.contract?.tenant?.full_name} pagou o aluguel</div>
+                    <div className="text-[10px] text-[#9CA3AF]">Split repassado — {formatDate(p.payment_date)}</div>
+                  </div>
                 </div>
-              </div>
-              <div className="flex gap-3">
-                <div className="size-8 rounded-full bg-[#F5F3FF] text-[#7C3AED] flex items-center justify-center shrink-0"><PlusCircleIcon className="size-4" /></div>
-                <div>
-                  <div className="text-xs font-bold text-[#1A1A1A]">Novo contrato C-2310 assinado</div>
-                  <div className="text-[10px] text-[#9CA3AF]">Alameda dos Ipês — há 1h</div>
+              ))}
+              {activity.contracts.slice(0, 2).map((c: any, idx: number) => (
+                <div key={`contract-${idx}`} className="flex gap-3">
+                  <div className="size-8 rounded-full bg-[#F5F3FF] text-[#7C3AED] flex items-center justify-center shrink-0"><PlusCircleIcon className="size-4" /></div>
+                  <div>
+                    <div className="text-xs font-bold text-[#1A1A1A]">Novo contrato assinado</div>
+                    <div className="text-[10px] text-[#9CA3AF]">{c.property?.nickname} — {formatDate(c.created_at)}</div>
+                  </div>
                 </div>
-              </div>
-              <div className="flex gap-3">
-                <div className="size-8 rounded-full bg-[#FEF3C7] text-[#D97706] flex items-center justify-center shrink-0"><AlertCircle className="size-4" /></div>
-                <div>
-                  <div className="text-xs font-bold text-[#1A1A1A]">Cobrança C-2054 venceu</div>
-                  <div className="text-[10px] text-[#9CA3AF]">Letícia Prado — há 3 dias</div>
-                </div>
-              </div>
-              <div className="flex gap-3">
-                <div className="size-8 rounded-full bg-[#EFF6FF] text-[#3B82F6] flex items-center justify-center shrink-0"><MessageSquare className="size-4" /></div>
-                <div>
-                  <div className="text-xs font-bold text-[#1A1A1A]">Nova mensagem de Bruno Tavares</div>
-                  <div className="text-[10px] text-[#9CA3AF]">Manutenção — há 4 h</div>
-                </div>
-              </div>
+              ))}
             </div>
           </Card>
 

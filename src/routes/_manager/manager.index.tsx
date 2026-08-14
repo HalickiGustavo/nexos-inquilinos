@@ -515,7 +515,7 @@ function ManagerDashboard() {
                 </div>
               </div>
               <div className="flex gap-3">
-                <div className="size-8 rounded-full bg-[#F5F3FF] text-[#7C3AED] flex items-center justify-center shrink-0"><PlusCircle className="size-4" /></div>
+                <div className="size-8 rounded-full bg-[#F5F3FF] text-[#7C3AED] flex items-center justify-center shrink-0"><PlusCircleIcon className="size-4" /></div>
                 <div>
                   <div className="text-xs font-bold text-[#1A1A1A]">Novo contrato C-2310 assinado</div>
                   <div className="text-[10px] text-[#9CA3AF]">Alameda dos Ipês — há 1h</div>

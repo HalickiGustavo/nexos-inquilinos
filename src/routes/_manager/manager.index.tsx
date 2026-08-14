@@ -397,7 +397,7 @@ function ManagerDashboard() {
                 <div className="text-[10px] text-[#9CA3AF] uppercase font-bold tracking-wider leading-tight">Imobiliária Nexo</div>
               </div>
               <div className="bg-[#7C3AED] hover:bg-[#6D28D9] size-10 rounded-xl text-white font-bold grid place-items-center shadow-sm cursor-pointer transition-colors">
-                {firstName?.charAt(0) || "M"}
+                {qProfile.data?.full_name?.charAt(0) || "M"}
               </div>
             </div>
           </div>

@@ -337,7 +337,6 @@ function ManagerDashboard() {
   }, []);
 
   const nameFull = qProfile.data?.full_name || user?.email?.split("@")[0] || "";
-  const firstName = nameFull.split(" ")[0];
 
   const counts = (qCounts.data as any) ?? {};
   const pendencies = (qPend.data as any) ?? {};

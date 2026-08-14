@@ -458,8 +458,9 @@ function ManagerDashboard() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-sm font-bold text-[#1A1A1A]">{formatBRL(2227.51)}</div>
-                    <div className="text-[10px] text-[#9CA3AF]">90% do líquido</div>
+                    <div className="text-sm font-bold text-[#1A1A1A]">{formatBRL(kpis.paid * 0.9)}</div>
+                    <div className="text-[10px] text-[#9CA3AF]">Estimado (90%)</div>
+
                   </div>
                 </div>
 

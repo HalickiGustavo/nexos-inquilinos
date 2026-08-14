@@ -570,7 +570,7 @@ function ManagerDashboard() {
                 <h3 className="text-lg font-bold text-[#1A1A1A]">Carteira · próximos vencimentos</h3>
                 <p className="text-sm text-[#6B7280]">Listagem de recebimentos futuros.</p>
               </div>
-              <Badge className="bg-[#F5F3FF] text-[#7C3AED] hover:bg-[#F5F3FF] border-none font-bold text-xs px-3 py-1">148 CONTRATOS</Badge>
+              <Badge className="bg-[#F5F3FF] text-[#7C3AED] hover:bg-[#F5F3FF] border-none font-bold text-xs px-3 py-1">{counts.contracts || 0} CONTRATOS</Badge>
             </div>
 
             <div className="overflow-x-auto">

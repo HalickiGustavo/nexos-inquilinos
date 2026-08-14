@@ -393,8 +393,8 @@ function ManagerDashboard() {
             </Button>
             <div className="flex items-center gap-2 ml-2">
               <div className="text-right hidden sm:block">
-                <div className="text-sm font-bold text-[#1A1A1A] leading-tight">{firstName || "Marina"} Alves</div>
-                <div className="text-[10px] text-[#9CA3AF] uppercase font-bold tracking-wider leading-tight">Imobiliária Aurora</div>
+                <div className="text-sm font-bold text-[#1A1A1A] leading-tight">{qProfile.data?.full_name || "Marina Alves"}</div>
+                <div className="text-[10px] text-[#9CA3AF] uppercase font-bold tracking-wider leading-tight">Imobiliária Nexo</div>
               </div>
               <div className="bg-[#7C3AED] hover:bg-[#6D28D9] size-10 rounded-xl text-white font-bold grid place-items-center shadow-sm cursor-pointer transition-colors">
                 {firstName?.charAt(0) || "M"}

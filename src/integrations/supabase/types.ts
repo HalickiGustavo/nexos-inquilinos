@@ -2278,6 +2278,10 @@ export type Database = {
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
       sync_cron_secret: { Args: { _secret: string }; Returns: undefined }
+      verify_payout_integrity: {
+        Args: { p_installment_id: string }
+        Returns: boolean
+      }
       verify_security_invariants: {
         Args: never
         Returns: {

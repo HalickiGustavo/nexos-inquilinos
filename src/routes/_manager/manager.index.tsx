@@ -68,7 +68,7 @@ function ManagerDashboard() {
     enabled: !!user?.id,
     queryKey: ["mgr", "profile", user?.id],
     queryFn: async () => {
-      const { data } = await supabase.from("profiles").select("full_name, agency_name").eq("id", user!.id).maybeSingle();
+      const { data } = await supabase.from("profiles").select("full_name").eq("id", user!.id).maybeSingle();
       return data;
     },
   });

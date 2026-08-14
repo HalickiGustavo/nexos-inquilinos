@@ -487,9 +487,10 @@ function ManagerDashboard() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-sm font-bold text-[#1A1A1A]">{formatBRL(24.99)}</div>
-                    <div className="text-[10px] text-[#9CA3AF]">Fixo / parcela</div>
+                    <div className="text-sm font-bold text-[#1A1A1A]">{formatBRL(counts.contracts * 24.99)}</div>
+                    <div className="text-[10px] text-[#9CA3AF]">Fixa plataforma</div>
                   </div>
+
                 </div>
               </div>
             </div>

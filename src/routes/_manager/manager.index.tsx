@@ -470,7 +470,7 @@ function ManagerDashboard() {
                     <div className="size-8 rounded-full bg-[#F5F3FF] text-[#7C3AED] flex items-center justify-center"><Building2 className="size-4" /></div>
                     <div>
                       <div className="text-sm font-bold text-[#1A1A1A]">Imobiliária</div>
-                      <div className="text-[10px] text-[#9CA3AF]">{firstName || "Imobiliária"} — taxa 10% administração</div>
+                      <div className="text-[10px] text-[#9CA3AF]">{(qProfile.data?.full_name?.split(' ')[0]) || "Nexo"} — taxa 10% administração</div>
                     </div>
                   </div>
                   <div className="text-right">

@@ -104,7 +104,7 @@ export async function runEfiPayoutWorker(opts?: { limit?: number }) {
       // Persistimos TODOS os identificadores retornados pela Efí para que o
       // worker de acompanhamento (`reconcileEfiTransfers`) reuse o mesmo
       // idEnvio/e2eId como fonte de verdade nas próximas consultas.
-      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      // Reusing already imported supabaseAdmin
       const nowIso = new Date().toISOString();
       const baseFields: any = {
         efi_id_envio: idEnvio,

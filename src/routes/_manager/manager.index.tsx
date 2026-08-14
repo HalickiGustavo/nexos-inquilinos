@@ -92,9 +92,8 @@ function ManagerDashboard() {
         queryFn: async () => {
           const { data, error } = await supabase
             .from("installments")
-            .select("paid_amount, status, management_fee_percent")
-            .gte("due_date", prevStart).lte("due_date", prevEnd)
-            .eq("status", "pago");
+            .select("amount, extra_fees, paid_amount, status, management_fee_percent")
+            .gte("due_date", prevStart).lte("due_date", prevEnd);
           if (error) throw error;
           return data ?? [];
         },

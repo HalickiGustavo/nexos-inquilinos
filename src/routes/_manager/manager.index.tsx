@@ -241,18 +241,19 @@ function ManagerDashboard() {
       .reduce((s, r) => s + Number(r.landlord_payout_amount ?? 0), 0);
 
     const prev = (qPrev.data as any[]) ?? [];
-    const prevPaid = prev.reduce((s, r) => s + Number(r.paid_amount ?? 0), 0);
-    const prevFee = prev.reduce((s, r) => s + Number(r.paid_amount ?? 0) * Number(r.management_fee_percent ?? 0) / 100, 0);
+    const prevPaid = prev.filter(r => r.status === 'pago').reduce((s, r) => s + Number(r.paid_amount ?? r.amount), 0);
+    const prevToReceive = prev.filter(r => r.status !== 'pago').reduce((s, r) => s + Number(r.amount) + Number(r.extra_fees ?? 0), 0);
+    const prevRevenue = prevPaid + prevToReceive;
+    const prevOverdueTotal = prev.filter(r => r.status !== 'pago' && new Date(r.due_date) < new Date(prevEnd)).reduce((s, r) => s + Number(r.amount) + Number(r.extra_fees ?? 0), 0);
+    
+    const prevFee = prev.filter(r => r.status === 'pago').reduce((s, r) => s + Number(r.paid_amount ?? r.amount) * Number(r.management_fee_percent ?? 0) / 100, 0);
 
-    // Adicionando comparativos estendidos
     const compPaid = calculateComparison(paid, prevPaid);
     const compFee = calculateComparison(managementFee, prevFee);
-    
-    // Para receita prevista, receita pendente e inadimplência (overdue), 
-    // idealmente teríamos os dados históricos do período anterior completo.
-    // Como qPrev só traz installments pagos no momento, as variações de pendência e inadimplência
-    // dependem de uma query mais ampla do período anterior que inclua não pagos.
-    // Para esta etapa, vamos focar no que temos dados: Recebido e Taxa Nexo.
+    const compForecast = calculateComparison(revenue, prevRevenue);
+    const compPending = calculateComparison(toReceive, prevToReceive);
+    // Inadimplência comparamos o valor total vencido hoje vs valor total vencido ao fim do mês anterior
+    const compOverdue = calculateComparison(overdue, prevOverdueTotal, { goodWhenUp: false });
 
     return {
       paidToday: (qPaidToday.data as number) ?? 0,
@@ -264,14 +265,16 @@ function ManagerDashboard() {
       paid,
       deltaPaid: compPaid.percentageChange,
       deltaFee: compFee.percentageChange,
-      // Placeholders para os outros enquanto não expandimos as queries
-      deltaForecast: null,
-      deltaPending: null,
-      deltaOverdue: null,
+      deltaForecast: compForecast.percentageChange,
+      deltaPending: compPending.percentageChange,
+      deltaOverdue: compOverdue.percentageChange,
       collected: revenue === 0 ? 0 : Math.round((paid / revenue) * 100),
       comparisons: {
         paid: compPaid,
         fee: compFee,
+        forecast: compForecast,
+        pending: compPending,
+        overdue: compOverdue
       }
     };
   }, [qMonth.data, qOverdue.data, qPaidToday.data, qPrev.data]);

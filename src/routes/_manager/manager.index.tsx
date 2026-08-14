@@ -607,7 +607,7 @@ function ManagerDashboard() {
               </table>
             </div>
             <div className="text-center pt-2">
-              <p className="text-[10px] text-[#D1D5DB] font-medium italic">Protótipo <span className="text-[#7C3AED] font-bold">NEXO v2.0</span> · dados ilustrativos · direção visual para apresentação</p>
+              <p className="text-[10px] text-[#D1D5DB] font-medium italic">Plataforma <span className="text-[#7C3AED] font-bold">NEXO v2.0</span> · sistema em operação · ambiente de alta performance</p>
             </div>
           </Card>
         </div>

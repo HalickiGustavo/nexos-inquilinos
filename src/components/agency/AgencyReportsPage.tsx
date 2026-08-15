@@ -7,20 +7,17 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useProperties, useContracts, useInstallments, useMaintenances, useTenants } from "@/lib/queries";
-import { formatBRL, formatBRLCompact, formatDate } from "@/lib/format";
+import { useProperties, useInstallments, useTenants } from "@/lib/queries";
+import { formatBRL, formatDate } from "@/lib/format";
 import { downloadPdf } from "@/lib/pdf";
 import { parseExpenses, expensesTotals } from "@/lib/variable-expenses";
 import { PageHeader, PageShell } from "@/components/PageHeader";
 
-const RevenueBarChart = lazy(() => import("@/components/charts/ReportsCharts").then(m => ({ default: m.RevenueBarChart })));
 const ChartFallback = () => <div className="h-[300px] w-full animate-pulse rounded-md bg-muted/40" />;
 
 export function AgencyReportsPage() {
   const { data: properties = [] } = useProperties();
   const { data: installments = [] } = useInstallments();
-  const { data: maintenances = [] } = useMaintenances();
-  const { data: tenants = [] } = useTenants();
 
   const [from, setFrom] = useState(() => {
     const d = new Date();
@@ -37,10 +34,14 @@ export function AgencyReportsPage() {
       return inDate && inProp;
     });
 
-    const totalRecebido = filtered.filter(i => i.status === 'pago').reduce((s: number, i: any) => s + Number(i.paid_amount || 0), 0);
-    const totalPendente = filtered.filter(i => ['pendente', 'atrasado'].includes(i.status)).reduce((s: number, i: any) => s + Number(i.amount || 0), 0);
+    const totalRecebido = filtered
+      .filter(i => i.status === 'pago')
+      .reduce((s: number, i: any) => s + Number(i.paid_amount || 0), 0);
+      
+    const totalPendente = filtered
+      .filter(i => ['pendente', 'atrasado'].includes(i.status))
+      .reduce((s: number, i: any) => s + Number(i.amount || 0), 0);
     
-    // Repasses (Cálculo baseado na lógica do manager.financeiro.tsx)
     const repasses = filtered.filter(i => i.status === 'pago').reduce((acc, i) => {
       const fee = Number(i.management_fee_percent ?? 10);
       const paid = Number(i.paid_amount ?? 0);
@@ -56,7 +57,7 @@ export function AgencyReportsPage() {
 
     const yieldRanking = properties.map((p: any) => {
       const pInstallments = filtered.filter(i => i.contract?.property?.id === p.id && i.status === 'pago');
-      const revenue = pInstallments.reduce((s, i) => s + Number(i.paid_amount || 0), 0);
+      const revenue = pInstallments.reduce((s: number, i: any) => s + Number(i.paid_amount || 0), 0);
       return { nickname: p.nickname, revenue };
     }).sort((a, b) => b.revenue - a.revenue).slice(0, 5);
 
@@ -90,6 +91,8 @@ export function AgencyReportsPage() {
     await downloadPdf(`relatorio-nexo-${from}-a-${to}.pdf`, lines);
     toast.success("PDF gerado com sucesso");
   }
+
+  const totalRepasses = Object.values(metrics.repasses).reduce((a: number, b: number) => a + b, 0);
 
   return (
     <PageShell>
@@ -136,7 +139,7 @@ export function AgencyReportsPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <MetricCard icon={Wallet} label="Receita Recebida" value={formatBRL(metrics.totalRecebido)} tone="emerald" />
         <MetricCard icon={AlertCircle} label="Pendente/Atrasado" value={formatBRL(metrics.totalPendente)} tone="amber" />
-        <MetricCard icon={Users} label="Total Repasses" value={formatBRL(Object.values(metrics.repasses).reduce((a: number, b: number) => a + b, 0))} tone="indigo" />
+        <MetricCard icon={Users} label="Total Repasses" value={formatBRL(totalRepasses)} tone="indigo" />
         <MetricCard icon={TrendingUp} label="Taxa Ocupação" value={`${properties.length > 0 ? Math.round((properties.filter((p:any)=>p.status==='alugado').length / properties.length)*100) : 0}%`} />
       </div>
 

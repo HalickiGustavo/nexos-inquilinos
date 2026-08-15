@@ -65,7 +65,7 @@ function Recebimentos() {
         .order("due_date", { ascending: false });
 
       if (statusF !== "todos") {
-        query = query.eq("status", statusF);
+        query = query.eq("status", statusF as any);
       }
       if (from) {
         query = query.gte("due_date", from);

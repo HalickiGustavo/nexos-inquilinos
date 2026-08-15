@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { formatBRL } from "@/lib/format";
 import { maskPhone } from "@/lib/br-validators";
 import { PageHeader, PageShell } from "@/components/PageHeader";
+import { useConfirm } from "@/components/ui/confirm";
 
 export const Route = createFileRoute("/_manager/manager/equipe")({
   component: Equipe,
@@ -22,6 +23,7 @@ export const Route = createFileRoute("/_manager/manager/equipe")({
 
 function Equipe() {
   const qc = useQueryClient();
+  const confirm = useConfirm();
   const [open, setOpen] = useState(false);
   const [inviteLink, setInviteLink] = useState<string | null>(null);
 
@@ -59,6 +61,13 @@ function Equipe() {
 
 
   const removeMember = async (id: string) => {
+    const ok = await confirm({
+      title: "Remover membro da equipe?",
+      description: "Este usuário perderá o acesso à plataforma e não poderá mais gerenciar imóveis ou leads.",
+      confirmLabel: "Remover membro",
+      tone: "destructive",
+    });
+    if (!ok) return;
     await supabase.from("manager_members").delete().eq("id", id);
     qc.invalidateQueries({ queryKey: ["mgr-team"] });
   };

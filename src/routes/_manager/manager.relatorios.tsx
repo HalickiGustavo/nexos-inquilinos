@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { LandlordRelatoriosPage } from "@/routes/_authenticated/relatorios";
+import { AgencyReportsPage } from "@/components/agency/AgencyReportsPage";
 
 export const Route = createFileRoute("/_manager/manager/relatorios")({
-  head: () => ({ meta: [{ title: "Relatórios — NEXO" }] }),
-  component: LandlordRelatoriosPage,
+  head: () => ({ meta: [{ title: "Relatórios Administrativos — NEXO" }] }),
+  component: AgencyReportsPage,
 });

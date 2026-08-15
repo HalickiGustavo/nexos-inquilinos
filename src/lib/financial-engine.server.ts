@@ -15,18 +15,34 @@ export function computeSplit(args: {
   ownerPixKey: string | null;
   nexoPixKey: string | null;
 }): SplitResult {
-  const total = Number(args.paidAmount);
-  const nexoFee = Number(args.nexoFee);
-  const rentAmount = total - nexoFee;
+  const totalCents = Math.round(Number(args.paidAmount) * 100);
+  const nexoFeeCents = Math.round(Number(args.nexoFee) * 100);
   
-  const agencyAmount = Number((rentAmount * (args.managementFeePercent / 100)).toFixed(2));
-  const ownerAmount = Number((rentAmount - agencyAmount).toFixed(2));
+  // Total usable for split is paid amount minus platform fee
+  const splitableCents = totalCents - nexoFeeCents;
+  
+  if (splitableCents < 0) {
+    throw new Error("Valor pago insuficiente para cobrir as taxas da plataforma.");
+  }
+
+  const agencyCents = Math.round(splitableCents * (args.managementFeePercent / 100));
+  const ownerCents = splitableCents - agencyCents;
+
+  // Final validation: sum must match exactly
+  if ((nexoFeeCents + agencyCents + ownerCents) !== totalCents) {
+     console.error("[computeSplit] Arithmetic mismatch detected", { 
+       totalCents, nexoFeeCents, agencyCents, ownerCents, 
+       sum: nexoFeeCents + agencyCents + ownerCents 
+     });
+     // Fallback/safety: adjust owner cents by the discrepancy (usually rounding)
+     // but we use Math.round and subtraction so it should be exact.
+  }
 
   return {
-    total,
-    nexo: { amount: nexoFee, pixKey: args.nexoPixKey },
-    agency: { amount: agencyAmount, pixKey: args.agencyPixKey },
-    owner: { amount: ownerAmount, pixKey: args.ownerPixKey },
+    total: totalCents / 100,
+    nexo: { amount: nexoFeeCents / 100, pixKey: args.nexoPixKey },
+    agency: { amount: agencyCents / 100, pixKey: args.agencyPixKey },
+    owner: { amount: ownerCents / 100, pixKey: args.ownerPixKey },
   };
 }
 

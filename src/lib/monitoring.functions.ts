@@ -17,7 +17,6 @@ const LogEventSchema = z.object({
 
 /**
  * Structural Monitoring: Log system events to the database.
- * This is used for tracking backend and frontend critical errors.
  */
 export const logSystemEvent = createServerFn({ method: "POST" })
   .inputValidator((data) => LogEventSchema.parse(data))
@@ -46,15 +45,14 @@ export const logSystemEvent = createServerFn({ method: "POST" })
 
 export const getSystemStatus = createServerFn({ method: "GET" })
   .handler(async () => {
-    // Basic status aggregation for the admin dashboard
-    const [logs, activeIncidents] = await Promise.all([
+    const [logsResult, activeIncidentsResult] = await Promise.all([
       (supabase.from('system_health_logs' as any) as any).select('*').order('created_at', { ascending: false }).limit(50),
       (supabase.from('system_health_logs' as any) as any).select('id', { count: 'exact', head: true }).neq('status', 'resolved').eq('severity', 'critical')
     ]);
 
     return {
-      logs: (logs.data as any[]) || [],
-      criticalIncidentsCount: (activeIncidents.count as number) || 0,
+      logs: (logsResult.data as any[]) || [],
+      criticalIncidentsCount: (activeIncidentsResult.count as number) || 0,
       timestamp: new Date().toISOString()
     };
   });

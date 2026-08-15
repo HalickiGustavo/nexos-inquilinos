@@ -2284,6 +2284,10 @@ export type Database = {
     Functions: {
       accept_landlord_invite: { Args: { _token: string }; Returns: string }
       accept_manager_invite: { Args: { _token: string }; Returns: string }
+      check_contract_integrity: {
+        Args: { p_contract_id: string }
+        Returns: boolean
+      }
       claim_pending_transfers: {
         Args: { _limit?: number }
         Returns: {
@@ -2397,6 +2401,7 @@ export type Database = {
         | "acordo_fechado"
         | "agendado"
         | "em_aberto"
+        | "divergente"
       maintenance_responsible: "proprietario" | "inquilino"
       maintenance_status: "pendente" | "em_andamento" | "concluido"
       payment_recipient_type: "nexo" | "agency" | "owner"
@@ -2552,6 +2557,7 @@ export const Constants = {
         "acordo_fechado",
         "agendado",
         "em_aberto",
+        "divergente",
       ],
       maintenance_responsible: ["proprietario", "inquilino"],
       maintenance_status: ["pendente", "em_andamento", "concluido"],

@@ -19,6 +19,7 @@ import {
   BarChart3,
   Wrench,
   MessageSquare,
+  Activity,
 } from "lucide-react";
 import { AppShell, type ShellNavGroup } from "@/components/shell/AppShell";
 import { GlobalSearch } from "@/components/GlobalSearch";
@@ -77,6 +78,7 @@ const navGroups: ShellNavGroup[] = [
     label: "Sistema",
     items: [
       { to: "/manager/migrar-dados", label: "Migrar Dados", icon: Database, tour: "nav-manager-migrar-dados" },
+      { to: "/admin/health", label: "Saúde do Sistema", icon: Activity },
       { to: "/manager/perfil", label: "Meu Perfil", icon: UserCog, tour: "nav-manager-perfil" },
     ],
   },

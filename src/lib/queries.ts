@@ -20,7 +20,7 @@ export function useProperties() {
         .from("properties")
         .select("*")
         .order("created_at", { ascending: false })
-        .limit(500);
+        .limit(1000);
       if (error) throw error;
       return data;
     },
@@ -36,7 +36,7 @@ export function useTenants() {
         .select("*")
         .is("deleted_at", null)
         .order("created_at", { ascending: false })
-        .limit(500);
+        .limit(1000);
       if (error) throw error;
       return data;
     },
@@ -63,15 +63,13 @@ export function useInstallments() {
   return useQuery({
     queryKey: ["installments"],
     queryFn: async () => {
-      // Projeção enxuta: só os campos do contrato/imóvel/inquilino que a UI realmente consome.
-      // Antes: contract:contracts(*, property:properties(*), tenant:tenants(*)) — payload muito pesado.
       const { data, error } = await supabase
         .from("installments")
         .select(
           "*, contract:contracts(id, property_id, late_fee_percent, daily_interest_percent, property:properties(id, nickname, address), tenant:tenants(id, full_name))",
         )
         .order("due_date", { ascending: true })
-        .limit(1000);
+        .limit(2000);
       if (error) throw error;
       return data;
     },

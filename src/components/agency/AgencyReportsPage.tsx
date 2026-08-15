@@ -37,8 +37,8 @@ export function AgencyReportsPage() {
       return inDate && inProp;
     });
 
-    const totalRecebido = filtered.filter(i => i.status === 'pago').reduce((s, i) => s + Number(i.paid_amount || 0), 0);
-    const totalPendente = filtered.filter(i => ['pendente', 'atrasado'].includes(i.status)).reduce((s, i) => s + Number(i.amount || 0), 0);
+    const totalRecebido = filtered.filter(i => i.status === 'pago').reduce((s: number, i: any) => s + Number(i.paid_amount || 0), 0);
+    const totalPendente = filtered.filter(i => ['pendente', 'atrasado'].includes(i.status)).reduce((s: number, i: any) => s + Number(i.amount || 0), 0);
     
     // Repasses (Cálculo baseado na lógica do manager.financeiro.tsx)
     const repasses = filtered.filter(i => i.status === 'pago').reduce((acc, i) => {
@@ -136,7 +136,7 @@ export function AgencyReportsPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <MetricCard icon={Wallet} label="Receita Recebida" value={formatBRL(metrics.totalRecebido)} tone="emerald" />
         <MetricCard icon={AlertCircle} label="Pendente/Atrasado" value={formatBRL(metrics.totalPendente)} tone="amber" />
-        <MetricCard icon={Users} label="Total Repasses" value={formatBRL(Object.values(metrics.repasses).reduce((a,b)=>a+b, 0))} tone="indigo" />
+        <MetricCard icon={Users} label="Total Repasses" value={formatBRL(Object.values(metrics.repasses).reduce((a: number, b: number) => a + b, 0))} tone="indigo" />
         <MetricCard icon={TrendingUp} label="Taxa Ocupação" value={`${properties.length > 0 ? Math.round((properties.filter((p:any)=>p.status==='alugado').length / properties.length)*100) : 0}%`} />
       </div>
 

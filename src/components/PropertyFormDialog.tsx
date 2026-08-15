@@ -253,7 +253,7 @@ export function PropertyFormDialog({
               bedrooms: Number(form.bedrooms) || 0,
               bathrooms: Number(form.bathrooms) || 0,
               garages: Number(form.garages) || 0,
-            }).eq("id", newId);
+            }).eq("id", propertyId);
           } else {
             // Standard insert/update for other cases or legacy compatibility
             const payload: any = {

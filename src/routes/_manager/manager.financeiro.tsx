@@ -67,6 +67,7 @@ function Recebimentos() {
       if (statusF !== "todos") {
         query = query.eq("status", statusF as any);
       }
+      query = query.range(from, to);
       if (from) {
         query = query.gte("due_date", from);
       }

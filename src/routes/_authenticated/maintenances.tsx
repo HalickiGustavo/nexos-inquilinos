@@ -39,7 +39,7 @@ const COLUMNS = [
 ] as const;
 
 export function MaintenancesPage() {
-  const { data: items = [], isLoading } = useMaintenances();
+  const { data: items = [], isLoading } = useMaintenances({ limit: 100 });
   const [open, setOpen] = useState(false);
   useEffect(() => {
     if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("novo")) {

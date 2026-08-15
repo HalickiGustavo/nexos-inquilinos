@@ -16,7 +16,7 @@ export const logSystemIncident = createServerFn({ method: "POST" })
     correlationId: z.string().optional(),
     metadata: z.record(z.any()).optional(),
   }).parse(data))
-  .handler(async ({ data, request }) => {
+  .handler(async ({ data }) => {
     try {
       const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
       
@@ -36,9 +36,7 @@ export const logSystemIncident = createServerFn({ method: "POST" })
         entity_id: data.operation,
         metadata: {
           ...data,
-          metadata: sanitizedMetadata,
-          user_agent: request.headers.get("user-agent"),
-          ip: request.headers.get("x-forwarded-for") || "unknown"
+          metadata: sanitizedMetadata
         },
       });
 

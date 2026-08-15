@@ -266,9 +266,13 @@ function OnboardingWizard({ role, initialEmail, onChangeRole }: { role: Role; in
       await supabase.auth.signOut().catch(() => {});
       setSuccess(true);
     } catch (err: any) {
+      if (err?.message?.includes("User already registered") || err?.code === "23505") {
+        toast.error("Este e-mail já está cadastrado. Tente fazer login.");
+      } else {
+        toast.error(err?.message || "Erro ao processar cadastro. Verifique os dados ou tente novamente.");
+      }
       captchaRef.current?.reset();
       update("captchaToken", null);
-      toast.error(err?.message || "Erro ao processar cadastro. Verifique os dados ou tente novamente.");
     } finally {
       setSubmitting(false);
     }

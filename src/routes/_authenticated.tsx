@@ -14,6 +14,7 @@ import {
   BarChart3,
   UserCog,
 } from "lucide-react";
+import { toast } from "sonner";
 import { useAuth } from "@/lib/auth";
 import { useUserRole } from "@/lib/useUserRole";
 import { AppShell, type ShellNavGroup } from "@/components/shell/AppShell";
@@ -63,8 +64,17 @@ function AuthLayout() {
   useIdlePreloadRoutes(OWNER_PREFETCH_PATHS, !!user && role === "owner");
 
   useEffect(() => {
-    if (!loading && !user) navigate({ to: "/login", replace: true });
-  }, [user, loading, navigate]);
+    if (!loading && !user) {
+      navigate({ to: "/login", replace: true });
+      return;
+    }
+    
+    // Strict requirement: email must be confirmed to access dashboards
+    if (user && !user.email_confirmed_at && !pathname.includes('/perfil')) {
+      toast.error("Por favor, confirme seu e-mail para acessar o painel.");
+      navigate({ to: "/login", replace: true });
+    }
+  }, [user, loading, navigate, pathname]);
 
   useEffect(() => {
     if (!role) return;

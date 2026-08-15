@@ -22,7 +22,8 @@ const LogEventSchema = z.object({
 export const logSystemEvent = createServerFn({ method: "POST" })
   .inputValidator((data) => LogEventSchema.parse(data))
   .handler(async ({ data }) => {
-    const { error } = await supabase.from('system_health_logs').insert({
+    // We use dynamic types to bypass initial TS strictness before types are re-generated
+    const { error } = await (supabase.from('system_health_logs' as any) as any).insert({
       event_type: data.eventType,
       severity: data.severity,
       service: data.service,
@@ -48,8 +49,8 @@ export const getSystemStatus = createServerFn({ method: "GET" })
   .handler(async () => {
     // Basic status aggregation for the admin dashboard
     const [logs, activeIncidents] = await Promise.all([
-      supabase.from('system_health_logs').select('*').order('created_at', { ascending: false }).limit(50),
-      supabase.from('system_health_logs').select('id', { count: 'exact', head: true }).neq('status', 'resolved').eq('severity', 'critical')
+      (supabase.from('system_health_logs' as any) as any).select('*').order('created_at', { ascending: false }).limit(50),
+      (supabase.from('system_health_logs' as any) as any).select('id', { count: 'exact', head: true }).neq('status', 'resolved').eq('severity', 'critical')
     ]);
 
     return {

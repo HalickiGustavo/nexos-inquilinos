@@ -31,6 +31,7 @@ import { Route as AuthenticatedPropertiesRouteImport } from './routes/_authentic
 import { Route as AuthenticatedRelatoriosRouteImport } from './routes/_authenticated/relatorios'
 import { Route as AuthenticatedTenantsRouteImport } from './routes/_authenticated/tenants'
 import { Route as AuthenticatedVistoriasRouteImport } from './routes/_authenticated/vistorias'
+import { Route as AuthenticatedAdminHealthRouteImport } from './routes/_authenticated/admin.health'
 import { Route as AuthenticatedAdminIntegracoesRouteImport } from './routes/_authenticated/admin.integracoes'
 import { Route as AuthenticatedPropertiesIdRouteImport } from './routes/_authenticated/properties.$id'
 import { Route as AuthenticatedTenantIndexRouteImport } from './routes/_authenticated/tenant.index'
@@ -68,6 +69,7 @@ import { Route as ManagerManagerProprietariosRouteImport } from './routes/_manag
 import { Route as ManagerManagerRelatoriosRouteImport } from './routes/_manager/manager.relatorios'
 import { Route as ManagerManagerVistoriasRouteImport } from './routes/_manager/manager.vistorias'
 import { Route as ApiPublicEfiWebhookRouteImport } from './routes/api/public/efi-webhook'
+import { Route as ApiPublicHealthRouteImport } from './routes/api/public/health'
 import { Route as ApiPublicTestWhatsappRouteImport } from './routes/api/public/test-whatsapp'
 import { Route as ManagerManagerConfiguracoesRoletaRouteImport } from './routes/_manager/manager.configuracoes.roleta'
 import { Route as ApiPublicCrmAgenciesRouteImport } from './routes/api/public/crm/agencies'
@@ -203,6 +205,12 @@ const AuthenticatedVistoriasRoute = AuthenticatedVistoriasRouteImport.update({
   path: '/vistorias',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedAdminHealthRoute =
+  AuthenticatedAdminHealthRouteImport.update({
+    id: '/admin/health',
+    path: '/admin/health',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedAdminIntegracoesRoute =
   AuthenticatedAdminIntegracoesRouteImport.update({
     id: '/admin/integracoes',
@@ -406,6 +414,11 @@ const ApiPublicEfiWebhookRoute = ApiPublicEfiWebhookRouteImport.update({
   path: '/api/public/efi-webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicHealthRoute = ApiPublicHealthRouteImport.update({
+  id: '/api/public/health',
+  path: '/api/public/health',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicTestWhatsappRoute = ApiPublicTestWhatsappRouteImport.update({
   id: '/api/public/test-whatsapp',
   path: '/api/public/test-whatsapp',
@@ -563,6 +576,7 @@ export interface FileRoutesByFullPath {
   '/relatorios': typeof AuthenticatedRelatoriosRoute
   '/tenants': typeof AuthenticatedTenantsRoute
   '/vistorias': typeof AuthenticatedVistoriasRoute
+  '/admin/health': typeof AuthenticatedAdminHealthRoute
   '/admin/integracoes': typeof AuthenticatedAdminIntegracoesRoute
   '/properties/$id': typeof AuthenticatedPropertiesIdRoute
   '/tenant/alertas': typeof AuthenticatedTenantAlertasRoute
@@ -597,6 +611,7 @@ export interface FileRoutesByFullPath {
   '/manager/relatorios': typeof ManagerManagerRelatoriosRoute
   '/manager/vistorias': typeof ManagerManagerVistoriasRoute
   '/api/public/efi-webhook': typeof ApiPublicEfiWebhookRouteWithChildren
+  '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/test-whatsapp': typeof ApiPublicTestWhatsappRoute
   '/tenant/': typeof AuthenticatedTenantIndexRoute
   '/landlord/': typeof LandlordLandlordIndexRoute
@@ -645,6 +660,7 @@ export interface FileRoutesByTo {
   '/relatorios': typeof AuthenticatedRelatoriosRoute
   '/tenants': typeof AuthenticatedTenantsRoute
   '/vistorias': typeof AuthenticatedVistoriasRoute
+  '/admin/health': typeof AuthenticatedAdminHealthRoute
   '/admin/integracoes': typeof AuthenticatedAdminIntegracoesRoute
   '/properties/$id': typeof AuthenticatedPropertiesIdRoute
   '/tenant/alertas': typeof AuthenticatedTenantAlertasRoute
@@ -679,6 +695,7 @@ export interface FileRoutesByTo {
   '/manager/relatorios': typeof ManagerManagerRelatoriosRoute
   '/manager/vistorias': typeof ManagerManagerVistoriasRoute
   '/api/public/efi-webhook': typeof ApiPublicEfiWebhookRouteWithChildren
+  '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/test-whatsapp': typeof ApiPublicTestWhatsappRoute
   '/tenant': typeof AuthenticatedTenantIndexRoute
   '/landlord': typeof LandlordLandlordIndexRoute
@@ -731,6 +748,7 @@ export interface FileRoutesById {
   '/_authenticated/tenants': typeof AuthenticatedTenantsRoute
   '/_authenticated/vistorias': typeof AuthenticatedVistoriasRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/_authenticated/admin/health': typeof AuthenticatedAdminHealthRoute
   '/_authenticated/admin/integracoes': typeof AuthenticatedAdminIntegracoesRoute
   '/_authenticated/properties/$id': typeof AuthenticatedPropertiesIdRoute
   '/_authenticated/tenant/alertas': typeof AuthenticatedTenantAlertasRoute
@@ -765,6 +783,7 @@ export interface FileRoutesById {
   '/_manager/manager/relatorios': typeof ManagerManagerRelatoriosRoute
   '/_manager/manager/vistorias': typeof ManagerManagerVistoriasRoute
   '/api/public/efi-webhook': typeof ApiPublicEfiWebhookRouteWithChildren
+  '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/test-whatsapp': typeof ApiPublicTestWhatsappRoute
   '/_authenticated/tenant/': typeof AuthenticatedTenantIndexRoute
   '/_landlord/landlord/': typeof LandlordLandlordIndexRoute
@@ -815,6 +834,7 @@ export interface FileRouteTypes {
     | '/relatorios'
     | '/tenants'
     | '/vistorias'
+    | '/admin/health'
     | '/admin/integracoes'
     | '/properties/$id'
     | '/tenant/alertas'
@@ -849,6 +869,7 @@ export interface FileRouteTypes {
     | '/manager/relatorios'
     | '/manager/vistorias'
     | '/api/public/efi-webhook'
+    | '/api/public/health'
     | '/api/public/test-whatsapp'
     | '/tenant/'
     | '/landlord/'
@@ -897,6 +918,7 @@ export interface FileRouteTypes {
     | '/relatorios'
     | '/tenants'
     | '/vistorias'
+    | '/admin/health'
     | '/admin/integracoes'
     | '/properties/$id'
     | '/tenant/alertas'
@@ -931,6 +953,7 @@ export interface FileRouteTypes {
     | '/manager/relatorios'
     | '/manager/vistorias'
     | '/api/public/efi-webhook'
+    | '/api/public/health'
     | '/api/public/test-whatsapp'
     | '/tenant'
     | '/landlord'
@@ -982,6 +1005,7 @@ export interface FileRouteTypes {
     | '/_authenticated/tenants'
     | '/_authenticated/vistorias'
     | '/_authenticated/'
+    | '/_authenticated/admin/health'
     | '/_authenticated/admin/integracoes'
     | '/_authenticated/properties/$id'
     | '/_authenticated/tenant/alertas'
@@ -1016,6 +1040,7 @@ export interface FileRouteTypes {
     | '/_manager/manager/relatorios'
     | '/_manager/manager/vistorias'
     | '/api/public/efi-webhook'
+    | '/api/public/health'
     | '/api/public/test-whatsapp'
     | '/_authenticated/tenant/'
     | '/_landlord/landlord/'
@@ -1056,6 +1081,7 @@ export interface RootRouteChildren {
   ManagerSetupRoute: typeof ManagerSetupRoute
   TenantSetupRoute: typeof TenantSetupRoute
   ApiPublicEfiWebhookRoute: typeof ApiPublicEfiWebhookRouteWithChildren
+  ApiPublicHealthRoute: typeof ApiPublicHealthRoute
   ApiPublicTestWhatsappRoute: typeof ApiPublicTestWhatsappRoute
   ApiPublicCrmAgenciesRoute: typeof ApiPublicCrmAgenciesRoute
   ApiPublicCrmAgenciesCompleteRoute: typeof ApiPublicCrmAgenciesCompleteRoute
@@ -1234,6 +1260,13 @@ declare module '@tanstack/react-router' {
       path: '/vistorias'
       fullPath: '/vistorias'
       preLoaderRoute: typeof AuthenticatedVistoriasRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/admin/health': {
+      id: '/_authenticated/admin/health'
+      path: '/admin/health'
+      fullPath: '/admin/health'
+      preLoaderRoute: typeof AuthenticatedAdminHealthRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/admin/integracoes': {
@@ -1495,6 +1528,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicEfiWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/health': {
+      id: '/api/public/health'
+      path: '/api/public/health'
+      fullPath: '/api/public/health'
+      preLoaderRoute: typeof ApiPublicHealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/test-whatsapp': {
       id: '/api/public/test-whatsapp'
       path: '/api/public/test-whatsapp'
@@ -1694,6 +1734,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedTenantsRoute: typeof AuthenticatedTenantsRoute
   AuthenticatedVistoriasRoute: typeof AuthenticatedVistoriasRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+  AuthenticatedAdminHealthRoute: typeof AuthenticatedAdminHealthRoute
   AuthenticatedAdminIntegracoesRoute: typeof AuthenticatedAdminIntegracoesRoute
   AuthenticatedTenantAlertasRoute: typeof AuthenticatedTenantAlertasRoute
   AuthenticatedTenantChatRoute: typeof AuthenticatedTenantChatRoute
@@ -1719,6 +1760,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedTenantsRoute: AuthenticatedTenantsRoute,
   AuthenticatedVistoriasRoute: AuthenticatedVistoriasRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+  AuthenticatedAdminHealthRoute: AuthenticatedAdminHealthRoute,
   AuthenticatedAdminIntegracoesRoute: AuthenticatedAdminIntegracoesRoute,
   AuthenticatedTenantAlertasRoute: AuthenticatedTenantAlertasRoute,
   AuthenticatedTenantChatRoute: AuthenticatedTenantChatRoute,
@@ -1830,6 +1872,7 @@ const rootRouteChildren: RootRouteChildren = {
   ManagerSetupRoute: ManagerSetupRoute,
   TenantSetupRoute: TenantSetupRoute,
   ApiPublicEfiWebhookRoute: ApiPublicEfiWebhookRouteWithChildren,
+  ApiPublicHealthRoute: ApiPublicHealthRoute,
   ApiPublicTestWhatsappRoute: ApiPublicTestWhatsappRoute,
   ApiPublicCrmAgenciesRoute: ApiPublicCrmAgenciesRoute,
   ApiPublicCrmAgenciesCompleteRoute: ApiPublicCrmAgenciesCompleteRoute,

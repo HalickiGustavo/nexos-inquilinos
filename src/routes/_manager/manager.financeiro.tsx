@@ -57,23 +57,31 @@ function Recebimentos() {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
   const q = useQuery({
-    queryKey: ["mgr-receb"],
+    queryKey: ["mgr-receb", statusF, from, to],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("installments")
         .select("*, contract:contracts(id,property:properties(code,address,owner_name), tenant:tenants(full_name))")
         .order("due_date", { ascending: false });
-      if (error) throw error; return data ?? [];
+
+      if (statusF !== "todos") {
+        query = query.eq("status", statusF);
+      }
+      if (from) {
+        query = query.gte("due_date", from);
+      }
+      if (to) {
+        query = query.lte("due_date", to);
+      }
+
+      const { data, error } = await query.limit(500);
+      if (error) throw error;
+      return data ?? [];
     },
   });
 
   const groupList = useMemo(() => {
-    const rows = (q.data ?? []).filter((i: any) => {
-      if (statusF !== "todos" && i.status !== statusF) return false;
-      if (from && i.due_date < from) return false;
-      if (to && i.due_date > to) return false;
-      return true;
-    });
+    const rows = q.data ?? [];
     const groups: Record<string, any> = {};
     for (const i of rows) {
       const cid = i.contract?.id ?? i.contract_id ?? "—";
@@ -88,7 +96,7 @@ function Recebimentos() {
       groups[cid].items.push(i);
     }
     return Object.values(groups) as any[];
-  }, [q.data, statusF, from, to]);
+  }, [q.data]);
 
   const badge = (s: string) => {
     const map: Record<string, string> = {

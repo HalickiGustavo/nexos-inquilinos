@@ -62,8 +62,7 @@ function Recebimentos() {
       let query = supabase
         .from("installments")
         .select("*, contract:contracts(id,property:properties(code,address,owner_name), tenant:tenants(full_name))")
-        .order("due_date", { ascending: false })
-        .limit(500);
+        .order("due_date", { ascending: false });
 
       if (statusF !== "todos") {
         query = query.eq("status", statusF as any);
@@ -75,7 +74,7 @@ function Recebimentos() {
         query = query.lte("due_date", to);
       }
 
-      const { data, error } = await query;
+      const { data, error } = await query.limit(500);
       if (error) throw error;
       return data ?? [];
     },

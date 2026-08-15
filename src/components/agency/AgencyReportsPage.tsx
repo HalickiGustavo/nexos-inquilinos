@@ -16,15 +16,16 @@ import { PageHeader, PageShell } from "@/components/PageHeader";
 const ChartFallback = () => <div className="h-[300px] w-full animate-pulse rounded-md bg-muted/40" />;
 
 export function AgencyReportsPage() {
-  const { data: properties = [] } = useProperties();
-  const { data: installments = [] } = useInstallments();
-
   const [from, setFrom] = useState(() => {
     const d = new Date();
     d.setMonth(d.getMonth() - 1);
     return d.toISOString().slice(0, 10);
   });
   const [to, setTo] = useState(new Date().toISOString().slice(0, 10));
+
+  const { data: properties = [] } = useProperties();
+  const { data: installments = [] } = useInstallments({ from, to, limit: 1000 });
+
   const [propertyId, setPropertyId] = useState("all");
 
   const metrics = useMemo(() => {

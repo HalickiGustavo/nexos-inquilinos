@@ -12,89 +12,157 @@ export type Maintenance = Tables["maintenances"]["Row"];
 // NOTE: select('*') intencional para preservar tipos gerados; ganhos de perf vêm de
 // staleTime (60s default), gcTime e limites server-side abaixo.
 
-export function useProperties() {
+export function useProperties(options?: { limit?: number; offset?: number; search?: string }) {
   return useQuery({
-    queryKey: ["properties"],
+    queryKey: ["properties", options],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("properties")
         .select("*")
-        .order("created_at", { ascending: false })
-        .limit(500);
+        .order("created_at", { ascending: false });
+      
+      if (options?.search) {
+        query = query.or(`nickname.ilike.%${options.search}%,address.ilike.%${options.search}%,code.ilike.%${options.search}%`);
+      }
+      
+      if (options?.limit) {
+        query = query.range(options.offset || 0, (options.offset || 0) + options.limit - 1);
+      } else {
+        query = query.limit(100);
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
       return data;
     },
   });
 }
 
-export function useTenants() {
+export function useTenants(options?: { search?: string; limit?: number; offset?: number }) {
   return useQuery({
-    queryKey: ["tenants"],
+    queryKey: ["tenants", options],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("tenants")
         .select("*")
         .is("deleted_at", null)
-        .order("created_at", { ascending: false })
-        .limit(500);
+        .order("created_at", { ascending: false });
+      
+      if (options?.search) {
+        query = query.or(`full_name.ilike.%${options.search}%,email.ilike.%${options.search}%,document.ilike.%${options.search}%`);
+      }
+      
+      if (options?.limit) {
+        query = query.range(options.offset || 0, (options.offset || 0) + options.limit - 1);
+      } else {
+        query = query.limit(100);
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
       return data;
     },
   });
 }
 
-export function useContracts() {
+export function useContracts(options?: { active?: boolean; search?: string; limit?: number; offset?: number }) {
   return useQuery({
-    queryKey: ["contracts"],
+    queryKey: ["contracts", options],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("contracts")
-        .select("*, property:properties(*), tenant:tenants(*)")
+        .select("*, property:properties(id, nickname, address, code), tenant:tenants(id, full_name, email)")
         .is("deleted_at", null)
-        .order("created_at", { ascending: false })
-        .limit(500);
+        .order("created_at", { ascending: false });
+      
+      if (options?.active !== undefined) {
+        query = query.eq("active", options.active);
+      }
+      
+      if (options?.search) {
+        // Buscamos em campos relacionados via filtro customizado se necessário, 
+        // ou simplificamos para campos diretos se a performance for crítica.
+        query = query.or(`notes.ilike.%${options.search}%`);
+      }
+
+      if (options?.limit) {
+        query = query.range(options.offset || 0, (options.offset || 0) + options.limit - 1);
+      } else {
+        query = query.limit(100);
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
       return data;
     },
   });
 }
 
-export function useInstallments() {
+export function useInstallments(options?: { status?: string; contractId?: string; from?: string; to?: string; limit?: number; offset?: number }) {
   return useQuery({
-    queryKey: ["installments"],
+    queryKey: ["installments", options],
     queryFn: async () => {
-      // Projeção enxuta: só os campos do contrato/imóvel/inquilino que a UI realmente consome.
-      // Antes: contract:contracts(*, property:properties(*), tenant:tenants(*)) — payload muito pesado.
-      const { data, error } = await supabase
+      let query = supabase
         .from("installments")
         .select(
-          "*, contract:contracts(id, property_id, late_fee_percent, daily_interest_percent, property:properties(id, nickname, address), tenant:tenants(id, full_name))",
+          "*, contract:contracts(id, property_id, late_fee_percent, daily_interest_percent, property:properties(id, nickname, address, code), tenant:tenants(id, full_name))",
         )
-        .order("due_date", { ascending: true })
-        .limit(1000);
+        .order("due_date", { ascending: true });
+      
+      if (options?.status && options.status !== "todos") {
+        query = query.eq("status", options.status);
+      }
+      if (options?.contractId) {
+        query = query.eq("contract_id", options.contractId);
+      }
+      if (options?.from) {
+        query = query.gte("due_date", options.from);
+      }
+      if (options?.to) {
+        query = query.lte("due_date", options.to);
+      }
+
+      if (options?.limit) {
+        query = query.range(options.offset || 0, (options.offset || 0) + options.limit - 1);
+      } else {
+        query = query.limit(200);
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
       return data;
     },
   });
 }
 
-export function useMaintenances() {
+export function useMaintenances(options?: { status?: string; limit?: number; offset?: number }) {
   return useQuery({
-    queryKey: ["maintenances"],
+    queryKey: ["maintenances", options],
     queryFn: async () => {
-      // property:properties(*) reduzido para os campos exibidos na listagem.
-      const { data, error } = await supabase
+      let query = supabase
         .from("maintenances")
         .select(
-          "*, property:properties(id, nickname, address), contract:contracts(id, start_date, end_date, rent_amount, active, tenant:tenants(id, full_name))",
+          "*, property:properties(id, nickname, address), contract:contracts(id, active, tenant:tenants(id, full_name))",
         )
-        .order("created_at", { ascending: false })
-        .limit(500);
+        .order("created_at", { ascending: false });
+
+      if (options?.status) {
+        query = query.eq("status", options.status);
+      }
+
+      if (options?.limit) {
+        query = query.range(options.offset || 0, (options.offset || 0) + options.limit - 1);
+      } else {
+        query = query.limit(100);
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
       return data;
     },
   });
 }
+
 
 
 

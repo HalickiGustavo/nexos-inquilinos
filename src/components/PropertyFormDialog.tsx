@@ -213,45 +213,84 @@ export function PropertyFormDialog({
           ev.preventDefault();
           if (!user) return;
           const isSale = form.tipo_transacao === "Venda";
-          const payload: any = {
-            user_id: user.id,
-            nickname: form.nickname,
-            address: form.address,
-            city: form.city || null,
-            state: form.state || null,
-            zip_code: form.zip_code || null,
-            type: form.type as Property["type"],
-            rent_price: parseNumber(form.rent_price),
-            condo_fee: parseNumber(form.condo_fee),
-            iptu: parseNumber(form.iptu),
-            status: form.status as Property["status"],
-            notes: form.notes || null,
-            tipo_transacao: form.tipo_transacao,
-            valor_aluguel: isSale ? null : (form.valor_aluguel ? parseNumber(form.valor_aluguel) : null),
-            valor_venda: isSale ? (form.valor_venda ? parseNumber(form.valor_venda) : null) : null,
-            publish_imovelweb: indisponivel || !imwConnected ? false : form.publish_imovelweb,
-            publish_zap: indisponivel || !zapConnected ? false : form.publish_zap,
-            bedrooms: Number(form.bedrooms) || 0,
-            bathrooms: Number(form.bathrooms) || 0,
-            garages: Number(form.garages) || 0,
-            area_total: form.area_total ? parseNumber(form.area_total) : null,
-          };
-          if (mode === "manager") {
-            payload.manager_id = user.id;
-            const selectedLandlord = landlords.find((l) => l.id === form.landlord_id);
-            // If landlord_id is an email (pending invite), set it to null and store owner_name
-            const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(form.landlord_id);
-            payload.landlord_id = isUuid ? form.landlord_id : null;
-            payload.owner_name = selectedLandlord?.full_name || selectedLandlord?.email || null;
-            payload.responsible_member_id = form.responsible_member_id || null;
-            const feePct = Number(form.default_management_fee_percent);
-            payload.default_management_fee_percent =
-              Number.isFinite(feePct) && feePct >= 0 && feePct <= 100 ? feePct : 10;
+          const feePct = Number(form.default_management_fee_percent);
+          const finalFeePct = Number.isFinite(feePct) && feePct >= 0 && feePct <= 100 ? feePct : 10;
+          
+          const selectedLandlord = landlords.find((l) => l.id === form.landlord_id);
+          const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(form.landlord_id);
+          const landlordId = isUuid ? form.landlord_id : null;
+          const ownerName = selectedLandlord?.full_name || selectedLandlord?.email || null;
+
+          if (!editing && mode === "manager") {
+            // Use atomic RPC for creation to ensure consistency and multi-tenancy validation
+            const { data: newId, error } = await supabase.rpc('create_property_atomic', {
+              p_nickname: form.nickname,
+              p_address: form.address,
+              p_city: form.city || null,
+              p_state: form.state || null,
+              p_zip_code: form.zip_code || null,
+              p_property_type: form.type,
+              p_landlord_id: landlordId,
+              p_manager_id: user.id,
+              p_default_management_fee: finalFeePct
+            });
+
+            if (error) return toast.error(error.message);
+            
+            // After atomic creation, update additional fields not covered by basic RPC
+            await supabase.from("properties").update({
+              rent_price: parseNumber(form.rent_price),
+              condo_fee: parseNumber(form.condo_fee),
+              iptu: parseNumber(form.iptu),
+              status: form.status as Property["status"],
+              notes: form.notes || null,
+              tipo_transacao: form.tipo_transacao,
+              valor_aluguel: isSale ? null : (form.valor_aluguel ? parseNumber(form.valor_aluguel) : null),
+              valor_venda: isSale ? (form.valor_venda ? parseNumber(form.valor_venda) : null) : null,
+              area_total: form.area_total ? parseNumber(form.area_total) : null,
+              owner_name: ownerName,
+              responsible_member_id: form.responsible_member_id || null,
+              bedrooms: Number(form.bedrooms) || 0,
+              bathrooms: Number(form.bathrooms) || 0,
+              garages: Number(form.garages) || 0,
+            }).eq("id", newId);
+          } else {
+            // Standard insert/update for other cases or legacy compatibility
+            const payload: any = {
+              user_id: user.id,
+              nickname: form.nickname,
+              address: form.address,
+              city: form.city || null,
+              state: form.state || null,
+              zip_code: form.zip_code || null,
+              type: form.type as Property["type"],
+              rent_price: parseNumber(form.rent_price),
+              condo_fee: parseNumber(form.condo_fee),
+              iptu: parseNumber(form.iptu),
+              status: form.status as Property["status"],
+              notes: form.notes || null,
+              tipo_transacao: form.tipo_transacao,
+              valor_aluguel: isSale ? null : (form.valor_aluguel ? parseNumber(form.valor_aluguel) : null),
+              valor_venda: isSale ? (form.valor_venda ? parseNumber(form.valor_venda) : null) : null,
+              publish_imovelweb: indisponivel || !imwConnected ? false : form.publish_imovelweb,
+              publish_zap: indisponivel || !zapConnected ? false : form.publish_zap,
+              bedrooms: Number(form.bedrooms) || 0,
+              bathrooms: Number(form.bathrooms) || 0,
+              garages: Number(form.garages) || 0,
+              area_total: form.area_total ? parseNumber(form.area_total) : null,
+            };
+            if (mode === "manager") {
+              payload.manager_id = user.id;
+              payload.landlord_id = landlordId;
+              payload.owner_name = ownerName;
+              payload.responsible_member_id = form.responsible_member_id || null;
+              payload.default_management_fee_percent = finalFeePct;
+            }
+            const { error } = editing
+              ? await supabase.from("properties").update(payload).eq("id", editing.id)
+              : await supabase.from("properties").insert(payload);
+            if (error) return toast.error(error.message);
           }
-          const { error } = editing
-            ? await supabase.from("properties").update(payload).eq("id", editing.id)
-            : await supabase.from("properties").insert(payload);
-          if (error) return toast.error(error.message);
           toast.success(editing ? "Imóvel atualizado" : "Imóvel cadastrado");
           invalidate(invalidateKeys ?? ["properties"]);
           onDone();

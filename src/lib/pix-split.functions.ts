@@ -81,7 +81,20 @@ export const generateTripleSplitPix = createServerFn({ method: "POST" })
       const { data: inst, error } = await supabaseAdmin
         .from("installments")
         .select(
-          "id, amount, due_date, status, contract_id, contract:contracts(id, user_id, tenant:tenants(id, full_name, document), property:properties(id, landlord_id, default_management_fee_percent))",
+          `
+          id, 
+          amount, 
+          due_date, 
+          status, 
+          contract_id, 
+          contract:contracts(
+            id, 
+            user_id, 
+            active,
+            tenant:tenants(id, full_name, document), 
+            property:properties(id, landlord_id, user_id, default_management_fee_percent)
+          )
+          `
         )
         .eq("id", data.installmentId)
         .maybeSingle();
@@ -92,9 +105,19 @@ export const generateTripleSplitPix = createServerFn({ method: "POST" })
       }
 
       const contract = (inst as any).contract;
+      if (!contract?.active) {
+        return { ok: false, error: "Contrato inativo ou inválido." };
+      }
+
       const property = contract?.property;
       const tenant = contract?.tenant;
       const managerUserId = contract?.user_id;
+
+      // Cross-check: o imóvel pertence ao mesmo manager do contrato?
+      if (property?.user_id !== managerUserId) {
+         return { ok: false, error: "Inconsistência de propriedade detectada." };
+      }
+
       const landlordId: string | null = property?.landlord_id ?? null;
       const pct = Number(property?.default_management_fee_percent ?? 10);
 

@@ -129,9 +129,13 @@ function CadastroLandlordPage() {
       await supabase.auth.signOut().catch(() => {});
       setSuccess(true);
     } catch (err: any) {
+      if (err?.message?.includes("User already registered") || err?.code === "23505") {
+        toast.error("Este e-mail já está cadastrado. Tente fazer login.");
+      } else {
+        toast.error(err?.message || "Erro no cadastro.");
+      }
       captchaRef.current?.reset();
       setCaptchaToken(null);
-      toast.error(err?.message || "Erro no cadastro.");
     } finally {
       setSubmitting(false);
     }

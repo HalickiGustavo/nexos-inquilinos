@@ -22,18 +22,17 @@ const LogEventSchema = z.object({
 export const logSystemEvent = createServerFn({ method: "POST" })
   .inputValidator((data) => LogEventSchema.parse(data))
   .handler(async ({ data }) => {
-    // We use dynamic types to bypass initial TS strictness before types are re-generated
     const { error } = await (supabase.from('system_health_logs' as any) as any).insert({
       event_type: data.eventType,
       severity: data.severity,
       service: data.service,
-      endpoint: data.endpoint,
-      error_message: data.errorMessage,
-      error_code: data.errorCode,
-      stack_trace: data.stackTrace,
+      endpoint: data.endpoint || null,
+      error_message: data.errorMessage || null,
+      error_code: data.errorCode || null,
+      stack_trace: data.stackTrace || null,
       metadata: data.metadata || {},
-      tenant_id: data.tenantId,
-      user_id: data.userId,
+      tenant_id: data.tenantId || null,
+      user_id: data.userId || null,
       status: 'detected'
     });
 
@@ -54,8 +53,8 @@ export const getSystemStatus = createServerFn({ method: "GET" })
     ]);
 
     return {
-      logs: logs.data || [],
-      criticalIncidentsCount: activeIncidents.count || 0,
+      logs: (logs.data as any[]) || [],
+      criticalIncidentsCount: (activeIncidents.count as number) || 0,
       timestamp: new Date().toISOString()
     };
   });

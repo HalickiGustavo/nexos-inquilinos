@@ -30,7 +30,15 @@ function LandlordLayout() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!loading && !user) navigate({ to: "/login", replace: true });
+    if (!loading && !user) {
+      navigate({ to: "/login", replace: true });
+      return;
+    }
+
+    // Strict requirement: email must be confirmed
+    if (user && !user.email_confirmed_at) {
+      navigate({ to: "/login", replace: true });
+    }
   }, [user, loading, navigate]);
 
   useEffect(() => {

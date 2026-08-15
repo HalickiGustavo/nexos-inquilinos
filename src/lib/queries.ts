@@ -12,33 +12,57 @@ export type Maintenance = Tables["maintenances"]["Row"];
 // NOTE: select('*') intencional para preservar tipos gerados; ganhos de perf vêm de
 // staleTime (60s default), gcTime e limites server-side abaixo.
 
-export function useProperties() {
+export function useProperties(page = 0, pageSize = 20, search = "", status = "") {
   return useQuery({
-    queryKey: ["properties"],
+    queryKey: ["properties", page, pageSize, search, status],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("properties")
-        .select("*")
+        .select("*", { count: "exact" });
+      
+      if (search) {
+        query = query.or(`nickname.ilike.%${search}%,address.ilike.%${search}%`);
+      }
+      
+      if (status && status !== "all") {
+        query = query.eq("status", status);
+      }
+
+      const from = page * pageSize;
+      const to = from + pageSize - 1;
+
+      const { data, error, count } = await query
         .order("created_at", { ascending: false })
-        .limit(500);
+        .range(from, to);
+        
       if (error) throw error;
-      return data;
+      return { data, count };
     },
   });
 }
 
-export function useTenants() {
+export function useTenants(page = 0, pageSize = 20, search = "") {
   return useQuery({
-    queryKey: ["tenants"],
+    queryKey: ["tenants", page, pageSize, search],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("tenants")
-        .select("*")
-        .is("deleted_at", null)
+        .select("*", { count: "exact" })
+        .is("deleted_at", null);
+      
+      if (search) {
+        query = query.or(`full_name.ilike.%${search}%,email.ilike.%${search}%,document.ilike.%${search}%`);
+      }
+
+      const from = page * pageSize;
+      const to = from + pageSize - 1;
+
+      const { data, error, count } = await query
         .order("created_at", { ascending: false })
-        .limit(500);
+        .range(from, to);
+        
       if (error) throw error;
-      return data;
+      return { data, count };
     },
   });
 }
@@ -59,21 +83,33 @@ export function useContracts() {
   });
 }
 
-export function useInstallments() {
+export function useInstallments(page = 0, pageSize = 20, status = "", fromDate = "", toDate = "") {
   return useQuery({
-    queryKey: ["installments"],
+    queryKey: ["installments", page, pageSize, status, fromDate, toDate],
     queryFn: async () => {
-      // Projeção enxuta: só os campos do contrato/imóvel/inquilino que a UI realmente consome.
-      // Antes: contract:contracts(*, property:properties(*), tenant:tenants(*)) — payload muito pesado.
-      const { data, error } = await supabase
+      let query = supabase
         .from("installments")
         .select(
           "*, contract:contracts(id, property_id, late_fee_percent, daily_interest_percent, property:properties(id, nickname, address), tenant:tenants(id, full_name))",
-        )
+          { count: "exact" }
+        );
+      
+      if (status && status !== "todos") {
+        query = query.eq("status", status);
+      }
+      
+      if (fromDate) query = query.gte("due_date", fromDate);
+      if (toDate) query = query.lte("due_date", toDate);
+
+      const from = page * pageSize;
+      const to = from + pageSize - 1;
+
+      const { data, error, count } = await query
         .order("due_date", { ascending: true })
-        .limit(1000);
+        .range(from, to);
+        
       if (error) throw error;
-      return data;
+      return { data, count };
     },
   });
 }

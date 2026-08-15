@@ -225,14 +225,41 @@ export async function enqueueSplitForInstallment(installmentId: string, paidAmou
   const { data: inst } = await supabaseAdmin
     .from("installments")
     .select(
-      "id, contract_id, user_id, contract:contracts(id, user_id, property:properties(id, landlord_id, default_management_fee_percent))",
+      `
+      id, 
+      contract_id, 
+      user_id, 
+      contract:contracts(
+        id, 
+        user_id, 
+        active,
+        property:properties(
+          id, 
+          landlord_id, 
+          user_id,
+          default_management_fee_percent
+        )
+      )
+      `
     )
     .eq("id", installmentId)
     .maybeSingle();
+
   if (!inst) return;
 
   const contract = (inst as any).contract;
   const property = contract?.property;
+  
+  // Cross-check: o imóvel pertence ao mesmo manager do contrato?
+  if (property?.user_id !== contract?.user_id) {
+    console.error("[efi-split] Inconsistência grave: imóvel/contrato de managers diferentes", { 
+      installmentId, 
+      propertyManager: property?.user_id, 
+      contractManager: contract?.user_id 
+    });
+    return;
+  }
+
   const managerUserId = contract?.user_id ?? (inst as any).user_id;
   const landlordId: string | null = property?.landlord_id ?? null;
   const pct = Number(property?.default_management_fee_percent ?? 10);

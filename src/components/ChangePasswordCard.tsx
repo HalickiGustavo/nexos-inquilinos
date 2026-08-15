@@ -26,7 +26,19 @@ export function ChangePasswordCard() {
     if (!email) return;
 
     if (!current) { toast.error("Informe sua senha atual."); return; }
-    if (next.length < 8) { toast.error("A nova senha deve ter pelo menos 8 caracteres."); return; }
+    
+    // 3/4 password complexity validation
+    const hasLength = next.length >= 8;
+    const hasUpper = /[A-Z]/.test(next);
+    const hasNumber = /\d/.test(next);
+    const hasSpecial = /[^A-Za-z0-9]/.test(next);
+    const score = Number(hasLength) + Number(hasUpper) + Number(hasNumber) + Number(hasSpecial);
+    const isValid = hasLength && score >= 3;
+
+    if (!isValid) { 
+      toast.error("A nova senha deve ter 8+ caracteres e atender 3 dos 4 critérios (Maiúscula, Número, Símbolo)."); 
+      return; 
+    }
     if (next !== confirm) { toast.error("A confirmação não confere com a nova senha."); return; }
     if (next === current) { toast.error("A nova senha deve ser diferente da atual."); return; }
 

@@ -9,9 +9,6 @@ export type Contract = Tables["contracts"]["Row"];
 export type Installment = Tables["installments"]["Row"];
 export type Maintenance = Tables["maintenances"]["Row"];
 
-// NOTE: select('*') intencional para preservar tipos gerados; ganhos de perf vêm de
-// staleTime (60s default), gcTime e limites server-side abaixo.
-
 export function useProperties(options?: { limit?: number; offset?: number; search?: string }) {
   return useQuery({
     queryKey: ["properties", options],
@@ -80,8 +77,6 @@ export function useContracts(options?: { active?: boolean; search?: string; limi
       }
       
       if (options?.search) {
-        // Buscamos em campos relacionados via filtro customizado se necessário, 
-        // ou simplificamos para campos diretos se a performance for crítica.
         query = query.or(`notes.ilike.%${options.search}%`);
       }
 
@@ -98,7 +93,7 @@ export function useContracts(options?: { active?: boolean; search?: string; limi
   });
 }
 
-export function useInstallments(options?: { status?: string; contractId?: string; from?: string; to?: string; limit?: number; offset?: number }) {
+export function useInstallments(options?: { status?: Database["public"]["Enums"]["installment_status"]; contractId?: string; from?: string; to?: string; limit?: number; offset?: number }) {
   return useQuery({
     queryKey: ["installments", options],
     queryFn: async () => {
@@ -109,7 +104,7 @@ export function useInstallments(options?: { status?: string; contractId?: string
         )
         .order("due_date", { ascending: true });
       
-      if (options?.status && options.status !== "todos") {
+      if (options?.status) {
         query = query.eq("status", options.status);
       }
       if (options?.contractId) {
@@ -135,7 +130,7 @@ export function useInstallments(options?: { status?: string; contractId?: string
   });
 }
 
-export function useMaintenances(options?: { status?: string; limit?: number; offset?: number }) {
+export function useMaintenances(options?: { status?: Database["public"]["Enums"]["maintenance_status"]; limit?: number; offset?: number }) {
   return useQuery({
     queryKey: ["maintenances", options],
     queryFn: async () => {
@@ -162,9 +157,6 @@ export function useMaintenances(options?: { status?: string; limit?: number; off
     },
   });
 }
-
-
-
 
 export function useInvalidate() {
   const qc = useQueryClient();

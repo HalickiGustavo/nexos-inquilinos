@@ -14,6 +14,7 @@ import {
   BarChart3,
   UserCog,
 } from "lucide-react";
+import { toast } from "sonner";
 import { useAuth } from "@/lib/auth";
 import { useUserRole } from "@/lib/useUserRole";
 import { AppShell, type ShellNavGroup } from "@/components/shell/AppShell";

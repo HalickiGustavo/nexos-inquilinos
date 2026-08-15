@@ -2325,6 +2325,20 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      create_property_atomic: {
+        Args: {
+          p_address: string
+          p_city: string
+          p_default_management_fee?: number
+          p_landlord_id: string
+          p_manager_id: string
+          p_nickname: string
+          p_property_type: string
+          p_state: string
+          p_zip_code: string
+        }
+        Returns: string
+      }
       current_landlord_id: { Args: never; Returns: string }
       current_manager_id: { Args: never; Returns: string }
       current_tenant_id: { Args: never; Returns: string }
@@ -2354,6 +2368,7 @@ export type Database = {
         Args: { _property_id: string }
         Returns: boolean
       }
+      is_email_confirmed: { Args: never; Returns: boolean }
       move_to_dlq: {
         Args: {
           dlq_name: string

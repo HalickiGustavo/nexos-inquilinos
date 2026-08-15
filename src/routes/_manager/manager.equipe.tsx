@@ -128,7 +128,7 @@ function Equipe() {
                       toast.success("Link copiado");
                     }}><Copy className="size-3.5 mr-1" /> Link</Button>
                   )}
-                  <Button size="sm" variant="ghost" onClick={() => removeMember(m.id)}>Remover</Button>
+                  <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => removeMember(m.id)}>Remover</Button>
                 </TableCell>
               </TableRow>
             ))}

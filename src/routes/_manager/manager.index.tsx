@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery, useQueries } from "@tanstack/react-query";
+import { useQuery, useQueries, useQueryClient } from "@tanstack/react-query";
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import {
   ArrowDownRight, ArrowUpRight, ArrowRight, AlertTriangle, Bell, Building2, Calendar,
@@ -53,7 +53,18 @@ const greeting = () => {
 /* ---------- component ---------- */
 function ManagerDashboard() {
   const { user } = useAuth();
+  const qc = useQueryClient();
   const [range, setRange] = useState<RangeKey>("30d");
+
+  useEffect(() => {
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on('postgres_changes', { event: '*', schema: 'public' }, () => {
+        qc.invalidateQueries({ queryKey: ["mgr-dash"] });
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [qc]);
 
   const monthStart = iso(startOfMonth());
   const monthEnd = iso(endOfMonth());
@@ -397,7 +408,7 @@ function ManagerDashboard() {
             </div>
             <div className="flex items-center gap-2 ml-2">
               <div className="bg-[#7C3AED] hover:bg-[#6D28D9] size-10 rounded-xl text-white font-bold grid place-items-center shadow-sm cursor-pointer transition-colors">
-                {qProfile.data?.full_name?.charAt(0) || "M"}
+                {qProfile.data?.full_name?.charAt(0) || "N"}
               </div>
             </div>
           </div>

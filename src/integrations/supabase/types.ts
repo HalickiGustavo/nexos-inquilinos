@@ -2118,6 +2118,99 @@ export type Database = {
         }
         Relationships: []
       }
+      system_alert_rules: {
+        Row: {
+          channels: string[] | null
+          created_at: string | null
+          event_type: string
+          id: string
+          is_active: boolean | null
+          name: string
+          severity: Database["public"]["Enums"]["system_health_severity"]
+          threshold: number
+          time_window_minutes: number
+        }
+        Insert: {
+          channels?: string[] | null
+          created_at?: string | null
+          event_type: string
+          id?: string
+          is_active?: boolean | null
+          name: string
+          severity: Database["public"]["Enums"]["system_health_severity"]
+          threshold: number
+          time_window_minutes: number
+        }
+        Update: {
+          channels?: string[] | null
+          created_at?: string | null
+          event_type?: string
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          severity?: Database["public"]["Enums"]["system_health_severity"]
+          threshold?: number
+          time_window_minutes?: number
+        }
+        Relationships: []
+      }
+      system_health_logs: {
+        Row: {
+          created_at: string | null
+          endpoint: string | null
+          error_code: string | null
+          error_message: string | null
+          event_type: string
+          id: string
+          metadata: Json | null
+          occurrence_count: number | null
+          resolved_at: string | null
+          service: string
+          severity: Database["public"]["Enums"]["system_health_severity"]
+          stack_trace: string | null
+          status: Database["public"]["Enums"]["incident_status"]
+          tenant_id: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          endpoint?: string | null
+          error_code?: string | null
+          error_message?: string | null
+          event_type: string
+          id?: string
+          metadata?: Json | null
+          occurrence_count?: number | null
+          resolved_at?: string | null
+          service: string
+          severity?: Database["public"]["Enums"]["system_health_severity"]
+          stack_trace?: string | null
+          status?: Database["public"]["Enums"]["incident_status"]
+          tenant_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          endpoint?: string | null
+          error_code?: string | null
+          error_message?: string | null
+          event_type?: string
+          id?: string
+          metadata?: Json | null
+          occurrence_count?: number | null
+          resolved_at?: string | null
+          service?: string
+          severity?: Database["public"]["Enums"]["system_health_severity"]
+          stack_trace?: string | null
+          status?: Database["public"]["Enums"]["incident_status"]
+          tenant_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       tenants: {
         Row: {
           created_at: string
@@ -2293,6 +2386,7 @@ export type Database = {
     }
     Enums: {
       app_role: "owner" | "tenant" | "manager" | "landlord" | "platform_admin"
+      incident_status: "detected" | "investigating" | "mitigated" | "resolved"
       inspection_condition: "otimo" | "bom" | "regular" | "ruim"
       inspection_kind: "entrada" | "saida" | "preventiva" | "extraordinaria"
       inspection_status: "rascunho" | "assinada"
@@ -2317,6 +2411,7 @@ export type Database = {
         | "expired"
         | "canceled"
         | "failed"
+      system_health_severity: "info" | "warning" | "error" | "critical"
       transaction_type: "Aluguel" | "Venda"
     }
     CompositeTypes: {
@@ -2446,6 +2541,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["owner", "tenant", "manager", "landlord", "platform_admin"],
+      incident_status: ["detected", "investigating", "mitigated", "resolved"],
       inspection_condition: ["otimo", "bom", "regular", "ruim"],
       inspection_kind: ["entrada", "saida", "preventiva", "extraordinaria"],
       inspection_status: ["rascunho", "assinada"],
@@ -2466,6 +2562,7 @@ export const Constants = {
       readjustment_index: ["IGP-M", "IPCA", "INCC", "nenhum"],
       stark_charge_kind: ["pix", "boleto", "pix_boleto"],
       stark_charge_status: ["created", "paid", "expired", "canceled", "failed"],
+      system_health_severity: ["info", "warning", "error", "critical"],
       transaction_type: ["Aluguel", "Venda"],
     },
   },

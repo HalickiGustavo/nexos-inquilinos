@@ -20,6 +20,7 @@ import { SplitBreakdownDialog, NEXO_FEE_PER_INSTALLMENT } from "@/components/Spl
 import { parseExpenses, expensesTotals } from "@/lib/variable-expenses";
 import { generateAsaasCharge, updateAsaasChargeFee } from "@/lib/asaas.functions";
 import { PageHeader, PageShell } from "@/components/PageHeader";
+import { useConfirm } from "@/components/ui/confirm";
 
 export const Route = createFileRoute("/_manager/manager/financeiro")({
   component: Financeiro,
@@ -46,6 +47,7 @@ function Financeiro() {
 
 function Recebimentos() {
   const qc = useQueryClient();
+  const confirm = useConfirm();
   const [statusF, setStatusF] = useState("todos");
   const [from, setFrom] = useState("");
   const [expensesFor, setExpensesFor] = useState<any | null>(null);
@@ -99,6 +101,14 @@ function Recebimentos() {
   };
 
   const markAsPaid = async (i: any) => {
+    const ok = await confirm({
+      title: "Confirmar pagamento manual?",
+      description: `Deseja marcar esta parcela com vencimento em ${formatDate(i.due_date)} como paga? Esta ação registrará o recebimento integral na plataforma.`,
+      confirmLabel: "Confirmar pagamento",
+      tone: "info",
+    });
+    if (!ok) return;
+
     const exps = parseExpenses(i.variable_expenses);
     const t = expensesTotals(exps);
     const due = Number(i.amount) + t.tenant;
@@ -301,6 +311,7 @@ function Recebimentos() {
 
 function Repasses() {
   const qc = useQueryClient();
+  const confirm = useConfirm();
   const q = useQuery({
     queryKey: ["mgr-repasses"],
     queryFn: async () => {
@@ -314,6 +325,13 @@ function Repasses() {
   });
 
   const confirmRepasse = async (id: string) => {
+    const ok = await confirm({
+      title: "Confirmar repasse ao proprietário?",
+      description: "Você está confirmando que o valor já foi enviado para a conta do proprietário. Esta ação atualizará o status financeiro da parcela.",
+      confirmLabel: "Confirmar repasse",
+      tone: "info",
+    });
+    if (!ok) return;
     const { error } = await supabase.from("installments").update({ payout_status: "repassado", payout_date: new Date().toISOString() } as any).eq("id", id);
     if (error) { toast.error(error.message); return; }
     toast.success("Repasse confirmado");
@@ -378,6 +396,7 @@ function Repasses() {
 
 function GenerateBoletoBtn({ installment, onDone }: { installment: any; onDone: () => void }) {
   const generate = useServerFn(generateAsaasCharge);
+  const confirm = useConfirm();
   const [loading, setLoading] = useState(false);
   return (
     <Button
@@ -385,6 +404,13 @@ function GenerateBoletoBtn({ installment, onDone }: { installment: any; onDone: 
       variant="secondary"
       disabled={loading}
       onClick={async () => {
+        const ok = await confirm({
+          title: "Gerar novo boleto/Pix?",
+          description: "Um novo registro de cobrança será criado no gateway de pagamento (Asaas).",
+          confirmLabel: "Gerar cobrança",
+          tone: "info",
+        });
+        if (!ok) return;
         setLoading(true);
         try {
           const res: any = await generate({ data: { installmentId: installment.id, billingType: "UNDEFINED" } });
@@ -416,6 +442,7 @@ function GenerateBoletoBtn({ installment, onDone }: { installment: any; onDone: 
 
 function UpdateBoletoBtn({ installment, onDone }: { installment: any; onDone: () => void }) {
   const update = useServerFn(updateAsaasChargeFee);
+  const confirm = useConfirm();
   const [loading, setLoading] = useState(false);
   return (
     <Button
@@ -424,6 +451,13 @@ function UpdateBoletoBtn({ installment, onDone }: { installment: any; onDone: ()
       disabled={loading}
       title="Atualizar valor do boleto incluindo taxa NEXO"
       onClick={async () => {
+        const ok = await confirm({
+          title: "Atualizar taxa NEXO no boleto?",
+          description: "O valor da cobrança atual será recalculado incluindo a taxa de serviço digital.",
+          confirmLabel: "Atualizar valor",
+          tone: "info",
+        });
+        if (!ok) return;
         setLoading(true);
         try {
           await update({ data: { installmentId: installment.id } });

@@ -27,8 +27,9 @@ function waLink(phone: string, message?: string) {
 }
 
 export function TenantsManagement() {
-  const { data: tenants = [], isLoading } = useTenants();
-  const { data: installments = [] } = useInstallments();
+  const [search, setSearch] = useState("");
+  const { data: tenants = [], isLoading } = useTenants({ search, limit: 100 });
+  const { data: installments = [] } = useInstallments({ limit: 500 });
   const invalidate = useInvalidate();
   const softDelete = useServerFn(softDeleteTenant);
   const confirm = useConfirm();

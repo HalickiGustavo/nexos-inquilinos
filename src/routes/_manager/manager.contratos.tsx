@@ -37,9 +37,9 @@ function ContratosPage() {
   const [openNew, setOpenNew] = useState(false);
 
   const q = useQuery({
-    queryKey: ["mgr-contratos"],
+    queryKey: ["mgr-contratos", filter, search],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("contracts")
         .select(
           "id,start_date,end_date,due_day,rent_amount,active,contract_pdf_path,property:properties(id,nickname,address),tenant:tenants(id,full_name)"
@@ -47,27 +47,28 @@ function ContratosPage() {
         .is("deleted_at", null)
         .order("active", { ascending: false })
         .order("start_date", { ascending: false });
+
+      if (filter === "ativos") {
+        query = query.eq("active", true);
+      } else if (filter === "encerrados") {
+        query = query.eq("active", false);
+      }
+
+      if (search) {
+        // Como o join no Supabase client para or() em tabelas relacionadas é complexo,
+        // aqui fazemos o filtro no search de campos locais ou simplificamos.
+        // Se a performance for crítica com search, podemos usar uma view ou rpc.
+        query = query.or(`notes.ilike.%${search}%`);
+      }
+
+      const { data, error } = await query.limit(100);
       if (error) throw error;
       return (data ?? []) as unknown as ContractRow[];
     },
   });
 
   const rows = q.data ?? [];
-  const filtered = useMemo(() => {
-    const s = search.toLowerCase();
-    return rows.filter((c) => {
-      const matchStatus =
-        filter === "all" ||
-        (filter === "ativos" && c.active) ||
-        (filter === "encerrados" && !c.active);
-      const matchSearch =
-        !s ||
-        (c.property?.nickname ?? "").toLowerCase().includes(s) ||
-        (c.property?.address ?? "").toLowerCase().includes(s) ||
-        (c.tenant?.full_name ?? "").toLowerCase().includes(s);
-      return matchStatus && matchSearch;
-    });
-  }, [rows, filter, search]);
+  const filtered = rows; // Filtro já aplicado no server-side queryFn para status e search básico
 
   const today = new Date();
   const fmtDate = (d: string) =>

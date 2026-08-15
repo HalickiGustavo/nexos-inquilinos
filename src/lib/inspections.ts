@@ -42,14 +42,24 @@ export function parseRooms(value: unknown): InspectionRoom[] {
   return value.filter((r): r is InspectionRoom => !!r && typeof r === "object" && "name" in r);
 }
 
-export function useInspections() {
+export function useInspections(options?: { limit?: number; offset?: number }) {
   return useQuery({
-    queryKey: ["inspections"],
+    queryKey: ["inspections", options],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("inspections")
         .select("*, contract:contracts(*, property:properties(nickname, address), tenant:tenants(full_name))")
         .order("created_at", { ascending: false });
+
+      if (options?.limit) {
+        const from = options.offset || 0;
+        const to = from + options.limit - 1;
+        query = query.range(from, to);
+      } else {
+        query = query.limit(100);
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
       return data ?? [];
     },

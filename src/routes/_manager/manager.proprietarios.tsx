@@ -40,7 +40,8 @@ function ManagerProprietariosPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("landlord_invites").select("*")
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })
+        .limit(100);
       if (error) throw error;
       return data ?? [];
     },

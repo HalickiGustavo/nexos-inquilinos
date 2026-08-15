@@ -48,7 +48,7 @@ export const Route = createFileRoute("/_manager/manager/vistorias")({
 });
 
 function VistoriasPage() {
-  const { data: inspections = [], isLoading } = useInspections();
+  const { data: inspections = [], isLoading } = useInspections(); // useInspections já tem limit(100) planejado
   const [open, setOpen] = useState(false);
   useEffect(() => {
     if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("novo")) {

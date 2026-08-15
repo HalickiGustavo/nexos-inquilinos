@@ -67,23 +67,7 @@ export async function confirmEfiChargePaid(args: {
 }) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-  // 1) Cross-check na Efí — status deve ser CONCLUIDA e valor.original bate
-  let confirmedAmount = args.paidAmount ?? 0;
-  try {
-    const cob: any = await efiCobGet(args.txid);
-    if (cob?.status && cob.status !== "CONCLUIDA") {
-      console.warn("[efi-webhook] cob not CONCLUIDA yet", args.txid, cob.status);
-      // Alguns eventos chegam antes do status virar CONCLUIDA. Confiamos no
-      // valor recebido no webhook + presença de endToEndId como evidência.
-      if (!args.endToEndId) return;
-    }
-    const original = Number(cob?.valor?.original ?? 0);
-    if (original > 0 && !confirmedAmount) confirmedAmount = original;
-  } catch (e) {
-    console.warn("[efi-webhook] cob_get failed, continuing with webhook data", e);
-  }
-
-  // 2) Localiza cobrança PIX no banco (kind='pix' — nunca colide com boleto)
+  // 1) Localiza cobrança PIX no banco (kind='pix')
   const { data: charge } = await supabaseAdmin
     .from("efi_charges" as any)
     .select("id, installment_id, amount, status, manager_user_id, kind")
@@ -96,21 +80,55 @@ export async function confirmEfiChargePaid(args: {
     return;
   }
 
-  if ((charge as any).status === "paid") {
-    // já processado — idempotência
+  if ((charge as any).status === "paid") return;
+
+  const installmentId = (charge as any).installment_id as string;
+  const expectedAmount = Number((charge as any).amount);
+
+  // 2) Cross-check na Efí
+  let confirmedAmount = args.paidAmount ?? 0;
+  try {
+    const cob: any = await efiCobGet(args.txid);
+    if (cob?.status && cob.status !== "CONCLUIDA") {
+      console.warn("[efi-webhook] cob not CONCLUIDA yet", args.txid, cob.status);
+      if (!args.endToEndId) return;
+    }
+    const original = Number(cob?.valor?.original ?? 0);
+    if (original > 0) confirmedAmount = original;
+  } catch (e) {
+    console.warn("[efi-webhook] cob_get failed, using webhook data", e);
+  }
+
+  const finalAmount = confirmedAmount || expectedAmount;
+
+  // 3) Validação de integridade de valores
+  // Se houver diferença de mais de 0.01 entre o esperado e o recebido
+  if (Math.abs(finalAmount - expectedAmount) > 0.01) {
+    console.error("[efi-webhook] value divergence", { txid: args.txid, expected: expectedAmount, received: finalAmount });
+    
+    await supabaseAdmin
+      .from("efi_charges" as any)
+      .update({
+        status: "divergent",
+        raw: { error: "Valor divergente", expected: expectedAmount, received: finalAmount, endToEndId: args.endToEndId } as any,
+      } as any)
+      .eq("id", (charge as any).id);
+
+    await supabaseAdmin
+      .from("installments")
+      .update({ status: "divergente" as any } as any)
+      .eq("id", installmentId);
+    
     return;
   }
 
-  const installmentId = (charge as any).installment_id as string;
-  const amount = confirmedAmount || Number((charge as any).amount);
-
-  // 3) Marca cobrança e parcela como pagas
+  // 4) Marca cobrança e parcela como pagas
   await supabaseAdmin
     .from("efi_charges" as any)
     .update({
       status: "paid",
       paid_at: new Date().toISOString(),
-      raw: { endToEndId: args.endToEndId, paidAmount: amount } as any,
+      raw: { endToEndId: args.endToEndId, paidAmount: finalAmount } as any,
     } as any)
     .eq("id", (charge as any).id);
 
@@ -125,14 +143,14 @@ export async function confirmEfiChargePaid(args: {
       .from("installments")
       .update({
         status: "pago",
-        paid_amount: amount,
+        paid_amount: finalAmount,
         payment_date: new Date().toISOString().slice(0, 10),
       } as any)
       .eq("id", installmentId);
   }
 
-  // 4) Calcula split e enfileira repasses (idempotente via external_id UNIQUE)
-  await enqueueSplitForInstallment(installmentId, amount);
+  // 5) Calcula split e enfileira repasses (usando a fonte confiável do banco)
+  await enqueueSplitForInstallment(installmentId, finalAmount);
 }
 
 /** Confirma pagamento de um BOLETO Efí (identificador = charge_id numérico).

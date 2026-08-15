@@ -179,7 +179,7 @@ function LandlordDashboard() {
           {greeting()}{firstName ? `, ${firstName}` : ""}.
         </h1>
         <p className="mt-3 text-base sm:text-lg text-muted-foreground leading-relaxed max-w-3xl">
-          Sua operação 2.0 está ativa: você recebeu <strong className="text-foreground font-semibold">{formatBRL(s.received)}</strong> este mês com liquidação automática.
+          Sua operação está ativa: você recebeu <strong className="text-foreground font-semibold">{formatBRL(s.received)}</strong> este mês com liquidação automática.
           tem <strong className="text-foreground font-semibold">{formatBRL(s.pending)}</strong> a receber
           {s.overdue > 0 ? (
             <> e <strong className="text-destructive font-semibold">{formatBRL(s.overdue)}</strong> em atraso</>

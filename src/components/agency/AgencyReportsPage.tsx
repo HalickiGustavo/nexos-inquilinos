@@ -59,7 +59,7 @@ export function AgencyReportsPage() {
       const pInstallments = filtered.filter(i => i.contract?.property?.id === p.id && i.status === 'pago');
       const revenue = pInstallments.reduce((s: number, i: any) => s + Number(i.paid_amount || 0), 0);
       return { nickname: p.nickname, revenue };
-    }).sort((a, b) => b.revenue - a.revenue).slice(0, 5);
+    }).sort((a: any, b: any) => b.revenue - a.revenue).slice(0, 5);
 
     const arrears = filtered.filter(i => i.status === 'atrasado').map(i => ({
       tenant: i.contract?.tenant?.full_name || "N/A",
@@ -140,7 +140,7 @@ export function AgencyReportsPage() {
         <MetricCard icon={Wallet} label="Receita Recebida" value={formatBRL(metrics.totalRecebido)} tone="emerald" />
         <MetricCard icon={AlertCircle} label="Pendente/Atrasado" value={formatBRL(metrics.totalPendente)} tone="amber" />
         <MetricCard icon={Users} label="Total Repasses" value={formatBRL(totalRepasses)} tone="indigo" />
-        <MetricCard icon={TrendingUp} label="Taxa Ocupação" value={`${properties.length > 0 ? Math.round((properties.filter((p:any)=>p.status==='alugado').length / properties.length)*100) : 0}%`} />
+        <MetricCard icon={TrendingUp} label="Taxa Ocupação" value={`${properties.length > 0 ? Math.round((properties.filter((p: any) => p.status === 'alugado').length / properties.length) * 100) : 0}%`} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

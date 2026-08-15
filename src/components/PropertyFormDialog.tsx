@@ -230,14 +230,14 @@ export function PropertyFormDialog({
               p_state: form.state || null,
               p_zip_code: form.zip_code || null,
               p_property_type: form.type,
-              p_landlord_id: landlordId,
+              p_landlord_id: landlordId!,
               p_manager_id: user.id,
               p_default_management_fee: finalFeePct
             });
 
             if (error) return toast.error(error.message);
             
-            // After atomic creation, update additional fields not covered by basic RPC
+            const propertyId = newId as string;
             await supabase.from("properties").update({
               rent_price: parseNumber(form.rent_price),
               condo_fee: parseNumber(form.condo_fee),

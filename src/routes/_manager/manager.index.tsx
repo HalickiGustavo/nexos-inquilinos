@@ -387,7 +387,7 @@ function ManagerDashboard() {
             </h1>
 
             <p className="text-[#6B7280] mt-1 text-sm max-w-2xl">
-              Performance operacional NEXO 2.0: sua carteira liquidou {kpis.collected}% dos repasses previstos. {pendencies.approvals > 0 ? `${pendencies.approvals} manutenções aguardam aprovação.` : "Tudo sob controle no ecossistema hoje."}
+              Performance operacional NEXO: sua carteira liquidou {kpis.collected}% dos repasses previstos. {pendencies.approvals > 0 ? `${pendencies.approvals} manutenções aguardam aprovação.` : "Tudo sob controle no ecossistema hoje."}
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -395,14 +395,7 @@ function ManagerDashboard() {
               <Calendar className="size-4 text-[#9CA3AF]" />
               {new Date().toLocaleDateString("pt-BR", { weekday: 'short', day: '2-digit', month: 'long' })}
             </div>
-            <Button className="bg-[#7C3AED] hover:bg-[#6D28D9] text-white rounded-xl px-4 py-2 h-auto text-sm font-semibold shadow-sm flex items-center gap-2">
-              <PlusCircleIcon className="size-4" /> Nova cobrança
-            </Button>
             <div className="flex items-center gap-2 ml-2">
-              <div className="text-right hidden sm:block">
-                <div className="text-sm font-bold text-[#1A1A1A] leading-tight">{qProfile.data?.full_name || "Marina Alves"}</div>
-                <div className="text-[10px] text-[#9CA3AF] uppercase font-bold tracking-wider leading-tight">Imobiliária Nexo</div>
-              </div>
               <div className="bg-[#7C3AED] hover:bg-[#6D28D9] size-10 rounded-xl text-white font-bold grid place-items-center shadow-sm cursor-pointer transition-colors">
                 {qProfile.data?.full_name?.charAt(0) || "M"}
               </div>

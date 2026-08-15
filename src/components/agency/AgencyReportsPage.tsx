@@ -42,7 +42,7 @@ export function AgencyReportsPage() {
       .filter(i => ['pendente', 'atrasado'].includes(i.status))
       .reduce((s: number, i: any) => s + Number(i.amount || 0), 0);
     
-    const repasses = filtered.filter(i => i.status === 'pago').reduce((acc, i) => {
+    const repasses = filtered.filter(i => i.status === 'pago').reduce((acc: Record<string, number>, i: any) => {
       const fee = Number(i.management_fee_percent ?? 10);
       const paid = Number(i.paid_amount ?? 0);
       const taxa = (paid * fee) / 100;

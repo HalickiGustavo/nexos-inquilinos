@@ -408,7 +408,7 @@ function ManagerDashboard() {
             </div>
             <div className="flex items-center gap-2 ml-2">
               <div className="bg-[#7C3AED] hover:bg-[#6D28D9] size-10 rounded-xl text-white font-bold grid place-items-center shadow-sm cursor-pointer transition-colors">
-                {qProfile.data?.full_name?.charAt(0) || "M"}
+                {qProfile.data?.full_name?.charAt(0) || "N"}
               </div>
             </div>
           </div>

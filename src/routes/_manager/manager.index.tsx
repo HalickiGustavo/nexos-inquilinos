@@ -480,27 +480,23 @@ function ManagerDashboard() {
                 <h3 className="text-base font-bold text-[#1A1A1A]">Atividade</h3>
                 <p className="text-xs text-[#6B7280]">Fluxo de ações.</p>
               </div>
-              <Badge variant="secondary" className="bg-[#F3F4F6] text-[#6B7280] border-none text-[10px] font-bold uppercase tracking-wider">Hoje</Badge>
+              <Badge variant="secondary" className="bg-[#F3F4F6] text-[#6B7280] border-none text-[10px] font-bold uppercase tracking-wider">Recent</Badge>
             </div>
             <div className="space-y-4 mt-2">
-              {activity.paid.length === 0 && activity.contracts.length === 0 && (
+              {buildActivity(activity).length === 0 && (
                 <p className="text-[10px] text-muted-foreground italic">Nenhuma atividade recente encontrada.</p>
               )}
-              {activity.paid.slice(0, 2).map((p: any, idx: number) => (
-                <div key={`paid-${idx}`} className="flex gap-3">
-                  <div className="size-8 rounded-full bg-[#ECFDF5] text-[#10B981] flex items-center justify-center shrink-0"><CheckCircle2 className="size-4" /></div>
-                  <div>
-                    <div className="text-xs font-bold text-[#1A1A1A]">{p.contract?.tenant?.full_name} pagou o aluguel</div>
-                    <div className="text-[10px] text-[#9CA3AF]">Pagamento repassado — {formatDate(p.payment_date)}</div>
+              {buildActivity(activity).slice(0, 5).map((item, idx) => (
+                <div key={idx} className="flex gap-3">
+                  <div className={cn("size-8 rounded-full flex items-center justify-center shrink-0 text-white", item.color)}>
+                    {item.text.includes("Pagamento") ? <Coins className="size-4" /> :
+                     item.text.includes("Contrato") ? <FilePlus className="size-4" /> :
+                     item.text.includes("Manutenção") ? <ClipboardCheck className="size-4" /> :
+                     <UserPlus className="size-4" />}
                   </div>
-                </div>
-              ))}
-              {activity.contracts.slice(0, 2).map((c: any, idx: number) => (
-                <div key={`contract-${idx}`} className="flex gap-3">
-                  <div className="size-8 rounded-full bg-[#F5F3FF] text-[#7C3AED] flex items-center justify-center shrink-0"><PlusCircleIcon className="size-4" /></div>
                   <div>
-                    <div className="text-xs font-bold text-[#1A1A1A]">Novo contrato assinado</div>
-                    <div className="text-[10px] text-[#9CA3AF]">{c.property?.nickname} — {formatDate(c.created_at)}</div>
+                    <div className="text-xs font-bold text-[#1A1A1A] line-clamp-1">{item.text}</div>
+                    <div className="text-[10px] text-[#9CA3AF]">{formatDate(item.at)}</div>
                   </div>
                 </div>
               ))}

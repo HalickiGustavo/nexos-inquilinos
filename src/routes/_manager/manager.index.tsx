@@ -599,12 +599,28 @@ function ManagerDashboard() {
 
           {/* Carteira - próximos vencimentos (Large Table Card) */}
           <Card className="lg:col-span-3 p-6 rounded-2xl border-none shadow-sm space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h3 className="text-lg font-bold text-[#1A1A1A]">Carteira · próximos vencimentos</h3>
                 <p className="text-sm text-[#6B7280]">Listagem de recebimentos futuros.</p>
               </div>
-              <Badge className="bg-[#F5F3FF] text-[#7C3AED] hover:bg-[#F5F3FF] border-none font-bold text-xs px-3 py-1">{counts.contracts || 0} CONTRATOS</Badge>
+              <div className="flex items-center gap-2">
+                <div className="flex bg-[#F3F4F6] p-1 rounded-lg">
+                  {(["all", "today", "7d", "30d"] as const).map((f) => (
+                    <button 
+                      key={f}
+                      onClick={() => setExpirationFilter(f)}
+                      className={cn(
+                        "px-2 py-1 text-[10px] font-bold rounded-md transition-all", 
+                        expirationFilter === f ? "bg-white shadow-sm text-[#7C3AED]" : "text-[#6B7280]"
+                      )}
+                    >
+                      {f === "all" ? "Tudo" : f === "today" ? "Hoje" : f === "7d" ? "7 dias" : "30 dias"}
+                    </button>
+                  ))}
+                </div>
+                <Badge className="bg-[#F5F3FF] text-[#7C3AED] hover:bg-[#F5F3FF] border-none font-bold text-xs px-3 py-1">{counts.contracts || 0} CONTRATOS</Badge>
+              </div>
             </div>
 
             <div className="overflow-x-auto">
@@ -619,7 +635,20 @@ function ManagerDashboard() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#F3F4F6]">
-                  {((overdueList.length > 0 ? overdueList : upcoming).slice(0, 5) as any[]).map((i: any, idx) => (
+                  {(
+                    (overdueList.length > 0 ? [...overdueList, ...upcoming] : upcoming)
+                    .filter(i => {
+                      if (expirationFilter === "all") return true;
+                      const d = new Date(i.due_date);
+                      const t = new Date();
+                      t.setHours(0,0,0,0);
+                      if (expirationFilter === "today") return iso(d) === iso(t);
+                      if (expirationFilter === "7d") return d <= addDays(t, 7);
+                      if (expirationFilter === "30d") return d <= addDays(t, 30);
+                      return true;
+                    })
+                    .slice(0, 5) as any[]
+                  ).map((i: any, idx) => (
                     <tr key={idx} className="group hover:bg-[#F9FAFE] transition-colors">
                       <td className="py-4">
                         <div className="flex items-center gap-2">

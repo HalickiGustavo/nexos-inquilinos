@@ -205,17 +205,23 @@ function ManagerDashboard() {
       {
         queryKey: ["mgr-dash", "activity"],
         queryFn: async () => {
-          const [contracts, paid, maint, leads] = await Promise.all([
+          const [contracts, paid, maint, leads, props, tenants, payouts] = await Promise.all([
             supabase.from("contracts").select("id, created_at, tenant:tenants(full_name), property:properties(nickname)").order("created_at", { ascending: false }).limit(4),
             supabase.from("installments").select("id, paid_amount, payment_date, contract:contracts(tenant:tenants(full_name))").eq("status", "pago").not("payment_date", "is", null).order("payment_date", { ascending: false }).limit(4),
             supabase.from("maintenances").select("id, status, updated_at, description").order("updated_at", { ascending: false }).limit(4),
             supabase.from("crm_leads").select("id, name, created_at, source").order("created_at", { ascending: false }).limit(4),
+            supabase.from("properties").select("id, nickname, created_at").order("created_at", { ascending: false }).limit(4),
+            supabase.from("tenants").select("id, full_name, created_at").order("created_at", { ascending: false }).limit(4),
+            supabase.from("installments").select("id, landlord_payout_amount, landlord_payout_date").eq("landlord_payout_status", "repassado").not("landlord_payout_date", "is", null).order("landlord_payout_date", { ascending: false }).limit(4),
           ]);
           return {
             contracts: contracts.data ?? [],
             paid: paid.data ?? [],
             maint: maint.data ?? [],
             leads: leads.data ?? [],
+            properties: props.data ?? [],
+            tenants: tenants.data ?? [],
+            payouts: payouts.data ?? [],
           };
         },
       },
@@ -374,7 +380,7 @@ function ManagerDashboard() {
   const upcoming = (qUpcoming.data as any[]) ?? [];
   const overdueList = (qOverdue.data as any[]) ?? [];
   const expiring = (qExpiring.data as any[]) ?? [];
-  const activity = (qActivity.data as any) ?? { contracts: [], paid: [], maint: [], leads: [] };
+  const activity = (qActivity.data as any) ?? { contracts: [], paid: [], maint: [], leads: [], properties: [], tenants: [], payouts: [] };
 
   const occupancyRate = counts.properties > 0 ? Math.round((counts.rented / counts.properties) * 100) : 0;
   const availableProperties = Math.max(0, (counts.properties ?? 0) - (counts.rented ?? 0));

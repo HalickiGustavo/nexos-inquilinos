@@ -419,7 +419,9 @@ function ManagerDashboard() {
                 ? `Existem ${overdueList.length} cobranças vencidas que precisam de atenção.` 
                 : pendencies.approvals > 0 
                   ? `${pendencies.approvals} manutenções aguardam aprovação.` 
-                  : "Carteira em dia. Tudo sob controle no ecossistema hoje."}
+                  : counts.properties > 0 
+                    ? "Carteira em dia. Tudo sob controle no ecossistema hoje."
+                    : "Comece cadastrando seus imóveis e contratos para acompanhar sua carteira."}
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -486,7 +488,10 @@ function ManagerDashboard() {
             </div>
             <div className="space-y-4 mt-2">
               {buildActivity(activity).length === 0 && (
-                <p className="text-[10px] text-muted-foreground italic">Nenhuma atividade recente encontrada.</p>
+                <div className="flex flex-col items-center justify-center py-8 text-center">
+                  <Info className="size-8 text-muted-foreground/20 mb-2" />
+                  <p className="text-[10px] text-muted-foreground italic">Nenhuma atividade recente encontrada.</p>
+                </div>
               )}
               {buildActivity(activity).slice(0, 5).map((item, idx) => (
                 <div key={idx} className="flex gap-3">
@@ -610,26 +615,27 @@ function ManagerDashboard() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
               <MiniStat 
-                label="Manutenções abertas" 
-                value={counts.maintenancesOpen} 
+                label="Manutenções" 
+                value={`${counts.maintenancesOpen} abertas`} 
                 icon={<AlertTriangle className="size-3" />}
                 to="/manager/manutencoes"
+                tooltip={`${pendencies.approvals} aguardando aprovação`}
               />
               <MiniStat 
-                label="Leads novos" 
-                value={pendencies.leadsNew} 
+                label="Leads" 
+                value={`${pendencies.leadsNew} novos`} 
                 icon={<UserPlus className="size-3" />}
                 to="/manager/leads"
               />
               <MiniStat 
-                label="Vistorias pendentes" 
-                value={pendencies.inspectionsPending} 
+                label="Vistorias" 
+                value={`${pendencies.inspectionsPending} pendentes`} 
                 icon={<FileSearch className="size-3" />}
                 to="/manager/vistorias"
               />
               <MiniStat 
-                label="Assinaturas faltantes" 
-                value={pendencies.missingSignature} 
+                label="Assinaturas" 
+                value={`${pendencies.missingSignature} faltantes`} 
                 icon={<KeyRound className="size-3" />}
                 to="/manager/contratos"
               />

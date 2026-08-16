@@ -172,7 +172,7 @@ export function PortfolioSummary({ data }: { data: PortfolioSummaryData }) {
         />
         <StatCard
           label="Inadimplência"
-          value={`${((data.overdueAmount / (data.forecastRevenue || 1)) * 100).toFixed(1)}%`}
+          value={data.forecastRevenue > 0 ? `${((data.overdueAmount / data.forecastRevenue) * 100).toFixed(1)}%` : "0.0%"}
           icon={AlertCircle}
           tone="destructive"
           trend={t.overdue}

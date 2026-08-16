@@ -367,6 +367,7 @@ function ManagerDashboard() {
   }, []);
 
   const nameFull = qProfile.data?.full_name || user?.email?.split("@")[0] || "";
+  const firstName = nameFull.split(' ')[0] || "Marina";
 
   const counts = (qCounts.data as any) ?? {};
   const pendencies = (qPend.data as any) ?? {};
@@ -374,6 +375,9 @@ function ManagerDashboard() {
   const overdueList = (qOverdue.data as any[]) ?? [];
   const expiring = (qExpiring.data as any[]) ?? [];
   const activity = (qActivity.data as any) ?? { contracts: [], paid: [], maint: [], leads: [] };
+
+  const occupancyRate = counts.properties > 0 ? Math.round((counts.rented / counts.properties) * 100) : 0;
+  const availableProperties = Math.max(0, (counts.properties ?? 0) - (counts.rented ?? 0));
 
   if (qCounts.isLoading || qMonth.isLoading) {
     return (
@@ -405,7 +409,7 @@ function ManagerDashboard() {
         <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="min-w-0">
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#1A1A1A] flex items-center gap-2">
-              {greeting()}, {qProfile.data?.full_name?.split(' ')[0] || "Marina"} 👋
+              {greeting()}, {firstName} 👋
             </h1>
 
             <p className="text-[#6B7280] mt-1 text-sm max-w-2xl">

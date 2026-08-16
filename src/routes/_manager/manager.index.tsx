@@ -453,8 +453,8 @@ function ManagerDashboard() {
           <Card className="lg:col-span-2 p-6 flex flex-col gap-4 rounded-2xl border-none shadow-sm h-full">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-base font-bold text-[#1A1A1A]">Faturamento</h3>
-                <p className="text-xs text-[#6B7280]">Repasses processados.</p>
+                <h3 className="text-base font-bold text-[#1A1A1A]">Recebimentos</h3>
+                <p className="text-xs text-[#6B7280]">Valores recebidos no período.</p>
               </div>
               <Badge variant="secondary" className="bg-[#F3F4F6] text-[#6B7280] border-none text-[10px] font-bold">7 MESES</Badge>
             </div>
@@ -501,6 +501,50 @@ function ManagerDashboard() {
             </div>
           </Card>
 
+          {/* ============ Requer Atenção ============ */}
+          <Card className="lg:col-span-3 p-6 rounded-2xl border-none shadow-sm space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-bold text-[#1A1A1A]">Requer atenção</h3>
+                <p className="text-sm text-[#6B7280]">Pendências operacionais que exigem sua ação.</p>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <Link to="/financeiro" search={{ status: 'atrasado' }} className="flex items-center gap-3 p-3 rounded-xl hover:bg-muted/50 transition-colors border border-border/40">
+                <div className="size-10 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center shrink-0"><AlertCircle className="size-5" /></div>
+                <div>
+                  <div className="text-sm font-bold text-rose-500">{overdueList.length} cobranças em atraso</div>
+                  <div className="text-[10px] text-muted-foreground">{formatBRL(kpis.overdue)} em aberto</div>
+                </div>
+              </Link>
+              
+              <Link to="/contratos" className="flex items-center gap-3 p-3 rounded-xl hover:bg-muted/50 transition-colors border border-border/40">
+                <div className="size-10 rounded-full bg-orange-50 text-orange-500 flex items-center justify-center shrink-0"><Calendar className="size-5" /></div>
+                <div>
+                  <div className="text-sm font-bold text-orange-500">{expiring.length} contratos vencendo</div>
+                  <div className="text-[10px] text-muted-foreground">nos próximos 30 dias</div>
+                </div>
+              </Link>
+              
+              <Link to="/manutencoes" className="flex items-center gap-3 p-3 rounded-xl hover:bg-muted/50 transition-colors border border-border/40">
+                <div className="size-10 rounded-full bg-amber-50 text-amber-500 flex items-center justify-center shrink-0"><ClipboardCheck className="size-5" /></div>
+                <div>
+                  <div className="text-sm font-bold text-amber-500">{pendencies.approvals} manutenções</div>
+                  <div className="text-[10px] text-muted-foreground">aguardando aprovação</div>
+                </div>
+              </Link>
+              
+              <Link to="/financeiro" className="flex items-center gap-3 p-3 rounded-xl hover:bg-muted/50 transition-colors border border-border/40">
+                <div className="size-10 rounded-full bg-purple-50 text-purple-500 flex items-center justify-center shrink-0"><TrendingUp className="size-5" /></div>
+                <div>
+                  <div className="text-sm font-bold text-purple-500">{counts.landlords || 0} repasses</div>
+                  <div className="text-[10px] text-muted-foreground">aguardando processamento</div>
+                </div>
+              </Link>
+            </div>
+          </Card>
+
           {/* Carteira - próximos vencimentos (Large Table Card) */}
           <Card className="lg:col-span-3 p-6 rounded-2xl border-none shadow-sm space-y-6">
             <div className="flex items-center justify-between">
@@ -515,33 +559,35 @@ function ManagerDashboard() {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="text-[10px] uppercase tracking-widest text-[#9CA3AF] border-b border-[#F3F4F6]">
-                    <th className="pb-3 font-bold">Imóvel</th>
                     <th className="pb-3 font-bold">Inquilino</th>
+                    <th className="pb-3 font-bold">Imóvel</th>
                     <th className="pb-3 font-bold text-right pr-12">Vencimento</th>
+                    <th className="pb-3 font-bold text-right">Valor</th>
                     <th className="pb-3 font-bold text-right">Status</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#F3F4F6]">
-                  {((overdueList.length > 0 ? overdueList : upcoming).slice(0, 4) as any[]).map((i: any, idx) => (
+                  {((overdueList.length > 0 ? overdueList : upcoming).slice(0, 5) as any[]).map((i: any, idx) => (
                     <tr key={idx} className="group hover:bg-[#F9FAFE] transition-colors">
-                      <td className="py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="size-9 rounded-xl bg-[#F5F3FF] text-[#7C3AED] flex items-center justify-center shrink-0"><HomeIcon className="size-4" /></div>
-                          <div>
-                            <div className="text-sm font-bold text-[#1A1A1A]">{i.contract?.property?.nickname}</div>
-                            <div className="text-[10px] text-[#9CA3AF]">Contrato {i.contract?.id?.slice(0, 8).toUpperCase()}</div>
-                          </div>
-                        </div>
-                      </td>
                       <td className="py-4">
                         <div className="flex items-center gap-2">
                           <div className="size-6 rounded-lg bg-[#7C3AED] text-white text-[10px] font-bold grid place-items-center">{(i.contract?.tenant?.full_name || "T").charAt(0)}</div>
                           <span className="text-sm text-[#374151] font-medium">{i.contract?.tenant?.full_name}</span>
                         </div>
                       </td>
+                      <td className="py-4">
+                        <div className="flex items-center gap-3">
+                          <div>
+                            <div className="text-sm font-bold text-[#1A1A1A]">{i.contract?.property?.nickname}</div>
+                            <div className="text-[10px] text-[#9CA3AF]">Contrato {i.contract?.id?.slice(0, 8).toUpperCase()}</div>
+                          </div>
+                        </div>
+                      </td>
                       <td className="py-4 text-right pr-12">
+                        <div className="text-sm font-medium text-[#1A1A1A]">{formatDate(i.due_date)}</div>
+                      </td>
+                      <td className="py-4 text-right">
                         <div className="text-sm font-bold text-[#1A1A1A]">{formatBRL(Number(i.amount ?? 0) + Number(i.extra_fees ?? 0))}</div>
-                        <div className="text-[10px] text-[#9CA3AF]">{formatDate(i.due_date)}</div>
                       </td>
                       <td className="py-4 text-right">
                         <Badge className={cn(
@@ -550,9 +596,8 @@ function ManagerDashboard() {
                           new Date(i.due_date) < new Date() ? "bg-[#FEF2F2] text-[#EF4444]" : 
                           "bg-[#FFF7ED] text-[#F97316]"
                         )}>
-                          • {i.status === "pago" ? "Pago" : new Date(i.due_date) < new Date() ? "Atrasado" : "Aguardando Pix"}
+                          • {i.status === "pago" ? "Pago" : new Date(i.due_date) < new Date() ? "Pendente" : "Futuro"}
                         </Badge>
-
                       </td>
                     </tr>
                   ))}

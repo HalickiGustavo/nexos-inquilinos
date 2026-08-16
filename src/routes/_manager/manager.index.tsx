@@ -481,7 +481,7 @@ function ManagerDashboard() {
                   <div className="size-8 rounded-full bg-[#ECFDF5] text-[#10B981] flex items-center justify-center shrink-0"><CheckCircle2 className="size-4" /></div>
                   <div>
                     <div className="text-xs font-bold text-[#1A1A1A]">{p.contract?.tenant?.full_name} pagou o aluguel</div>
-                    <div className="text-[10px] text-[#9CA3AF]">Split repassado — {formatDate(p.payment_date)}</div>
+                    <div className="text-[10px] text-[#9CA3AF]">Pagamento repassado — {formatDate(p.payment_date)}</div>
                   </div>
                 </div>
               ))}

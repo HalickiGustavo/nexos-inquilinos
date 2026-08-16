@@ -7,6 +7,8 @@ import {
   Wallet, Coins, TrendingUp, CheckCircle2, CircleDollarSign, PlusCircle,
   UserPlus, Database, Info, HelpCircle, MessageSquare, AlertCircle, PlusCircle as PlusCircleIcon
 } from "lucide-react";
+import { DateRange } from "react-day-picker";
+import { DateRangePicker } from "@/components/dashboard/DateRangePicker";
 import { NexoLogo } from "@/components/NexoLogo";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -54,6 +56,12 @@ const greeting = () => {
 function ManagerDashboard() {
   const { user } = useAuth();
   const qc = useQueryClient();
+  const [date, setDate] = useState<DateRange | undefined>(() => {
+    const to = new Date();
+    const from = new Date();
+    from.setDate(to.getDate() - 30);
+    return { from, to };
+  });
   const [range, setRange] = useState<RangeKey>("30d");
 
   useEffect(() => {
@@ -66,17 +74,23 @@ function ManagerDashboard() {
     return () => { supabase.removeChannel(channel); };
   }, [qc]);
 
-  const monthStart = iso(startOfMonth());
-  const monthEnd = iso(endOfMonth());
+  const monthStart = date?.from ? iso(date.from) : iso(startOfMonth());
+  const monthEnd = date?.to ? iso(date.to) : iso(endOfMonth());
   
-  const prevDateStart = startOfMonth();
-  prevDateStart.setMonth(prevDateStart.getMonth() - 1);
+  const prevDateStart = date?.from ? new Date(date.from) : startOfMonth();
+  if (!date?.from) prevDateStart.setMonth(prevDateStart.getMonth() - 1);
+  else {
+    const diff = date.to && date.from ? date.to.getTime() - date.from.getTime() : 30 * 86400000;
+    prevDateStart.setTime(prevDateStart.getTime() - diff - 86400000);
+  }
   const prevStart = iso(prevDateStart);
   
-  const prevDateEnd = endOfMonth();
-  prevDateEnd.setMonth(prevDateEnd.getMonth() - 1);
-  // Se o mês anterior for fevereiro, endOfMonth(prevMonth) corretamente retorna dia 28/29.
-  // A lógica simplificada `d.getMonth() + 1` no endOfMonth já cuida disso.
+  const prevDateEnd = date?.to ? new Date(date.to) : endOfMonth();
+  if (!date?.to) prevDateEnd.setMonth(prevDateEnd.getMonth() - 1);
+  else {
+    const diff = date.to && date.from ? date.to.getTime() - date.from.getTime() : 30 * 86400000;
+    prevDateEnd.setTime(prevDateEnd.getTime() - diff - 86400000);
+  }
   const prevEnd = iso(prevDateEnd);
 
   const today = iso(new Date());
@@ -223,13 +237,10 @@ function ManagerDashboard() {
         },
       },
       {
-        queryKey: ["mgr-dash", "chart", range],
+        queryKey: ["mgr-dash", "chart", monthStart, monthEnd],
         queryFn: async () => {
-          const from = new Date();
-          if (range === "7d") from.setDate(from.getDate() - 6);
-          else if (range === "30d") from.setDate(from.getDate() - 29);
-          else if (range === "90d") from.setDate(from.getDate() - 89);
-          else { from.setMonth(0); from.setDate(1); }
+          const from = new Date(monthStart);
+          const to = new Date(monthEnd);
           const { data, error } = await supabase
             .from("installments")
             .select("paid_amount, amount, extra_fees, due_date, payment_date, status, landlord_payout_status, landlord_payout_amount, landlord_payout_date")
@@ -304,9 +315,9 @@ function ManagerDashboard() {
     const raw = (qChart.data as any) ?? { rows: [], from: new Date() };
     const rows: any[] = raw.rows;
     const from: Date = raw.from;
-    const days = Math.round((Date.now() - from.getTime()) / 86400000) + 1;
-    // Aggregate by day for 7/30/90; by month for year.
-    if (range === "ano") {
+    const days = Math.round((new Date(monthEnd).getTime() - from.getTime()) / 86400000) + 1;
+    // Aggregate by day for most ranges; by month for large ranges (> 90 days).
+    if (days > 90) {
       const map = new Map<string, { month: string; pago: number; pendente: number; repassado: number }>();
       const now = new Date();
       for (let m = 0; m <= now.getMonth(); m++) {
@@ -398,14 +409,11 @@ function ManagerDashboard() {
             </h1>
 
             <p className="text-[#6B7280] mt-1 text-sm max-w-2xl">
-              Performance operacional NEXO: sua carteira liquidou {kpis.collected}% dos repasses previstos. {pendencies.approvals > 0 ? `${pendencies.approvals} manutenções aguardam aprovação.` : "Tudo sob controle no ecossistema hoje."}
+              Performance operacional: sua carteira liquidou {kpis.collected}% dos repasses previstos. {pendencies.approvals > 0 ? `${pendencies.approvals} manutenções aguardam aprovação.` : "Tudo sob controle no ecossistema hoje."}
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <div className="bg-white border border-[#E5E7EB] rounded-xl px-4 py-2 flex items-center gap-2 text-sm text-[#374151] shadow-sm">
-              <Calendar className="size-4 text-[#9CA3AF]" />
-              {new Date().toLocaleDateString("pt-BR", { weekday: 'short', day: '2-digit', month: 'long' })}
-            </div>
+            <DateRangePicker date={date} onDateChange={setDate} />
             <div className="flex items-center gap-2 ml-2">
               <div className="bg-[#7C3AED] hover:bg-[#6D28D9] size-10 rounded-xl text-white font-bold grid place-items-center shadow-sm cursor-pointer transition-colors">
                 {qProfile.data?.full_name?.charAt(0) || "N"}
@@ -482,7 +490,7 @@ function ManagerDashboard() {
                     <div className="size-8 rounded-full bg-[#F5F3FF] text-[#7C3AED] flex items-center justify-center"><Building2 className="size-4" /></div>
                     <div>
                       <div className="text-sm font-bold text-[#1A1A1A]">Imobiliária</div>
-                      <div className="text-[10px] text-[#9CA3AF]">{(qProfile.data?.full_name?.split(' ')[0]) || "Nexo"} — taxa 10% administração</div>
+                      <div className="text-[10px] text-[#9CA3AF]">{(qProfile.data?.full_name?.split(' ')[0]) || "Gestão"} — taxa 10% administração</div>
                     </div>
                   </div>
                   <div className="text-right">
@@ -495,7 +503,7 @@ function ManagerDashboard() {
                   <div className="flex items-center gap-3">
                     <div className="size-8 rounded-full bg-[#F9FAFE] text-[#9CA3AF] flex items-center justify-center"><NexoLogo className="h-3" /></div>
                     <div>
-                      <div className="text-sm font-bold text-[#1A1A1A]">Nexo</div>
+                      <div className="text-sm font-bold text-[#1A1A1A]">Plataforma</div>
                       <div className="text-[10px] text-[#9CA3AF]">Taxa de plataforma</div>
                     </div>
                   </div>
@@ -620,7 +628,7 @@ function ManagerDashboard() {
               </table>
             </div>
             <div className="text-center pt-2">
-              <p className="text-[10px] text-[#D1D5DB] font-medium italic">Plataforma <span className="text-[#7C3AED] font-bold">NEXO v2.0</span> · sistema em operação · ambiente de alta performance</p>
+              <p className="text-[10px] text-[#D1D5DB] font-medium italic">Plataforma sistema em operação · ambiente de alta performance</p>
             </div>
           </Card>
         </div>

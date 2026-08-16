@@ -27,7 +27,7 @@ import { isPreviewClient } from "@/lib/recaptcha-client";
 
 
 export const Route = createFileRoute("/login")({
-  head: () => ({ meta: [{ title: "Entrar — Nexo" }] }),
+  head: () => ({ meta: [{ title: "Entrar" }] }),
   component: LoginPage,
 });
 
@@ -100,12 +100,12 @@ function LoginPage() {
           <span className="inline-flex size-9 items-center justify-center rounded-xl bg-white/10 ring-1 ring-white/15 backdrop-blur">
             <span className="size-2 rounded-full bg-white shadow-[0_0_12px_rgba(255,255,255,0.9)]" />
           </span>
-          <span className="text-sm font-medium tracking-wide opacity-80">Nexo · gestão imobiliária</span>
+          <span className="text-sm font-medium tracking-wide opacity-80">Gestão imobiliária</span>
         </div>
 
         <div className="relative flex flex-col items-center gap-8 flex-1 justify-center">
           <div className="flex items-center justify-center px-6">
-            <img src={nexoLogoDarkAsset.url} alt="Nexo" className="h-32 w-auto max-w-full object-contain drop-shadow-[0_8px_32px_rgba(139,92,246,0.45)]" />
+            <img src={nexoLogoDarkAsset.url} alt="" className="h-32 w-auto max-w-full object-contain drop-shadow-[0_8px_32px_rgba(139,92,246,0.45)]" />
           </div>
 
           <div className="text-center max-w-md">
@@ -121,13 +121,13 @@ function LoginPage() {
           </div>
         </div>
 
-        <p className="relative text-xs text-white/40 text-center">© {new Date().getFullYear()} Nexo</p>
+        <p className="relative text-xs text-white/40 text-center">© {new Date().getFullYear()}</p>
       </div>
 
       <div className="flex items-center justify-center p-4 sm:p-6 lg:p-12 lg:bg-background">
         <Card className="w-full max-w-md p-8 border-border/60 shadow-card surface-1">
           <div className="lg:hidden flex justify-center items-center mb-6">
-            <img src={nexoLogo} alt="Nexo" className="h-14 w-auto max-w-full object-contain" />
+            <img src={nexoLogo} alt="" className="h-14 w-auto max-w-full object-contain" />
           </div>
 
           <div className="text-center mb-7">
@@ -193,7 +193,7 @@ function SignInForm() {
             const { error: rpcErr } = await supabase.rpc("accept_landlord_invite", { _token: pendingInvite });
             if (!rpcErr) {
               landed = "landlord";
-              toast.success("Convite aceito! Você agora é Proprietário na NEXO.");
+              toast.success("Convite aceito! Você agora é Proprietário.");
             } else {
               toast.error("Convite inválido ou já utilizado.");
             }

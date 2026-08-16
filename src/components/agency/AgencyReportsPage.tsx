@@ -74,7 +74,7 @@ export function AgencyReportsPage() {
 
   async function handleExportPdf() {
     const lines = [
-      "RELATÓRIO ADMINISTRATIVO NEXO",
+      "RELATÓRIO ADMINISTRATIVO",
       `Período: ${formatDate(from)} até ${formatDate(to)}`,
       "",
       `Receita Total (Paga): ${formatBRL(metrics.totalRecebido)}`,
@@ -89,7 +89,7 @@ export function AgencyReportsPage() {
       "--- Inadimplência ---",
       ...metrics.arrears.map(a => `${formatDate(a.due_date)} - ${a.tenant} (${a.property}): ${formatBRL(a.amount)}`)
     ];
-    await downloadPdf(`relatorio-nexo-${from}-a-${to}.pdf`, lines);
+    await downloadPdf(`relatorio-${from}-a-${to}.pdf`, lines);
     toast.success("PDF gerado com sucesso");
   }
 

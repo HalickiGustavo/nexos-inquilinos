@@ -27,7 +27,7 @@ import { isPreviewClient } from "@/lib/recaptcha-client";
 
 
 export const Route = createFileRoute("/login")({
-  head: () => ({ meta: [{ title: "Entrar — Nexo" }] }),
+  head: () => ({ meta: [{ title: "Entrar" }] }),
   component: LoginPage,
 });
 
@@ -100,7 +100,7 @@ function LoginPage() {
           <span className="inline-flex size-9 items-center justify-center rounded-xl bg-white/10 ring-1 ring-white/15 backdrop-blur">
             <span className="size-2 rounded-full bg-white shadow-[0_0_12px_rgba(255,255,255,0.9)]" />
           </span>
-          <span className="text-sm font-medium tracking-wide opacity-80">Nexo · gestão imobiliária</span>
+          <span className="text-sm font-medium tracking-wide opacity-80">Gestão imobiliária</span>
         </div>
 
         <div className="relative flex flex-col items-center gap-8 flex-1 justify-center">
@@ -121,7 +121,7 @@ function LoginPage() {
           </div>
         </div>
 
-        <p className="relative text-xs text-white/40 text-center">© {new Date().getFullYear()} Nexo</p>
+        <p className="relative text-xs text-white/40 text-center">© {new Date().getFullYear()}</p>
       </div>
 
       <div className="flex items-center justify-center p-4 sm:p-6 lg:p-12 lg:bg-background">
@@ -193,7 +193,7 @@ function SignInForm() {
             const { error: rpcErr } = await supabase.rpc("accept_landlord_invite", { _token: pendingInvite });
             if (!rpcErr) {
               landed = "landlord";
-              toast.success("Convite aceito! Você agora é Proprietário na NEXO.");
+              toast.success("Convite aceito! Você agora é Proprietário.");
             } else {
               toast.error("Convite inválido ou já utilizado.");
             }

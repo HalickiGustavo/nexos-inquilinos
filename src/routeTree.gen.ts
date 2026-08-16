@@ -9,7 +9,6 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as LandlordRouteImport } from './routes/_landlord'
 import { Route as ManagerRouteImport } from './routes/_manager'
@@ -19,6 +18,7 @@ import { Route as LandlordSetupRouteImport } from './routes/landlord-setup'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ManagerSetupRouteImport } from './routes/manager-setup'
 import { Route as TenantSetupRouteImport } from './routes/tenant-setup'
+import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedContaCorrenteRouteImport } from './routes/_authenticated/conta-corrente'
 import { Route as AuthenticatedContractsRouteImport } from './routes/_authenticated/contracts'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
@@ -93,11 +93,6 @@ import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/e
 import { Route as ApiV1IntegrationsOrgSlugLeadsRouteImport } from './routes/api/v1/integrations/$orgSlug/leads'
 import { Route as ApiV1IntegrationsOrgSlugListingsDotxmlRouteImport } from './routes/api/v1/integrations/$orgSlug/listings[.]xml'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
@@ -139,6 +134,11 @@ const TenantSetupRoute = TenantSetupRouteImport.update({
   id: '/tenant-setup',
   path: '/tenant-setup',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedContaCorrenteRoute =
   AuthenticatedContaCorrenteRouteImport.update({
@@ -544,7 +544,7 @@ const ApiV1IntegrationsOrgSlugListingsDotxmlRoute =
   } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
+  '/': typeof AuthenticatedIndexRoute
   '/cadastro': typeof CadastroRoute
   '/cadastro-landlord': typeof CadastroLandlordRoute
   '/landlord-setup': typeof LandlordSetupRoute
@@ -626,7 +626,7 @@ export interface FileRoutesByFullPath {
   '/api/v1/integrations/$orgSlug/listings.xml': typeof ApiV1IntegrationsOrgSlugListingsDotxmlRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
+  '/': typeof AuthenticatedIndexRoute
   '/cadastro': typeof CadastroRoute
   '/cadastro-landlord': typeof CadastroLandlordRoute
   '/landlord-setup': typeof LandlordSetupRoute
@@ -709,7 +709,6 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/_landlord': typeof LandlordRouteWithChildren
   '/_manager': typeof ManagerRouteWithChildren
@@ -731,6 +730,7 @@ export interface FileRoutesById {
   '/_authenticated/relatorios': typeof AuthenticatedRelatoriosRoute
   '/_authenticated/tenants': typeof AuthenticatedTenantsRoute
   '/_authenticated/vistorias': typeof AuthenticatedVistoriasRoute
+  '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/admin/integracoes': typeof AuthenticatedAdminIntegracoesRoute
   '/_authenticated/properties/$id': typeof AuthenticatedPropertiesIdRoute
   '/_authenticated/tenant/alertas': typeof AuthenticatedTenantAlertasRoute
@@ -960,7 +960,6 @@ export interface FileRouteTypes {
     | '/api/v1/integrations/$orgSlug/listings.xml'
   id:
     | '__root__'
-    | '/'
     | '/_authenticated'
     | '/_landlord'
     | '/_manager'
@@ -982,6 +981,7 @@ export interface FileRouteTypes {
     | '/_authenticated/relatorios'
     | '/_authenticated/tenants'
     | '/_authenticated/vistorias'
+    | '/_authenticated/'
     | '/_authenticated/admin/integracoes'
     | '/_authenticated/properties/$id'
     | '/_authenticated/tenant/alertas'
@@ -1046,7 +1046,6 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   LandlordRoute: typeof LandlordRouteWithChildren
   ManagerRoute: typeof ManagerRouteWithChildren
@@ -1083,13 +1082,6 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_authenticated': {
       id: '/_authenticated'
       path: ''
@@ -1152,6 +1144,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/tenant-setup'
       preLoaderRoute: typeof TenantSetupRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/': {
+      id: '/_authenticated/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/conta-corrente': {
       id: '/_authenticated/conta-corrente'
@@ -1694,6 +1693,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedRelatoriosRoute: typeof AuthenticatedRelatoriosRoute
   AuthenticatedTenantsRoute: typeof AuthenticatedTenantsRoute
   AuthenticatedVistoriasRoute: typeof AuthenticatedVistoriasRoute
+  AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedAdminIntegracoesRoute: typeof AuthenticatedAdminIntegracoesRoute
   AuthenticatedTenantAlertasRoute: typeof AuthenticatedTenantAlertasRoute
   AuthenticatedTenantChatRoute: typeof AuthenticatedTenantChatRoute
@@ -1718,6 +1718,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedRelatoriosRoute: AuthenticatedRelatoriosRoute,
   AuthenticatedTenantsRoute: AuthenticatedTenantsRoute,
   AuthenticatedVistoriasRoute: AuthenticatedVistoriasRoute,
+  AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedAdminIntegracoesRoute: AuthenticatedAdminIntegracoesRoute,
   AuthenticatedTenantAlertasRoute: AuthenticatedTenantAlertasRoute,
   AuthenticatedTenantChatRoute: AuthenticatedTenantChatRoute,
@@ -1819,7 +1820,6 @@ const ApiPublicEfiWebhookRouteWithChildren =
   ApiPublicEfiWebhookRoute._addFileChildren(ApiPublicEfiWebhookRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   LandlordRoute: LandlordRouteWithChildren,
   ManagerRoute: ManagerRouteWithChildren,

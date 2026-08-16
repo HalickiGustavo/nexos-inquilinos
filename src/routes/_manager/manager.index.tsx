@@ -63,6 +63,8 @@ function ManagerDashboard() {
     return { from, to };
   });
   const [range, setRange] = useState<RangeKey>("30d");
+  const [chartView, setChartView] = useState<"recebimentos" | "repasses" | "taxa">("recebimentos");
+  const [expirationFilter, setExpirationFilter] = useState<"all" | "today" | "7d" | "30d">("all");
 
   useEffect(() => {
     const channel = supabase
@@ -205,17 +207,23 @@ function ManagerDashboard() {
       {
         queryKey: ["mgr-dash", "activity"],
         queryFn: async () => {
-          const [contracts, paid, maint, leads] = await Promise.all([
+          const [contracts, paid, maint, leads, props, tenants, payouts] = await Promise.all([
             supabase.from("contracts").select("id, created_at, tenant:tenants(full_name), property:properties(nickname)").order("created_at", { ascending: false }).limit(4),
             supabase.from("installments").select("id, paid_amount, payment_date, contract:contracts(tenant:tenants(full_name))").eq("status", "pago").not("payment_date", "is", null).order("payment_date", { ascending: false }).limit(4),
             supabase.from("maintenances").select("id, status, updated_at, description").order("updated_at", { ascending: false }).limit(4),
             supabase.from("crm_leads").select("id, name, created_at, source").order("created_at", { ascending: false }).limit(4),
+            supabase.from("properties").select("id, nickname, created_at").order("created_at", { ascending: false }).limit(4),
+            supabase.from("tenants").select("id, full_name, created_at").order("created_at", { ascending: false }).limit(4),
+            supabase.from("installments").select("id, landlord_payout_amount, landlord_payout_date").eq("landlord_payout_status", "repassado").not("landlord_payout_date", "is", null).order("landlord_payout_date", { ascending: false }).limit(4),
           ]);
           return {
             contracts: contracts.data ?? [],
             paid: paid.data ?? [],
             maint: maint.data ?? [],
             leads: leads.data ?? [],
+            properties: props.data ?? [],
+            tenants: tenants.data ?? [],
+            payouts: payouts.data ?? [],
           };
         },
       },
@@ -318,36 +326,44 @@ function ManagerDashboard() {
     const days = Math.round((new Date(monthEnd).getTime() - from.getTime()) / 86400000) + 1;
     // Aggregate by day for most ranges; by month for large ranges (> 90 days).
     if (days > 90) {
-      const map = new Map<string, { month: string; pago: number; pendente: number; repassado: number }>();
+      const map = new Map<string, { month: string; pago: number; pendente: number; repassado: number; taxa: number }>();
       const now = new Date();
       for (let m = 0; m <= now.getMonth(); m++) {
         const d = new Date(now.getFullYear(), m, 1);
         const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-        map.set(key, { month: d.toLocaleDateString("pt-BR", { month: "short" }).replace(".", ""), pago: 0, pendente: 0, repassado: 0 });
+        map.set(key, { month: d.toLocaleDateString("pt-BR", { month: "short" }).replace(".", ""), pago: 0, pendente: 0, repassado: 0, taxa: 0 });
       }
       for (const r of rows) {
         const key = String(r.due_date).slice(0, 7);
         const bucket = map.get(key);
         if (!bucket) continue;
-        if (r.status === "pago") bucket.pago += Number(r.paid_amount ?? r.amount);
-        else bucket.pendente += Number(r.amount);
+        if (r.status === "pago") {
+          bucket.pago += Number(r.paid_amount ?? r.amount);
+          bucket.taxa += (Number(r.paid_amount ?? r.amount) * Number(r.management_fee_percent ?? 0)) / 100;
+        } else {
+          bucket.pendente += Number(r.amount);
+        }
         if (r.landlord_payout_status === "repassado") bucket.repassado += Number(r.landlord_payout_amount ?? 0);
       }
       return [...map.values()];
     }
     // daily buckets
-    const buckets: Record<string, { month: string; pago: number; pendente: number; repassado: number }> = {};
+    const buckets: Record<string, { month: string; pago: number; pendente: number; repassado: number; taxa: number }> = {};
     for (let i = 0; i < days; i++) {
       const d = addDays(from, i);
       const key = iso(d);
-      buckets[key] = { month: d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }), pago: 0, pendente: 0, repassado: 0 };
+      buckets[key] = { month: d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }), pago: 0, pendente: 0, repassado: 0, taxa: 0 };
     }
     for (const r of rows) {
       const key = String(r.due_date);
       const bucket = buckets[key];
       if (!bucket) continue;
-      if (r.status === "pago") bucket.pago += Number(r.paid_amount ?? r.amount);
-      else bucket.pendente += Number(r.amount);
+      if (r.status === "pago") {
+        bucket.pago += Number(r.paid_amount ?? r.amount);
+        bucket.taxa += (Number(r.paid_amount ?? r.amount) * Number(r.management_fee_percent ?? 0)) / 100;
+      } else {
+        bucket.pendente += Number(r.amount);
+      }
       if (r.landlord_payout_status === "repassado") bucket.repassado += Number(r.landlord_payout_amount ?? 0);
     }
     return Object.values(buckets);
@@ -374,7 +390,7 @@ function ManagerDashboard() {
   const upcoming = (qUpcoming.data as any[]) ?? [];
   const overdueList = (qOverdue.data as any[]) ?? [];
   const expiring = (qExpiring.data as any[]) ?? [];
-  const activity = (qActivity.data as any) ?? { contracts: [], paid: [], maint: [], leads: [] };
+  const activity = (qActivity.data as any) ?? { contracts: [], paid: [], maint: [], leads: [], properties: [], tenants: [], payouts: [] };
 
   const occupancyRate = counts.properties > 0 ? Math.round((counts.rented / counts.properties) * 100) : 0;
   const availableProperties = Math.max(0, (counts.properties ?? 0) - (counts.rented ?? 0));
@@ -419,7 +435,9 @@ function ManagerDashboard() {
                 ? `Existem ${overdueList.length} cobranças vencidas que precisam de atenção.` 
                 : pendencies.approvals > 0 
                   ? `${pendencies.approvals} manutenções aguardam aprovação.` 
-                  : "Carteira em dia. Tudo sob controle no ecossistema hoje."}
+                  : counts.properties > 0 
+                    ? "Carteira em dia. Tudo sob controle no ecossistema hoje."
+                    : "Comece cadastrando seus imóveis e contratos para acompanhar sua carteira."}
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -443,6 +461,7 @@ function ManagerDashboard() {
             receivedRevenue: kpis.paid,
             pendingRevenue: kpis.toReceive,
             overdueAmount: kpis.overdue,
+            payoutsPending: kpis.payoutsPending,
             occupancyRate: occupancyRate,
             expiringContracts: expiring.length,
             trends: { 
@@ -459,17 +478,44 @@ function ManagerDashboard() {
 
           {/* Faturamento (Bar Chart Style) */}
           <Card className="lg:col-span-2 p-6 flex flex-col gap-4 rounded-2xl border-none shadow-sm h-full">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h3 className="text-base font-bold text-[#1A1A1A]">Recebimentos</h3>
-                <p className="text-xs text-[#6B7280]">Valores recebidos no período.</p>
+                <h3 className="text-base font-bold text-[#1A1A1A]">
+                  {chartView === "recebimentos" ? "Recebimentos" : chartView === "repasses" ? "Repasses" : "Taxa da Imobiliária"}
+                </h3>
+                <p className="text-xs text-[#6B7280]">
+                  {chartView === "recebimentos" ? "Valores recebidos no período." : chartView === "repasses" ? "Valores repassados aos proprietários." : "Comissões da imobiliária no período."}
+                </p>
               </div>
-              <Badge variant="secondary" className="bg-[#F3F4F6] text-[#6B7280] border-none text-[10px] font-bold">7 MESES</Badge>
+              <div className="flex items-center gap-2">
+                <div className="flex bg-[#F3F4F6] p-1 rounded-lg">
+                  <button 
+                    onClick={() => setChartView("recebimentos")}
+                    className={cn("px-2 py-1 text-[10px] font-bold rounded-md transition-all", chartView === "recebimentos" ? "bg-white shadow-sm text-[#7C3AED]" : "text-[#6B7280]")}
+                  >
+                    Recebimentos
+                  </button>
+                  <button 
+                    onClick={() => setChartView("repasses")}
+                    className={cn("px-2 py-1 text-[10px] font-bold rounded-md transition-all", chartView === "repasses" ? "bg-white shadow-sm text-[#7C3AED]" : "text-[#6B7280]")}
+                  >
+                    Repasses
+                  </button>
+                  <button 
+                    onClick={() => setChartView("taxa")}
+                    className={cn("px-2 py-1 text-[10px] font-bold rounded-md transition-all", chartView === "taxa" ? "bg-white shadow-sm text-[#7C3AED]" : "text-[#6B7280]")}
+                  >
+                    Taxa
+                  </button>
+                </div>
+                <Badge variant="secondary" className="bg-[#F3F4F6] text-[#6B7280] border-none text-[10px] font-bold">{range.toUpperCase()}</Badge>
+              </div>
             </div>
             <div className="h-40 mt-4">
               <Suspense fallback={<Skeleton className="w-full h-full rounded-lg" />}>
                 <DashboardCollectionChart 
                   data={chartData} 
+                  view={chartView}
                 />
               </Suspense>
             </div>
@@ -486,7 +532,10 @@ function ManagerDashboard() {
             </div>
             <div className="space-y-4 mt-2">
               {buildActivity(activity).length === 0 && (
-                <p className="text-[10px] text-muted-foreground italic">Nenhuma atividade recente encontrada.</p>
+                <div className="flex flex-col items-center justify-center py-8 text-center">
+                  <Info className="size-8 text-muted-foreground/20 mb-2" />
+                  <p className="text-[10px] text-muted-foreground italic">Nenhuma atividade recente encontrada.</p>
+                </div>
               )}
               {buildActivity(activity).slice(0, 5).map((item, idx) => (
                 <div key={idx} className="flex gap-3">
@@ -551,12 +600,28 @@ function ManagerDashboard() {
 
           {/* Carteira - próximos vencimentos (Large Table Card) */}
           <Card className="lg:col-span-3 p-6 rounded-2xl border-none shadow-sm space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h3 className="text-lg font-bold text-[#1A1A1A]">Carteira · próximos vencimentos</h3>
                 <p className="text-sm text-[#6B7280]">Listagem de recebimentos futuros.</p>
               </div>
-              <Badge className="bg-[#F5F3FF] text-[#7C3AED] hover:bg-[#F5F3FF] border-none font-bold text-xs px-3 py-1">{counts.contracts || 0} CONTRATOS</Badge>
+              <div className="flex items-center gap-2">
+                <div className="flex bg-[#F3F4F6] p-1 rounded-lg">
+                  {(["all", "today", "7d", "30d"] as const).map((f) => (
+                    <button 
+                      key={f}
+                      onClick={() => setExpirationFilter(f)}
+                      className={cn(
+                        "px-2 py-1 text-[10px] font-bold rounded-md transition-all", 
+                        expirationFilter === f ? "bg-white shadow-sm text-[#7C3AED]" : "text-[#6B7280]"
+                      )}
+                    >
+                      {f === "all" ? "Tudo" : f === "today" ? "Hoje" : f === "7d" ? "7 dias" : "30 dias"}
+                    </button>
+                  ))}
+                </div>
+                <Badge className="bg-[#F5F3FF] text-[#7C3AED] hover:bg-[#F5F3FF] border-none font-bold text-xs px-3 py-1">{counts.contracts || 0} CONTRATOS</Badge>
+              </div>
             </div>
 
             <div className="overflow-x-auto">
@@ -571,7 +636,20 @@ function ManagerDashboard() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#F3F4F6]">
-                  {((overdueList.length > 0 ? overdueList : upcoming).slice(0, 5) as any[]).map((i: any, idx) => (
+                  {(
+                    (overdueList.length > 0 ? [...overdueList, ...upcoming] : upcoming)
+                    .filter(i => {
+                      if (expirationFilter === "all") return true;
+                      const d = new Date(i.due_date);
+                      const t = new Date();
+                      t.setHours(0,0,0,0);
+                      if (expirationFilter === "today") return iso(d) === iso(t);
+                      if (expirationFilter === "7d") return d <= addDays(t, 7);
+                      if (expirationFilter === "30d") return d <= addDays(t, 30);
+                      return true;
+                    })
+                    .slice(0, 5) as any[]
+                  ).map((i: any, idx) => (
                     <tr key={idx} className="group hover:bg-[#F9FAFE] transition-colors">
                       <td className="py-4">
                         <div className="flex items-center gap-2">
@@ -610,26 +688,27 @@ function ManagerDashboard() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
               <MiniStat 
-                label="Manutenções abertas" 
-                value={counts.maintenancesOpen} 
+                label="Manutenções" 
+                value={`${counts.maintenancesOpen} abertas`} 
                 icon={<AlertTriangle className="size-3" />}
                 to="/manager/manutencoes"
+                tooltip={`${pendencies.approvals} aguardando aprovação`}
               />
               <MiniStat 
-                label="Leads novos" 
-                value={pendencies.leadsNew} 
+                label="Leads" 
+                value={`${pendencies.leadsNew} novos`} 
                 icon={<UserPlus className="size-3" />}
                 to="/manager/leads"
               />
               <MiniStat 
-                label="Vistorias pendentes" 
-                value={pendencies.inspectionsPending} 
+                label="Vistorias" 
+                value={`${pendencies.inspectionsPending} pendentes`} 
                 icon={<FileSearch className="size-3" />}
                 to="/manager/vistorias"
               />
               <MiniStat 
-                label="Assinaturas faltantes" 
-                value={pendencies.missingSignature} 
+                label="Assinaturas" 
+                value={`${pendencies.missingSignature} faltantes`} 
                 icon={<KeyRound className="size-3" />}
                 to="/manager/contratos"
               />
@@ -749,12 +828,23 @@ function PendRow({ label, value, to, tone }: { label: string; value: number; to:
   );
 }
 
-function MiniStat({ label, value, icon, to }: { label: string; value: number | undefined; icon: React.ReactNode; to: string }) {
-  return (
+function MiniStat({ label, value, icon, to, tooltip }: { label: string; value: string | number | undefined; icon: React.ReactNode; to: string; tooltip?: string }) {
+  const content = (
     <Link to={to} className="bg-card p-3.5 flex flex-col gap-1 hover:bg-muted/40 transition">
       <span className="inline-flex items-center gap-1.5 text-[11px] uppercase tracking-wide text-muted-foreground">{icon}{label}</span>
       <span className="text-lg font-bold tabular-nums">{value ?? 0}</span>
     </Link>
+  );
+
+  if (!tooltip) return content;
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        {content}
+      </TooltipTrigger>
+      <TooltipContent side="top">{tooltip}</TooltipContent>
+    </Tooltip>
   );
 }
 
@@ -776,7 +866,7 @@ function Empty({ text }: { text: string }) {
   return <div className="px-5 py-6 text-center text-xs text-muted-foreground">{text}</div>;
 }
 
-function buildActivity(a: { contracts: any[]; paid: any[]; maint: any[]; leads: any[] }) {
+function buildActivity(a: { contracts: any[]; paid: any[]; maint: any[]; leads: any[]; properties: any[]; tenants: any[]; payouts: any[] }) {
   const items: { text: string; at: string; color: string }[] = [];
   a.paid.forEach((r) => items.push({
     text: `Pagamento recebido de ${r.contract?.tenant?.full_name ?? "—"} — ${formatBRL(Number(r.paid_amount ?? 0))}`,
@@ -793,6 +883,18 @@ function buildActivity(a: { contracts: any[]; paid: any[]; maint: any[]; leads: 
   a.leads.forEach((r) => items.push({
     text: `Novo lead: ${r.name}${r.source ? ` — ${r.source}` : ""}`,
     at: r.created_at, color: "bg-blue-500",
+  }));
+  a.properties.forEach((r) => items.push({
+    text: `Novo imóvel cadastrado: ${r.nickname}`,
+    at: r.created_at, color: "bg-indigo-500",
+  }));
+  a.tenants.forEach((r) => items.push({
+    text: `Novo inquilino cadastrado: ${r.full_name}`,
+    at: r.created_at, color: "bg-cyan-500",
+  }));
+  a.payouts.forEach((r) => items.push({
+    text: `Repasse processado — ${formatBRL(Number(r.landlord_payout_amount ?? 0))}`,
+    at: r.landlord_payout_date, color: "bg-purple-500",
   }));
   return items
     .filter((x) => x.at)

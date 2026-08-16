@@ -1,9 +1,21 @@
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Cell, CartesianGrid } from "recharts";
 import { formatBRL, formatBRLCompact } from "@/lib/format";
 
-export type DashboardChartDatum = { month: string; pago: number; pendente: number };
+export type DashboardChartDatum = { 
+  month: string; 
+  pago: number; 
+  pendente: number; 
+  repassado?: number;
+  taxa?: number;
+};
 
-export default function DashboardCollectionChart({ data }: { data: DashboardChartDatum[] }) {
+export default function DashboardCollectionChart({ 
+  data, 
+  view = "recebimentos" 
+}: { 
+  data: DashboardChartDatum[];
+  view?: "recebimentos" | "repasses" | "taxa";
+}) {
   // Se estivermos no modo diário (30 dias), mostramos apenas alguns labels para não poluir
   const interval = data.length > 15 ? Math.floor(data.length / 6) : 0;
 
@@ -44,21 +56,45 @@ export default function DashboardCollectionChart({ data }: { data: DashboardChar
           itemStyle={{ fontSize: '12px', fontWeight: 'bold', color: '#1A1A1A' }}
           labelStyle={{ fontSize: '10px', color: '#6B7280', marginBottom: '4px', fontWeight: 'bold' }}
         />
-        <Bar 
-          dataKey="pago" 
-          stackId="a" 
-          fill="#7C3AED" 
-          radius={[4, 4, 0, 0]} 
-          barSize={data.length > 15 ? undefined : 30}
-        />
-        <Bar 
-          dataKey="pendente" 
-          stackId="a" 
-          fill="#A78BFA" 
-          fillOpacity={0.3}
-          radius={[4, 4, 0, 0]}
-          barSize={data.length > 15 ? undefined : 30}
-        />
+        {view === "recebimentos" && (
+          <>
+            <Bar 
+              dataKey="pago" 
+              name="Pago"
+              stackId="a" 
+              fill="#7C3AED" 
+              radius={[4, 4, 0, 0]} 
+              barSize={data.length > 15 ? undefined : 30}
+            />
+            <Bar 
+              dataKey="pendente" 
+              name="Pendente"
+              stackId="a" 
+              fill="#A78BFA" 
+              fillOpacity={0.3}
+              radius={[4, 4, 0, 0]}
+              barSize={data.length > 15 ? undefined : 30}
+            />
+          </>
+        )}
+        {view === "repasses" && (
+          <Bar 
+            dataKey="repassado" 
+            name="Repassado"
+            fill="#8B5CF6" 
+            radius={[4, 4, 0, 0]}
+            barSize={data.length > 15 ? undefined : 30}
+          />
+        )}
+        {view === "taxa" && (
+          <Bar 
+            dataKey="taxa" 
+            name="Taxa Nexo"
+            fill="#10B981" 
+            radius={[4, 4, 0, 0]}
+            barSize={data.length > 15 ? undefined : 30}
+          />
+        )}
       </BarChart>
     </ResponsiveContainer>
   );

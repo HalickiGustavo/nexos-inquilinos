@@ -546,7 +546,7 @@ function ManagerDashboard() {
                           new Date(i.due_date) < new Date() ? "bg-[#FEF2F2] text-[#EF4444]" : 
                           "bg-[#FFF7ED] text-[#F97316]"
                         )}>
-                          • {i.status === "pago" ? "Pago — split ok" : new Date(i.due_date) < new Date() ? "Atrasado" : "Aguardando Pix"}
+                          • {i.status === "pago" ? "Pago" : new Date(i.due_date) < new Date() ? "Atrasado" : "Aguardando Pix"}
                         </Badge>
 
                       </td>

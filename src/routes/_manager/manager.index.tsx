@@ -511,7 +511,7 @@ function ManagerDashboard() {
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <Link to="/financeiro" search={{ status: 'atrasado' }} className="flex items-center gap-3 p-3 rounded-xl hover:bg-muted/50 transition-colors border border-border/40">
+              <Link to="/manager/financeiro" className="flex items-center gap-3 p-3 rounded-xl hover:bg-muted/50 transition-colors border border-border/40">
                 <div className="size-10 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center shrink-0"><AlertCircle className="size-5" /></div>
                 <div>
                   <div className="text-sm font-bold text-rose-500">{overdueList.length} cobranças em atraso</div>
@@ -519,7 +519,7 @@ function ManagerDashboard() {
                 </div>
               </Link>
               
-              <Link to="/contratos" className="flex items-center gap-3 p-3 rounded-xl hover:bg-muted/50 transition-colors border border-border/40">
+              <Link to="/manager/contratos" className="flex items-center gap-3 p-3 rounded-xl hover:bg-muted/50 transition-colors border border-border/40">
                 <div className="size-10 rounded-full bg-orange-50 text-orange-500 flex items-center justify-center shrink-0"><Calendar className="size-5" /></div>
                 <div>
                   <div className="text-sm font-bold text-orange-500">{expiring.length} contratos vencendo</div>
@@ -527,7 +527,7 @@ function ManagerDashboard() {
                 </div>
               </Link>
               
-              <Link to="/manutencoes" className="flex items-center gap-3 p-3 rounded-xl hover:bg-muted/50 transition-colors border border-border/40">
+              <Link to="/manager/manutencoes" className="flex items-center gap-3 p-3 rounded-xl hover:bg-muted/50 transition-colors border border-border/40">
                 <div className="size-10 rounded-full bg-amber-50 text-amber-500 flex items-center justify-center shrink-0"><ClipboardCheck className="size-5" /></div>
                 <div>
                   <div className="text-sm font-bold text-amber-500">{pendencies.approvals} manutenções</div>
@@ -535,7 +535,7 @@ function ManagerDashboard() {
                 </div>
               </Link>
               
-              <Link to="/financeiro" className="flex items-center gap-3 p-3 rounded-xl hover:bg-muted/50 transition-colors border border-border/40">
+              <Link to="/manager/financeiro" className="flex items-center gap-3 p-3 rounded-xl hover:bg-muted/50 transition-colors border border-border/40">
                 <div className="size-10 rounded-full bg-purple-50 text-purple-500 flex items-center justify-center shrink-0"><TrendingUp className="size-5" /></div>
                 <div>
                   <div className="text-sm font-bold text-purple-500">{counts.landlords || 0} repasses</div>

@@ -799,7 +799,7 @@ function Empty({ text }: { text: string }) {
   return <div className="px-5 py-6 text-center text-xs text-muted-foreground">{text}</div>;
 }
 
-function buildActivity(a: { contracts: any[]; paid: any[]; maint: any[]; leads: any[] }) {
+function buildActivity(a: { contracts: any[]; paid: any[]; maint: any[]; leads: any[]; properties: any[]; tenants: any[]; payouts: any[] }) {
   const items: { text: string; at: string; color: string }[] = [];
   a.paid.forEach((r) => items.push({
     text: `Pagamento recebido de ${r.contract?.tenant?.full_name ?? "—"} — ${formatBRL(Number(r.paid_amount ?? 0))}`,
@@ -816,6 +816,18 @@ function buildActivity(a: { contracts: any[]; paid: any[]; maint: any[]; leads: 
   a.leads.forEach((r) => items.push({
     text: `Novo lead: ${r.name}${r.source ? ` — ${r.source}` : ""}`,
     at: r.created_at, color: "bg-blue-500",
+  }));
+  a.properties.forEach((r) => items.push({
+    text: `Novo imóvel cadastrado: ${r.nickname}`,
+    at: r.created_at, color: "bg-indigo-500",
+  }));
+  a.tenants.forEach((r) => items.push({
+    text: `Novo inquilino cadastrado: ${r.full_name}`,
+    at: r.created_at, color: "bg-cyan-500",
+  }));
+  a.payouts.forEach((r) => items.push({
+    text: `Repasse processado — ${formatBRL(Number(r.landlord_payout_amount ?? 0))}`,
+    at: r.landlord_payout_date, color: "bg-purple-500",
   }));
   return items
     .filter((x) => x.at)

@@ -755,12 +755,23 @@ function PendRow({ label, value, to, tone }: { label: string; value: number; to:
   );
 }
 
-function MiniStat({ label, value, icon, to }: { label: string; value: number | undefined; icon: React.ReactNode; to: string }) {
-  return (
+function MiniStat({ label, value, icon, to, tooltip }: { label: string; value: string | number | undefined; icon: React.ReactNode; to: string; tooltip?: string }) {
+  const content = (
     <Link to={to} className="bg-card p-3.5 flex flex-col gap-1 hover:bg-muted/40 transition">
       <span className="inline-flex items-center gap-1.5 text-[11px] uppercase tracking-wide text-muted-foreground">{icon}{label}</span>
       <span className="text-lg font-bold tabular-nums">{value ?? 0}</span>
     </Link>
+  );
+
+  if (!tooltip) return content;
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        {content}
+      </TooltipTrigger>
+      <TooltipContent side="top">{tooltip}</TooltipContent>
+    </Tooltip>
   );
 }
 

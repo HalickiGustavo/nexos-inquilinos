@@ -29,6 +29,7 @@ export type PortfolioSummaryData = {
   receivedRevenue: number;
   pendingRevenue: number;
   overdueAmount: number;
+  payoutsPending?: number;
   expiringContracts?: number;
   occupancyRate?: number;
   /** variation percentage vs. previous month (null = not enough history) */
@@ -181,7 +182,7 @@ export function PortfolioSummary({ data }: { data: PortfolioSummaryData }) {
         />
         <StatCard
           label="A Repassar"
-          value={formatBRLCompact(data.receivedRevenue * 0.85)} // Placeholder logic
+          value={formatBRLCompact(data.payoutsPending ?? 0)}
           icon={TrendingUp}
           tone="amber"
           tooltip="Valores destinados aos proprietários aguardando processamento."

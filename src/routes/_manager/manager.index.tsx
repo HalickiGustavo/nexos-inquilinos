@@ -461,6 +461,7 @@ function ManagerDashboard() {
             receivedRevenue: kpis.paid,
             pendingRevenue: kpis.toReceive,
             overdueAmount: kpis.overdue,
+            payoutsPending: kpis.payoutsPending,
             occupancyRate: occupancyRate,
             expiringContracts: expiring.length,
             trends: { 

@@ -606,8 +606,31 @@ function ManagerDashboard() {
                 </tbody>
               </table>
             </div>
-            <div className="text-center pt-2">
-              <p className="text-[10px] text-[#D1D5DB] font-medium italic">Plataforma sistema em operação · ambiente de alta performance</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+              <MiniStat 
+                label="Manutenções abertas" 
+                value={counts.maintenancesOpen} 
+                icon={<AlertTriangle className="size-3" />}
+                to="/manager/manutencoes"
+              />
+              <MiniStat 
+                label="Leads novos" 
+                value={pendencies.leadsNew} 
+                icon={<UserPlus className="size-3" />}
+                to="/manager/leads"
+              />
+              <MiniStat 
+                label="Vistorias pendentes" 
+                value={pendencies.inspectionsPending} 
+                icon={<FileSearch className="size-3" />}
+                to="/manager/vistorias"
+              />
+              <MiniStat 
+                label="Assinaturas faltantes" 
+                value={pendencies.missingSignature} 
+                icon={<KeyRound className="size-3" />}
+                to="/manager/contratos"
+              />
             </div>
           </Card>
         </div>

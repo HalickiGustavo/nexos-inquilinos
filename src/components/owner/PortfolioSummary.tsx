@@ -12,6 +12,7 @@ import {
   TrendingDown,
   Minus,
   Info,
+  Coins,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { Card } from "@/components/ui/card";

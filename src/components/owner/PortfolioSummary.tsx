@@ -149,61 +149,63 @@ export function PortfolioSummary({ data }: { data: PortfolioSummaryData }) {
   const t = data.trends ?? {};
   
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      <StatCard 
-        label="Recebido no mês" 
-        value={formatBRLCompact(data.receivedRevenue)} 
-        icon={Wallet} 
-        trend={t.received}
-        tone="primary"
-      />
-      <StatCard
-        label="A Receber"
-        value={formatBRLCompact(data.pendingRevenue)}
-        icon={Coins}
-        tone="emerald"
-        trend={t.pending}
-      />
-      <StatCard
-        label="Inadimplência"
-        value={`${((data.overdueAmount / (data.forecastRevenue || 1)) * 100).toFixed(1)}%`}
-        icon={AlertCircle}
-        tone="destructive"
-        trend={t.overdue}
-        goodWhenUp={false}
-      />
-      <StatCard
-        label="A Repassar"
-        value={formatBRLCompact(data.pendingRevenue * 0.8)} // Simplified placeholder for now
-        icon={TrendingUp}
-        tone="amber"
-      />
-    </div>
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
-      <StatCard
-        label="Contratos ativos"
-        value={String(data.activeContracts)}
-        icon={FileText}
-        tone="primary"
-      />
-      <StatCard
-        label="Taxa de ocupação"
-        value={`${Math.round((data.rentedProperties / (data.totalProperties || 1)) * 100)}%`}
-        icon={Gauge}
-        tone="primary"
-      />
-      <StatCard
-        label="Imóveis disponíveis"
-        value={String(data.availableProperties)}
-        icon={Building2}
-        tone="muted"
-      />
-      <StatCard
-        label="Contratos vencendo"
-        value={"8"} // Placeholder as per design req
-        icon={DoorOpen}
-        tone="muted"
-      />
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard 
+          label="Recebido no mês" 
+          value={formatBRLCompact(data.receivedRevenue)} 
+          icon={Wallet} 
+          trend={t.received}
+          tone="primary"
+        />
+        <StatCard
+          label="A Receber"
+          value={formatBRLCompact(data.pendingRevenue)}
+          icon={Coins}
+          tone="emerald"
+          trend={t.pending}
+        />
+        <StatCard
+          label="Inadimplência"
+          value={`${((data.overdueAmount / (data.forecastRevenue || 1)) * 100).toFixed(1)}%`}
+          icon={AlertCircle}
+          tone="destructive"
+          trend={t.overdue}
+          goodWhenUp={false}
+        />
+        <StatCard
+          label="A Repassar"
+          value={formatBRLCompact(data.pendingRevenue * 0.8)} // Simplified placeholder for now
+          icon={TrendingUp}
+          tone="amber"
+        />
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard
+          label="Contratos ativos"
+          value={String(data.activeContracts)}
+          icon={FileText}
+          tone="primary"
+        />
+        <StatCard
+          label="Taxa de ocupação"
+          value={`${Math.round((data.rentedProperties / (data.totalProperties || 1)) * 100)}%`}
+          icon={Gauge}
+          tone="primary"
+        />
+        <StatCard
+          label="Imóveis disponíveis"
+          value={String(data.availableProperties)}
+          icon={Building2}
+          tone="muted"
+        />
+        <StatCard
+          label="Contratos vencendo"
+          value={"8"} // Placeholder as per design req
+          icon={DoorOpen}
+          tone="muted"
+        />
+      </div>
     </div>
   );
 }

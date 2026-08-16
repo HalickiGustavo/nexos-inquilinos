@@ -446,7 +446,7 @@ function ManagerDashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
           {/* Faturamento (Bar Chart Style) */}
-          <Card className="p-6 flex flex-col gap-4 rounded-2xl border-none shadow-sm h-full">
+          <Card className="lg:col-span-2 p-6 flex flex-col gap-4 rounded-2xl border-none shadow-sm h-full">
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-base font-bold text-[#1A1A1A]">Faturamento</h3>

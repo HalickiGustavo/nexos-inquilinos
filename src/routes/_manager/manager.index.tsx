@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { DateRange } from "react-day-picker";
 import { DateRangePicker } from "@/components/dashboard/DateRangePicker";
-import { NexoLogo } from "@/components/NexoLogo";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -36,7 +36,7 @@ const RANGE_LABEL: Record<RangeKey, string> = {
 };
 
 export const Route = createFileRoute("/_manager/manager/")({
-  head: () => ({ meta: [{ title: "Dashboard — NEXO Imobiliária" }] }),
+  head: () => ({ meta: [{ title: "Dashboard — Gestão Imobiliária" }] }),
   component: ManagerDashboard,
 });
 

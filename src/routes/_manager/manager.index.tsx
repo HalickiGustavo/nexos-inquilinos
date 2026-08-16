@@ -63,6 +63,7 @@ function ManagerDashboard() {
     return { from, to };
   });
   const [range, setRange] = useState<RangeKey>("30d");
+  const [chartView, setChartView] = useState<"recebimentos" | "repasses" | "taxa">("recebimentos");
 
   useEffect(() => {
     const channel = supabase
@@ -324,36 +325,44 @@ function ManagerDashboard() {
     const days = Math.round((new Date(monthEnd).getTime() - from.getTime()) / 86400000) + 1;
     // Aggregate by day for most ranges; by month for large ranges (> 90 days).
     if (days > 90) {
-      const map = new Map<string, { month: string; pago: number; pendente: number; repassado: number }>();
+      const map = new Map<string, { month: string; pago: number; pendente: number; repassado: number; taxa: number }>();
       const now = new Date();
       for (let m = 0; m <= now.getMonth(); m++) {
         const d = new Date(now.getFullYear(), m, 1);
         const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-        map.set(key, { month: d.toLocaleDateString("pt-BR", { month: "short" }).replace(".", ""), pago: 0, pendente: 0, repassado: 0 });
+        map.set(key, { month: d.toLocaleDateString("pt-BR", { month: "short" }).replace(".", ""), pago: 0, pendente: 0, repassado: 0, taxa: 0 });
       }
       for (const r of rows) {
         const key = String(r.due_date).slice(0, 7);
         const bucket = map.get(key);
         if (!bucket) continue;
-        if (r.status === "pago") bucket.pago += Number(r.paid_amount ?? r.amount);
-        else bucket.pendente += Number(r.amount);
+        if (r.status === "pago") {
+          bucket.pago += Number(r.paid_amount ?? r.amount);
+          bucket.taxa += (Number(r.paid_amount ?? r.amount) * Number(r.management_fee_percent ?? 0)) / 100;
+        } else {
+          bucket.pendente += Number(r.amount);
+        }
         if (r.landlord_payout_status === "repassado") bucket.repassado += Number(r.landlord_payout_amount ?? 0);
       }
       return [...map.values()];
     }
     // daily buckets
-    const buckets: Record<string, { month: string; pago: number; pendente: number; repassado: number }> = {};
+    const buckets: Record<string, { month: string; pago: number; pendente: number; repassado: number; taxa: number }> = {};
     for (let i = 0; i < days; i++) {
       const d = addDays(from, i);
       const key = iso(d);
-      buckets[key] = { month: d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }), pago: 0, pendente: 0, repassado: 0 };
+      buckets[key] = { month: d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }), pago: 0, pendente: 0, repassado: 0, taxa: 0 };
     }
     for (const r of rows) {
       const key = String(r.due_date);
       const bucket = buckets[key];
       if (!bucket) continue;
-      if (r.status === "pago") bucket.pago += Number(r.paid_amount ?? r.amount);
-      else bucket.pendente += Number(r.amount);
+      if (r.status === "pago") {
+        bucket.pago += Number(r.paid_amount ?? r.amount);
+        bucket.taxa += (Number(r.paid_amount ?? r.amount) * Number(r.management_fee_percent ?? 0)) / 100;
+      } else {
+        bucket.pendente += Number(r.amount);
+      }
       if (r.landlord_payout_status === "repassado") bucket.repassado += Number(r.landlord_payout_amount ?? 0);
     }
     return Object.values(buckets);
@@ -467,17 +476,44 @@ function ManagerDashboard() {
 
           {/* Faturamento (Bar Chart Style) */}
           <Card className="lg:col-span-2 p-6 flex flex-col gap-4 rounded-2xl border-none shadow-sm h-full">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h3 className="text-base font-bold text-[#1A1A1A]">Recebimentos</h3>
-                <p className="text-xs text-[#6B7280]">Valores recebidos no período.</p>
+                <h3 className="text-base font-bold text-[#1A1A1A]">
+                  {chartView === "recebimentos" ? "Recebimentos" : chartView === "repasses" ? "Repasses" : "Taxa da Imobiliária"}
+                </h3>
+                <p className="text-xs text-[#6B7280]">
+                  {chartView === "recebimentos" ? "Valores recebidos no período." : chartView === "repasses" ? "Valores repassados aos proprietários." : "Comissões da imobiliária no período."}
+                </p>
               </div>
-              <Badge variant="secondary" className="bg-[#F3F4F6] text-[#6B7280] border-none text-[10px] font-bold">7 MESES</Badge>
+              <div className="flex items-center gap-2">
+                <div className="flex bg-[#F3F4F6] p-1 rounded-lg">
+                  <button 
+                    onClick={() => setChartView("recebimentos")}
+                    className={cn("px-2 py-1 text-[10px] font-bold rounded-md transition-all", chartView === "recebimentos" ? "bg-white shadow-sm text-[#7C3AED]" : "text-[#6B7280]")}
+                  >
+                    Recebimentos
+                  </button>
+                  <button 
+                    onClick={() => setChartView("repasses")}
+                    className={cn("px-2 py-1 text-[10px] font-bold rounded-md transition-all", chartView === "repasses" ? "bg-white shadow-sm text-[#7C3AED]" : "text-[#6B7280]")}
+                  >
+                    Repasses
+                  </button>
+                  <button 
+                    onClick={() => setChartView("taxa")}
+                    className={cn("px-2 py-1 text-[10px] font-bold rounded-md transition-all", chartView === "taxa" ? "bg-white shadow-sm text-[#7C3AED]" : "text-[#6B7280]")}
+                  >
+                    Taxa
+                  </button>
+                </div>
+                <Badge variant="secondary" className="bg-[#F3F4F6] text-[#6B7280] border-none text-[10px] font-bold">{range.toUpperCase()}</Badge>
+              </div>
             </div>
             <div className="h-40 mt-4">
               <Suspense fallback={<Skeleton className="w-full h-full rounded-lg" />}>
                 <DashboardCollectionChart 
                   data={chartData} 
+                  view={chartView}
                 />
               </Suspense>
             </div>

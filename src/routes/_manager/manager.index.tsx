@@ -435,12 +435,14 @@ function ManagerDashboard() {
           data={{
             totalProperties: counts.properties ?? 0,
             rentedProperties: counts.rented ?? 0,
-            availableProperties: Math.max(0, (counts.properties ?? 0) - (counts.rented ?? 0)),
+            availableProperties: availableProperties,
             activeContracts: counts.contracts ?? 0,
             forecastRevenue: kpis.revenue,
             receivedRevenue: kpis.paid,
             pendingRevenue: kpis.toReceive,
             overdueAmount: kpis.overdue,
+            occupancyRate: occupancyRate,
+            expiringContracts: expiring.length,
             trends: { 
               received: kpis.deltaPaid,
               forecast: kpis.deltaForecast,

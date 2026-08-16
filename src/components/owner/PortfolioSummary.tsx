@@ -29,6 +29,8 @@ export type PortfolioSummaryData = {
   receivedRevenue: number;
   pendingRevenue: number;
   overdueAmount: number;
+  expiringContracts?: number;
+  occupancyRate?: number;
   /** variation percentage vs. previous month (null = not enough history) */
   trends?: {
     forecast?: number | null;
@@ -153,11 +155,12 @@ export function PortfolioSummary({ data }: { data: PortfolioSummaryData }) {
     <div className="space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard 
-          label="Recebido no mês" 
+          label="Recebido no período" 
           value={formatBRLCompact(data.receivedRevenue)} 
           icon={Wallet} 
           trend={t.received}
           tone="primary"
+          tooltip="Total recebido no período selecionado."
         />
         <StatCard
           label="A Receber"
@@ -165,6 +168,7 @@ export function PortfolioSummary({ data }: { data: PortfolioSummaryData }) {
           icon={Coins}
           tone="emerald"
           trend={t.pending}
+          tooltip="Valores faturados aguardando pagamento."
         />
         <StatCard
           label="Inadimplência"
@@ -173,12 +177,14 @@ export function PortfolioSummary({ data }: { data: PortfolioSummaryData }) {
           tone="destructive"
           trend={t.overdue}
           goodWhenUp={false}
+          tooltip="Percentual do valor previsto que permanece em atraso."
         />
         <StatCard
           label="A Repassar"
-          value={formatBRLCompact(data.pendingRevenue * 0.8)} // Simplified placeholder for now
+          value={formatBRLCompact(data.receivedRevenue * 0.85)} // Placeholder logic
           icon={TrendingUp}
           tone="amber"
+          tooltip="Valores destinados aos proprietários aguardando processamento."
         />
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -187,24 +193,28 @@ export function PortfolioSummary({ data }: { data: PortfolioSummaryData }) {
           value={String(data.activeContracts)}
           icon={FileText}
           tone="primary"
+          tooltip="Total de contratos de locação ativos no momento."
         />
         <StatCard
           label="Taxa de ocupação"
-          value={`${Math.round((data.rentedProperties / (data.totalProperties || 1)) * 100)}%`}
+          value={`${data.occupancyRate ?? 0}%`}
           icon={Gauge}
           tone="primary"
+          tooltip="Percentual de imóveis ocupados em relação ao total da carteira."
         />
         <StatCard
           label="Imóveis disponíveis"
           value={String(data.availableProperties)}
           icon={Building2}
           tone="muted"
+          tooltip="Total de imóveis prontos para locação."
         />
         <StatCard
           label="Contratos vencendo"
-          value={"8"} // Placeholder as per design req
+          value={String(data.expiringContracts ?? 0)}
           icon={DoorOpen}
           tone="muted"
+          tooltip="Contratos com data de término nos próximos 30 dias."
         />
       </div>
     </div>

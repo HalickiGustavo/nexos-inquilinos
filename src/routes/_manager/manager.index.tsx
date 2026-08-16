@@ -64,6 +64,7 @@ function ManagerDashboard() {
   });
   const [range, setRange] = useState<RangeKey>("30d");
   const [chartView, setChartView] = useState<"recebimentos" | "repasses" | "taxa">("recebimentos");
+  const [expirationFilter, setExpirationFilter] = useState<"all" | "today" | "7d" | "30d">("all");
 
   useEffect(() => {
     const channel = supabase

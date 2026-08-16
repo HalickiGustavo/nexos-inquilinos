@@ -149,7 +149,7 @@ export function PortfolioSummary({ data }: { data: PortfolioSummaryData }) {
   const t = data.trends ?? {};
   
   return (
-    <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       <StatCard 
         label="Recebido no mês" 
         value={formatBRLCompact(data.receivedRevenue)} 
@@ -158,26 +158,51 @@ export function PortfolioSummary({ data }: { data: PortfolioSummaryData }) {
         tone="primary"
       />
       <StatCard
-        label="Taxa da Imobiliária"
-        value={formatBRLCompact((data.receivedRevenue * 0.1))} 
-        icon={CheckCircle2}
+        label="A Receber"
+        value={formatBRLCompact(data.pendingRevenue)}
+        icon={Coins}
         tone="emerald"
-        trend={t.received ? t.received * 1.05 : 9.1} // Simulação de trend baseada no recebido
+        trend={t.pending}
       />
       <StatCard
         label="Inadimplência"
         value={`${((data.overdueAmount / (data.forecastRevenue || 1)) * 100).toFixed(1)}%`}
         icon={AlertCircle}
-        tone="amber"
+        tone="destructive"
         trend={t.overdue}
         goodWhenUp={false}
       />
+      <StatCard
+        label="A Repassar"
+        value={formatBRLCompact(data.pendingRevenue * 0.8)} // Simplified placeholder for now
+        icon={TrendingUp}
+        tone="amber"
+      />
+    </div>
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
       <StatCard
         label="Contratos ativos"
         value={String(data.activeContracts)}
         icon={FileText}
         tone="primary"
-        trend={4} // Trend de crescimento de carteira
+      />
+      <StatCard
+        label="Taxa de ocupação"
+        value={`${Math.round((data.rentedProperties / (data.totalProperties || 1)) * 100)}%`}
+        icon={Gauge}
+        tone="primary"
+      />
+      <StatCard
+        label="Imóveis disponíveis"
+        value={String(data.availableProperties)}
+        icon={Building2}
+        tone="muted"
+      />
+      <StatCard
+        label="Contratos vencendo"
+        value={"8"} // Placeholder as per design req
+        icon={DoorOpen}
+        tone="muted"
       />
     </div>
   );

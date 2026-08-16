@@ -12,6 +12,7 @@ import {
   TrendingDown,
   Minus,
   Info,
+  Coins,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -28,6 +29,8 @@ export type PortfolioSummaryData = {
   receivedRevenue: number;
   pendingRevenue: number;
   overdueAmount: number;
+  expiringContracts?: number;
+  occupancyRate?: number;
   /** variation percentage vs. previous month (null = not enough history) */
   trends?: {
     forecast?: number | null;
@@ -149,36 +152,71 @@ export function PortfolioSummary({ data }: { data: PortfolioSummaryData }) {
   const t = data.trends ?? {};
   
   return (
-    <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-4">
-      <StatCard 
-        label="Recebido no mês" 
-        value={formatBRLCompact(data.receivedRevenue)} 
-        icon={Wallet} 
-        trend={t.received}
-        tone="primary"
-      />
-      <StatCard
-        label="Taxa da Imobiliária"
-        value={formatBRLCompact((data.receivedRevenue * 0.1))} 
-        icon={CheckCircle2}
-        tone="emerald"
-        trend={t.received ? t.received * 1.05 : 9.1} // Simulação de trend baseada no recebido
-      />
-      <StatCard
-        label="Inadimplência"
-        value={`${((data.overdueAmount / (data.forecastRevenue || 1)) * 100).toFixed(1)}%`}
-        icon={AlertCircle}
-        tone="amber"
-        trend={t.overdue}
-        goodWhenUp={false}
-      />
-      <StatCard
-        label="Contratos ativos"
-        value={String(data.activeContracts)}
-        icon={FileText}
-        tone="primary"
-        trend={4} // Trend de crescimento de carteira
-      />
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard 
+          label="Recebido no período" 
+          value={formatBRLCompact(data.receivedRevenue)} 
+          icon={Wallet} 
+          trend={t.received}
+          tone="primary"
+          tooltip="Total recebido no período selecionado."
+        />
+        <StatCard
+          label="A Receber"
+          value={formatBRLCompact(data.pendingRevenue)}
+          icon={Coins}
+          tone="emerald"
+          trend={t.pending}
+          tooltip="Valores faturados aguardando pagamento."
+        />
+        <StatCard
+          label="Inadimplência"
+          value={`${((data.overdueAmount / (data.forecastRevenue || 1)) * 100).toFixed(1)}%`}
+          icon={AlertCircle}
+          tone="destructive"
+          trend={t.overdue}
+          goodWhenUp={false}
+          tooltip="Percentual do valor previsto que permanece em atraso."
+        />
+        <StatCard
+          label="A Repassar"
+          value={formatBRLCompact(data.receivedRevenue * 0.85)} // Placeholder logic
+          icon={TrendingUp}
+          tone="amber"
+          tooltip="Valores destinados aos proprietários aguardando processamento."
+        />
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard
+          label="Contratos ativos"
+          value={String(data.activeContracts)}
+          icon={FileText}
+          tone="primary"
+          tooltip="Total de contratos de locação ativos no momento."
+        />
+        <StatCard
+          label="Taxa de ocupação"
+          value={`${data.occupancyRate ?? 0}%`}
+          icon={Gauge}
+          tone="primary"
+          tooltip="Percentual de imóveis ocupados em relação ao total da carteira."
+        />
+        <StatCard
+          label="Imóveis disponíveis"
+          value={String(data.availableProperties)}
+          icon={Building2}
+          tone="muted"
+          tooltip="Total de imóveis prontos para locação."
+        />
+        <StatCard
+          label="Contratos vencendo"
+          value={String(data.expiringContracts ?? 0)}
+          icon={DoorOpen}
+          tone="muted"
+          tooltip="Contratos com data de término nos próximos 30 dias."
+        />
+      </div>
     </div>
   );
 }

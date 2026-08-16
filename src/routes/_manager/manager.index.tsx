@@ -367,6 +367,7 @@ function ManagerDashboard() {
   }, []);
 
   const nameFull = qProfile.data?.full_name || user?.email?.split("@")[0] || "";
+  const firstName = nameFull.split(' ')[0] || "Marina";
 
   const counts = (qCounts.data as any) ?? {};
   const pendencies = (qPend.data as any) ?? {};
@@ -375,23 +376,28 @@ function ManagerDashboard() {
   const expiring = (qExpiring.data as any[]) ?? [];
   const activity = (qActivity.data as any) ?? { contracts: [], paid: [], maint: [], leads: [] };
 
+  const occupancyRate = counts.properties > 0 ? Math.round((counts.rented / counts.properties) * 100) : 0;
+  const availableProperties = Math.max(0, (counts.properties ?? 0) - (counts.rented ?? 0));
+
   if (qCounts.isLoading || qMonth.isLoading) {
     return (
       <div className="p-4 sm:p-6 lg:p-8 space-y-8 bg-[#F9FAFE] min-h-screen">
         <div className="flex justify-between items-center">
-          <Skeleton className="h-10 w-64 rounded-xl" />
+          <div className="space-y-2">
+            <Skeleton className="h-10 w-64 rounded-xl" />
+            <Skeleton className="h-4 w-96 rounded-lg" />
+          </div>
           <div className="flex gap-3">
-            <Skeleton className="h-10 w-32 rounded-xl" />
-            <Skeleton className="h-10 w-32 rounded-xl" />
+            <Skeleton className="h-10 w-48 rounded-xl" />
           </div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-32 rounded-2xl" />)}
+          {[1, 2, 3, 4, 5, 6, 7, 8].map(i => <Skeleton key={i} className="h-28 rounded-2xl" />)}
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          <Skeleton className="lg:col-span-2 h-[350px] rounded-2xl" />
-          <Skeleton className="h-[350px] rounded-2xl" />
-          <Skeleton className="h-[350px] rounded-2xl" />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <Skeleton className="lg:col-span-2 h-[400px] rounded-2xl" />
+          <Skeleton className="h-[400px] rounded-2xl" />
+          <Skeleton className="lg:col-span-3 h-[300px] rounded-2xl" />
         </div>
       </div>
     );
@@ -405,11 +411,15 @@ function ManagerDashboard() {
         <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="min-w-0">
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#1A1A1A] flex items-center gap-2">
-              {greeting()}, {qProfile.data?.full_name?.split(' ')[0] || "Marina"} 👋
+              {greeting()}, {firstName} 👋
             </h1>
 
             <p className="text-[#6B7280] mt-1 text-sm max-w-2xl">
-              Performance operacional: sua carteira liquidou {kpis.collected}% dos repasses previstos. {pendencies.approvals > 0 ? `${pendencies.approvals} manutenções aguardam aprovação.` : "Tudo sob controle no ecossistema hoje."}
+              {kpis.overdue > 0 
+                ? `Existem ${overdueList.length} cobranças vencidas que precisam de atenção.` 
+                : pendencies.approvals > 0 
+                  ? `${pendencies.approvals} manutenções aguardam aprovação.` 
+                  : "Carteira em dia. Tudo sob controle no ecossistema hoje."}
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -427,12 +437,14 @@ function ManagerDashboard() {
           data={{
             totalProperties: counts.properties ?? 0,
             rentedProperties: counts.rented ?? 0,
-            availableProperties: Math.max(0, (counts.properties ?? 0) - (counts.rented ?? 0)),
+            availableProperties: availableProperties,
             activeContracts: counts.contracts ?? 0,
             forecastRevenue: kpis.revenue,
             receivedRevenue: kpis.paid,
             pendingRevenue: kpis.toReceive,
             overdueAmount: kpis.overdue,
+            occupancyRate: occupancyRate,
+            expiringContracts: expiring.length,
             trends: { 
               received: kpis.deltaPaid,
               forecast: kpis.deltaForecast,
@@ -449,8 +461,8 @@ function ManagerDashboard() {
           <Card className="lg:col-span-2 p-6 flex flex-col gap-4 rounded-2xl border-none shadow-sm h-full">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-base font-bold text-[#1A1A1A]">Faturamento</h3>
-                <p className="text-xs text-[#6B7280]">Repasses processados.</p>
+                <h3 className="text-base font-bold text-[#1A1A1A]">Recebimentos</h3>
+                <p className="text-xs text-[#6B7280]">Valores recebidos no período.</p>
               </div>
               <Badge variant="secondary" className="bg-[#F3F4F6] text-[#6B7280] border-none text-[10px] font-bold">7 MESES</Badge>
             </div>
@@ -470,30 +482,70 @@ function ManagerDashboard() {
                 <h3 className="text-base font-bold text-[#1A1A1A]">Atividade</h3>
                 <p className="text-xs text-[#6B7280]">Fluxo de ações.</p>
               </div>
-              <Badge variant="secondary" className="bg-[#F3F4F6] text-[#6B7280] border-none text-[10px] font-bold uppercase tracking-wider">Hoje</Badge>
+              <Badge variant="secondary" className="bg-[#F3F4F6] text-[#6B7280] border-none text-[10px] font-bold uppercase tracking-wider">Recent</Badge>
             </div>
             <div className="space-y-4 mt-2">
-              {activity.paid.length === 0 && activity.contracts.length === 0 && (
+              {buildActivity(activity).length === 0 && (
                 <p className="text-[10px] text-muted-foreground italic">Nenhuma atividade recente encontrada.</p>
               )}
-              {activity.paid.slice(0, 2).map((p: any, idx: number) => (
-                <div key={`paid-${idx}`} className="flex gap-3">
-                  <div className="size-8 rounded-full bg-[#ECFDF5] text-[#10B981] flex items-center justify-center shrink-0"><CheckCircle2 className="size-4" /></div>
+              {buildActivity(activity).slice(0, 5).map((item, idx) => (
+                <div key={idx} className="flex gap-3">
+                  <div className={cn("size-8 rounded-full flex items-center justify-center shrink-0 text-white", item.color)}>
+                    {item.text.includes("Pagamento") ? <Coins className="size-4" /> :
+                     item.text.includes("Contrato") ? <FilePlus className="size-4" /> :
+                     item.text.includes("Manutenção") ? <ClipboardCheck className="size-4" /> :
+                     <UserPlus className="size-4" />}
+                  </div>
                   <div>
-                    <div className="text-xs font-bold text-[#1A1A1A]">{p.contract?.tenant?.full_name} pagou o aluguel</div>
-                    <div className="text-[10px] text-[#9CA3AF]">Pagamento repassado — {formatDate(p.payment_date)}</div>
+                    <div className="text-xs font-bold text-[#1A1A1A] line-clamp-1">{item.text}</div>
+                    <div className="text-[10px] text-[#9CA3AF]">{formatDate(item.at)}</div>
                   </div>
                 </div>
               ))}
-              {activity.contracts.slice(0, 2).map((c: any, idx: number) => (
-                <div key={`contract-${idx}`} className="flex gap-3">
-                  <div className="size-8 rounded-full bg-[#F5F3FF] text-[#7C3AED] flex items-center justify-center shrink-0"><PlusCircleIcon className="size-4" /></div>
-                  <div>
-                    <div className="text-xs font-bold text-[#1A1A1A]">Novo contrato assinado</div>
-                    <div className="text-[10px] text-[#9CA3AF]">{c.property?.nickname} — {formatDate(c.created_at)}</div>
-                  </div>
+            </div>
+          </Card>
+
+          {/* ============ Requer Atenção ============ */}
+          <Card className="lg:col-span-3 p-6 rounded-2xl border-none shadow-sm space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-bold text-[#1A1A1A]">Requer atenção</h3>
+                <p className="text-sm text-[#6B7280]">Pendências operacionais que exigem sua ação.</p>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <Link to="/manager/financeiro" className="flex items-center gap-3 p-3 rounded-xl hover:bg-muted/50 transition-colors border border-border/40">
+                <div className="size-10 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center shrink-0"><AlertCircle className="size-5" /></div>
+                <div>
+                  <div className="text-sm font-bold text-rose-500">{overdueList.length} cobranças em atraso</div>
+                  <div className="text-[10px] text-muted-foreground">{formatBRL(kpis.overdue)} em aberto</div>
                 </div>
-              ))}
+              </Link>
+              
+              <Link to="/manager/contratos" className="flex items-center gap-3 p-3 rounded-xl hover:bg-muted/50 transition-colors border border-border/40">
+                <div className="size-10 rounded-full bg-orange-50 text-orange-500 flex items-center justify-center shrink-0"><Calendar className="size-5" /></div>
+                <div>
+                  <div className="text-sm font-bold text-orange-500">{expiring.length} contratos vencendo</div>
+                  <div className="text-[10px] text-muted-foreground">nos próximos 30 dias</div>
+                </div>
+              </Link>
+              
+              <Link to="/manager/manutencoes" className="flex items-center gap-3 p-3 rounded-xl hover:bg-muted/50 transition-colors border border-border/40">
+                <div className="size-10 rounded-full bg-amber-50 text-amber-500 flex items-center justify-center shrink-0"><ClipboardCheck className="size-5" /></div>
+                <div>
+                  <div className="text-sm font-bold text-amber-500">{pendencies.approvals} manutenções</div>
+                  <div className="text-[10px] text-muted-foreground">aguardando aprovação</div>
+                </div>
+              </Link>
+              
+              <Link to="/manager/financeiro" className="flex items-center gap-3 p-3 rounded-xl hover:bg-muted/50 transition-colors border border-border/40">
+                <div className="size-10 rounded-full bg-purple-50 text-purple-500 flex items-center justify-center shrink-0"><TrendingUp className="size-5" /></div>
+                <div>
+                  <div className="text-sm font-bold text-purple-500">{counts.landlords || 0} repasses</div>
+                  <div className="text-[10px] text-muted-foreground">aguardando processamento</div>
+                </div>
+              </Link>
             </div>
           </Card>
 
@@ -511,33 +563,35 @@ function ManagerDashboard() {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="text-[10px] uppercase tracking-widest text-[#9CA3AF] border-b border-[#F3F4F6]">
-                    <th className="pb-3 font-bold">Imóvel</th>
                     <th className="pb-3 font-bold">Inquilino</th>
+                    <th className="pb-3 font-bold">Imóvel</th>
                     <th className="pb-3 font-bold text-right pr-12">Vencimento</th>
+                    <th className="pb-3 font-bold text-right">Valor</th>
                     <th className="pb-3 font-bold text-right">Status</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#F3F4F6]">
-                  {((overdueList.length > 0 ? overdueList : upcoming).slice(0, 4) as any[]).map((i: any, idx) => (
+                  {((overdueList.length > 0 ? overdueList : upcoming).slice(0, 5) as any[]).map((i: any, idx) => (
                     <tr key={idx} className="group hover:bg-[#F9FAFE] transition-colors">
-                      <td className="py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="size-9 rounded-xl bg-[#F5F3FF] text-[#7C3AED] flex items-center justify-center shrink-0"><HomeIcon className="size-4" /></div>
-                          <div>
-                            <div className="text-sm font-bold text-[#1A1A1A]">{i.contract?.property?.nickname}</div>
-                            <div className="text-[10px] text-[#9CA3AF]">Contrato {i.contract?.id?.slice(0, 8).toUpperCase()}</div>
-                          </div>
-                        </div>
-                      </td>
                       <td className="py-4">
                         <div className="flex items-center gap-2">
                           <div className="size-6 rounded-lg bg-[#7C3AED] text-white text-[10px] font-bold grid place-items-center">{(i.contract?.tenant?.full_name || "T").charAt(0)}</div>
                           <span className="text-sm text-[#374151] font-medium">{i.contract?.tenant?.full_name}</span>
                         </div>
                       </td>
+                      <td className="py-4">
+                        <div className="flex items-center gap-3">
+                          <div>
+                            <div className="text-sm font-bold text-[#1A1A1A]">{i.contract?.property?.nickname}</div>
+                            <div className="text-[10px] text-[#9CA3AF]">Contrato {i.contract?.id?.slice(0, 8).toUpperCase()}</div>
+                          </div>
+                        </div>
+                      </td>
                       <td className="py-4 text-right pr-12">
+                        <div className="text-sm font-medium text-[#1A1A1A]">{formatDate(i.due_date)}</div>
+                      </td>
+                      <td className="py-4 text-right">
                         <div className="text-sm font-bold text-[#1A1A1A]">{formatBRL(Number(i.amount ?? 0) + Number(i.extra_fees ?? 0))}</div>
-                        <div className="text-[10px] text-[#9CA3AF]">{formatDate(i.due_date)}</div>
                       </td>
                       <td className="py-4 text-right">
                         <Badge className={cn(
@@ -546,17 +600,39 @@ function ManagerDashboard() {
                           new Date(i.due_date) < new Date() ? "bg-[#FEF2F2] text-[#EF4444]" : 
                           "bg-[#FFF7ED] text-[#F97316]"
                         )}>
-                          • {i.status === "pago" ? "Pago" : new Date(i.due_date) < new Date() ? "Atrasado" : "Aguardando Pix"}
+                          • {i.status === "pago" ? "Pago" : new Date(i.due_date) < new Date() ? "Pendente" : "Futuro"}
                         </Badge>
-
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-            <div className="text-center pt-2">
-              <p className="text-[10px] text-[#D1D5DB] font-medium italic">Plataforma sistema em operação · ambiente de alta performance</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+              <MiniStat 
+                label="Manutenções abertas" 
+                value={counts.maintenancesOpen} 
+                icon={<AlertTriangle className="size-3" />}
+                to="/manager/manutencoes"
+              />
+              <MiniStat 
+                label="Leads novos" 
+                value={pendencies.leadsNew} 
+                icon={<UserPlus className="size-3" />}
+                to="/manager/leads"
+              />
+              <MiniStat 
+                label="Vistorias pendentes" 
+                value={pendencies.inspectionsPending} 
+                icon={<FileSearch className="size-3" />}
+                to="/manager/vistorias"
+              />
+              <MiniStat 
+                label="Assinaturas faltantes" 
+                value={pendencies.missingSignature} 
+                icon={<KeyRound className="size-3" />}
+                to="/manager/contratos"
+              />
             </div>
           </Card>
         </div>

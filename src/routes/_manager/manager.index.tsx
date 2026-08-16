@@ -409,7 +409,11 @@ function ManagerDashboard() {
             </h1>
 
             <p className="text-[#6B7280] mt-1 text-sm max-w-2xl">
-              Performance operacional: sua carteira liquidou {kpis.collected}% dos repasses previstos. {pendencies.approvals > 0 ? `${pendencies.approvals} manutenções aguardam aprovação.` : "Tudo sob controle no ecossistema hoje."}
+              {kpis.overdue > 0 
+                ? `Existem ${overdueList.length} cobranças vencidas que precisam de atenção.` 
+                : pendencies.approvals > 0 
+                  ? `${pendencies.approvals} manutenções aguardam aprovação.` 
+                  : "Carteira em dia. Tudo sob controle no ecossistema hoje."}
             </p>
           </div>
           <div className="flex items-center gap-3">

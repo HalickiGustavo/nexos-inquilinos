@@ -350,6 +350,7 @@ TO authenticated
 USING (id = public.current_tenant_id());
 GRANT EXECUTE ON FUNCTION public.current_tenant_id() TO authenticated, anon;
 GRANT EXECUTE ON FUNCTION public.has_role(uuid, public.app_role) TO authenticated, anon;
+CREATE TABLE public.efi_accounts (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL UNIQUE,
   wallet_id text,

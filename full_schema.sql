@@ -920,7 +920,7 @@ SELECT cron.schedule(
   '0 8 * * *',
   $cmd$
   SELECT extensions.http_post(
-    url := 'https://project--231b8419-e2f6-4a97-8769-d585255d26c4.lovable.app/api/public/hooks/process-scheduled-invoices,
+    url := 'https://project--231b8419-e2f6-4a97-8769-d585255d26c4.lovable.app/api/public/hooks/process-scheduled-invoices',
     headers := jsonb_build_object(
       'Content-Type', 'application/json',
       'Authorization', 'Bearer ' || current_setting('app.settings.service_role_key', true)

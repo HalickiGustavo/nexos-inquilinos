@@ -2086,16 +2086,10 @@ END $$;
 -- 3) Recreate the most sensitive owner-scoped policies with explicit auth.uid()
 -- predicates. These policies intentionally do not include manager/landlord joins.
 
-  USING (user_id = auth.uid());
-  WITH CHECK (user_id = auth.uid());
-  USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
-  USING (user_id = auth.uid());
-
-
-  USING (user_id = auth.uid());
-  WITH CHECK (user_id = auth.uid());
-  USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
-  USING (user_id = auth.uid());
+DROP POLICY IF EXISTS "Manager manages own team re-scoped" ON public.manager_members;
+CREATE POLICY "Manager manages own team re-scoped"
+  ON public.manager_members FOR ALL TO authenticated
+  USING (manager_user_id = auth.uid()) WITH CHECK (manager_user_id = auth.uid());
 
 DROP POLICY IF EXISTS "Users view own profile" ON public.profiles;
 DROP POLICY IF EXISTS "Users insert own profile" ON public.profiles;

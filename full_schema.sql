@@ -350,6 +350,7 @@ TO authenticated
 USING (id = public.current_tenant_id());
 GRANT EXECUTE ON FUNCTION public.current_tenant_id() TO authenticated, anon;
 GRANT EXECUTE ON FUNCTION public.has_role(uuid, public.app_role) TO authenticated, anon;
+CREATE TABLE public.efi_accounts (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL UNIQUE,
   wallet_id text,
@@ -359,16 +360,23 @@ GRANT EXECUTE ON FUNCTION public.has_role(uuid, public.app_role) TO authenticate
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
+ALTER TABLE public.efi_accounts ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users manage own efi_account" ON public.efi_accounts
   FOR ALL TO authenticated USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+CREATE TRIGGER trg_efi_accounts_updated BEFORE UPDATE ON public.efi_accounts
   FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
+CREATE TABLE public.efi_credentials (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL,
   tenant_id uuid NOT NULL UNIQUE,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
+ALTER TABLE public.efi_credentials ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users manage own efi_credentials" ON public.efi_credentials
   FOR ALL TO authenticated USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+CREATE TRIGGER trg_efi_credentials_updated BEFORE UPDATE ON public.efi_credentials
   FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 ALTER TABLE public.installments

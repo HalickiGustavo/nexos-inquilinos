@@ -920,7 +920,7 @@ SELECT cron.schedule(
   '0 8 * * *',
   $cmd$
   SELECT extensions.http_post(
-    url := 'https://project--231b8419-e2f6-4a97-8769-d585255d26c4.lovable.app/api/public/hooks/process-scheduled-invoices',
+    url := 'https://project--231b8419-e2f6-4a97-8769-d585255d26c4.lovable.app/api/public/hooks/process-scheduled-invoices,
     headers := jsonb_build_object(
       'Content-Type', 'application/json',
       'Authorization', 'Bearer ' || current_setting('app.settings.service_role_key', true)
@@ -944,7 +944,7 @@ SELECT cron.schedule(
   '0 8 * * *',
   $cmd$
   SELECT extensions.http_post(
-    url := 'https://project--231b8419-e2f6-4a97-8769-d585255d26c4.lovable.app/api/public/hooks/process-scheduled-invoices',
+    url := 'https://project--231b8419-e2f6-4a97-8769-d585255d26c4.lovable.app/api/public/hooks/process-scheduled-invoices,
     headers := jsonb_build_object(
       'Content-Type', 'application/json',
       'Authorization', 'Bearer ' || COALESCE(
@@ -1254,7 +1254,7 @@ END $$;
 ALTER TABLE public.maintenance_messages ADD COLUMN IF NOT EXISTS attachment_urls text[] NOT NULL DEFAULT '{}'
 
 ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS contract_pdf_path text;
--- Owner/manager: full access to their contracts' files (path layout: <contract_id>/<filename>)
+-- Owner/manager: full access to their contracts files (path layout: <contract_id>/<filename>)
 CREATE POLICY "contracts_pdf_owner_all" ON storage.objects
 FOR ALL TO authenticated
 USING (
@@ -1955,7 +1955,7 @@ REVOKE SELECT (invite_token) ON public.landlord_invites FROM anon;
 -- Fix infinite recursion: properties policy "Tenant views rented property"
 -- references contracts; contracts/landlord policy references properties;
 -- when Postgres evaluates them they keep calling each other.
--- Wrap the tenant check in a SECURITY DEFINER function so contracts isn't
+-- Wrap the tenant check in a SECURITY DEFINER function so contracts isnt
 -- queried through RLS during properties policy evaluation.
 
 CREATE OR REPLACE FUNCTION public.is_current_tenant_property(_property_id uuid)
@@ -2050,7 +2050,7 @@ GRANT EXECUTE ON FUNCTION public.current_landlord_id() TO authenticated;
 GRANT EXECUTE ON FUNCTION public.is_current_tenant_property(uuid) TO authenticated;
 
 -- Defense-in-depth hardening after cross-account data exposure report.
--- Goal: no browser/user role can read or mutate another user's sensitive rows,
+-- Goal: no browser/user role can read or mutate another users sensitive rows,
 -- even if a query is written too broadly or a legacy grant exists.
 
 -- 1 Remove legacy/public table grants from non-application roles.
@@ -2581,7 +2581,7 @@ SELECT cron.schedule(
   '0 9 * * *',
   $$
   SELECT net.http_post(
-    url := 'https://project--231b8419-e2f6-4a97-8769-d585255d26c4.lovable.app/api/public/hooks/generate-upcoming-boletos',
+    url := 'https://project--231b8419-e2f6-4a97-8769-d585255d26c4.lovable.app/api/public/hooks/generate-upcoming-boletos,
     headers := jsonb_build_object(
       'Content-Type', 'application/json',
       'Authorization', 'Bearer ' || COALESCE((SELECT decrypted_secret FROM vault.decrypted_secrets WHERE name='CRON_SECRET' LIMIT 1), '')
@@ -3594,7 +3594,7 @@ DO $$ BEGIN PERFORM pgmq.create('transactional_emails_dlq'); EXCEPTION WHEN OTHE
 
 -- Email send log table (audit trail for all send attempts)
 -- UPDATE is allowed for the service role so the suppression edge function
--- can update a log record's status when a bounce/complaint/unsubscribe occurs.
+-- can update a log records status when a bounce/complaint/unsubscribe occurs.
 CREATE TABLE IF NOT EXISTS public.email_send_log (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   message_id TEXT,
@@ -4004,7 +4004,7 @@ WHERE contract_id IN (
 -- Depois, apagamos os contratos do usuário
 DELETE FROM public.contracts 
 WHERE user_id = 'd101d276-6dee-479a-996c-fcf60695e4de';
--- Delete installments associated with the user's contracts
+-- Delete installments associated with the users contracts
 DELETE FROM public.installments 
 WHERE contract_id IN (
   SELECT id FROM public.contracts 

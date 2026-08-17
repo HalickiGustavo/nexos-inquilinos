@@ -371,7 +371,6 @@ GRANT EXECUTE ON FUNCTION public.has_role(uuid, public.app_role) TO authenticate
   FOR ALL TO authenticated USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
   FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
--- Extend installments with Asaas payment data
 ALTER TABLE public.installments
   ADD COLUMN boleto_url text,
   ADD COLUMN pix_qrcode text,
@@ -1022,7 +1021,6 @@ CREATE POLICY "property-images authenticated read"
   TO authenticated
   USING (bucket_id = 'property-images');
 
--- Audit logs for sensitive operations (Asaas charges, maintenances, etc.)
 CREATE TABLE public.audit_logs (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id uuid REFERENCES auth.users(id) ON DELETE SET NULL,
@@ -1898,7 +1896,6 @@ $$;
 REVOKE ALL ON FUNCTION public.accept_landlord_invite(text) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.accept_landlord_invite(text) TO authenticated;
 
--- Documento (CPF/CNPJ) do proprietário/usuário, necessário para repasse Asaas
 ALTER TABLE public.profiles
   ADD COLUMN IF NOT EXISTS document text,
   ADD COLUMN IF NOT EXISTS document_type text;
@@ -2372,7 +2369,6 @@ DO $$ BEGIN
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- =========================================================
--- STARK CHARGES
 -- =========================================================
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   installment_id UUID NOT NULL REFERENCES public.installments(id) ON DELETE CASCADE,
@@ -2464,7 +2460,6 @@ CREATE TRIGGER trg_transfers_updated_at
   FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 -- =========================================================
--- STARK EVENTS (webhook idempotency log)
 -- =========================================================
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   event_id TEXT UNIQUE NOT NULL,

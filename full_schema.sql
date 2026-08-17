@@ -849,7 +849,9 @@ ALTER TABLE public.profiles
   ADD COLUMN IF NOT EXISTS auto_transfer_enabled boolean NOT NULL DEFAULT false,
   ADD CONSTRAINT profiles_kyc_status_check CHECK (kyc_status IN ('PENDENTE','EM_ANALISE','APROVADO','REJEITADO'));
 ALTER TYPE public.installment_status ADD VALUE IF NOT EXISTS 'agendado';
-ALTER TYPE public.installment_status ADD VALUE IF NOT EXISTS 'em_aberto';CREATE OR REPLACE FUNCTION public.generate_installments_for_contract()
+ALTER TYPE public.installment_status ADD VALUE IF NOT EXISTS 'em_aberto';
+
+CREATE OR REPLACE FUNCTION public.generate_installments_for_contract()
  RETURNS trigger
  LANGUAGE plpgsql
  SECURITY DEFINER

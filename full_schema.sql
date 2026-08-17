@@ -2282,7 +2282,9 @@ ALTER TABLE public.profiles
 
 ALTER TABLE public.agency_settings
   ADD COLUMN IF NOT EXISTS agency_efi_account_number text,
-  ADD COLUMN IF NOT EXISTS agency_document text;CREATE EXTENSION IF NOT EXISTS pg_cron;
+  ADD COLUMN IF NOT EXISTS agency_document text;
+
+CREATE EXTENSION IF NOT EXISTS pg_cron;
 CREATE EXTENSION IF NOT EXISTS pg_net;
 
 DO $$

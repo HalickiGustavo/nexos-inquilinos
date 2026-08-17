@@ -3964,7 +3964,9 @@ WHERE a.id < b.id
   AND a.email = b.email;
 
 -- Agora adiciona a restrição de unicidade
-ALTER TABLE public.landlord_invites ADD CONSTRAINT landlord_invites_email_key UNIQUE (email);-- Criação da política de inserção para gerentes (imobiliárias)
+ALTER TABLE public.landlord_invites ADD CONSTRAINT landlord_invites_email_key UNIQUE (email);
+
+-- Criação da política de inserção para gerentes (imobiliárias)
 DO $$ 
 BEGIN
     IF NOT EXISTS (

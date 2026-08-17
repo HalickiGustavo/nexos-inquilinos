@@ -187,3 +187,104 @@ CREATE TRIGGER trg_installments_updated BEFORE UPDATE ON public.installments FOR
 CREATE TRIGGER trg_efi_accounts_updated BEFORE UPDATE ON public.efi_accounts FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 CREATE TRIGGER trg_efi_charges_updated BEFORE UPDATE ON public.efi_charges FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
+
+-- 8. Funções de Auditoria e Segurança
+CREATE TABLE IF NOT EXISTS public.audit_logs (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    user_email TEXT,
+    action TEXT NOT NULL,
+    entity TEXT NOT NULL,
+    entity_id TEXT,
+    ip_address TEXT,
+    user_agent TEXT,
+    metadata JSONB DEFAULT '{}'::jsonb,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+GRANT ALL ON public.audit_logs TO authenticated;
+GRANT ALL ON public.audit_logs TO service_role;
+ALTER TABLE public.audit_logs ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Admins see all audit logs" ON public.audit_logs FOR SELECT TO authenticated 
+    USING (EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role IN ('manager', 'platform_admin')));
+
+-- 9. Tabelas Adicionais
+CREATE TABLE IF NOT EXISTS public.maintenances (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    property_id UUID NOT NULL REFERENCES public.properties(id) ON DELETE CASCADE,
+    tenant_id UUID REFERENCES public.tenants(id) ON DELETE SET NULL,
+    title TEXT NOT NULL,
+    description TEXT,
+    cost NUMERIC(12,2) NOT NULL DEFAULT 0,
+    status public.maintenance_status NOT NULL DEFAULT 'pendente',
+    priority TEXT NOT NULL DEFAULT 'media',
+    responsible public.maintenance_responsible NOT NULL DEFAULT 'proprietario',
+    scheduled_date DATE,
+    completed_date DATE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS public.manager_members (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    manager_user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    member_user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    role TEXT NOT NULL DEFAULT 'member',
+    status TEXT NOT NULL DEFAULT 'active',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    UNIQUE (manager_user_id, member_user_id)
+);
+
+CREATE TABLE IF NOT EXISTS public.documents (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    contract_id UUID REFERENCES public.contracts(id) ON DELETE CASCADE,
+    property_id UUID REFERENCES public.properties(id) ON DELETE CASCADE,
+    title TEXT NOT NULL,
+    file_path TEXT NOT NULL,
+    file_type TEXT,
+    file_size BIGINT,
+    metadata JSONB DEFAULT '{}'::jsonb,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- 10. Funções Úteis
+CREATE OR REPLACE FUNCTION public.has_role(_user_id uuid, _role public.app_role)
+RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$
+  SELECT EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = _user_id AND role = _role)
+$$;
+
+CREATE OR REPLACE FUNCTION public.current_tenant_id()
+RETURNS uuid LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$
+  SELECT id FROM public.tenants WHERE user_id_link = auth.uid() LIMIT 1
+$$;
+
+-- 11. Triggers de Negócio
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+BEGIN
+    INSERT INTO public.profiles (id, full_name, email)
+    VALUES (NEW.id, COALESCE(NEW.raw_user_meta_data->>'full_name', ''), NEW.email);
+    
+    INSERT INTO public.user_roles (user_id, role)
+    VALUES (NEW.id, 'owner')
+    ON CONFLICT DO NOTHING;
+    
+    RETURN NEW;
+END; $$;
+
+CREATE OR REPLACE TRIGGER on_auth_user_created
+    AFTER INSERT ON auth.users
+    FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
+-- Garantindo Grants em todas as tabelas criadas por último
+GRANT ALL ON public.maintenances TO authenticated;
+GRANT ALL ON public.manager_members TO authenticated;
+GRANT ALL ON public.documents TO authenticated;
+GRANT ALL ON public.user_roles TO authenticated;
+GRANT ALL ON public.efi_charges TO authenticated;
+GRANT ALL ON public.efi_accounts TO authenticated;
+

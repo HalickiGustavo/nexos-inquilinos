@@ -153,9 +153,9 @@ function Recebimentos() {
               <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="todos">Todos</SelectItem>
-                <SelectItem value="pendente">Pendente</SelectItem>
+                <SelectItem value="pendente">Pendente (No prazo)</SelectItem>
                 <SelectItem value="pago">Pago</SelectItem>
-                <SelectItem value="atrasado">Atrasado</SelectItem>
+                <SelectItem value="atrasado">Atrasado (Vencido)</SelectItem>
               </SelectContent>
             </Select>
           </div>

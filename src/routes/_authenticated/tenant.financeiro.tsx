@@ -1,10 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { Download, ChevronDown, QrCode, Handshake } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Download, ChevronDown, QrCode, Handshake, Filter } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { useTenantInstallments, useTenantActiveContract } from "@/lib/tenant-queries";
 import { formatBRL, formatDate, today } from "@/lib/format";
@@ -50,11 +51,15 @@ const badge: Record<Status, { label: string; className: string }> = {
 };
 
 
+type Filtro = "todos" | "pago" | "pendente" | "atrasado";
+
 function TenantFinanceiro() {
   const { data: contract } = useTenantActiveContract();
   const { data: items = [], isLoading } = useTenantInstallments();
   const [openId, setOpenId] = useState<string | null>(null);
   const [agreement, setAgreement] = useState<any | null>(null);
+  const [filtro, setFiltro] = useState<Filtro>("todos");
+  
   const { open: openPix, dialogProps: pixDialogProps } = usePixPayment({
     invalidateKeys: [["tenant-installments"]],
   });
@@ -122,12 +127,34 @@ function TenantFinanceiro() {
     ? [...items].filter((i: any) => i.debt_agreement_id === agreement.id)
     : [];
   const sorted = [...items].sort((a: any, b: any) => a.due_date.localeCompare(b.due_date));
+  
+  const todayStr = today();
+  const filtered = useMemo(() => {
+    return sorted.filter((i: any) => {
+      if (filtro === "todos") return true;
+      const s = statusOf(i);
+      if (filtro === "pago") return s === "pago";
+      if (filtro === "pendente") return s === "pendente" || s === "em_aberto";
+      if (filtro === "atrasado") return s === "atrasado";
+      return true;
+    });
+  }, [sorted, filtro, todayStr]);
 
   return (
     <div className="space-y-4">
-      <header>
-        <h1 className="text-2xl font-bold">Boletos & Finanças</h1>
-        <p className="text-sm text-muted-foreground">Histórico de parcelas do seu contrato.</p>
+      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold">Boletos & Finanças</h1>
+          <p className="text-sm text-muted-foreground">Histórico de parcelas do seu contrato.</p>
+        </div>
+        <Tabs value={filtro} onValueChange={(v) => setFiltro(v as Filtro)} className="w-full sm:w-auto">
+          <TabsList className="grid grid-cols-4 w-full sm:w-auto">
+            <TabsTrigger value="todos">Todos</TabsTrigger>
+            <TabsTrigger value="pago">Pagos</TabsTrigger>
+            <TabsTrigger value="pendente">Pendentes</TabsTrigger>
+            <TabsTrigger value="atrasado">Atrasados</TabsTrigger>
+          </TabsList>
+        </Tabs>
       </header>
 
       {agreement && (
@@ -175,14 +202,19 @@ function TenantFinanceiro() {
           ))}
         </div>
       )}
-      {!isLoading && sorted.length === 0 && (
-        <Card className="p-6 text-center text-muted-foreground">Nenhuma parcela registrada ainda.</Card>
+      {!isLoading && filtered.length === 0 && (
+        <Card className="p-12 text-center text-muted-foreground">
+          <div className="flex flex-col items-center gap-2">
+            <div className="p-3 rounded-full bg-muted/50">
+              <Filter className="size-6 text-muted-foreground/50" />
+            </div>
+            <p>Nenhuma parcela encontrada para este filtro.</p>
+          </div>
+        </Card>
       )}
 
-
-
       <div className="space-y-2">
-        {sorted.map((i: any) => {
+        {filtered.map((i: any) => {
           const s = statusOf(i);
           const open = openId === i.id;
           const exps = parseExpenses(i.variable_expenses);

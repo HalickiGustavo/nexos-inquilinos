@@ -1990,7 +1990,9 @@ REVOKE ALL ON public.profiles FROM PUBLIC;
 GRANT SELECT, INSERT, UPDATE ON public.profiles TO authenticated;
 GRANT ALL ON public.profiles TO service_role;
 REVOKE SELECT (invite_token) ON public.landlord_invites FROM authenticated;
-REVOKE SELECT (invite_token) ON public.landlord_invites FROM anon;-- Harden user-scoped financial and landlord data isolation.
+REVOKE SELECT (invite_token) ON public.landlord_invites FROM anon;
+
+-- Harden user-scoped financial and landlord data isolation.
 -- No new tables are created in this migration.
 
 REVOKE ALL ON TABLE public.landlord_withdrawals FROM anon;

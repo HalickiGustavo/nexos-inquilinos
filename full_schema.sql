@@ -387,7 +387,7 @@ ALTER TABLE public.installments
 
 
 
--- 2) Lock down trigger functions that should never be callable directly
+-- 2 Lock down trigger functions that should never be callable directly
 REVOKE EXECUTE ON FUNCTION public.handle_new_user() FROM PUBLIC, anon, authenticated;
 REVOKE EXECUTE ON FUNCTION public.generate_installments_for_contract() FROM PUBLIC, anon, authenticated;
 ALTER TABLE public.contracts
@@ -580,10 +580,10 @@ ALTER TABLE public.maintenances
   ADD COLUMN budget_decided_at timestamptz,
   ADD COLUMN budget_applied_installment_id uuid;
 
--- 1) Novo status no enum installment_status
+-- 1 Novo status no enum installment_status
 ALTER TYPE public.installment_status ADD VALUE IF NOT EXISTS 'acordo_fechado';
 
--- 2) Tabela debt_agreements
+-- 2 Tabela debt_agreements
 CREATE TABLE IF NOT EXISTS public.debt_agreements (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -630,7 +630,7 @@ CREATE TRIGGER trg_debt_agreements_updated
 CREATE INDEX IF NOT EXISTS idx_debt_agreements_contract ON public.debt_agreements(contract_id);
 CREATE INDEX IF NOT EXISTS idx_debt_agreements_tenant ON public.debt_agreements(tenant_id);
 
--- 3) Vínculo parcelas <-> acordo
+-- 3 Vínculo parcelas <-> acordo
 ALTER TABLE public.installments
   ADD COLUMN IF NOT EXISTS debt_agreement_id uuid REFERENCES public.debt_agreements(id) ON DELETE SET NULL;
 
@@ -674,7 +674,7 @@ USING (true);
 
 INSERT INTO public.platform_settings (key, value, description) 
 VALUES ('nexo_boleto_fee', '24.99', 'Taxa NEXO por boleto/Pix gerado');
--- 1) Maintenance evidence: tighten storage read policy
+-- 1 Maintenance evidence: tighten storage read policy
 DROP POLICY IF EXISTS "auth read maintenance-evidence" ON storage.objects;
 CREATE POLICY "auth read maintenance-evidence"
   ON storage.objects FOR SELECT
@@ -695,7 +695,7 @@ CREATE POLICY "auth read maintenance-evidence"
     )
   );
 
--- 2) Maintenance evidence: tighten upload policy to own folder
+-- 2 Maintenance evidence: tighten upload policy to own folder
 DROP POLICY IF EXISTS "auth upload maintenance-evidence" ON storage.objects;
 CREATE POLICY "auth upload maintenance-evidence"
   ON storage.objects FOR INSERT
@@ -705,14 +705,14 @@ CREATE POLICY "auth upload maintenance-evidence"
     AND (storage.foldername(name))[1] = auth.uid()::text
   );
 
--- 3) Platform settings: restrict reads to managers only
+-- 3 Platform settings: restrict reads to managers only
 DROP POLICY IF EXISTS "Anyone can read platform settings" ON public.platform_settings;
 CREATE POLICY "Managers can read platform settings"
   ON public.platform_settings FOR SELECT
   TO authenticated
   USING (public.has_role(auth.uid(), 'manager'));
 
--- 4) Realtime: restrict maintenance_messages channel subscriptions
+-- 4 Realtime: restrict maintenance_messages channel subscriptions
 ALTER TABLE realtime.messages ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "maintenance chat channel access" ON realtime.messages;
@@ -1024,7 +1024,7 @@ CREATE POLICY "property-images owner delete"
         AND p.user_id = auth.uid()
     )
   );
--- 1) Maintenances: prevent tenants from forging user_id
+-- 1 Maintenances: prevent tenants from forging user_id
 DROP POLICY IF EXISTS "Tenant creates own maintenances" ON public.maintenances;
 CREATE POLICY "Tenant creates own maintenances" ON public.maintenances
   FOR INSERT TO authenticated
@@ -1033,7 +1033,7 @@ CREATE POLICY "Tenant creates own maintenances" ON public.maintenances
     AND user_id = (SELECT t.user_id FROM public.tenants t WHERE t.id = public.current_tenant_id())
   );
 
--- 2) Storage: restrict property-images SELECT to authenticated users
+-- 2 Storage: restrict property-images SELECT to authenticated users
 DROP POLICY IF EXISTS "property-images public read" ON storage.objects;
 CREATE POLICY "property-images authenticated read"
   ON storage.objects FOR SELECT
@@ -1347,7 +1347,7 @@ USING (
 );
 
 -- =========================================================
--- 1) STORAGE: property-images SELECT mais restrita
+-- 1 STORAGE: property-images SELECT mais restrita
 -- =========================================================
 DROP POLICY IF EXISTS "property-images authenticated read" ON storage.objects;
 
@@ -1371,7 +1371,7 @@ USING (
 );
 
 -- =========================================================
--- 2) STORAGE: INSERTs com WITH CHECK adequado
+-- 2 STORAGE: INSERTs com WITH CHECK adequado
 -- =========================================================
 DROP POLICY IF EXISTS "property-images owner insert" ON storage.objects;
 CREATE POLICY "property-images owner insert"
@@ -1394,7 +1394,7 @@ WITH CHECK (
 );
 
 -- =========================================================
--- 3) manager_members.invite_token: esconder de leitura
+-- 3 manager_members.invite_token: esconder de leitura
 -- =========================================================
 REVOKE SELECT (invite_token) ON public.manager_members FROM authenticated, anon;
 
@@ -1432,7 +1432,7 @@ REVOKE EXECUTE ON FUNCTION public.accept_manager_invite(text) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.accept_manager_invite(text) TO authenticated;
 
 -- =========================================================
--- 4) SECURITY DEFINER: tirar de PUBLIC/anon
+-- 4 SECURITY DEFINER: tirar de PUBLIC/anon
 -- =========================================================
 REVOKE EXECUTE ON FUNCTION public.has_role(uuid, app_role) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.has_role(uuid, app_role) TO authenticated;
@@ -1444,7 +1444,7 @@ REVOKE EXECUTE ON FUNCTION public.current_manager_id() FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.current_manager_id() TO authenticated;
 
 -- =========================================================
--- 5) ÍNDICES (perf) — FK heavy
+-- 5 ÍNDICES (perf) — FK heavy
 -- =========================================================
 CREATE INDEX IF NOT EXISTS idx_installments_contract_id ON public.installments(contract_id);
 CREATE INDEX IF NOT EXISTS idx_installments_user_id     ON public.installments(user_id);
@@ -1474,10 +1474,10 @@ USING (
   )
 );
 
--- 1) Add phone to profiles (nullable, owners/managers fill in)
+-- 1 Add phone to profiles (nullable, owners/managers fill in)
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS phone text;
 
--- 2) Tracking table for maintenance-response reminders
+-- 2 Tracking table for maintenance-response reminders
 CREATE TABLE IF NOT EXISTS public.maintenance_response_notifications (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   maintenance_id uuid NOT NULL REFERENCES public.maintenances(id) ON DELETE CASCADE,
@@ -1932,7 +1932,7 @@ CREATE INDEX IF NOT EXISTS idx_installments_landlord_payout_pending
   ON public.installments(status, landlord_payout_status)
   WHERE status = 'pago' AND landlord_payout_status = 'pendente';
 
--- 1) audit_logs SELECT: restringe ao próprio dono (fecha bypass via current_manager_id)
+-- 1 audit_logs SELECT: restringe ao próprio dono (fecha bypass via current_manager_id)
 DROP POLICY IF EXISTS "users read their own audit logs" ON public.audit_logs;
 
 CREATE POLICY "users read their own audit logs"
@@ -1947,7 +1947,7 @@ USING (
   )
 );
 
--- 2) landlord_invites: oculta a coluna invite_token de roles não-privilegiadas.
+-- 2 landlord_invites: oculta a coluna invite_token de roles não-privilegiadas.
 -- O fluxo de aceitação continua via accept_landlord_invite (SECURITY DEFINER),
 -- usando o token recebido no link de convite — nunca lido do banco pelo cliente.
 REVOKE SELECT (invite_token) ON public.landlord_invites FROM authenticated;
@@ -1992,7 +1992,7 @@ CREATE POLICY "Users manage own efi_credentials"
   ON public.efi_credentials FOR ALL TO authenticated
   USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 
--- 3) profiles: garantir que anon não enxergue PII (nome, email, telefone).
+-- 3 profiles: garantir que anon não enxergue PII (nome, email, telefone).
 REVOKE ALL ON public.profiles FROM anon;
 REVOKE ALL ON public.profiles FROM PUBLIC;
 GRANT SELECT, INSERT, UPDATE ON public.profiles TO authenticated;
@@ -2053,7 +2053,7 @@ GRANT EXECUTE ON FUNCTION public.is_current_tenant_property(uuid) TO authenticat
 -- Goal: no browser/user role can read or mutate another user's sensitive rows,
 -- even if a query is written too broadly or a legacy grant exists.
 
--- 1) Remove legacy/public table grants from non-application roles.
+-- 1 Remove legacy/public table grants from non-application roles.
 REVOKE ALL ON ALL TABLES IN SCHEMA public FROM anon;
 REVOKE ALL ON ALL SEQUENCES IN SCHEMA public FROM anon;
 REVOKE ALL ON ALL FUNCTIONS IN SCHEMA public FROM anon;
@@ -2064,7 +2064,7 @@ REVOKE ALL ON ALL TABLES IN SCHEMA public FROM sandbox_exec;
 REVOKE ALL ON ALL SEQUENCES IN SCHEMA public FROM sandbox_exec;
 REVOKE ALL ON ALL FUNCTIONS IN SCHEMA public FROM sandbox_exec;
 
--- 2) Force RLS on every user/business table. Service-role jobs still work
+-- 2 Force RLS on every user/business table. Service-role jobs still work
 -- through BYPASSRLS, but table-owner accidental bypass is prevented.
 DO $$
 DECLARE
@@ -2097,7 +2097,7 @@ BEGIN
   END LOOP;
 END $$;
 
--- 3) Recreate the most sensitive owner-scoped policies with explicit auth.uid()
+-- 3 Recreate the most sensitive owner-scoped policies with explicit auth.uid()
 -- predicates. These policies intentionally do not include manager/landlord joins.
 
 DROP POLICY IF EXISTS "Manager manages own team re-scoped" ON public.manager_members;
@@ -2118,7 +2118,7 @@ CREATE POLICY "Users update own profile"
   ON public.profiles FOR UPDATE TO authenticated
   USING (id = auth.uid()) WITH CHECK (id = auth.uid());
 
--- 4) Keep only the minimum function surface callable by logged-in users.
+-- 4 Keep only the minimum function surface callable by logged-in users.
 REVOKE EXECUTE ON FUNCTION public.is_current_tenant_property(uuid) FROM PUBLIC, anon;
 REVOKE EXECUTE ON FUNCTION public.current_landlord_id() FROM PUBLIC, anon;
 REVOKE EXECUTE ON FUNCTION public.current_manager_id() FROM PUBLIC, anon;
@@ -2135,7 +2135,7 @@ GRANT EXECUTE ON FUNCTION public.has_role(uuid, public.app_role) TO authenticate
 GRANT EXECUTE ON FUNCTION public.accept_landlord_invite(text) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.accept_manager_invite(text) TO authenticated;
 
--- 5) Preserve normal app access for authenticated users; RLS decides the rows.
+-- 5 Preserve normal app access for authenticated users; RLS decides the rows.
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO authenticated;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO authenticated;
 DELETE FROM auth.users WHERE id = '220dcb18-25db-4410-99c4-29aa7881e75b';
@@ -2675,7 +2675,7 @@ REVOKE EXECUTE ON FUNCTION public.is_current_tenant_property(uuid)        FROM a
 REVOKE EXECUTE ON FUNCTION public.accept_landlord_invite(text)            FROM anon;
 REVOKE EXECUTE ON FUNCTION public.accept_manager_invite(text)             FROM anon;
 
--- 1) Novo campo: responsável pela execução (reusa enum existente maintenance_responsible)
+-- 1 Novo campo: responsável pela execução (reusa enum existente maintenance_responsible)
 ALTER TABLE public.maintenances
   ADD COLUMN IF NOT EXISTS execution_responsible public.maintenance_responsible
   NOT NULL DEFAULT 'inquilino'::public.maintenance_responsible;
@@ -2683,7 +2683,7 @@ ALTER TABLE public.maintenances
 COMMENT ON COLUMN public.maintenances.execution_responsible IS
   'Quem executa a manutenção após análise do proprietário (proprietario|inquilino). Default inquilino preserva o fluxo atual de orçamento.';
 
--- 2) Tabela de eventos (timeline / histórico)
+-- 2 Tabela de eventos (timeline / histórico)
 CREATE TABLE IF NOT EXISTS public.maintenance_events (
   id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   maintenance_id uuid NOT NULL REFERENCES public.maintenances(id) ON DELETE CASCADE,
@@ -2968,7 +2968,7 @@ USING (
 );
 
 -- =========================================================================
--- 1) Atomic claim para payment_transfers (BUG-C3)
+-- 1 Atomic claim para payment_transfers (BUG-C3)
 -- =========================================================================
 CREATE OR REPLACE FUNCTION public.claim_pending_transfers(_limit int DEFAULT 20)
 RETURNS SETOF public.payment_transfers
@@ -3000,7 +3000,7 @@ REVOKE ALL ON FUNCTION public.claim_pending_transfers(int) FROM anon, authentica
 GRANT EXECUTE ON FUNCTION public.claim_pending_transfers(int) TO service_role;
 
 -- =========================================================================
--- 2) Índices de performance (BUG-M8)
+-- 2 Índices de performance (BUG-M8)
 -- =========================================================================
 CREATE INDEX IF NOT EXISTS idx_payment_transfers_status_next_retry
   ON public.payment_transfers (status, next_retry_at)
@@ -3052,7 +3052,7 @@ CREATE INDEX IF NOT EXISTS idx_audit_logs_entity
   ON public.audit_logs (entity, entity_id, created_at DESC);
 
 -- =========================================================================
--- 3) Verificação diária de invariantes de segurança
+-- 3 Verificação diária de invariantes de segurança
 -- =========================================================================
 CREATE OR REPLACE FUNCTION public.run_security_invariants_check()
 RETURNS void
@@ -3866,8 +3866,8 @@ CREATE INDEX IF NOT EXISTS idx_unsubscribe_tokens_token ON public.email_unsubscr
 -- 2. CRON JOB (pg_cron)
 --    Creates job 'process-email-queue' with a 5-second interval.
 --    The job checks:
---      a) rate-limit cooldown (email_send_state.retry_after_until)
---      b) whether auth_emails or transactional_emails queues have messages
+--      a rate-limit cooldown (email_send_state.retry_after_until)
+--      b whether auth_emails or transactional_emails queues have messages
 --    If conditions are met, it calls the process-email-queue Edge Function
 --    via net.http_post using the vault-stored service_role key.
 --    To revert: SELECT cron.unschedule('process-email-queue');

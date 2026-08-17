@@ -898,7 +898,9 @@ BEGIN
   UPDATE public.properties SET status = 'alugado' WHERE id = NEW.property_id AND user_id = NEW.user_id;
 
   RETURN NEW;
-END; $function$;CREATE EXTENSION IF NOT EXISTS pg_cron;
+END; $function$
+
+CREATE EXTENSION IF NOT EXISTS pg_cron;
 CREATE EXTENSION IF NOT EXISTS pg_net;
 CREATE SCHEMA IF NOT EXISTS extensions;
 
@@ -1249,7 +1251,9 @@ BEGIN
     RAISE NOTICE '[security] % => % (%)', r.check_name, r.status, r.details;
   END LOOP;
 END $$;
-ALTER TABLE public.maintenance_messages ADD COLUMN IF NOT EXISTS attachment_urls text[] NOT NULL DEFAULT '{}';ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS contract_pdf_path text;
+ALTER TABLE public.maintenance_messages ADD COLUMN IF NOT EXISTS attachment_urls text[] NOT NULL DEFAULT '{}'
+
+ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS contract_pdf_path text;
 -- Owner/manager: full access to their contracts' files (path layout: <contract_id>/<filename>)
 CREATE POLICY "contracts_pdf_owner_all" ON storage.objects
 FOR ALL TO authenticated

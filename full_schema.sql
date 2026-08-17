@@ -360,7 +360,10 @@ CREATE TABLE public.efi_accounts (
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
+ALTER TABLE public.efi_accounts ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users manage own efi_account" ON public.efi_accounts
   FOR ALL TO authenticated USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+CREATE TRIGGER trg_efi_accounts_updated BEFORE UPDATE ON public.efi_accounts
   FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -369,7 +372,10 @@ CREATE TABLE public.efi_accounts (
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
+ALTER TABLE public.efi_accounts ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users manage own efi_account" ON public.efi_accounts
   FOR ALL TO authenticated USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+CREATE TRIGGER trg_efi_accounts_updated BEFORE UPDATE ON public.efi_accounts
   FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 ALTER TABLE public.installments

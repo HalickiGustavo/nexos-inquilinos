@@ -2013,24 +2013,10 @@ ALTER TABLE public.contracts FORCE ROW LEVEL SECURITY;
 ALTER TABLE public.installments FORCE ROW LEVEL SECURITY;
 ALTER TABLE public.maintenances FORCE ROW LEVEL SECURITY;
 ALTER TABLE public.landlord_withdrawals FORCE ROW LEVEL SECURITY;
-
-
-FOR SELECT
-TO authenticated
-USING (auth.uid() = user_id);
-
-FOR INSERT
-TO authenticated
-WITH CHECK (auth.uid() = user_id);
-
-FOR UPDATE
-TO authenticated
-USING (auth.uid() = user_id)
-WITH CHECK (auth.uid() = user_id);
-
-FOR DELETE
-TO authenticated
-USING (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Landlord manage own withdrawals scoped" ON public.landlord_withdrawals;
+CREATE POLICY "Landlord manage own withdrawals scoped"
+  ON public.landlord_withdrawals FOR ALL TO authenticated
+  USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.profiles TO authenticated;
 GRANT ALL ON public.profiles TO service_role;

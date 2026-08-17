@@ -9,7 +9,7 @@ import { createClient } from '@supabase/supabase-js';
  * 2. Desabilite triggers temporariamente no destino se houver dependências circulares.
  */
 
-const SOURCE_URL = 'https://zmqkuifaatqqisovrfbz.supabase.co';
+const SOURCE_URL = 'https://uydlpmxdewmnqboqfpxq.supabase.co';
 const SOURCE_KEY = 'SUA_SERVICE_ROLE_KEY_ORIGEM'; // Não disponível na Lovable Cloud para exportação direta
 
 const TARGET_URL = 'https://SEU_NOVO_PROJETO.supabase.co';

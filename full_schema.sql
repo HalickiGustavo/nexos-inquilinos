@@ -395,7 +395,9 @@ ALTER TABLE public.contracts
   ADD COLUMN IF NOT EXISTS daily_interest_percent numeric NOT NULL DEFAULT 0.033;
 
 ALTER TABLE public.installments
-  ADD COLUMN IF NOT EXISTS late_charges numeric NOT NULL DEFAULT 0;ALTER TYPE public.app_role ADD VALUE IF NOT EXISTS 'manager';
+  ADD COLUMN IF NOT EXISTS late_charges numeric NOT NULL DEFAULT 0;
+
+ALTER TYPE public.app_role ADD VALUE IF NOT EXISTS 'manager';
 -- manager_members
 CREATE TABLE public.manager_members (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -849,7 +851,9 @@ ALTER TABLE public.profiles
   ADD COLUMN IF NOT EXISTS auto_transfer_enabled boolean NOT NULL DEFAULT false,
   ADD CONSTRAINT profiles_kyc_status_check CHECK (kyc_status IN ('PENDENTE','EM_ANALISE','APROVADO','REJEITADO'));
 ALTER TYPE public.installment_status ADD VALUE IF NOT EXISTS 'agendado';
-ALTER TYPE public.installment_status ADD VALUE IF NOT EXISTS 'em_aberto';CREATE OR REPLACE FUNCTION public.generate_installments_for_contract()
+ALTER TYPE public.installment_status ADD VALUE IF NOT EXISTS 'em_aberto';
+
+CREATE OR REPLACE FUNCTION public.generate_installments_for_contract()
  RETURNS trigger
  LANGUAGE plpgsql
  SECURITY DEFINER
@@ -4014,7 +4018,9 @@ WHERE contract_id IN (
 
 -- Delete the contracts themselves
 DELETE FROM public.contracts 
-WHERE user_id = 'd101d276-6dee-479a-996c-fcf60695e4de';DROP TRIGGER IF EXISTS tr_log_contract_changes ON public.contracts;
+WHERE user_id = 'd101d276-6dee-479a-996c-fcf60695e4de';
+
+DROP TRIGGER IF EXISTS tr_log_contract_changes ON public.contracts;
 DROP FUNCTION IF EXISTS public.log_contract_changes();
 
 DROP POLICY IF EXISTS "Managers e owners veem cobranças da sua carteira" ON public.efi_charges;

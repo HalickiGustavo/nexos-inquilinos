@@ -3955,7 +3955,9 @@ ON CONFLICT (id) DO UPDATE SET full_name = 'Azure Cosméticos';
 -- Assign manager role
 INSERT INTO public.user_roles (user_id, role) 
 VALUES ('58c2cc03-cb13-4724-8ddb-77d7143cea96', 'manager')
-ON CONFLICT (user_id, role) DO NOTHING;-- Remove duplicatas mantendo o convite mais recente
+ON CONFLICT (user_id, role) DO NOTHING;
+
+-- Remove duplicatas mantendo o convite mais recente
 DELETE FROM public.landlord_invites a
 USING public.landlord_invites b
 WHERE a.id < b.id

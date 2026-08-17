@@ -4016,7 +4016,9 @@ WHERE contract_id IN (
 
 -- Delete the contracts themselves
 DELETE FROM public.contracts 
-WHERE user_id = 'd101d276-6dee-479a-996c-fcf60695e4de';DROP TRIGGER IF EXISTS tr_log_contract_changes ON public.contracts;
+WHERE user_id = 'd101d276-6dee-479a-996c-fcf60695e4de';
+
+DROP TRIGGER IF EXISTS tr_log_contract_changes ON public.contracts;
 DROP FUNCTION IF EXISTS public.log_contract_changes();
 
 DROP POLICY IF EXISTS "Managers e owners veem cobranças da sua carteira" ON public.efi_charges;

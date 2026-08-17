@@ -1974,21 +1974,15 @@ CREATE POLICY "Tenant views rented property"
   USING (public.is_current_tenant_property(id));
 -- Hardening RLS em tabelas com dados financeiros / PII do proprietário.
 --    REVOKE explícito de anon, e NOT NULL em user_id.
-
-
-
-
-  USING (auth.uid() = user_id);
-  WITH CHECK (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Landlord manage own withdrawals" ON public.landlord_withdrawals;
+CREATE POLICY "Landlord manage own withdrawals"
+  ON public.landlord_withdrawals FOR ALL TO authenticated
   USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
-  USING (auth.uid() = user_id);
 
---    vinculado ao usuário dono da subconta).
-
-  USING (auth.uid() = user_id);
-  WITH CHECK (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Users manage own efi_credentials" ON public.efi_credentials;
+CREATE POLICY "Users manage own efi_credentials"
+  ON public.efi_credentials FOR ALL TO authenticated
   USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
-  USING (auth.uid() = user_id);
 
 -- 3) profiles: garantir que anon não enxergue PII (nome, email, telefone).
 REVOKE ALL ON public.profiles FROM anon;

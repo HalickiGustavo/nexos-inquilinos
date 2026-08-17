@@ -350,11 +350,8 @@ TO authenticated
 USING (id = public.current_tenant_id());
 GRANT EXECUTE ON FUNCTION public.current_tenant_id() TO authenticated, anon;
 GRANT EXECUTE ON FUNCTION public.has_role(uuid, public.app_role) TO authenticated, anon;
--- Asaas subaccounts (one per owner / imobiliaria)
-CREATE TABLE public.asaas_accounts (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL UNIQUE,
-  asaas_account_id text,
   wallet_id text,
   api_key text,
   status text NOT NULL DEFAULT 'pending',
@@ -362,44 +359,25 @@ CREATE TABLE public.asaas_accounts (
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
-GRANT SELECT, INSERT, UPDATE, DELETE ON public.asaas_accounts TO authenticated;
-GRANT ALL ON public.asaas_accounts TO service_role;
-ALTER TABLE public.asaas_accounts ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Owner manages own asaas account" ON public.asaas_accounts
   FOR ALL TO authenticated USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
-CREATE TRIGGER set_asaas_accounts_updated_at BEFORE UPDATE ON public.asaas_accounts
   FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
--- Asaas customer per tenant
-CREATE TABLE public.asaas_customers (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL,
   tenant_id uuid NOT NULL UNIQUE,
-  asaas_customer_id text NOT NULL,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
-GRANT SELECT, INSERT, UPDATE, DELETE ON public.asaas_customers TO authenticated;
-GRANT ALL ON public.asaas_customers TO service_role;
-ALTER TABLE public.asaas_customers ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Owner manages own asaas customers" ON public.asaas_customers
   FOR ALL TO authenticated USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
-CREATE TRIGGER set_asaas_customers_updated_at BEFORE UPDATE ON public.asaas_customers
   FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
--- Extend installments with Asaas payment data
 ALTER TABLE public.installments
-  ADD COLUMN asaas_payment_id text UNIQUE,
   ADD COLUMN boleto_url text,
   ADD COLUMN pix_qrcode text,
   ADD COLUMN pix_payload text,
   ADD COLUMN barcode text;
 
-CREATE INDEX idx_installments_asaas_payment_id ON public.installments(asaas_payment_id);
 
--- 1) Hide asaas_accounts.api_key from client reads via column-level privileges
-REVOKE SELECT (api_key) ON public.asaas_accounts FROM authenticated;
-REVOKE SELECT (api_key) ON public.asaas_accounts FROM anon;
 
 -- 2) Lock down trigger functions that should never be callable directly
 REVOKE EXECUTE ON FUNCTION public.handle_new_user() FROM PUBLIC, anon, authenticated;
@@ -851,7 +829,6 @@ CREATE POLICY "Owner manages photos" ON public.property_photos
   WITH CHECK (auth.uid() = user_id);ALTER TABLE public.profiles
   ADD COLUMN IF NOT EXISTS integration_imovelweb_connected boolean NOT NULL DEFAULT false,
   ADD COLUMN IF NOT EXISTS integration_zap_connected boolean NOT NULL DEFAULT false;
-ALTER TABLE public.asaas_accounts
   ADD COLUMN IF NOT EXISTS kyc_status text NOT NULL DEFAULT 'PENDENTE',
   ADD COLUMN IF NOT EXISTS kyc_reference_id text,
   ADD COLUMN IF NOT EXISTS bank_code text,
@@ -861,8 +838,6 @@ ALTER TABLE public.asaas_accounts
   ADD COLUMN IF NOT EXISTS bank_account_type text,
   ADD COLUMN IF NOT EXISTS auto_transfer_enabled boolean NOT NULL DEFAULT false;
 
-ALTER TABLE public.asaas_accounts
-  ADD CONSTRAINT asaas_accounts_kyc_status_chk
   CHECK (kyc_status IN ('PENDENTE','EM_ANALISE','APROVADO','REJEITADO'));
 ALTER TYPE public.installment_status ADD VALUE IF NOT EXISTS 'agendado';
 ALTER TYPE public.installment_status ADD VALUE IF NOT EXISTS 'em_aberto';CREATE OR REPLACE FUNCTION public.generate_installments_for_contract()
@@ -989,7 +964,6 @@ $$;
 
 REVOKE ALL ON FUNCTION public.sync_cron_secret(text) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.sync_cron_secret(text) TO service_role;
-DELETE FROM public.asaas_accounts WHERE user_id = 'a16923e1-ea22-490d-96d3-836a81b2d38c';-- Public SELECT on property-images bucket (portal crawlers need permanent URLs)
 CREATE POLICY "property-images public read"
   ON storage.objects FOR SELECT
   TO anon, authenticated
@@ -1047,7 +1021,6 @@ CREATE POLICY "property-images authenticated read"
   TO authenticated
   USING (bucket_id = 'property-images');
 
--- Audit logs for sensitive operations (Asaas charges, maintenances, etc.)
 CREATE TABLE public.audit_logs (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id uuid REFERENCES auth.users(id) ON DELETE SET NULL,
@@ -1156,7 +1129,6 @@ SECURITY DEFINER
 SET search_path = public, pg_catalog
 AS $$
 DECLARE
-  v_tables text[] := ARRAY['audit_logs','maintenances','installments','contracts','properties','tenants','property_photos','user_roles','asaas_accounts','asaas_customers','debt_agreements','inspections','crm_leads','crm_lead_notes','maintenance_messages','manager_members','profiles'];
   v_table text;
   v_rls boolean;
   v_count int;
@@ -1710,7 +1682,6 @@ CREATE TABLE IF NOT EXISTS public.landlord_withdrawals (
   pix_key text NOT NULL,
   pix_key_type text NOT NULL CHECK (pix_key_type IN ('cpf','cnpj','email','phone','random')),
   status text NOT NULL DEFAULT 'solicitado' CHECK (status IN ('solicitado','processando','pago','falhou','cancelado')),
-  asaas_transfer_id text,
   notes text,
   requested_at timestamptz NOT NULL DEFAULT now(),
   processed_at timestamptz,
@@ -1925,7 +1896,6 @@ $$;
 REVOKE ALL ON FUNCTION public.accept_landlord_invite(text) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.accept_landlord_invite(text) TO authenticated;
 
--- Documento (CPF/CNPJ) do proprietário/usuário, necessário para repasse Asaas
 ALTER TABLE public.profiles
   ADD COLUMN IF NOT EXISTS document text,
   ADD COLUMN IF NOT EXISTS document_type text;
@@ -1935,7 +1905,6 @@ ALTER TABLE public.installments
   ADD COLUMN IF NOT EXISTS landlord_payout_status text NOT NULL DEFAULT 'pendente',
   ADD COLUMN IF NOT EXISTS landlord_payout_amount numeric,
   ADD COLUMN IF NOT EXISTS landlord_payout_date timestamptz,
-  ADD COLUMN IF NOT EXISTS landlord_payout_asaas_id text,
   ADD COLUMN IF NOT EXISTS landlord_payout_error text;
 
 CREATE INDEX IF NOT EXISTS idx_installments_landlord_payout_pending
@@ -1991,55 +1960,21 @@ CREATE POLICY "Tenant views rented property"
   TO authenticated
   USING (public.is_current_tenant_property(id));
 -- Hardening RLS em tabelas com dados financeiros / PII do proprietário.
--- 1) Reforça asaas_accounts: policies por comando, somente authenticated,
 --    REVOKE explícito de anon, e NOT NULL em user_id.
 
-ALTER TABLE public.asaas_accounts ALTER COLUMN user_id SET NOT NULL;
 
-REVOKE ALL ON public.asaas_accounts FROM anon;
-REVOKE ALL ON public.asaas_accounts FROM PUBLIC;
-GRANT SELECT, INSERT, UPDATE, DELETE ON public.asaas_accounts TO authenticated;
-GRANT ALL ON public.asaas_accounts TO service_role;
 
-DROP POLICY IF EXISTS "Owner manages own asaas account" ON public.asaas_accounts;
-DROP POLICY IF EXISTS "asaas_accounts_select_own" ON public.asaas_accounts;
-DROP POLICY IF EXISTS "asaas_accounts_insert_own" ON public.asaas_accounts;
-DROP POLICY IF EXISTS "asaas_accounts_update_own" ON public.asaas_accounts;
-DROP POLICY IF EXISTS "asaas_accounts_delete_own" ON public.asaas_accounts;
 
-CREATE POLICY "asaas_accounts_select_own"
-  ON public.asaas_accounts FOR SELECT TO authenticated
   USING (auth.uid() = user_id);
-CREATE POLICY "asaas_accounts_insert_own"
-  ON public.asaas_accounts FOR INSERT TO authenticated
   WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "asaas_accounts_update_own"
-  ON public.asaas_accounts FOR UPDATE TO authenticated
   USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "asaas_accounts_delete_own"
-  ON public.asaas_accounts FOR DELETE TO authenticated
   USING (auth.uid() = user_id);
 
--- 2) Mesmo tratamento para asaas_customers (contém CPF/Email/Telefone do inquilino
 --    vinculado ao usuário dono da subconta).
-ALTER TABLE public.asaas_customers ALTER COLUMN user_id SET NOT NULL;
-REVOKE ALL ON public.asaas_customers FROM anon;
-REVOKE ALL ON public.asaas_customers FROM PUBLIC;
-GRANT SELECT, INSERT, UPDATE, DELETE ON public.asaas_customers TO authenticated;
-GRANT ALL ON public.asaas_customers TO service_role;
 
-DROP POLICY IF EXISTS "Owner manages own asaas customers" ON public.asaas_customers;
-CREATE POLICY "asaas_customers_select_own"
-  ON public.asaas_customers FOR SELECT TO authenticated
   USING (auth.uid() = user_id);
-CREATE POLICY "asaas_customers_insert_own"
-  ON public.asaas_customers FOR INSERT TO authenticated
   WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "asaas_customers_update_own"
-  ON public.asaas_customers FOR UPDATE TO authenticated
   USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "asaas_customers_delete_own"
-  ON public.asaas_customers FOR DELETE TO authenticated
   USING (auth.uid() = user_id);
 
 -- 3) profiles: garantir que anon não enxergue PII (nome, email, telefone).
@@ -2052,14 +1987,12 @@ REVOKE SELECT (invite_token) ON public.landlord_invites FROM anon;-- Harden user
 -- No new tables are created in this migration.
 
 REVOKE ALL ON TABLE public.landlord_withdrawals FROM anon;
-REVOKE ALL ON TABLE public.asaas_accounts FROM anon;
 REVOKE ALL ON TABLE public.profiles FROM anon;
 REVOKE ALL ON TABLE public.properties FROM anon;
 REVOKE ALL ON TABLE public.contracts FROM anon;
 REVOKE ALL ON TABLE public.installments FROM anon;
 REVOKE ALL ON TABLE public.maintenances FROM anon;
 
-ALTER TABLE public.asaas_accounts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.properties ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.contracts ENABLE ROW LEVEL SECURITY;
@@ -2067,7 +2000,6 @@ ALTER TABLE public.installments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.maintenances ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.landlord_withdrawals ENABLE ROW LEVEL SECURITY;
 
-ALTER TABLE public.asaas_accounts FORCE ROW LEVEL SECURITY;
 ALTER TABLE public.profiles FORCE ROW LEVEL SECURITY;
 ALTER TABLE public.properties FORCE ROW LEVEL SECURITY;
 ALTER TABLE public.contracts FORCE ROW LEVEL SECURITY;
@@ -2075,38 +2007,24 @@ ALTER TABLE public.installments FORCE ROW LEVEL SECURITY;
 ALTER TABLE public.maintenances FORCE ROW LEVEL SECURITY;
 ALTER TABLE public.landlord_withdrawals FORCE ROW LEVEL SECURITY;
 
-DROP POLICY IF EXISTS "asaas_accounts_select_own" ON public.asaas_accounts;
-DROP POLICY IF EXISTS "asaas_accounts_insert_own" ON public.asaas_accounts;
-DROP POLICY IF EXISTS "asaas_accounts_update_own" ON public.asaas_accounts;
-DROP POLICY IF EXISTS "asaas_accounts_delete_own" ON public.asaas_accounts;
 
-CREATE POLICY "asaas_accounts_select_own"
-ON public.asaas_accounts
 FOR SELECT
 TO authenticated
 USING (auth.uid() = user_id);
 
-CREATE POLICY "asaas_accounts_insert_own"
-ON public.asaas_accounts
 FOR INSERT
 TO authenticated
 WITH CHECK (auth.uid() = user_id);
 
-CREATE POLICY "asaas_accounts_update_own"
-ON public.asaas_accounts
 FOR UPDATE
 TO authenticated
 USING (auth.uid() = user_id)
 WITH CHECK (auth.uid() = user_id);
 
-CREATE POLICY "asaas_accounts_delete_own"
-ON public.asaas_accounts
 FOR DELETE
 TO authenticated
 USING (auth.uid() = user_id);
 
-GRANT SELECT, INSERT, UPDATE, DELETE ON public.asaas_accounts TO authenticated;
-GRANT ALL ON public.asaas_accounts TO service_role;
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.profiles TO authenticated;
 GRANT ALL ON public.profiles TO service_role;
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.properties TO authenticated;
@@ -2147,8 +2065,6 @@ DECLARE
 BEGIN
   FOREACH t IN ARRAY ARRAY[
     'agency_settings',
-    'asaas_accounts',
-    'asaas_customers',
     'audit_logs',
     'contracts',
     'crm_lead_notes',
@@ -2176,40 +2092,16 @@ END $$;
 
 -- 3) Recreate the most sensitive owner-scoped policies with explicit auth.uid()
 -- predicates. These policies intentionally do not include manager/landlord joins.
-DROP POLICY IF EXISTS "asaas_accounts_select_own" ON public.asaas_accounts;
-DROP POLICY IF EXISTS "asaas_accounts_insert_own" ON public.asaas_accounts;
-DROP POLICY IF EXISTS "asaas_accounts_update_own" ON public.asaas_accounts;
-DROP POLICY IF EXISTS "asaas_accounts_delete_own" ON public.asaas_accounts;
 
-CREATE POLICY "asaas_accounts_select_own"
-  ON public.asaas_accounts FOR SELECT TO authenticated
   USING (user_id = auth.uid());
-CREATE POLICY "asaas_accounts_insert_own"
-  ON public.asaas_accounts FOR INSERT TO authenticated
   WITH CHECK (user_id = auth.uid());
-CREATE POLICY "asaas_accounts_update_own"
-  ON public.asaas_accounts FOR UPDATE TO authenticated
   USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
-CREATE POLICY "asaas_accounts_delete_own"
-  ON public.asaas_accounts FOR DELETE TO authenticated
   USING (user_id = auth.uid());
 
-DROP POLICY IF EXISTS "asaas_customers_select_own" ON public.asaas_customers;
-DROP POLICY IF EXISTS "asaas_customers_insert_own" ON public.asaas_customers;
-DROP POLICY IF EXISTS "asaas_customers_update_own" ON public.asaas_customers;
-DROP POLICY IF EXISTS "asaas_customers_delete_own" ON public.asaas_customers;
 
-CREATE POLICY "asaas_customers_select_own"
-  ON public.asaas_customers FOR SELECT TO authenticated
   USING (user_id = auth.uid());
-CREATE POLICY "asaas_customers_insert_own"
-  ON public.asaas_customers FOR INSERT TO authenticated
   WITH CHECK (user_id = auth.uid());
-CREATE POLICY "asaas_customers_update_own"
-  ON public.asaas_customers FOR UPDATE TO authenticated
   USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
-CREATE POLICY "asaas_customers_delete_own"
-  ON public.asaas_customers FOR DELETE TO authenticated
   USING (user_id = auth.uid());
 
 DROP POLICY IF EXISTS "Users view own profile" ON public.profiles;
@@ -2326,8 +2218,6 @@ ALTER TABLE public.contracts DROP CONSTRAINT IF EXISTS contracts_tenant_id_fkey;
 ALTER TABLE public.contracts
   ADD CONSTRAINT contracts_tenant_id_fkey
   FOREIGN KEY (tenant_id) REFERENCES public.tenants(id) ON DELETE RESTRICT;
-DELETE FROM public.asaas_accounts WHERE user_id = 'c0bfe951-806c-4145-aaf5-ff09b1c10bcd';
-DELETE FROM public.asaas_customers WHERE user_id = 'c0bfe951-806c-4145-aaf5-ff09b1c10bcd';
 ALTER TABLE public.profiles
   ADD COLUMN IF NOT EXISTS postal_code text,
   ADD COLUMN IF NOT EXISTS address text,
@@ -2454,12 +2344,10 @@ BEGIN
   END LOOP;
 END $$;
 -- =========================================================
--- STARK BANK MIGRATION
 -- =========================================================
 
 -- Cleanup legacy Efí artifacts (safe if absent)
 DROP TABLE IF EXISTS public.efi_payouts CASCADE;
-ALTER TABLE IF EXISTS public.asaas_accounts DROP COLUMN IF EXISTS efi_account_number;
 ALTER TABLE IF EXISTS public.agency_settings DROP COLUMN IF EXISTS agency_efi_account_number;
 ALTER TABLE IF EXISTS public.agency_settings DROP COLUMN IF EXISTS efi_account_number;
 
@@ -2467,11 +2355,9 @@ ALTER TABLE IF EXISTS public.agency_settings DROP COLUMN IF EXISTS efi_account_n
 -- ENUMS
 -- =========================================================
 DO $$ BEGIN
-  CREATE TYPE public.stark_charge_kind AS ENUM ('pix', 'boleto', 'pix_boleto');
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
-  CREATE TYPE public.stark_charge_status AS ENUM ('created', 'paid', 'expired', 'canceled', 'failed');
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
@@ -2483,19 +2369,13 @@ DO $$ BEGIN
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- =========================================================
--- STARK CHARGES
 -- =========================================================
-CREATE TABLE IF NOT EXISTS public.stark_charges (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   installment_id UUID NOT NULL REFERENCES public.installments(id) ON DELETE CASCADE,
   manager_user_id UUID NOT NULL,
-  kind public.stark_charge_kind NOT NULL DEFAULT 'pix',
-  status public.stark_charge_status NOT NULL DEFAULT 'created',
   amount NUMERIC(12,2) NOT NULL,
   due_date DATE,
   txid TEXT,
-  stark_id TEXT,
-  stark_boleto_id TEXT,
   brcode TEXT,
   qrcode_image_url TEXT,
   boleto_line TEXT,
@@ -2507,44 +2387,31 @@ CREATE TABLE IF NOT EXISTS public.stark_charges (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE INDEX IF NOT EXISTS idx_stark_charges_installment ON public.stark_charges(installment_id);
-CREATE INDEX IF NOT EXISTS idx_stark_charges_status ON public.stark_charges(status);
-CREATE INDEX IF NOT EXISTS idx_stark_charges_stark_id ON public.stark_charges(stark_id);
 
-GRANT SELECT ON public.stark_charges TO authenticated;
-GRANT ALL ON public.stark_charges TO service_role;
 
-ALTER TABLE public.stark_charges ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "stark_charges_select_manager" ON public.stark_charges
   FOR SELECT TO authenticated
   USING (manager_user_id = public.current_manager_id());
 
-CREATE POLICY "stark_charges_select_tenant" ON public.stark_charges
   FOR SELECT TO authenticated
   USING (
     EXISTS (
       SELECT 1 FROM public.installments i
       JOIN public.contracts c ON c.id = i.contract_id
-      WHERE i.id = stark_charges.installment_id
         AND c.tenant_id = public.current_tenant_id()
     )
   );
 
-CREATE POLICY "stark_charges_select_landlord" ON public.stark_charges
   FOR SELECT TO authenticated
   USING (
     EXISTS (
       SELECT 1 FROM public.installments i
       JOIN public.contracts c ON c.id = i.contract_id
       JOIN public.properties p ON p.id = c.property_id
-      WHERE i.id = stark_charges.installment_id
         AND p.landlord_id = public.current_landlord_id()
     )
   );
 
-CREATE TRIGGER trg_stark_charges_updated_at
-  BEFORE UPDATE ON public.stark_charges
   FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 -- =========================================================
@@ -2562,7 +2429,6 @@ CREATE TABLE IF NOT EXISTS public.payment_transfers (
   amount NUMERIC(12,2) NOT NULL,
   description TEXT,
   status public.payment_transfer_status NOT NULL DEFAULT 'PENDING',
-  stark_transfer_id TEXT,
   external_id TEXT UNIQUE,
   attempts INT NOT NULL DEFAULT 0,
   next_retry_at TIMESTAMPTZ,
@@ -2594,9 +2460,7 @@ CREATE TRIGGER trg_transfers_updated_at
   FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 -- =========================================================
--- STARK EVENTS (webhook idempotency log)
 -- =========================================================
-CREATE TABLE IF NOT EXISTS public.stark_events (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   event_id TEXT UNIQUE NOT NULL,
   subscription TEXT NOT NULL,
@@ -2607,20 +2471,15 @@ CREATE TABLE IF NOT EXISTS public.stark_events (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE INDEX IF NOT EXISTS idx_stark_events_subscription ON public.stark_events(subscription);
-CREATE INDEX IF NOT EXISTS idx_stark_events_processed ON public.stark_events(processed_at);
 
-GRANT ALL ON public.stark_events TO service_role;
 -- no authenticated grants — server-only
 
-ALTER TABLE public.stark_events ENABLE ROW LEVEL SECURITY;
 -- deny-all by omission for authenticated
 
 -- =========================================================
 -- INSTALLMENTS FK
 -- =========================================================
 ALTER TABLE public.installments
-  ADD COLUMN IF NOT EXISTS stark_charge_id UUID REFERENCES public.stark_charges(id) ON DELETE SET NULL;
 
 ALTER TABLE public.maintenances
   ADD COLUMN IF NOT EXISTS contract_id uuid REFERENCES public.contracts(id) ON DELETE SET NULL;
@@ -2683,13 +2542,9 @@ FOR EACH ROW EXECUTE FUNCTION public.set_maintenance_contract_id();
 -- lido da vault. Se o segredo não estiver na vault, as rotas responderão 401
 -- (fail-closed).
 
-SELECT cron.unschedule('stark-process-payouts');
-SELECT cron.unschedule('stark-reconcile-charges');
 SELECT cron.unschedule('generate-upcoming-boletos-daily');
-SELECT cron.unschedule('reconcile-stark-charges-hourly');
 
 SELECT cron.schedule(
-  'stark-process-payouts',
   '* * * * *',
   $$
   SELECT net.http_post(
@@ -2704,11 +2559,9 @@ SELECT cron.schedule(
 );
 
 SELECT cron.schedule(
-  'stark-reconcile-charges',
   '*/15 * * * *',
   $$
   SELECT net.http_post(
-    url := 'https://nexos-inquilinos.lovable.app/api/public/hooks/reconcile-stark-charges',
     headers := jsonb_build_object(
       'Content-Type', 'application/json',
       'Authorization', 'Bearer ' || COALESCE((SELECT decrypted_secret FROM vault.decrypted_secrets WHERE name='CRON_SECRET' LIMIT 1), '')
@@ -2734,11 +2587,9 @@ SELECT cron.schedule(
 );
 
 SELECT cron.schedule(
-  'reconcile-stark-charges-hourly',
   '15 * * * *',
   $$
   SELECT net.http_post(
-    url := 'https://project--231b8419-e2f6-4a97-8769-d585255d26c4.lovable.app/api/public/hooks/reconcile-stark-charges',
     headers := jsonb_build_object(
       'Content-Type', 'application/json',
       'Authorization', 'Bearer ' || COALESCE((SELECT decrypted_secret FROM vault.decrypted_secrets WHERE name='CRON_SECRET' LIMIT 1), '')
@@ -3335,7 +3186,6 @@ USING (
 ALTER TABLE public.efi_events ADD COLUMN IF NOT EXISTS error TEXT;
 CREATE INDEX IF NOT EXISTS idx_efi_events_unprocessed ON public.efi_events(received_at DESC) WHERE processed_at IS NULL;
 CREATE INDEX IF NOT EXISTS idx_efi_charges_txid ON public.efi_charges(txid);
-CREATE INDEX IF NOT EXISTS idx_efi_charges_installment_status ON public.efi_charges(installment_id, status);ALTER TABLE public.payment_transfers RENAME COLUMN stark_transfer_id TO provider_transfer_id;
 ALTER TABLE public.payment_transfers
   ADD COLUMN IF NOT EXISTS efi_id_envio TEXT,
   ADD COLUMN IF NOT EXISTS efi_e2e_id TEXT,
@@ -4042,16 +3892,11 @@ WITH CHECK (
 ALTER FUNCTION public.enqueue_email(text, jsonb) SET search_path = public, pgmq, pg_temp;
 ALTER FUNCTION public.read_email_batch(text, integer, integer) SET search_path = public, pgmq, pg_temp;
 ALTER FUNCTION public.delete_email(text, bigint) SET search_path = public, pgmq, pg_temp;
-ALTER FUNCTION public.move_to_dlq(text, text, bigint, jsonb) SET search_path = public, pgmq, pg_temp;-- 1. Fortalecer RLS: Garantir que efi_events e stark_events tenham RLS e apenas service_role possa ler
 ALTER TABLE public.efi_events ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.stark_events ENABLE ROW LEVEL SECURITY;
 
 GRANT ALL ON public.efi_events TO service_role;
-GRANT ALL ON public.stark_events TO service_role;
 
--- 2. Corrigir permissão de asaas_accounts (select restrito ao dono)
 -- Já existe select_own para authenticated, mas garantir GRANT
-GRANT SELECT, INSERT, UPDATE, DELETE ON public.asaas_accounts TO authenticated;
 
 -- 3. Criar função de sanitização SQL básica para uso interno (opcional mas boa prática)
 -- (O Supabase/PostgREST já lida com parâmetros via $1, $2, etc., mas triggers podem ser vulneráveis se usarem dynamic SQL mal sanitizado)
@@ -4093,8 +3938,6 @@ CREATE INDEX IF NOT EXISTS idx_tenants_full_name_trgm ON public.tenants USING gi
 -- 3. Reaplica as políticas de service_role para tabelas de eventos (caso a falha anterior tenha abortado a transação)
 DO $$
 BEGIN
-    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'stark_events' AND policyname = 'service_role_all') THEN
-        CREATE POLICY "service_role_all" ON public.stark_events FOR ALL TO service_role USING (true) WITH CHECK (true);
     END IF;
     IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'efi_events' AND policyname = 'service_role_all') THEN
         CREATE POLICY "service_role_all" ON public.efi_events FOR ALL TO service_role USING (true) WITH CHECK (true);

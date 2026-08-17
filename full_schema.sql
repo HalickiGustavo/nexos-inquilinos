@@ -2390,7 +2390,7 @@ EXCEPTION WHEN duplicate_object THEN NULL; END $$;
   paid_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
-);
+;
 
 
 
@@ -2474,7 +2474,7 @@ CREATE TRIGGER trg_transfers_updated_at
   processed_at TIMESTAMPTZ,
   error TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
-);
+;
 
 
 -- no authenticated grants — server-only

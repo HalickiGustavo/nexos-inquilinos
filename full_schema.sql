@@ -2029,7 +2029,9 @@ GRANT ALL ON public.installments TO service_role;
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.maintenances TO authenticated;
 GRANT ALL ON public.maintenances TO service_role;
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.landlord_withdrawals TO authenticated;
-GRANT ALL ON public.landlord_withdrawals TO service_role;REVOKE EXECUTE ON FUNCTION public.accept_landlord_invite(text) FROM anon;
+GRANT ALL ON public.landlord_withdrawals TO service_role;
+
+REVOKE EXECUTE ON FUNCTION public.accept_landlord_invite(text) FROM anon;
 REVOKE EXECUTE ON FUNCTION public.current_landlord_id() FROM anon;
 REVOKE EXECUTE ON FUNCTION public.is_current_tenant_property(uuid) FROM anon;
 

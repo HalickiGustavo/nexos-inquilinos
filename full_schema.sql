@@ -2035,7 +2035,9 @@ REVOKE EXECUTE ON FUNCTION public.is_current_tenant_property(uuid) FROM anon;
 
 GRANT EXECUTE ON FUNCTION public.accept_landlord_invite(text) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.current_landlord_id() TO authenticated;
-GRANT EXECUTE ON FUNCTION public.is_current_tenant_property(uuid) TO authenticated;-- Defense-in-depth hardening after cross-account data exposure report.
+GRANT EXECUTE ON FUNCTION public.is_current_tenant_property(uuid) TO authenticated;
+
+-- Defense-in-depth hardening after cross-account data exposure report.
 -- Goal: no browser/user role can read or mutate another user's sensitive rows,
 -- even if a query is written too broadly or a legacy grant exists.
 

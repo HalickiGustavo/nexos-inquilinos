@@ -350,10 +350,8 @@ TO authenticated
 USING (id = public.current_tenant_id());
 GRANT EXECUTE ON FUNCTION public.current_tenant_id() TO authenticated, anon;
 GRANT EXECUTE ON FUNCTION public.has_role(uuid, public.app_role) TO authenticated, anon;
--- Asaas subaccounts (one per owner / imobiliaria)
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL UNIQUE,
-  asaas_account_id text,
   wallet_id text,
   api_key text,
   status text NOT NULL DEFAULT 'pending',
@@ -364,11 +362,9 @@ GRANT EXECUTE ON FUNCTION public.has_role(uuid, public.app_role) TO authenticate
   FOR ALL TO authenticated USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
   FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
--- Asaas customer per tenant
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL,
   tenant_id uuid NOT NULL UNIQUE,
-  asaas_customer_id text NOT NULL,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
@@ -843,7 +839,6 @@ CREATE POLICY "Owner manages photos" ON public.property_photos
   ADD COLUMN IF NOT EXISTS bank_account_type text,
   ADD COLUMN IF NOT EXISTS auto_transfer_enabled boolean NOT NULL DEFAULT false;
 
-  ADD CONSTRAINT asaas_accounts_kyc_status_chk
   CHECK (kyc_status IN ('PENDENTE','EM_ANALISE','APROVADO','REJEITADO'));
 ALTER TYPE public.installment_status ADD VALUE IF NOT EXISTS 'agendado';
 ALTER TYPE public.installment_status ADD VALUE IF NOT EXISTS 'em_aberto';CREATE OR REPLACE FUNCTION public.generate_installments_for_contract()
@@ -1973,24 +1968,16 @@ CREATE POLICY "Tenant views rented property"
 
 
 
-CREATE POLICY "asaas_accounts_select_own"
   USING (auth.uid() = user_id);
-CREATE POLICY "asaas_accounts_insert_own"
   WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "asaas_accounts_update_own"
   USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "asaas_accounts_delete_own"
   USING (auth.uid() = user_id);
 
 --    vinculado ao usuário dono da subconta).
 
-CREATE POLICY "asaas_customers_select_own"
   USING (auth.uid() = user_id);
-CREATE POLICY "asaas_customers_insert_own"
   WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "asaas_customers_update_own"
   USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "asaas_customers_delete_own"
   USING (auth.uid() = user_id);
 
 -- 3) profiles: garantir que anon não enxergue PII (nome, email, telefone).
@@ -2024,23 +2011,19 @@ ALTER TABLE public.maintenances FORCE ROW LEVEL SECURITY;
 ALTER TABLE public.landlord_withdrawals FORCE ROW LEVEL SECURITY;
 
 
-CREATE POLICY "asaas_accounts_select_own"
 FOR SELECT
 TO authenticated
 USING (auth.uid() = user_id);
 
-CREATE POLICY "asaas_accounts_insert_own"
 FOR INSERT
 TO authenticated
 WITH CHECK (auth.uid() = user_id);
 
-CREATE POLICY "asaas_accounts_update_own"
 FOR UPDATE
 TO authenticated
 USING (auth.uid() = user_id)
 WITH CHECK (auth.uid() = user_id);
 
-CREATE POLICY "asaas_accounts_delete_own"
 FOR DELETE
 TO authenticated
 USING (auth.uid() = user_id);
@@ -2113,23 +2096,15 @@ END $$;
 -- 3) Recreate the most sensitive owner-scoped policies with explicit auth.uid()
 -- predicates. These policies intentionally do not include manager/landlord joins.
 
-CREATE POLICY "asaas_accounts_select_own"
   USING (user_id = auth.uid());
-CREATE POLICY "asaas_accounts_insert_own"
   WITH CHECK (user_id = auth.uid());
-CREATE POLICY "asaas_accounts_update_own"
   USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
-CREATE POLICY "asaas_accounts_delete_own"
   USING (user_id = auth.uid());
 
 
-CREATE POLICY "asaas_customers_select_own"
   USING (user_id = auth.uid());
-CREATE POLICY "asaas_customers_insert_own"
   WITH CHECK (user_id = auth.uid());
-CREATE POLICY "asaas_customers_update_own"
   USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
-CREATE POLICY "asaas_customers_delete_own"
   USING (user_id = auth.uid());
 
 DROP POLICY IF EXISTS "Users view own profile" ON public.profiles;
@@ -2372,7 +2347,6 @@ BEGIN
   END LOOP;
 END $$;
 -- =========================================================
--- STARK BANK MIGRATION
 -- =========================================================
 
 -- Cleanup legacy Efí artifacts (safe if absent)
@@ -2406,8 +2380,6 @@ EXCEPTION WHEN duplicate_object THEN NULL; END $$;
   amount NUMERIC(12,2) NOT NULL,
   due_date DATE,
   txid TEXT,
-  stark_id TEXT,
-  stark_boleto_id TEXT,
   brcode TEXT,
   qrcode_image_url TEXT,
   boleto_line TEXT,
@@ -2444,7 +2416,6 @@ EXCEPTION WHEN duplicate_object THEN NULL; END $$;
     )
   );
 
-CREATE TRIGGER trg_stark_charges_updated_at
   FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 -- =========================================================

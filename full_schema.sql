@@ -2190,7 +2190,9 @@ CREATE POLICY "Tenant reads own pix_splits" ON public.pix_splits
 CREATE TRIGGER set_updated_at_pix_splits
   BEFORE UPDATE ON public.pix_splits
   FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
-CREATE UNIQUE INDEX IF NOT EXISTS pix_splits_installment_unique ON public.pix_splits(installment_id);REVOKE SELECT (invite_token) ON public.landlord_invites FROM authenticated;
+CREATE UNIQUE INDEX IF NOT EXISTS pix_splits_installment_unique ON public.pix_splits(installment_id);
+
+REVOKE SELECT (invite_token) ON public.landlord_invites FROM authenticated;
 REVOKE SELECT (invite_token) ON public.landlord_invites FROM anon;
 -- 1. Add deleted_at columns
 ALTER TABLE public.tenants ADD COLUMN IF NOT EXISTS deleted_at timestamptz;

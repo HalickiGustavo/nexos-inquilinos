@@ -1974,21 +1974,15 @@ CREATE POLICY "Tenant views rented property"
   USING (public.is_current_tenant_property(id));
 -- Hardening RLS em tabelas com dados financeiros / PII do proprietário.
 --    REVOKE explícito de anon, e NOT NULL em user_id.
-
-
-
-
-  USING (auth.uid() = user_id);
-  WITH CHECK (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Landlord manage own withdrawals" ON public.landlord_withdrawals;
+CREATE POLICY "Landlord manage own withdrawals"
+  ON public.landlord_withdrawals FOR ALL TO authenticated
   USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
-  USING (auth.uid() = user_id);
 
---    vinculado ao usuário dono da subconta).
-
-  USING (auth.uid() = user_id);
-  WITH CHECK (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Users manage own efi_credentials" ON public.efi_credentials;
+CREATE POLICY "Users manage own efi_credentials"
+  ON public.efi_credentials FOR ALL TO authenticated
   USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
-  USING (auth.uid() = user_id);
 
 -- 3) profiles: garantir que anon não enxergue PII (nome, email, telefone).
 REVOKE ALL ON public.profiles FROM anon;
@@ -2019,24 +2013,10 @@ ALTER TABLE public.contracts FORCE ROW LEVEL SECURITY;
 ALTER TABLE public.installments FORCE ROW LEVEL SECURITY;
 ALTER TABLE public.maintenances FORCE ROW LEVEL SECURITY;
 ALTER TABLE public.landlord_withdrawals FORCE ROW LEVEL SECURITY;
-
-
-FOR SELECT
-TO authenticated
-USING (auth.uid() = user_id);
-
-FOR INSERT
-TO authenticated
-WITH CHECK (auth.uid() = user_id);
-
-FOR UPDATE
-TO authenticated
-USING (auth.uid() = user_id)
-WITH CHECK (auth.uid() = user_id);
-
-FOR DELETE
-TO authenticated
-USING (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Landlord manage own withdrawals scoped" ON public.landlord_withdrawals;
+CREATE POLICY "Landlord manage own withdrawals scoped"
+  ON public.landlord_withdrawals FOR ALL TO authenticated
+  USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.profiles TO authenticated;
 GRANT ALL ON public.profiles TO service_role;
@@ -2106,16 +2086,10 @@ END $$;
 -- 3) Recreate the most sensitive owner-scoped policies with explicit auth.uid()
 -- predicates. These policies intentionally do not include manager/landlord joins.
 
-  USING (user_id = auth.uid());
-  WITH CHECK (user_id = auth.uid());
-  USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
-  USING (user_id = auth.uid());
-
-
-  USING (user_id = auth.uid());
-  WITH CHECK (user_id = auth.uid());
-  USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
-  USING (user_id = auth.uid());
+DROP POLICY IF EXISTS "Manager manages own team re-scoped" ON public.manager_members;
+CREATE POLICY "Manager manages own team re-scoped"
+  ON public.manager_members FOR ALL TO authenticated
+  USING (manager_user_id = auth.uid()) WITH CHECK (manager_user_id = auth.uid());
 
 DROP POLICY IF EXISTS "Users view own profile" ON public.profiles;
 DROP POLICY IF EXISTS "Users insert own profile" ON public.profiles;
@@ -2216,7 +2190,9 @@ CREATE POLICY "Tenant reads own pix_splits" ON public.pix_splits
 CREATE TRIGGER set_updated_at_pix_splits
   BEFORE UPDATE ON public.pix_splits
   FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
-CREATE UNIQUE INDEX IF NOT EXISTS pix_splits_installment_unique ON public.pix_splits(installment_id);REVOKE SELECT (invite_token) ON public.landlord_invites FROM authenticated;
+CREATE UNIQUE INDEX IF NOT EXISTS pix_splits_installment_unique ON public.pix_splits(installment_id);
+
+REVOKE SELECT (invite_token) ON public.landlord_invites FROM authenticated;
 REVOKE SELECT (invite_token) ON public.landlord_invites FROM anon;
 -- 1. Add deleted_at columns
 ALTER TABLE public.tenants ADD COLUMN IF NOT EXISTS deleted_at timestamptz;

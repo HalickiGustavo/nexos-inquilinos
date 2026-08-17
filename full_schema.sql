@@ -791,7 +791,11 @@ USING (
 CREATE POLICY "Managers can insert platform settings" ON public.platform_settings FOR INSERT TO authenticated WITH CHECK (public.has_role(auth.uid(), 'manager'::app_role));
 CREATE POLICY "Managers can update platform settings" ON public.platform_settings FOR UPDATE TO authenticated USING (public.has_role(auth.uid(), 'manager'::app_role)) WITH CHECK (public.has_role(auth.uid(), 'manager'::app_role));
 GRANT SELECT, INSERT, UPDATE ON public.platform_settings TO authenticated;
-GRANT ALL ON public.platform_settings TO service_role;ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS payout_wallet_id text;-- Transaction type enum
+GRANT ALL ON public.platform_settings TO service_role;
+
+ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS payout_wallet_id text;
+
+-- Transaction type enum
 DO $$ BEGIN
   CREATE TYPE public.transaction_type AS ENUM ('Aluguel', 'Venda');
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;

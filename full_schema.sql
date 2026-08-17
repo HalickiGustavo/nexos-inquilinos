@@ -3090,8 +3090,7 @@ GRANT EXECUTE ON FUNCTION public.run_security_invariants_check() TO service_role
 DO $$
 BEGIN
   IF EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pg_cron') THEN
-    PERFORM cron.unschedule('security-invariants-daily')
-    WHERE EXISTS (SELECT 1 FROM cron.job WHERE jobname = 'security-invariants-daily');
+    PERFORM cron.unschedule('security-invariants-daily');
 
     PERFORM cron.schedule(
       'security-invariants-daily',

@@ -90,6 +90,7 @@ import { Route as ApiPublicHooksSyncCronSecretRouteImport } from './routes/api/p
 import { Route as ApiPublicListingsXmlRouteImport } from './routes/api/public/listings.xml'
 import { Route as ApiPublicWebhooksLeadsRouteImport } from './routes/api/public/webhooks/leads'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
+import { Route as ApiPublicExternalV1HealthRouteImport } from './routes/api/public/external/v1/health'
 import { Route as ApiV1IntegrationsOrgSlugLeadsRouteImport } from './routes/api/v1/integrations/$orgSlug/leads'
 import { Route as ApiV1IntegrationsOrgSlugListingsDotxmlRouteImport } from './routes/api/v1/integrations/$orgSlug/listings[.]xml'
 
@@ -530,6 +531,12 @@ const LovableEmailQueueProcessRoute =
     path: '/lovable/email/queue/process',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicExternalV1HealthRoute =
+  ApiPublicExternalV1HealthRouteImport.update({
+    id: '/api/public/external/v1/health',
+    path: '/api/public/external/v1/health',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiV1IntegrationsOrgSlugLeadsRoute =
   ApiV1IntegrationsOrgSlugLeadsRouteImport.update({
     id: '/api/v1/integrations/$orgSlug/leads',
@@ -622,6 +629,7 @@ export interface FileRoutesByFullPath {
   '/api/public/listings/xml': typeof ApiPublicListingsXmlRoute
   '/api/public/webhooks/leads': typeof ApiPublicWebhooksLeadsRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
+  '/api/public/external/v1/health': typeof ApiPublicExternalV1HealthRoute
   '/api/v1/integrations/$orgSlug/leads': typeof ApiV1IntegrationsOrgSlugLeadsRoute
   '/api/v1/integrations/$orgSlug/listings.xml': typeof ApiV1IntegrationsOrgSlugListingsDotxmlRoute
 }
@@ -704,6 +712,7 @@ export interface FileRoutesByTo {
   '/api/public/listings/xml': typeof ApiPublicListingsXmlRoute
   '/api/public/webhooks/leads': typeof ApiPublicWebhooksLeadsRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
+  '/api/public/external/v1/health': typeof ApiPublicExternalV1HealthRoute
   '/api/v1/integrations/$orgSlug/leads': typeof ApiV1IntegrationsOrgSlugLeadsRoute
   '/api/v1/integrations/$orgSlug/listings.xml': typeof ApiV1IntegrationsOrgSlugListingsDotxmlRoute
 }
@@ -790,6 +799,7 @@ export interface FileRoutesById {
   '/api/public/listings/xml': typeof ApiPublicListingsXmlRoute
   '/api/public/webhooks/leads': typeof ApiPublicWebhooksLeadsRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
+  '/api/public/external/v1/health': typeof ApiPublicExternalV1HealthRoute
   '/api/v1/integrations/$orgSlug/leads': typeof ApiV1IntegrationsOrgSlugLeadsRoute
   '/api/v1/integrations/$orgSlug/listings.xml': typeof ApiV1IntegrationsOrgSlugListingsDotxmlRoute
 }
@@ -874,6 +884,7 @@ export interface FileRouteTypes {
     | '/api/public/listings/xml'
     | '/api/public/webhooks/leads'
     | '/lovable/email/queue/process'
+    | '/api/public/external/v1/health'
     | '/api/v1/integrations/$orgSlug/leads'
     | '/api/v1/integrations/$orgSlug/listings.xml'
   fileRoutesByTo: FileRoutesByTo
@@ -956,6 +967,7 @@ export interface FileRouteTypes {
     | '/api/public/listings/xml'
     | '/api/public/webhooks/leads'
     | '/lovable/email/queue/process'
+    | '/api/public/external/v1/health'
     | '/api/v1/integrations/$orgSlug/leads'
     | '/api/v1/integrations/$orgSlug/listings.xml'
   id:
@@ -1041,6 +1053,7 @@ export interface FileRouteTypes {
     | '/api/public/listings/xml'
     | '/api/public/webhooks/leads'
     | '/lovable/email/queue/process'
+    | '/api/public/external/v1/health'
     | '/api/v1/integrations/$orgSlug/leads'
     | '/api/v1/integrations/$orgSlug/listings.xml'
   fileRoutesById: FileRoutesById
@@ -1076,6 +1089,7 @@ export interface RootRouteChildren {
   ApiPublicListingsXmlRoute: typeof ApiPublicListingsXmlRoute
   ApiPublicWebhooksLeadsRoute: typeof ApiPublicWebhooksLeadsRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
+  ApiPublicExternalV1HealthRoute: typeof ApiPublicExternalV1HealthRoute
   ApiV1IntegrationsOrgSlugLeadsRoute: typeof ApiV1IntegrationsOrgSlugLeadsRoute
   ApiV1IntegrationsOrgSlugListingsDotxmlRoute: typeof ApiV1IntegrationsOrgSlugListingsDotxmlRoute
 }
@@ -1649,6 +1663,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/external/v1/health': {
+      id: '/api/public/external/v1/health'
+      path: '/api/public/external/v1/health'
+      fullPath: '/api/public/external/v1/health'
+      preLoaderRoute: typeof ApiPublicExternalV1HealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/v1/integrations/$orgSlug/leads': {
       id: '/api/v1/integrations/$orgSlug/leads'
       path: '/api/v1/integrations/$orgSlug/leads'
@@ -1855,6 +1876,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicListingsXmlRoute: ApiPublicListingsXmlRoute,
   ApiPublicWebhooksLeadsRoute: ApiPublicWebhooksLeadsRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
+  ApiPublicExternalV1HealthRoute: ApiPublicExternalV1HealthRoute,
   ApiV1IntegrationsOrgSlugLeadsRoute: ApiV1IntegrationsOrgSlugLeadsRoute,
   ApiV1IntegrationsOrgSlugListingsDotxmlRoute:
     ApiV1IntegrationsOrgSlugListingsDotxmlRoute,
